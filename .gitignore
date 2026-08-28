@@ -1,0 +1,10 @@
+node_modules/
+dist/
+demo-dist/
+coverage/
+playwright-report/
+registry-dist/
+server-dist/
+test-results/
+*.tgz
+.DS_Store
