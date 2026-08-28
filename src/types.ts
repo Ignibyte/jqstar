@@ -310,6 +310,16 @@ export interface StarDataTableStatic {
   selected(target: DataTableTarget): string[];
 }
 
+export type PaginationTarget = string | HTMLElement;
+
+export interface StarPaginationStatic {
+  page(target: PaginationTarget): number;
+  pageCount(target: PaginationTarget): number;
+  goTo(target: PaginationTarget, page: number): HTMLElement;
+  next(target: PaginationTarget): HTMLElement;
+  previous(target: PaginationTarget): HTMLElement;
+}
+
 export type ToggleTarget = string | HTMLButtonElement;
 
 export interface StarToggleStatic {
@@ -730,6 +740,7 @@ export interface StarUIStatic {
   readonly select: StarSelectStatic;
   readonly combobox: StarComboboxStatic;
   readonly dataTable: StarDataTableStatic;
+  readonly pagination: StarPaginationStatic;
   readonly toggle: StarToggleStatic;
   readonly toggleGroup: StarToggleGroupStatic;
   readonly numberField: StarNumberFieldStatic;

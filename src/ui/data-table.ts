@@ -256,7 +256,9 @@ function render(record: DataTableRecord): void {
   if (record.root.dataset.page !== String(record.page)) {
     record.root.dataset.page = String(record.page);
   }
-  record.root.dataset.pageCount = String(pageCount);
+  if (record.root.dataset.pageCount !== String(pageCount)) {
+    record.root.dataset.pageCount = String(pageCount);
+  }
   record.root.dataset.rowCount = String(matching.length);
   setText(
     record,

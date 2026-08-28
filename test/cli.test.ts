@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(104);
+    expect(items).toHaveLength(105);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -95,6 +95,7 @@ describe("jqstar CLI", () => {
         "clipboard",
         "editable",
         "profile-settings",
+        "project-browser",
       ]),
     );
   });
@@ -110,6 +111,7 @@ describe("jqstar CLI", () => {
       "async-form",
       "operations-dashboard",
       "profile-settings",
+      "project-browser",
     ]);
     expect(JSON.parse(components.stdout)).toHaveLength(100);
   });

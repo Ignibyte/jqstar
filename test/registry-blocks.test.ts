@@ -77,4 +77,22 @@ describe("source registry blocks", () => {
     expect(actions).toContain('$.star.action<ProfileSettingsState>("profileSettings.save"');
     expect(actions).toContain('$.star.action<ProfileSettingsState>("profileSettings.rotateInvite"');
   });
+
+  it("ships Project Browser with server-patched table and Pagination contracts", async () => {
+    const manifest = await registry();
+    const item = manifest.items.find(({ name }) => name === "project-browser");
+    const html = await readFile(resolve("registry/blocks/project-browser.html"), "utf8");
+    const actions = await readFile(resolve("registry/blocks/project-browser.ts"), "utf8");
+
+    expect(item).toMatchObject({ type: "registry:block" });
+    expect(item?.files).toHaveLength(2);
+    expect(item?.registryDependencies).toEqual(
+      expect.arrayContaining(["search-field", "data-table", "pagination"]),
+    );
+    expect(html).toContain('data-on:submit__prevent="@projectBrowser.search"');
+    expect(html).toContain('data-on:jquery-star:pagination:change="@projectBrowser.page"');
+    expect(html).toContain('data-on:jquery-star:data-table:sort="@projectBrowser.sort"');
+    expect(actions).toContain('$.star.action<ProjectBrowserState>("projectBrowser.page"');
+    expect(actions).toContain("$.star.get<ProjectBrowserState>(endpoint(root)");
+  });
 });

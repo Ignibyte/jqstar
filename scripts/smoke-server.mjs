@@ -75,6 +75,23 @@ try {
   if (!inviteResponse.ok || !invite.inviteUrl?.endsWith("self-hosted-1")) {
     throw new Error("The self-hosted invite rotation contract failed.");
   }
+  const projectSignals = encodeURIComponent(
+    JSON.stringify({
+      projectBrowserDirection: "ascending",
+      projectBrowserPage: 2,
+      projectBrowserQuery: "",
+      projectBrowserSort: "name",
+    }),
+  );
+  const projectsResponse = await fetch(`${origin}/api/demo/projects?datastar=${projectSignals}`);
+  const projects = await projectsResponse.text();
+  if (
+    !projectsResponse.ok ||
+    !projects.includes('data-row-id="deployment-kit"') ||
+    !projects.includes("selector #project-browser-pagination")
+  ) {
+    throw new Error("The self-hosted Project Browser stream contract failed.");
+  }
   const signals = encodeURIComponent(JSON.stringify({ controlPlaneMessage: "Ready" }));
   const streamResponse = await fetch(`${origin}/api/demo/runtime/stream?datastar=${signals}`);
   const stream = await streamResponse.text();
@@ -105,6 +122,9 @@ try {
     await browserPage.getByRole("button", { name: "Refresh operations" }).click();
     await browserPage.getByRole("button", { name: "Refresh snapshot" }).click();
     await browserPage.getByRole("button", { name: "Stream 3 logs" }).click();
+    await browserPage
+      .locator('[data-block="project-browser"] [data-part="page"][data-page="2"]')
+      .click();
     if (
       (await browserPage.getByRole("status", { name: "Current count: 1" }).textContent()) !== "1"
     ) {
@@ -121,11 +141,14 @@ try {
     if ((await browserPage.locator("#runtime-log-viewer [data-part='entry']").count()) !== 6) {
       throw new Error("The self-hosted browser did not apply the Datastar log stream.");
     }
+    await browserPage
+      .locator('[data-block="project-browser"] [data-row-id="deployment-kit"]')
+      .waitFor({ state: "visible" });
   } finally {
     await browser.close();
   }
   process.stdout.write(
-    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, datastar-log-stream=passed, browser-runtime=passed, security-headers=passed\n",
+    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, datastar-log-stream=passed, browser-runtime=passed, browser-project-browser=passed, security-headers=passed\n",
   );
 } finally {
   child.kill("SIGTERM");

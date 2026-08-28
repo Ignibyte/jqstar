@@ -1,6 +1,8 @@
 import $ from "jquery";
 import "../src/index";
 import "../src/ui/theme.css";
+import projectBrowserHTML from "../registry/blocks/project-browser.html?raw";
+import "../registry/blocks/project-browser";
 
 interface DemoState extends Record<string, unknown> {
   componentBackendError: string | null;
@@ -807,6 +809,9 @@ $.star.action<DemoState>("serverStream", async (context) => {
   context.instance.refresh();
   context.state.serverLoading = false;
 });
+
+const projectBrowserMount = document.querySelector<HTMLElement>("#project-browser-demo");
+if (projectBrowserMount) projectBrowserMount.innerHTML = projectBrowserHTML;
 
 $("#app").star();
 

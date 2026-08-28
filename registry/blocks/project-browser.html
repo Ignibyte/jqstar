@@ -1,0 +1,147 @@
+<section
+  data-jqs="card"
+  data-block="project-browser"
+  data-projects-url="/api/demo/projects"
+  data-signals="{ projectBrowserQuery: '', projectBrowserPage: 1, projectBrowserSort: 'name', projectBrowserDirection: 'ascending', projectBrowserCount: 12, projectBrowserLoading: false, projectBrowserError: null, projectBrowserMessage: '12 projects available.' }"
+  aria-labelledby="project-browser-title"
+>
+  <header data-part="header">
+    <div>
+      <h2 id="project-browser-title" data-part="title">Project browser</h2>
+      <p data-part="description">
+        Search, sort, selection, and pagination over Datastar SDK patches.
+      </p>
+    </div>
+    <span data-jqs="badge" data-variant="success">Backend + SDK</span>
+  </header>
+
+  <form
+    role="search"
+    data-project-browser-part="search"
+    data-on:submit__prevent="@projectBrowser.search"
+  >
+    <label for="project-browser-query">Search projects</label>
+    <div id="project-browser-search" data-jqs="search-field">
+      <span data-part="icon" aria-hidden="true">⌕</span>
+      <input
+        id="project-browser-query"
+        data-part="control"
+        data-bind:project-browser-query
+        type="search"
+        name="query"
+        placeholder="Name, owner, or status"
+      />
+      <button data-part="clear" type="button">Clear</button>
+      <button data-part="submit" type="submit">Search</button>
+    </div>
+  </form>
+
+  <div
+    id="project-browser-table"
+    data-jqs="data-table"
+    data-processing="manual"
+    data-page="1"
+    data-sort="name"
+    data-direction="ascending"
+    data-on:jquery-star:data-table:sort="@projectBrowser.sort"
+    data-attr:aria-busy="$projectBrowserLoading"
+  >
+    <div data-part="toolbar">
+      <span data-part="selection-status">0 selected</span>
+      <span data-text="$projectBrowserCount + ' matching projects'"></span>
+    </div>
+    <div data-part="viewport">
+      <table data-part="table">
+        <caption>
+          Projects returned by the backend
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">
+              <input data-part="select-all" type="checkbox" aria-label="Select visible projects" />
+            </th>
+            <th scope="col" data-key="name" aria-sort="ascending">
+              <button data-part="sort" type="button">Project</button>
+            </th>
+            <th scope="col" data-key="owner">
+              <button data-part="sort" type="button">Owner</button>
+            </th>
+            <th scope="col" data-key="status">
+              <button data-part="sort" type="button">Status</button>
+            </th>
+            <th scope="col" data-key="updated" data-type="date">
+              <button data-part="sort" type="button">Updated</button>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="project-browser-rows">
+          <tr data-row-id="jqstar">
+            <td><input data-part="row-select" type="checkbox" aria-label="Select jqstar" /></td>
+            <th scope="row" data-key="name">jqstar</th>
+            <td data-key="owner">Platform</td>
+            <td data-key="status"><span data-jqs="badge" data-variant="success">Active</span></td>
+            <td data-key="updated" data-value="2026-08-28">Aug 28, 2026</td>
+          </tr>
+          <tr data-row-id="registry-cli">
+            <td>
+              <input data-part="row-select" type="checkbox" aria-label="Select Registry CLI" />
+            </td>
+            <th scope="row" data-key="name">Registry CLI</th>
+            <td data-key="owner">Developer Experience</td>
+            <td data-key="status"><span data-jqs="badge" data-variant="success">Active</span></td>
+            <td data-key="updated" data-value="2026-08-27">Aug 27, 2026</td>
+          </tr>
+          <tr data-row-id="datastar-bridge">
+            <td>
+              <input data-part="row-select" type="checkbox" aria-label="Select Datastar Bridge" />
+            </td>
+            <th scope="row" data-key="name">Datastar Bridge</th>
+            <td data-key="owner">Runtime</td>
+            <td data-key="status"><span data-jqs="badge" data-variant="success">Active</span></td>
+            <td data-key="updated" data-value="2026-08-26">Aug 26, 2026</td>
+          </tr>
+          <tr data-row-id="theme-lab">
+            <td><input data-part="row-select" type="checkbox" aria-label="Select Theme Lab" /></td>
+            <th scope="row" data-key="name">Theme Lab</th>
+            <td data-key="owner">Design Systems</td>
+            <td data-key="status"><span data-jqs="badge" data-variant="warning">Planning</span></td>
+            <td data-key="updated" data-value="2026-08-25">Aug 25, 2026</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <nav
+    id="project-browser-pagination"
+    data-jqs="pagination"
+    data-navigation="manual"
+    data-page="1"
+    data-page-count="3"
+    data-on:jquery-star:pagination:change="@projectBrowser.page"
+    aria-label="Project results pages"
+  >
+    <ul>
+      <li><a data-part="previous" href="?page=1" aria-disabled="true">Previous</a></li>
+      <li><a data-part="page" data-page="1" href="?page=1" aria-current="page">1</a></li>
+      <li><a data-part="page" data-page="2" href="?page=2">2</a></li>
+      <li><a data-part="page" data-page="3" href="?page=3">3</a></li>
+      <li><a data-part="next" href="?page=2">Next</a></li>
+    </ul>
+    <p data-part="status" aria-live="polite">Page 1 of 3</p>
+  </nav>
+
+  <footer data-part="footer">
+    <p data-text="$projectBrowserMessage" aria-live="polite"></p>
+    <p data-show="$projectBrowserError" data-text="$projectBrowserError" role="alert"></p>
+    <button
+      data-jqs="button"
+      data-variant="outline"
+      type="button"
+      data-on:click="@projectBrowser.refresh"
+      data-prop:disabled="$projectBrowserLoading"
+    >
+      Refresh
+    </button>
+  </footer>
+</section>

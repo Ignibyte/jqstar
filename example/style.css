@@ -868,6 +868,31 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.project-browser-demo {
+  margin-top: 16px;
+}
+
+.project-browser-demo > [data-block="project-browser"] > [data-part="header"] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.project-browser-demo [data-project-browser-part="search"] {
+  display: grid;
+  gap: 8px;
+}
+
+.project-browser-demo [data-project-browser-part="search"] > label {
+  color: #2d2a26;
+  font-size: 0.8125rem;
+  font-weight: 750;
+}
+
+.project-browser-demo [data-part="footer"] > p {
+  min-width: 0;
+  margin: 0 auto 0 0;
+}
+
 .data-table-filter-label {
   display: inline;
   color: #655e55;
@@ -1560,6 +1585,10 @@ pre {
   }
 
   .source-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-browser-demo > [data-block="project-browser"] > [data-part="header"] {
     grid-template-columns: 1fr;
   }
 

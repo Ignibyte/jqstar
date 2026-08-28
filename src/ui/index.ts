@@ -16,6 +16,7 @@ import { createSelects } from "./select";
 import { createComboboxes } from "./combobox";
 import { createCalendars } from "./calendar";
 import { createDataTables } from "./data-table";
+import { createPaginations } from "./pagination";
 import { createTabs } from "./tabs";
 import { createToasts } from "./toast";
 import { createTooltips } from "./tooltip";
@@ -281,6 +282,7 @@ const enhancementOwnerSelector = [
   "select",
   "combobox",
   "data-table",
+  "pagination",
   "toggle",
   "toggle-group",
   "number-field",
@@ -351,6 +353,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "label",
       "selected",
       "data-page",
+      "data-page-count",
       "data-page-size",
       "data-sort",
       "data-direction",
@@ -406,6 +409,7 @@ export function createUI(): StarUIStatic {
   const selects = createSelects();
   const comboboxes = createComboboxes();
   const dataTables = createDataTables();
+  const paginations = createPaginations();
   const popovers = createPopovers();
   const calendars = createCalendars(popovers.api);
   const forms = createForms();
@@ -474,6 +478,7 @@ export function createUI(): StarUIStatic {
     selects.enhance(root);
     comboboxes.enhance(root);
     dataTables.enhance(root);
+    paginations.enhance(root);
     toggles.enhance(root);
     numberFields.enhance(root);
     passwordFields.enhance(root);
@@ -499,6 +504,7 @@ export function createUI(): StarUIStatic {
     select: selects.api,
     combobox: comboboxes.api,
     dataTable: dataTables.api,
+    pagination: paginations.api,
     toggle: toggles.toggle,
     toggleGroup: toggles.toggleGroup,
     numberField: numberFields.api,

@@ -888,6 +888,32 @@ test.describe("jQuery Star components", () => {
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("4 selected");
   });
 
+  test("project browser streams server search, sort, rows, and Pagination", async ({ page }) => {
+    const root = page.locator('[data-block="project-browser"]');
+    const rows = root.locator("#project-browser-rows tr");
+    await expect(rows).toHaveCount(4);
+
+    await root.getByRole("checkbox", { name: "Select jqstar" }).check();
+    await root.locator('[data-part="page"][data-page="2"]').click();
+    await expect(root.locator('[data-row-id="deployment-kit"]')).toBeVisible();
+    await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
+    await expect(root.locator('[data-jqs="pagination"] [data-part="status"]')).toHaveText(
+      "Page 2 of 3",
+    );
+
+    await root.getByRole("searchbox", { name: "Search projects" }).fill("Runtime");
+    await root.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(0)).toContainText("Datastar Bridge");
+    await expect(root.locator('[data-jqs="pagination"] [data-part="status"]')).toHaveText(
+      "Page 1 of 1",
+    );
+
+    await root.getByRole("button", { name: "Owner" }).click();
+    await expect(root.locator('th[data-key="owner"]')).toHaveAttribute("aria-sort", "ascending");
+    await expect(rows.nth(0)).toContainText("Server Runtime");
+  });
+
   test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({ page }) => {
     const show = page.getByRole("button", { name: "Show verified toast" });
     const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
@@ -1464,6 +1490,48 @@ test.describe("jQuery Star components", () => {
     await root.getByRole("checkbox", { name: "Select visible systems" }).check();
     results = await new AxeBuilder({ page }).include(".data-table-component-card").analyze();
     expect(results.violations).toEqual([]);
+  });
+
+  test("project browser passes accessibility checks before and after an SDK page patch", async ({
+    page,
+  }) => {
+    const root = page.locator(".project-browser-demo");
+    let results = await new AxeBuilder({ page }).include(".project-browser-demo").analyze();
+    expect(results.violations).toEqual([]);
+
+    await root.locator('[data-part="page"][data-page="2"]').click();
+    await expect(root.locator('[data-row-id="deployment-kit"]')).toBeVisible();
+    await root.getByRole("checkbox", { name: "Select Deployment Kit" }).check();
+    results = await new AxeBuilder({ page }).include(".project-browser-demo").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("project browser contains table scrolling and Pagination at mobile width", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const root = page.locator('[data-block="project-browser"]');
+    const geometry = await root.evaluate((element) => {
+      const viewport = element.querySelector<HTMLElement>('[data-part="viewport"]')!;
+      const pagination = element.querySelector<HTMLElement>('[data-jqs="pagination"]')!;
+      const rootRect = element.getBoundingClientRect();
+      const paginationRect = pagination.getBoundingClientRect();
+      return {
+        rootLeft: rootRect.left,
+        rootRight: rootRect.right,
+        viewportClientWidth: viewport.clientWidth,
+        viewportScrollWidth: viewport.scrollWidth,
+        paginationLeft: paginationRect.left,
+        paginationRight: paginationRect.right,
+        windowWidth: window.innerWidth,
+      };
+    });
+
+    expect(geometry.rootLeft).toBeGreaterThanOrEqual(0);
+    expect(geometry.rootRight).toBeLessThanOrEqual(geometry.windowWidth);
+    expect(geometry.paginationLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
+    expect(geometry.paginationRight).toBeLessThanOrEqual(geometry.rootRight);
+    expect(geometry.viewportScrollWidth).toBeGreaterThan(geometry.viewportClientWidth);
   });
 
   test("composition primitives pass accessibility checks", async ({ page }) => {

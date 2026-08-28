@@ -86,6 +86,28 @@ describe("self-hosted proof API", () => {
     expect(body.done).toBe(true);
   });
 
+  it("patches filtered project rows and Pagination through the Datastar SDK", async () => {
+    const signals = encodeURIComponent(
+      JSON.stringify({
+        projectBrowserDirection: "ascending",
+        projectBrowserPage: 2,
+        projectBrowserQuery: "",
+        projectBrowserSort: "name",
+      }),
+    );
+    const response = await fetch(`${origin}/api/demo/projects?datastar=${signals}`);
+    const body = await response.text();
+    expect(response.headers.get("content-type")).toContain("text/event-stream");
+    expect(body).toContain("event: datastar-patch-signals");
+    expect(body.match(/event: datastar-patch-elements/g)).toHaveLength(2);
+    expect(body).toContain("selector #project-browser-rows");
+    expect(body).toContain('data-row-id="deployment-kit"');
+    expect(body).not.toContain('data-row-id="accessibility-lab"');
+    expect(body).toContain("selector #project-browser-pagination");
+    expect(body).toContain('data-page="2" data-page-count="3"');
+    expect(body).toContain('data-page="2" href="?page=2" aria-current="page"');
+  });
+
   it("patches JSON signals through the shared increment route", async () => {
     const response = await fetch(`${origin}/api/demo/increment`, {
       method: "POST",

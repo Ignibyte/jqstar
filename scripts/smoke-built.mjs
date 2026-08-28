@@ -304,6 +304,29 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<nav id="package-pagination" data-jqs="pagination" data-page="1" data-page-count="3">
+     <a data-part="previous" href="?page=1">Previous</a>
+     <a data-part="page" data-page="1" href="?page=1">1</a>
+     <a data-part="page" data-page="2" href="?page=2">2</a>
+     <a data-part="page" data-page="3" href="?page=3">3</a>
+     <a data-part="next" href="?page=2">Next</a>
+     <span data-part="status"></span>
+   </nav>`,
+);
+const pagination = document.querySelector("#package-pagination");
+$.star.ui.enhance(pagination);
+$.star.ui.pagination.next(pagination);
+if (
+  $.star.ui.pagination.page(pagination) !== 2 ||
+  $.star.ui.pagination.pageCount(pagination) !== 3 ||
+  pagination.querySelector('[data-page="2"]').getAttribute("aria-current") !== "page" ||
+  pagination.querySelector('[data-part="status"]').textContent !== "Page 2 of 3"
+) {
+  throw new Error("The ESM bundle failed the Pagination component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<label for="package-date-control">Package date</label>
    <div id="package-date-picker" data-jqs="date-picker">
      <input id="package-date-control" data-part="control" name="date" value="2026-08-28">
@@ -1035,6 +1058,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM clipboard=passed, ESM editable=passed, ESM log-viewer=passed, ESM json-viewer=passed, ESM countdown=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM clipboard=passed, ESM editable=passed, ESM log-viewer=passed, ESM json-viewer=passed, ESM countdown=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM pagination=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

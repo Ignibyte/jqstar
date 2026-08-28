@@ -95,6 +95,87 @@ const feedItems = [
   },
 ] as const;
 
+const projectItems = [
+  { id: "jqstar", name: "jqstar", owner: "Platform", status: "active", updated: "2026-08-28" },
+  {
+    id: "registry-cli",
+    name: "Registry CLI",
+    owner: "Developer Experience",
+    status: "active",
+    updated: "2026-08-27",
+  },
+  {
+    id: "datastar-bridge",
+    name: "Datastar Bridge",
+    owner: "Runtime",
+    status: "active",
+    updated: "2026-08-26",
+  },
+  {
+    id: "theme-lab",
+    name: "Theme Lab",
+    owner: "Design Systems",
+    status: "planning",
+    updated: "2026-08-25",
+  },
+  {
+    id: "catalog-site",
+    name: "Catalog Site",
+    owner: "Developer Experience",
+    status: "active",
+    updated: "2026-08-24",
+  },
+  {
+    id: "accessibility-lab",
+    name: "Accessibility Lab",
+    owner: "Quality",
+    status: "active",
+    updated: "2026-08-23",
+  },
+  {
+    id: "server-runtime",
+    name: "Server Runtime",
+    owner: "Platform",
+    status: "planning",
+    updated: "2026-08-22",
+  },
+  {
+    id: "migration-kit",
+    name: "Migration Kit",
+    owner: "Developer Experience",
+    status: "paused",
+    updated: "2026-08-21",
+  },
+  {
+    id: "component-proof",
+    name: "Component Proof",
+    owner: "Quality",
+    status: "active",
+    updated: "2026-08-20",
+  },
+  {
+    id: "theme-tokens",
+    name: "Theme Tokens",
+    owner: "Design Systems",
+    status: "active",
+    updated: "2026-08-19",
+  },
+  {
+    id: "deployment-kit",
+    name: "Deployment Kit",
+    owner: "Platform",
+    status: "planning",
+    updated: "2026-08-18",
+  },
+  {
+    id: "legacy-adapter",
+    name: "Legacy Adapter",
+    owner: "Runtime",
+    status: "paused",
+    updated: "2026-08-17",
+  },
+] as const;
+
 const runtimeLogs = [
   { level: "info", message: "HTTP listener accepted a health probe.", source: "http" },
   { level: "debug", message: "Registry manifest contains 100 components.", source: "registry" },
@@ -130,6 +211,35 @@ function logEntryHtml(entry: {
     timeZone: "UTC",
   });
   return `<li data-part="entry" data-level="${entry.level}" data-value="${escapeHtml(entry.id)}"><time data-part="timestamp" datetime="${escapeHtml(entry.timestamp)}">${escapeHtml(time)}</time><span data-part="level">${entry.level.toLocaleUpperCase()}</span><span data-part="source">${escapeHtml(entry.source)}</span><span data-part="message">${escapeHtml(entry.message)}</span></li>`;
+}
+
+function projectRowHtml(project: (typeof projectItems)[number]): string {
+  const status = project.status[0]!.toLocaleUpperCase() + project.status.slice(1);
+  const variant =
+    project.status === "active"
+      ? "success"
+      : project.status === "planning"
+        ? "warning"
+        : "secondary";
+  const updated = new Date(`${project.updated}T00:00:00Z`).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric",
+  });
+  return `<tr data-row-id="${escapeHtml(project.id)}"><td><input data-part="row-select" type="checkbox" aria-label="Select ${escapeHtml(project.name)}"></td><th scope="row" data-key="name">${escapeHtml(project.name)}</th><td data-key="owner">${escapeHtml(project.owner)}</td><td data-key="status" data-value="${escapeHtml(project.status)}"><span data-jqs="badge" data-variant="${variant}">${status}</span></td><td data-key="updated" data-value="${project.updated}">${updated}</td></tr>`;
+}
+
+function projectPaginationHtml(page: number, pageCount: number): string {
+  const previous = Math.max(1, page - 1);
+  const next = Math.min(pageCount, page + 1);
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1)
+    .map(
+      (value) =>
+        `<li><a data-part="page" data-page="${value}" href="?page=${value}"${value === page ? ' aria-current="page"' : ""}>${value}</a></li>`,
+    )
+    .join("");
+  return `<nav id="project-browser-pagination" data-jqs="pagination" data-navigation="manual" data-page="${page}" data-page-count="${pageCount}" data-on:jquery-star:pagination:change="@projectBrowser.page" aria-label="Project results pages"><ul><li><a data-part="previous" href="?page=${previous}"${page <= 1 ? ' aria-disabled="true"' : ""}>Previous</a></li>${pages}<li><a data-part="next" href="?page=${next}"${page >= pageCount ? ' aria-disabled="true"' : ""}>Next</a></li></ul><p data-part="status" aria-live="polite">Page ${page} of ${pageCount}</p></nav>`;
 }
 
 function json(response: ServerResponse, status: number, value: unknown): void {
@@ -205,6 +315,7 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   let runtimeStreamRevision = 0;
   let profileRevision = 0;
   let inviteRevision = 0;
+  let projectBrowserRevision = 0;
 
   async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
     const url = new URL(request.url ?? "/", "http://localhost");
@@ -348,6 +459,78 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
         message: `${nextCursor} of ${matches.length} matching results loaded.`,
         total: matches.length,
       });
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/projects") {
+      if (!method(request, response, "GET")) return true;
+      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+      if (!read.success) {
+        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+        response.end(read.error);
+        return true;
+      }
+      const query = String(read.signals.projectBrowserQuery ?? "")
+        .trim()
+        .toLocaleLowerCase();
+      const requestedPage = Number(read.signals.projectBrowserPage ?? 1);
+      const requestedSort = String(read.signals.projectBrowserSort ?? "name");
+      const sort = (["name", "owner", "status", "updated"] as const).find(
+        (key) => key === requestedSort,
+      );
+      const requestedDirection = String(read.signals.projectBrowserDirection ?? "ascending");
+      const direction =
+        requestedDirection === "descending" || requestedDirection === "none"
+          ? requestedDirection
+          : "ascending";
+      const matches = projectItems.filter((project) =>
+        `${project.name} ${project.owner} ${project.status}`.toLocaleLowerCase().includes(query),
+      );
+      const sorted = [...matches];
+      if (sort && direction !== "none") {
+        sorted.sort((left, right) => {
+          const result = left[sort].localeCompare(right[sort], undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+          return direction === "descending" ? -result : result;
+        });
+      }
+      const pageSize = 4;
+      const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
+      const page = Math.min(
+        Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1),
+        pageCount,
+      );
+      const pageItems = sorted.slice((page - 1) * pageSize, page * pageSize);
+      projectBrowserRevision += 1;
+      const revision = projectBrowserRevision;
+      const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
+        stream.patchSignals(
+          JSON.stringify({
+            projectBrowserCount: matches.length,
+            projectBrowserMessage: `${matches.length} matching project${matches.length === 1 ? "" : "s"}. Page ${page} of ${pageCount}.`,
+            projectBrowserPage: page,
+          }),
+          { eventId: `project-browser-${revision}-signals` },
+        );
+        stream.patchElements(
+          pageItems.length
+            ? pageItems.map(projectRowHtml).join("")
+            : '<tr><td colspan="5">No projects match this search.</td></tr>',
+          {
+            selector: "#project-browser-rows",
+            mode: "inner",
+            eventId: `project-browser-${revision}-rows`,
+          },
+        );
+        stream.patchElements(projectPaginationHtml(page, pageCount), {
+          selector: "#project-browser-pagination",
+          mode: "outer",
+          eventId: `project-browser-${revision}-pagination`,
+        });
+      });
+      await sendWebResponse(sdkResponse, response);
       return true;
     }
 

@@ -413,10 +413,14 @@ Navigation and command composition provides:
   avoiding application-menu roles
 - Command Palette as a modal Dialog containing an inline Combobox listbox
 
-Breadcrumb and Pagination have no runtime. Navigation Menu inherits Popover behavior and lifecycle
-events. Command Palette inherits Dialog and Combobox behavior, including focus return, Escape,
-filtering, `aria-activedescendant`, and explicit Enter selection. `data-inline` keeps Combobox
-results inside a composition instead of promoting them to a separate top-layer popover.
+Breadcrumb has no runtime. Pagination progressively enhances its native links with a current page,
+page count, boundary state, optional manual-navigation mode, and a cancelable change lifecycle. Its
+API exposes `page`, `pageCount`, `goTo`, `next`, and `previous`. Server-patched `data-page` and
+`data-page-count` values are accepted by the shared enhancement pass. Navigation Menu inherits
+Popover behavior and lifecycle events. Command Palette inherits Dialog and Combobox behavior,
+including focus return, Escape, filtering, `aria-activedescendant`, and explicit Enter selection.
+`data-inline` keeps Combobox results inside a composition instead of promoting them to a separate
+top-layer popover.
 
 Toast provides:
 
@@ -590,8 +594,9 @@ Implemented:
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 - Operations Dashboard as a multi-file block with source-owned markup and typed actions
 - Profile Settings as a multi-file native form, persistence, and invite workflow
+- Project Browser as a multi-file Search Field, Data Table, Pagination, and Datastar SSE workflow
 
-This 104-item source catalog contains 100 component recipes and four composed blocks. It is
+This 105-item source catalog contains 100 component recipes and five composed blocks. It is
 registry-backed and source-owned. Domain-heavy additions can build on these contracts without
 changing the public anatomy.
 
@@ -609,6 +614,15 @@ Command+Enter or Control+Enter commits a textarea, and Escape restores the last 
 Native `checkValidity()` and `reportValidity()` run before the cancelable change lifecycle.
 Component state updates are idempotent because `data-value` is observed by the shared enhancement
 pass.
+
+## Project Browser
+
+Project Browser keeps its search input, table, row-selection checkboxes, and page links as native
+HTML. Pagination emits the requested page, and Data Table emits sort metadata. The copied typed
+action module sends those values as Datastar signals to `/api/demo/projects`. The official SDK
+patches `#project-browser-rows`, replaces `#project-browser-pagination`, and updates the result
+signals. Stable `data-row-id` values let Data Table retain selection when a row appears in refreshed
+server markup.
 
 ## Runtime control-plane components
 
@@ -643,7 +657,8 @@ server.
 Node server. `server/index.ts` adds safe static-file resolution, cache policy, security headers,
 health checks, and graceful shutdown. `npm run test:self-hosted` builds the library, site, and
 server, starts the bundled process on an ephemeral port, and verifies the rendered application,
-runtime snapshot, Datastar log stream, and browser-applied backend contracts.
+runtime snapshot, Datastar log stream, Project Browser stream, and browser-applied backend
+contracts.
 
 The expression runtime currently uses dynamic function compilation. The self-hosted Content Security
 Policy therefore permits `unsafe-eval` for scripts while keeping scripts same-origin and blocking

@@ -95,6 +95,18 @@ describe("jQuery Star Data Table", () => {
     expect(root().querySelector<HTMLButtonElement>('[data-part="next"]')?.disabled).toBe(false);
   });
 
+  it("does not rewrite unchanged page metadata during shared enhancement", async () => {
+    const mutations = vi.fn();
+    const observer = new MutationObserver(mutations);
+    observer.observe(root(), { attributes: true, attributeFilter: ["data-page-count"] });
+
+    $.star.ui.enhance(root());
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+    expect(mutations).not.toHaveBeenCalled();
+    observer.disconnect();
+  });
+
   it("sorts numbers stably and cycles ascending, descending, then source order", () => {
     sortButton("score").click();
     expect(root().dataset.sort).toBe("score");

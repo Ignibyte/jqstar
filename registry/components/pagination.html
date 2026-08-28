@@ -1,9 +1,10 @@
-<nav data-jqs="pagination" aria-label="Pagination">
+<nav data-jqs="pagination" data-page="1" data-page-count="3" aria-label="Pagination">
   <ul>
-    <li><span data-part="previous" aria-disabled="true">Previous</span></li>
-    <li><a data-part="page" href="?page=1" aria-current="page">1</a></li>
-    <li><a data-part="page" href="?page=2">2</a></li>
-    <li><a data-part="page" href="?page=3">3</a></li>
+    <li><a data-part="previous" href="?page=1" aria-disabled="true">Previous</a></li>
+    <li><a data-part="page" data-page="1" href="?page=1" aria-current="page">1</a></li>
+    <li><a data-part="page" data-page="2" href="?page=2">2</a></li>
+    <li><a data-part="page" data-page="3" href="?page=3">3</a></li>
     <li><a data-part="next" href="?page=2">Next</a></li>
   </ul>
+  <p data-part="status" aria-live="polite">Page 1 of 3</p>
 </nav>

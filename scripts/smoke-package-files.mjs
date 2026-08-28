@@ -24,6 +24,8 @@ const required = [
   "registry/blocks/operations-dashboard.ts",
   "registry/blocks/profile-settings.html",
   "registry/blocks/profile-settings.ts",
+  "registry/blocks/project-browser.html",
+  "registry/blocks/project-browser.ts",
   "registry/components/button.html",
   "registry/components/command-palette.html",
   "registry/components/form.html",

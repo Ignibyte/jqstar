@@ -59,6 +59,7 @@ npx jqstar list --type block
 npx jqstar add button dialog command-palette
 npx jqstar add operations-dashboard
 npx jqstar add profile-settings
+npx jqstar add project-browser
 npx jqstar doctor
 ```
 
@@ -89,7 +90,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components and blocks
 
-The source catalog now includes 104 items: 100 component recipes and four composed blocks. They are
+The source catalog now includes 105 items: 100 component recipes and five composed blocks. They are
 Button, Button Group, Dialog, Alert Dialog, Sheet, Drawer, Field, Form, Label, Input, Input Group,
 File Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
 Collapsible, Accordion, Tabs, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar,
@@ -101,10 +102,10 @@ Stepper, Sortable List, File Upload, Multi Select, Time Picker, Color Picker, Ra
 Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, Bubble, Aspect Ratio, Chart,
 Direction, Marker, Table, Typography, Stat, Timeline, Status, Code Block, Browser Mockup, Diff, Log
 Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial Progress, Indicator, Dock, Swap,
-Key Value, Clipboard, Editable, Operations Dashboard, and Profile Settings. The four blocks are
-Command Palette, Async Form, Operations Dashboard, and Profile Settings. Import the precompiled
-theme for the default appearance. Tailwind is used to author this file but is not required in the
-consuming application.
+Key Value, Clipboard, Editable, Operations Dashboard, Profile Settings, and Project Browser. The
+five blocks are Command Palette, Async Form, Operations Dashboard, Profile Settings, and Project
+Browser. Import the precompiled theme for the default appearance. Tailwind is used to author this
+file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -790,7 +791,8 @@ built site, `/health`, JSON and multipart routes, and the Datastar SDK SSE route
 process. `/api/demo/runtime` returns the control-plane snapshot. `/api/demo/runtime/stream` uses the
 official SDK to append escaped log-entry HTML and patch the completion signal. The Profile Settings
 block uses `/api/demo/profile` for validated JSON persistence and `/api/demo/profile/invite` for a
-server-owned invite URL:
+server-owned invite URL. Project Browser uses `/api/demo/projects` to patch filtered table rows,
+Pagination markup, and result signals through the same SDK:
 
 ```sh
 npm run build:self-hosted
@@ -814,9 +816,29 @@ applicable; Alert also accepts `warning`. Avatar accepts `sm`, `md`, and `lg` si
 decorative and disables its shimmer when the user prefers reduced motion. Use native semantics and
 labels around these primitives; `data-jqs` supplies appearance, not replacement accessibility roles.
 
-Breadcrumb and Pagination keep their native navigation landmarks, lists, and links. Navigation Menu
-uses ordinary site-navigation links and composes Popover for disclosure sections instead of claiming
-the desktop application `menu` role. Command Palette composes Dialog with
+Breadcrumb keeps its native navigation landmark, list, and links. Pagination keeps the same
+progressive HTML and synchronizes `data-page`, `data-page-count`, `aria-current`, boundary state,
+and an optional status part. Native links still navigate unless `data-navigation="manual"` is
+present:
+
+```html
+<nav id="results-pages" data-jqs="pagination" data-page="1" data-page-count="3">
+  <a data-part="previous" href="?page=1">Previous</a>
+  <a data-part="page" data-page="1" href="?page=1">1</a>
+  <a data-part="page" data-page="2" href="?page=2">2</a>
+  <a data-part="next" href="?page=2">Next</a>
+  <span data-part="status" aria-live="polite"></span>
+</nav>
+```
+
+Use `$.star.ui.pagination.goTo("#results-pages", 2)`, `next()`, or `previous()`. The matching named
+actions are `@ui.pagination.page`, `@ui.pagination.next`, and `@ui.pagination.previous`.
+`jquery-star:pagination:before-change` is cancelable and `jquery-star:pagination:change` carries the
+old page, new page, and page count. Server patches can replace the authored controls and page
+metadata without replacing the component API.
+
+Navigation Menu uses ordinary site-navigation links and composes Popover for disclosure sections
+instead of claiming the desktop application `menu` role. Command Palette composes Dialog with
 `<div data-jqs="combobox" data-inline>` so search results remain inside the modal instead of opening
 another top-layer popup.
 

@@ -1423,6 +1423,32 @@
           "target": "~/blocks/jquery-star/profile-settings.ts"
         }
       ]
+    },
+    {
+      "name": "project-browser",
+      "type": "registry:block",
+      "title": "Project Browser",
+      "description": "A server-driven project directory with search, sortable native table rows, stable selection, and Pagination patched through the Datastar SDK.",
+      "registryDependencies": [
+        "button",
+        "card",
+        "badge",
+        "search-field",
+        "data-table",
+        "pagination"
+      ],
+      "files": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/project-browser.html"
+        },
+        {
+          "path": "registry/blocks/project-browser.ts",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/project-browser.ts"
+        }
+      ]
     }
   ]
 }
