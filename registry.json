@@ -551,7 +551,7 @@
         {
           "path": "registry/components/command-palette.html",
           "type": "registry:file",
-          "target": "~/components/jquery-star/command-palette.html"
+          "target": "~/blocks/jquery-star/command-palette.html"
         }
       ]
     },
@@ -675,7 +675,7 @@
         {
           "path": "registry/components/async-form.html",
           "type": "registry:file",
-          "target": "~/components/jquery-star/async-form.html"
+          "target": "~/blocks/jquery-star/async-form.html"
         }
       ]
     },
@@ -1331,6 +1331,39 @@
           "path": "registry/components/key-value.html",
           "type": "registry:file",
           "target": "~/components/jquery-star/key-value.html"
+        }
+      ]
+    },
+    {
+      "name": "operations-dashboard",
+      "type": "registry:block",
+      "title": "Operations Dashboard",
+      "description": "A multi-file runtime dashboard with JSON snapshots, jQuery actions, and Datastar SSE log patches.",
+      "registryDependencies": [
+        "button",
+        "card",
+        "stat",
+        "connection-status",
+        "status",
+        "radial-progress",
+        "indicator",
+        "badge",
+        "countdown",
+        "terminal",
+        "log-viewer",
+        "json-viewer",
+        "key-value"
+      ],
+      "files": [
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/operations-dashboard.html"
+        },
+        {
+          "path": "registry/blocks/operations-dashboard.ts",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/operations-dashboard.ts"
         }
       ]
     }

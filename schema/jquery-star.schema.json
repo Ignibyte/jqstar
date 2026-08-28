@@ -10,6 +10,11 @@
       "minLength": 1,
       "description": "Project-relative directory where component recipes are copied."
     },
+    "blocksOutput": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project-relative fallback directory for multi-file blocks."
+    },
     "registry": {
       "type": "string",
       "minLength": 1,

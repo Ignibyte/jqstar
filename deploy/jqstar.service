@@ -1,0 +1,36 @@
+[Unit]
+Description=jQuery Star self-hosted site
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jqstar
+Group=jqstar
+WorkingDirectory=/opt/jqstar/current
+EnvironmentFile=-/etc/jqstar/jqstar.env
+ExecStart=/usr/bin/node /opt/jqstar/current/server-dist/index.mjs
+Restart=on-failure
+RestartSec=3s
+TimeoutStopSec=15s
+KillSignal=SIGTERM
+
+# Keep the site read-only and put a hard ceiling on runaway resource use.
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+TasksMax=64
+MemoryHigh=384M
+MemoryMax=512M
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

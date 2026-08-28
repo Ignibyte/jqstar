@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(100);
+    expect(items).toHaveLength(101);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -91,8 +91,23 @@ describe("jqstar CLI", () => {
         "dock",
         "swap",
         "key-value",
+        "operations-dashboard",
       ]),
     );
+  });
+
+  it("filters components and blocks without changing the registry vocabulary", () => {
+    const blocks = run("list", "--type", "block", "--json");
+    const components = run("list", "--type", "component", "--json");
+
+    expect(blocks.status).toBe(0);
+    expect(components.status).toBe(0);
+    expect(JSON.parse(blocks.stdout).map((item: { name: string }) => item.name)).toEqual([
+      "command-palette",
+      "async-form",
+      "operations-dashboard",
+    ]);
+    expect(JSON.parse(components.stdout)).toHaveLength(98);
   });
 
   it("initializes a project and copies requested source recipes", async () => {
@@ -103,6 +118,7 @@ describe("jqstar CLI", () => {
     expect(initialized.status).toBe(0);
     expect(added.status).toBe(0);
     expect(JSON.parse(await readFile(join(cwd, "jquery-star.json"), "utf8"))).toMatchObject({
+      blocksOutput: "blocks/jquery-star",
       output: "components/jquery-star",
     });
     expect(await readFile(join(cwd, "components/jquery-star/button.html"), "utf8")).toBe(
@@ -110,6 +126,61 @@ describe("jqstar CLI", () => {
     );
     expect(await readFile(join(cwd, "components/jquery-star/dialog.html"), "utf8")).toContain(
       "@ui.dialog.open('#example-dialog', '#example-dialog-cancel')",
+    );
+  });
+
+  it("installs block files together in their explicit source-owned targets", async () => {
+    const cwd = await project();
+    run("init", "--cwd", cwd);
+
+    const added = run("add", "operations-dashboard", "--json", "--cwd", cwd);
+
+    expect(added.status).toBe(0);
+    expect(JSON.parse(added.stdout)).toEqual([
+      expect.objectContaining({
+        component: "operations-dashboard",
+        path: join(cwd, "blocks/jquery-star/operations-dashboard.html"),
+      }),
+      expect.objectContaining({
+        component: "operations-dashboard",
+        path: join(cwd, "blocks/jquery-star/operations-dashboard.ts"),
+      }),
+    ]);
+    expect(
+      await readFile(join(cwd, "blocks/jquery-star/operations-dashboard.html"), "utf8"),
+    ).toContain('data-block="operations-dashboard"');
+    expect(
+      await readFile(join(cwd, "blocks/jquery-star/operations-dashboard.ts"), "utf8"),
+    ).toContain("installOperationsDashboard");
+  });
+
+  it("keeps old configs working when an external block has no explicit target", async () => {
+    const cwd = await project();
+    await writeFile(join(cwd, "legacy-block.html"), "<section>Legacy block</section>\n", "utf8");
+    await writeFile(
+      join(cwd, "registry.json"),
+      JSON.stringify({
+        items: [
+          {
+            files: [{ path: "legacy-block.html", type: "registry:file" }],
+            name: "legacy-block",
+            type: "registry:block",
+          },
+        ],
+      }),
+      "utf8",
+    );
+    await writeFile(
+      join(cwd, "jquery-star.json"),
+      JSON.stringify({ output: "legacy-components", registry: "./registry.json" }),
+      "utf8",
+    );
+
+    const result = run("add", "legacy-block", "--cwd", cwd);
+
+    expect(result.status).toBe(0);
+    expect(await readFile(join(cwd, "legacy-components/legacy-block.html"), "utf8")).toContain(
+      "Legacy block",
     );
   });
 

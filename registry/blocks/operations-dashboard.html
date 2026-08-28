@@ -1,0 +1,217 @@
+<section
+  data-jqs="card"
+  data-block="operations-dashboard"
+  data-snapshot-url="/api/demo/runtime"
+  data-stream-url="/api/demo/runtime/stream"
+  data-signals="{ operationsDashboardLoading: false, operationsDashboardStreaming: false, operationsDashboardMessage: 'Ready to query the runtime.' }"
+  aria-labelledby="operations-dashboard-title"
+>
+  <header data-part="header">
+    <div>
+      <h2 id="operations-dashboard-title" data-part="title">Runtime operations</h2>
+      <p data-part="description">
+        A source-owned dashboard backed by JSON snapshots and Datastar SSE patches.
+      </p>
+    </div>
+    <div data-part="actions">
+      <button
+        data-jqs="button"
+        data-variant="outline"
+        type="button"
+        data-on:click="@operationsDashboard.refresh"
+        data-prop:disabled="$operationsDashboardLoading || $operationsDashboardStreaming"
+      >
+        Refresh snapshot
+      </button>
+      <button
+        data-jqs="button"
+        type="button"
+        data-on:click="@operationsDashboard.stream"
+        data-prop:disabled="$operationsDashboardLoading || $operationsDashboardStreaming"
+      >
+        Stream logs
+      </button>
+    </div>
+  </header>
+
+  <div data-jqs="stat-group" aria-label="Runtime metrics">
+    <article data-jqs="stat">
+      <p data-part="title">Components</p>
+      <strong data-part="value" data-dashboard-value="components">100</strong>
+      <p data-part="description">Source-owned recipes</p>
+    </article>
+    <article data-jqs="stat">
+      <p data-part="title">Revision</p>
+      <strong data-part="value" data-dashboard-value="revision">0</strong>
+      <p data-part="description">Latest server snapshot</p>
+    </article>
+    <article data-jqs="stat">
+      <p data-part="title">Capacity</p>
+      <strong data-part="value" data-dashboard-value="capacity">64%</strong>
+      <p data-part="description">Worker budget in use</p>
+    </article>
+  </div>
+
+  <div
+    data-jqs="connection-status"
+    data-dashboard-part="connection"
+    data-state="connected"
+    role="status"
+    aria-live="polite"
+  >
+    <span
+      data-part="indicator"
+      data-jqs="status"
+      data-variant="success"
+      data-live
+      aria-hidden="true"
+    ></span>
+    <span data-part="content">
+      <strong data-part="title">Connected</strong>
+      <span data-part="description">datastar-sse · local environment</span>
+    </span>
+    <time data-part="updated">Revision 0</time>
+  </div>
+
+  <div data-jqs="indicator" data-position="top-end">
+    <div
+      data-jqs="radial-progress"
+      data-dashboard-part="capacity"
+      role="progressbar"
+      aria-label="Worker capacity"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="64"
+      style="--jqs-value: 64"
+    >
+      <strong data-part="value">64%</strong>
+      <span data-part="label">Worker capacity</span>
+    </div>
+    <span data-part="indicator" data-jqs="badge" data-variant="success">live</span>
+  </div>
+
+  <div>
+    <span>Next health check</span>
+    <div data-jqs="countdown" data-dashboard-part="countdown" data-duration="30">
+      <span data-part="minutes">00</span>
+      <span aria-hidden="true">:</span>
+      <span data-part="seconds">30</span>
+      <span class="sr-only">until the next health check</span>
+      <output data-part="status"></output>
+    </div>
+  </div>
+
+  <section
+    data-jqs="terminal"
+    data-dashboard-part="terminal"
+    aria-labelledby="operations-dashboard-logs-title"
+  >
+    <header data-part="header">
+      <span data-part="controls" aria-hidden="true"><i></i><i></i><i></i></span>
+      <h3 id="operations-dashboard-logs-title" data-part="title">jqstar · live server log</h3>
+    </header>
+    <div data-part="content">
+      <section data-jqs="log-viewer" data-dashboard-part="logs" data-level="all" data-max="100">
+        <header data-part="header">
+          <h4>Event stream</h4>
+          <label>
+            <span>Level</span>
+            <select data-part="filter">
+              <option value="all">All levels</option>
+              <option value="debug">Debug</option>
+              <option value="info">Info</option>
+              <option value="warn">Warning</option>
+              <option value="error">Error</option>
+            </select>
+          </label>
+          <button
+            data-jqs="button"
+            data-part="pause"
+            data-size="sm"
+            data-variant="ghost"
+            type="button"
+            data-on:click="@ui.log-viewer.toggle"
+          >
+            Pause logs
+          </button>
+          <button
+            data-jqs="button"
+            data-size="sm"
+            data-variant="ghost"
+            type="button"
+            data-on:click="@ui.log-viewer.clear"
+          >
+            Clear
+          </button>
+        </header>
+        <div data-part="viewport">
+          <ol id="runtime-log-entries" data-part="entries">
+            <li data-part="entry" data-level="info" data-value="operations-dashboard-initial">
+              <time data-part="timestamp">--:--:--</time>
+              <span data-part="level">INFO</span>
+              <span data-part="source">client</span>
+              <span data-part="message">Operations dashboard initialized.</span>
+            </li>
+          </ol>
+        </div>
+        <p data-part="status"></p>
+      </section>
+    </div>
+  </section>
+
+  <section data-jqs="json-viewer" data-dashboard-part="payload" aria-label="Runtime payload">
+    <header data-part="header">
+      <h3>Runtime payload</h3>
+      <button
+        data-jqs="button"
+        data-size="sm"
+        data-variant="ghost"
+        type="button"
+        data-on:click="@ui.json-viewer.expand-all"
+      >
+        Expand all
+      </button>
+      <button
+        data-jqs="button"
+        data-size="sm"
+        data-variant="ghost"
+        type="button"
+        data-on:click="@ui.json-viewer.collapse-all"
+      >
+        Collapse all
+      </button>
+    </header>
+    <script type="application/json" data-part="source">
+      {
+        "service": "jqstar",
+        "connection": "connected",
+        "components": 100
+      }
+    </script>
+    <div data-part="tree"></div>
+    <p data-part="status"></p>
+  </section>
+
+  <dl data-jqs="key-value" aria-label="Runtime details">
+    <div data-part="item">
+      <dt>Region</dt>
+      <dd data-dashboard-value="region">us-central</dd>
+    </div>
+    <div data-part="item">
+      <dt>Environment</dt>
+      <dd data-dashboard-value="environment">local</dd>
+    </div>
+    <div data-part="item">
+      <dt>Transport</dt>
+      <dd data-dashboard-value="transport"><code>datastar-sse</code></dd>
+    </div>
+    <div data-part="item">
+      <dt>Process</dt>
+      <dd data-dashboard-value="process"><code>node-http</code></dd>
+    </div>
+  </dl>
+
+  <footer data-part="footer">
+    <p data-text="$operationsDashboardMessage" aria-live="polite"></p>
+  </footer>
+</section>

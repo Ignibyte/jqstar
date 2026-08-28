@@ -55,7 +55,9 @@ inspect the catalog, and add only the recipes it needs:
 ```sh
 npx jqstar init
 npx jqstar list
+npx jqstar list --type block
 npx jqstar add button dialog command-palette
+npx jqstar add operations-dashboard
 npx jqstar doctor
 ```
 
@@ -64,35 +66,41 @@ npx jqstar doctor
 ```json
 {
   "$schema": "./node_modules/jquery-star/schema/jquery-star.schema.json",
+  "blocksOutput": "blocks/jquery-star",
   "output": "components/jquery-star"
 }
 ```
 
 `add` refuses to replace an existing file unless `--force` is explicit. `--dry-run` prints every
 planned destination without writing it. `--cwd` runs any command against another project directory,
-and `list` and `doctor` support `--json` for scripts.
+and `list` and `doctor` support `--json` for scripts. `list --type component` and
+`list --type block` filter the catalog. Explicit safe file targets in the registry take precedence
+over the fallback directories, so one block can install its markup and action module together.
+Configs created before `blocksOutput` was added continue to place untargeted blocks in `output`.
 
-The root `registry.json` also conforms to the current shadcn source-registry schema. Once this
-repository is public, the same recipes can be installed by a shadcn CLI from the GitHub repository
-address. The copied files are ordinary HTML fragments. Applications own and edit that markup while
+The root `registry.json` follows the current shadcn source-registry vocabulary, including
+`registry:block`, explicit file targets, and composition metadata. `jqstar` is the supported
+installer because its project config and component/block filtering are specific to this HTML
+catalog. The copied files are ordinary HTML fragments. Applications own and edit that markup while
 the `jquery-star` package supplies behavior and the compiled theme.
 
-## Components
+## Components and blocks
 
-The component-system proof now includes 100 recipes: Button, Button Group, Dialog, Alert Dialog,
-Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
-Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
-Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
-Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Tags Input, Input OTP,
-Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
-Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
-Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
-Select, Time Picker, Color Picker, Rating, Message, Message Scroller, Search Field, Item, Feed,
-Questionnaire, Attachment, Bubble, Aspect Ratio, Chart, Direction, Marker, Table, Typography, Stat,
-Timeline, Status, Code Block, Browser Mockup, Diff, Log Viewer, JSON Viewer, Countdown, Connection
-Status, Terminal, Radial Progress, Indicator, Dock, Swap, and Key Value. Import the precompiled
-theme for the default appearance. Tailwind is used to author this file but is not required in the
-consuming application.
+The source catalog now includes 101 items: 98 component recipes and three composed blocks. They are
+Button, Button Group, Dialog, Alert Dialog, Sheet, Drawer, Field, Form, Label, Input, Input Group,
+File Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
+Collapsible, Accordion, Tabs, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar,
+Tree View, Select, Combobox, Calendar, Range Calendar, Date Picker, Date Range Picker, Number Field,
+Password Field, Tags Input, Input OTP, Resizable Panels, Scroll Area, Data Table, Toast, Card,
+Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard Key,
+Breadcrumb, Pagination, Navigation Menu, Command Palette, Async Form, Sidebar, Carousel, Toolbar,
+Stepper, Sortable List, File Upload, Multi Select, Time Picker, Color Picker, Rating, Message,
+Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, Bubble, Aspect Ratio, Chart,
+Direction, Marker, Table, Typography, Stat, Timeline, Status, Code Block, Browser Mockup, Diff, Log
+Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial Progress, Indicator, Dock, Swap,
+Key Value, and Operations Dashboard. The three blocks are Command Palette, Async Form, and
+Operations Dashboard. Import the precompiled theme for the default appearance. Tailwind is used to
+author this file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -743,12 +751,16 @@ official SDK to append escaped log-entry HTML and patch the completion signal:
 
 ```sh
 npm run build:self-hosted
-JQS_HOST=0.0.0.0 JQS_PORT=4173 npm run serve:self-hosted
+JQS_HOST=127.0.0.1 JQS_PORT=4173 npm run serve:self-hosted
 ```
 
 `JQS_STATIC_DIR` can point at a different built site directory. The default request-body limit is 10
 MiB. The server rejects path traversal, applies long-lived caching only to fingerprinted assets,
 sets frame and content-type protections, and shuts down on `SIGINT` or `SIGTERM`.
+
+The deployable Linux unit binds the server to loopback, caps it at 512 MB, and runs it as a
+dedicated user. See [the self-hosting runbook](docs/SELF_HOSTING.md) for release directories,
+systemd setup, health checks, reverse-proxy requirements, upgrades, and rollback.
 
 The Content Security Policy includes `script-src 'unsafe-eval'` because authored jQuery Star
 expressions are compiled at runtime. Applications that require a stricter policy can register named
@@ -789,9 +801,10 @@ See [component research](docs/COMPONENT_RESEARCH.md) and
 
 ## Catalog deployment
 
-The public catalog deploys to [ignibyte.github.io/jqstar](https://ignibyte.github.io/jqstar/) after
-the complete proof workflow passes on `main`. The Vite base is supplied by the workflow, so local
-development stays at `/` and a future custom domain can switch to `/` without source changes.
+The public catalog workflow is configured to deploy to
+[ignibyte.github.io/jqstar](https://ignibyte.github.io/jqstar/) after the complete proof workflow
+passes on `main`. The Vite base is supplied by the workflow, so local development stays at `/` and a
+future custom domain can switch to `/` without source changes.
 
 GitHub Pages is static. Its catalog therefore uses explicit in-browser fallbacks for backend
 demonstrations. Local development continues to run real JSON and SSE routes, including streams

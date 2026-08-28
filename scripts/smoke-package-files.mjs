@@ -14,9 +14,14 @@ const report = JSON.parse(result.stdout);
 const files = new Set(report[0]?.files?.map((file) => file.path));
 const required = [
   "bin/jqstar.mjs",
+  "deploy/jqstar.env.example",
+  "deploy/jqstar.service",
   "dist/jquery-star.js",
   "dist/jquery-star-ui.css",
+  "docs/SELF_HOSTING.md",
   "registry.json",
+  "registry/blocks/operations-dashboard.html",
+  "registry/blocks/operations-dashboard.ts",
   "registry/components/button.html",
   "registry/components/command-palette.html",
   "registry/components/form.html",

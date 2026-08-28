@@ -44,7 +44,7 @@ async function readJson(path, label) {
 
 function parseArguments(argv) {
   const positionals = [];
-  const options = { cwd: process.cwd(), dryRun: false, force: false, json: false };
+  const options = { cwd: process.cwd(), dryRun: false, force: false, json: false, type: "all" };
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -59,6 +59,11 @@ function parseArguments(argv) {
       options.force = true;
     } else if (argument === "--json") {
       options.json = true;
+    } else if (argument === "--type") {
+      const value = argv[index + 1];
+      if (!value) fail("--type needs one of: all, component, block.");
+      options.type = value;
+      index += 1;
     } else if (argument === "--help" || argument === "-h") {
       options.help = true;
     } else if (argument?.startsWith("-")) {
@@ -84,7 +89,10 @@ async function readConfig(cwd, required = false) {
   const path = join(cwd, configName);
   if (!(await exists(path))) {
     if (required) fail(`Run \`jqstar init\` first. Missing ${configName} in ${cwd}.`);
-    return { path, value: { output: "components/jquery-star" } };
+    return {
+      path,
+      value: { blocksOutput: "blocks/jquery-star", output: "components/jquery-star" },
+    };
   }
 
   const value = await readJson(path, "Project configuration");
@@ -92,6 +100,14 @@ async function readConfig(cwd, required = false) {
     fail(`${configName} must contain a non-empty string "output".`);
   }
   if (!value.output.trim()) fail(`${configName} must contain a non-empty string "output".`);
+  safeProjectPath(cwd, value.output);
+  if (
+    value.blocksOutput !== undefined &&
+    (typeof value.blocksOutput !== "string" || !value.blocksOutput.trim())
+  ) {
+    fail(`${configName} "blocksOutput" must be a non-empty string when provided.`);
+  }
+  if (value.blocksOutput !== undefined) safeProjectPath(cwd, value.blocksOutput);
   if (value.registry !== undefined && typeof value.registry !== "string") {
     fail(`${configName} "registry" must be a string when provided.`);
   }
@@ -123,14 +139,14 @@ function help() {
 
 Usage:
   jqstar init [--cwd <directory>]
-  jqstar list [--json] [--cwd <directory>]
-  jqstar add <component...> [--dry-run] [--force] [--cwd <directory>]
+  jqstar list [--type <all|component|block>] [--json] [--cwd <directory>]
+  jqstar add <item...> [--dry-run] [--force] [--cwd <directory>]
   jqstar doctor [--json] [--cwd <directory>]
 
 Commands:
-  init    Create jquery-star.json with a project-local component directory.
-  list    Show components available in the configured registry.
-  add     Copy component recipes into the project. Existing files are preserved.
+  init    Create jquery-star.json with project-local component and block directories.
+  list    Show source items available in the configured registry.
+  add     Copy component recipes or blocks into the project. Existing files are preserved.
   doctor  Check configuration, dependencies, and installed recipes.
 `;
 }
@@ -143,6 +159,7 @@ async function init(options) {
   }
   const value = {
     $schema: "./node_modules/jquery-star/schema/jquery-star.schema.json",
+    blocksOutput: "blocks/jquery-star",
     output: "components/jquery-star",
   };
   if (!options.dryRun) {
@@ -153,14 +170,37 @@ async function init(options) {
 }
 
 async function list(options) {
+  if (!["all", "block", "component"].includes(options.type)) {
+    fail("--type needs one of: all, component, block.");
+  }
   const { value: config } = await readConfig(options.cwd);
   const { registry } = await readRegistry(options.cwd, config);
-  return registry.items.map(({ description, name, title, type }) => ({
-    name,
-    title: title ?? name,
-    description: description ?? "",
-    type,
-  }));
+  return registry.items
+    .filter((item) => {
+      if (options.type === "all") return true;
+      return options.type === "block"
+        ? item.type === "registry:block"
+        : item.type !== "registry:block";
+    })
+    .map(({ description, name, title, type }) => ({
+      name,
+      title: title ?? name,
+      description: description ?? "",
+      type,
+    }));
+}
+
+function destinationPath(cwd, config, item, file, fileName) {
+  if (file.target !== undefined) {
+    if (typeof file.target !== "string" || !file.target.trim()) {
+      fail(`Registry file target must be a non-empty string: ${file.path}`);
+    }
+    const target = file.target.startsWith("~/") ? file.target.slice(2) : file.target;
+    return safeProjectPath(cwd, target);
+  }
+  const output =
+    item.type === "registry:block" ? (config.blocksOutput ?? config.output) : config.output;
+  return safeProjectPath(cwd, join(output, fileName));
 }
 
 async function add(names, options) {
@@ -187,7 +227,7 @@ async function add(names, options) {
       if (!(await exists(source))) fail(`Registry source file was not found: ${source}`);
       const fileName = file.path.split(/[\\/]/).at(-1);
       if (!fileName) fail(`Registry file has no file name: ${file.path}`);
-      const destination = safeProjectPath(options.cwd, join(config.output, fileName));
+      const destination = destinationPath(options.cwd, config, item, file, fileName);
       plans.push({ component: name, destination, source });
     }
   }

@@ -587,9 +587,11 @@ Implemented:
 - Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, and
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
+- Operations Dashboard as a multi-file block with source-owned markup and typed actions
 
-This 100-component inventory is registry-backed and source-owned. Domain-heavy additions can build
-on these contracts without changing the public anatomy.
+This 101-item source catalog contains 98 component recipes and three composed blocks. It is
+registry-backed and source-owned. Domain-heavy additions can build on these contracts without
+changing the public anatomy.
 
 ## Runtime control-plane components
 
