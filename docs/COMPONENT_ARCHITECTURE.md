@@ -235,6 +235,27 @@ Form provides:
 The runtime never invents a second validation model. Server-owned errors can use separate messages
 and state; only elements marked as runtime validation state are cleared by subsequent input.
 
+Number Field, Password Field, and Tags Input provide:
+
+- A direct native number or password input that remains the form, validity, autocomplete, and
+  password-manager boundary
+- Number stepping through the browser's `stepUp()` and `stepDown()` algorithms, including native
+  `min`, `max`, and `step` constraints
+- Password visibility without replacing the control, plus synchronized toggle name, `aria-pressed`,
+  state, and optional Caps Lock status
+- A Tags Input textbox with Enter/comma addition, empty-Backspace removal, case-insensitive
+  duplicate rejection, a configurable maximum, and removable list items
+- Ordered repeated hidden inputs for Tags Input so ordinary `FormData.getAll(name)` retains every
+  value; JSON `data-value` preserves spaces across server patches
+- `@ui.number-field.*`, `@ui.password-field.*`, and `@ui.tags-input.*` actions with equivalent APIs
+  under `$.star.ui`
+- Cancelable `jquery-star:*-field:before-change` / `jquery-star:tags-input:before-change` events,
+  followed by change events and ordinary native form events where a value changes
+
+These fields keep the same progressive-enhancement boundary as Select, Date Picker, and Form: native
+controls own platform behavior, while the component runtime coordinates only the additional buttons,
+tokens, state hooks, and lifecycle contracts.
+
 Static form and composition primitives provide:
 
 - Label and Native Select styling without replacing native label/control relationships
@@ -329,7 +350,7 @@ Implemented:
 - Button and Button Group
 - Dialog, Alert Dialog, Sheet, and Drawer
 - Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select, Checkbox, Radio
-  Group, Switch, and Slider
+  Group, Switch, Slider, Number Field, Password Field, and Tags Input
 - Toggle and Toggle Group
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, and Dropdown Menu
@@ -340,7 +361,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 51-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 54-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

@@ -24,6 +24,9 @@ const required = [
   "registry/components/range-calendar.html",
   "registry/components/date-range-picker.html",
   "registry/components/async-form.html",
+  "registry/components/number-field.html",
+  "registry/components/password-field.html",
+  "registry/components/tags-input.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

@@ -1,0 +1,18 @@
+<div data-jqs="field">
+  <label data-jqs="label" for="guest-count">Guests</label>
+  <div id="guest-number-field" data-jqs="number-field">
+    <button data-part="decrement" type="button" aria-label="Remove one guest">−</button>
+    <input
+      id="guest-count"
+      data-part="control"
+      type="number"
+      name="guests"
+      min="1"
+      max="12"
+      step="1"
+      value="2"
+    />
+    <button data-part="increment" type="button" aria-label="Add one guest">+</button>
+  </div>
+  <p data-part="description">Use the buttons or the native number-input keyboard controls.</p>
+</div>

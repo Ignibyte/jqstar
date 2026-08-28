@@ -11,6 +11,7 @@ Object.assign(globalThis, {
   document: dom.window.document,
   Element: dom.window.Element,
   Event: dom.window.Event,
+  FormData: dom.window.FormData,
   CustomEvent: dom.window.CustomEvent,
   HTMLDialogElement: dom.window.HTMLDialogElement,
   HTMLDetailsElement: dom.window.HTMLDetailsElement,
@@ -18,6 +19,8 @@ Object.assign(globalThis, {
   HTMLButtonElement: dom.window.HTMLButtonElement,
   HTMLFormElement: dom.window.HTMLFormElement,
   HTMLInputElement: dom.window.HTMLInputElement,
+  HTMLLIElement: dom.window.HTMLLIElement,
+  HTMLOListElement: dom.window.HTMLOListElement,
   HTMLOptionElement: dom.window.HTMLOptionElement,
   HTMLOptGroupElement: dom.window.HTMLOptGroupElement,
   HTMLSelectElement: dom.window.HTMLSelectElement,
@@ -25,6 +28,7 @@ Object.assign(globalThis, {
   HTMLTableElement: dom.window.HTMLTableElement,
   HTMLTableRowElement: dom.window.HTMLTableRowElement,
   HTMLTextAreaElement: dom.window.HTMLTextAreaElement,
+  HTMLUListElement: dom.window.HTMLUListElement,
   KeyboardEvent: dom.window.KeyboardEvent,
   MutationObserver: dom.window.MutationObserver,
   Node: dom.window.Node,
@@ -402,6 +406,44 @@ if (packageEmail.validity.customError) {
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-capable-fields">
+     <div id="package-number-field" data-jqs="number-field">
+       <button data-part="decrement">Decrease</button>
+       <input data-part="control" type="number" name="quantity" min="1" max="3" value="1">
+       <button data-part="increment">Increase</button>
+     </div>
+     <div id="package-password-field" data-jqs="password-field">
+       <input data-part="control" type="password" name="password" value="secret">
+       <button data-part="toggle">Show</button>
+     </div>
+     <div id="package-tags-input" data-jqs="tags-input" data-name="tags" data-value='["jQuery"]'>
+       <ul data-part="list"></ul>
+       <input data-part="control" type="text">
+     </div>
+   </form>`,
+);
+const packageCapableFields = document.querySelector("#package-capable-fields");
+const packageNumberField = document.querySelector("#package-number-field");
+const packagePasswordField = document.querySelector("#package-password-field");
+const packageTagsInput = document.querySelector("#package-tags-input");
+$.star.ui.enhance(packageCapableFields);
+$.star.ui.numberField.increment(packageNumberField);
+$.star.ui.passwordField.show(packagePasswordField);
+$.star.ui.tagsInput.add(packageTagsInput, "Datastar");
+const capableFieldsData = new FormData(packageCapableFields);
+if (
+  $.star.ui.numberField.value(packageNumberField) !== 2 ||
+  !$.star.ui.passwordField.visible(packagePasswordField) ||
+  JSON.stringify($.star.ui.tagsInput.value(packageTagsInput)) !==
+    JSON.stringify(["jQuery", "Datastar"]) ||
+  capableFieldsData.get("quantity") !== "2" ||
+  JSON.stringify(capableFieldsData.getAll("tags")) !== JSON.stringify(["jQuery", "Datastar"])
+) {
+  throw new Error("The ESM bundle failed the capable form field smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -458,6 +500,9 @@ const componentSelectors = [
   "[data-jqs=range-calendar]",
   "[data-jqs=date-picker]",
   "[data-jqs=date-range-picker]",
+  "[data-jqs=number-field]",
+  "[data-jqs=password-field]",
+  "[data-jqs=tags-input]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -501,6 +546,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

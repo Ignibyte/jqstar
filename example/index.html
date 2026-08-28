@@ -252,6 +252,80 @@
         </div>
       </section>
 
+      <section class="card advanced-fields-card" aria-labelledby="advanced-fields-title">
+        <div>
+          <p class="label" id="advanced-fields-title">Capable form fields</p>
+          <p class="hint">
+            Native number and password controls plus repeated tag values—each with jQuery APIs and
+            named actions.
+          </p>
+        </div>
+
+        <form class="advanced-fields-grid" aria-label="Capable form controls">
+          <div data-jqs="field">
+            <label data-jqs="label" for="component-guests">Guests</label>
+            <div id="component-number-field" data-jqs="number-field">
+              <button data-part="decrement" type="button" aria-label="Remove one guest">−</button>
+              <input
+                id="component-guests"
+                data-part="control"
+                type="number"
+                name="guests"
+                min="1"
+                max="5"
+                step="1"
+                value="2"
+              />
+              <button data-part="increment" type="button" aria-label="Add one guest">+</button>
+            </div>
+            <p data-part="description">Native min, max, step, validity, and form value.</p>
+          </div>
+
+          <div data-jqs="field">
+            <label data-jqs="label" for="component-password">Password</label>
+            <div id="component-password-field" data-jqs="password-field">
+              <input
+                id="component-password"
+                data-part="control"
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                value="jquery-star"
+              />
+              <button data-part="toggle" type="button">
+                <span data-part="toggle-label">Show password</span>
+              </button>
+              <p data-part="status"></p>
+            </div>
+            <p data-part="description">The same input stays available to password managers.</p>
+          </div>
+
+          <div class="advanced-tags-field" data-jqs="field">
+            <label data-jqs="label" for="component-tags-control">Project tags</label>
+            <div
+              id="component-tags"
+              data-jqs="tags-input"
+              data-name="tags"
+              data-max="5"
+              data-value='["jQuery","Datastar"]'
+            >
+              <ul data-part="list"></ul>
+              <input
+                id="component-tags-control"
+                data-part="control"
+                type="text"
+                placeholder="Add a tag"
+                aria-describedby="component-tags-help"
+              />
+              <p data-part="status"></p>
+            </div>
+            <p id="component-tags-help" data-part="description">
+              Enter or comma adds a tag. Backspace removes the last one.
+            </p>
+          </div>
+        </form>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -852,7 +926,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="51">51 components</td>
+                  <td data-key="coverage" data-value="54">54 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -1282,11 +1356,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="51"
-            max="51"
+            value="54"
+            max="54"
             aria-labelledby="progress-proof-label"
           >
-            51 of 51
+            54 of 54
           </progress>
         </div>
 

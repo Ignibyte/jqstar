@@ -1,0 +1,23 @@
+<div data-jqs="field">
+  <label data-jqs="label" for="project-tags-control">Project tags</label>
+  <div
+    id="project-tags"
+    data-jqs="tags-input"
+    data-name="tags"
+    data-max="6"
+    data-value='["jQuery","Datastar"]'
+  >
+    <ul data-part="list"></ul>
+    <input
+      id="project-tags-control"
+      data-part="control"
+      type="text"
+      placeholder="Add a tag"
+      aria-describedby="project-tags-help"
+    />
+    <p data-part="status"></p>
+  </div>
+  <p id="project-tags-help" data-part="description">
+    Press Enter or comma to add. Backspace removes the last tag.
+  </p>
+</div>

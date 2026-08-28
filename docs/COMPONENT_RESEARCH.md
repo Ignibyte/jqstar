@@ -120,6 +120,17 @@ The first proof contains Button, Dialog, and the native form family:
   file inputs, on the same backend-action path. Structured backend errors use the standard's
   `setCustomValidity()` hook, so custom server messages participate in the same `ValidityState`
   instead of creating a parallel error model.
+- Number Field retains the native number input and its browser-owned stepping behavior while using
+  the APG [Spinbutton pattern](https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/) as the keyboard
+  and naming reference. The added buttons are conveniences, not a replacement ARIA spinbutton.
+- Password Field follows the GOV.UK Design System's
+  [password input](https://design-system.service.gov.uk/components/password-input/) principle that
+  visibility is an explicit button action while the labelled native input and its autocomplete
+  contract remain intact.
+- Tags Input uses a labelled text control and a separate removable list, informed by React Aria's
+  [TagGroup](https://react-spectrum.adobe.com/react-aria/TagGroup.html) removal and keyboard model.
+  Repeated hidden inputs preserve ordinary backend serialization instead of exposing an opaque
+  client-only value.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

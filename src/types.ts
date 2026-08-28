@@ -299,6 +299,33 @@ export interface StarToggleGroupStatic {
   value(target: ToggleGroupTarget): string | string[] | undefined;
 }
 
+export type NumberFieldTarget = string | HTMLElement;
+
+export interface StarNumberFieldStatic {
+  increment(target: NumberFieldTarget, amount?: number): HTMLElement;
+  decrement(target: NumberFieldTarget, amount?: number): HTMLElement;
+  set(target: NumberFieldTarget, value: number | string): HTMLElement;
+  value(target: NumberFieldTarget): number | undefined;
+}
+
+export type PasswordFieldTarget = string | HTMLElement;
+
+export interface StarPasswordFieldStatic {
+  show(target: PasswordFieldTarget): HTMLElement;
+  hide(target: PasswordFieldTarget): HTMLElement;
+  toggle(target: PasswordFieldTarget): HTMLElement;
+  visible(target: PasswordFieldTarget): boolean;
+}
+
+export type TagsInputTarget = string | HTMLElement;
+
+export interface StarTagsInputStatic {
+  add(target: TagsInputTarget, value: string): HTMLElement;
+  remove(target: TagsInputTarget, value: string): HTMLElement;
+  clear(target: TagsInputTarget): HTMLElement;
+  value(target: TagsInputTarget): string[];
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -387,6 +414,9 @@ export interface StarUIStatic {
   readonly dataTable: StarDataTableStatic;
   readonly toggle: StarToggleStatic;
   readonly toggleGroup: StarToggleGroupStatic;
+  readonly numberField: StarNumberFieldStatic;
+  readonly passwordField: StarPasswordFieldStatic;
+  readonly tagsInput: StarTagsInputStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

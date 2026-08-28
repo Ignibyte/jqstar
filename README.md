@@ -79,14 +79,15 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 51 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 54 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Select, Combobox, Calendar, Range Calendar, Date Picker, Date
-Range Picker, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress,
-Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, Command Palette, and
-Async Form. Import the precompiled theme for the default appearance. Tailwind is used to author this
-file but is not required in the consuming application.
+Range Picker, Number Field, Password Field, Tags Input, Data Table, Toast, Card, Badge, Alert,
+Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb,
+Pagination, Navigation Menu, Command Palette, and Async Form. Import the precompiled theme for the
+default appearance. Tailwind is used to author this file but is not required in the consuming
+application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -444,6 +445,22 @@ first selection keeps the popup open; the completed range dispatches ordinary in
 closes it, and restores focus. Use `$.star.ui.dateRangePicker` or
 `@ui.date-range-picker.open|close|select|clear`.
 
+Number Field keeps a real `<input type="number">` as the value and validity source. Its buttons call
+the native step algorithm, so `min`, `max`, and `step` still decide what is allowed. Use
+`$.star.ui.numberField.increment|decrement|set|value()` or `@ui.number-field.*` actions.
+
+Password Field changes the same native input between `password` and `text`; it does not clone the
+control, clear its value, or replace its `name` and `autocomplete` attributes. Use
+`$.star.ui.passwordField.show|hide|toggle|visible()` or `@ui.password-field.*` actions. The toggle
+updates its accessible name and pressed state, and the optional status part announces Caps Lock.
+
+Tags Input accepts Enter or comma, removes the last tag with Backspace on an empty control, and
+creates one hidden input per tag using `data-name`. Tags are serialized as a JSON array in
+`data-value`, which preserves spaces and gives server patches a stable boundary. Use
+`$.star.ui.tagsInput.add|remove|clear|value()` or `@ui.tags-input.*` actions. All three fields emit
+cancelable `before-change` followed by `change` component events; Number Field and Tags Input also
+dispatch ordinary bubbling input/change events.
+
 Data Table enhances native table markup rather than turning it into an application grid:
 
 ```html
@@ -499,7 +516,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="51" max="51">51 of 51</progress>
+    <progress data-jqs="progress" value="54" max="54">54 of 54</progress>
   </div>
 </article>
 

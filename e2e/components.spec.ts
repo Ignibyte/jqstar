@@ -56,6 +56,37 @@ test.describe("jQuery Star components", () => {
     await expect(preview).toHaveText("proof@example.com · accepted · notifications off");
   });
 
+  test("number, password, and tags fields keep native form contracts", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Capable form fields" });
+    const form = card.getByRole("form", { name: "Capable form controls" });
+    const guests = card.getByRole("spinbutton", { name: "Guests" });
+    const password = card.getByRole("textbox", { name: "Password", exact: true });
+    const tags = card.getByRole("textbox", { name: "Project tags" });
+
+    await expect(guests).toHaveValue("2");
+    await card.getByRole("button", { name: "Add one guest" }).click();
+    await expect(guests).toHaveValue("3");
+
+    await expect(password).toHaveAttribute("type", "password");
+    await card.getByRole("button", { name: "Show password" }).click();
+    await expect(password).toHaveAttribute("type", "text");
+    await expect(password).toHaveValue("jquery-star");
+    await expect(card.getByRole("button", { name: "Hide password" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await tags.fill("Tailwind CSS");
+    await tags.press("Enter");
+    await expect(card.getByRole("button", { name: "Remove Tailwind CSS" })).toBeVisible();
+    await expect(
+      form.evaluate((element) => new FormData(element as HTMLFormElement).getAll("tags")),
+    ).resolves.toEqual(["jQuery", "Datastar", "Tailwind CSS"]);
+    await expect(
+      form.evaluate((element) => new FormData(element as HTMLFormElement).get("guests")),
+    ).resolves.toBe("3");
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -605,7 +636,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "51",
+      "54",
     );
   });
 
@@ -635,6 +666,16 @@ test.describe("jQuery Star components", () => {
       );
     });
     const results = await new AxeBuilder({ page }).include(".form-component-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("capable form fields pass accessibility checks after interaction", async ({ page }) => {
+    const card = page.locator(".advanced-fields-card");
+    await card.getByRole("button", { name: "Show password" }).click();
+    const tags = card.getByRole("textbox", { name: "Project tags" });
+    await tags.fill("accessibility");
+    await tags.press("Enter");
+    const results = await new AxeBuilder({ page }).include(".advanced-fields-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

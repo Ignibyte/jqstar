@@ -678,6 +678,48 @@
           "target": "~/components/jquery-star/async-form.html"
         }
       ]
+    },
+    {
+      "name": "number-field",
+      "type": "registry:item",
+      "title": "Number Field",
+      "description": "A native number input with constrained increment and decrement actions.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/number-field.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/number-field.html"
+        }
+      ]
+    },
+    {
+      "name": "password-field",
+      "type": "registry:item",
+      "title": "Password Field",
+      "description": "A password-manager-friendly native input with an accessible visibility toggle.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/password-field.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/password-field.html"
+        }
+      ]
+    },
+    {
+      "name": "tags-input",
+      "type": "registry:item",
+      "title": "Tags Input",
+      "description": "A keyboard-friendly token field with repeated native form values.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/tags-input.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/tags-input.html"
+        }
+      ]
     }
   ]
 }
