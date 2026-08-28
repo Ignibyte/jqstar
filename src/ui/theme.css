@@ -1083,6 +1083,24 @@ form[data-jqs="form"] > [data-part="server-message"] {
   border-radius: 0 var(--radius-jqs-md) var(--radius-jqs-md) 0;
 }
 
+[data-jqs="split-button"] {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: stretch;
+}
+
+[data-jqs="split-button"] > [data-part="primary"] {
+  border-radius: var(--radius-jqs-md) 0 0 var(--radius-jqs-md);
+}
+
+[data-jqs="split-button"] > [data-jqs="menu"] > [data-part="trigger"] {
+  min-width: 2.5rem;
+  padding-inline: 0.625rem;
+  border-left-width: 0;
+  border-radius: 0 var(--radius-jqs-md) var(--radius-jqs-md) 0;
+}
+
 [data-jqs="input-group"] {
   display: flex;
   width: 100%;
@@ -4101,6 +4119,77 @@ dialog[data-jqs="dialog"][data-variant="drawer"][data-state="open"] {
   margin: 0;
   color: var(--color-jqs-muted-foreground);
   font-size: 0.8125rem;
+}
+
+/* Transfer List */
+[data-jqs="transfer-list"] {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) auto minmax(10rem, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+[data-jqs="transfer-list"] > [data-part="pane"] {
+  display: grid;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+[data-jqs="transfer-list"] > [data-part="pane"] > label {
+  color: var(--color-jqs-foreground);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+[data-jqs="transfer-list"] select[data-part] {
+  width: 100%;
+  min-height: 12rem;
+  padding: 0.375rem;
+  border: 1px solid var(--color-jqs-border);
+  border-radius: var(--radius-jqs-md);
+  color: var(--color-jqs-foreground);
+  background: var(--color-jqs-background);
+  font: inherit;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+[data-jqs="transfer-list"] select[data-part]:focus-visible {
+  border-color: var(--color-jqs-ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-jqs-ring) 35%, transparent);
+}
+
+[data-jqs="transfer-list"] select[data-part] option {
+  padding: 0.5rem 0.625rem;
+  border-radius: calc(var(--radius-jqs-sm) - 0.125rem);
+}
+
+[data-jqs="transfer-list"] > :is([data-part="controls"], [data-part="order-controls"]) {
+  display: grid;
+  gap: 0.5rem;
+  align-content: center;
+}
+
+[data-jqs="transfer-list"] > [data-part="status"] {
+  min-height: 1.25rem;
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-jqs-muted-foreground);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 640px) {
+  [data-jqs="transfer-list"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-jqs="transfer-list"] > :is([data-part="controls"], [data-part="order-controls"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-jqs="transfer-list"] > [data-part="status"] {
+    grid-column: 1;
+  }
 }
 
 /* Time Picker */

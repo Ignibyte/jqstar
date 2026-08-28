@@ -914,6 +914,38 @@ test.describe("jQuery Star components", () => {
     await expect(rows.nth(0)).toContainText("Server Runtime");
   });
 
+  test("access manager moves, persists, and reloads permission assignments", async ({ page }) => {
+    const root = page.locator('[data-block="access-manager"]');
+    const available = root.getByRole("listbox", { name: "Available permissions" });
+    const assigned = root.getByRole("listbox", { name: "Assigned permissions" });
+
+    await available.selectOption("audit:read");
+    await root.getByRole("button", { name: "Add →" }).click();
+    await expect(assigned.locator('option[value="audit:read"]')).toHaveCount(1);
+    await expect(root.locator('[data-text="$accessManagerMessage"]')).toContainText(
+      "assigned locally",
+    );
+
+    await root.getByRole("button", { name: "Save access", exact: true }).click();
+    await expect(root.locator('[data-text="$accessManagerMessage"]')).toContainText(
+      "Maya Chen access saved",
+    );
+
+    await root.getByRole("combobox", { name: "Team member" }).selectOption("luis");
+    await expect(root.locator("#access-manager-permissions")).toHaveAttribute(
+      "data-value",
+      '["components:read","audit:read"]',
+    );
+    await expect(root.locator('[data-text="$accessManagerMessage"]')).toContainText(
+      "Luis Ortiz access loaded",
+    );
+
+    await root.getByRole("combobox", { name: "Team member" }).selectOption("maya");
+    await expect(root.locator('#access-manager-selected option[value="audit:read"]')).toHaveCount(
+      1,
+    );
+  });
+
   test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({ page }) => {
     const show = page.getByRole("button", { name: "Show verified toast" });
     const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
@@ -1108,7 +1140,7 @@ test.describe("jQuery Star components", () => {
     await expect(payload.locator('[data-part="status"]')).toHaveText("Copied to clipboard.");
     await expect
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-      .toContain('"components": 100');
+      .toContain('"components": 102');
 
     await control.focus();
     await page.keyboard.press("ArrowRight");
@@ -1139,7 +1171,7 @@ test.describe("jQuery Star components", () => {
     await expect(capacity).toHaveAttribute("aria-valuenow", "67");
     await expect(card.locator("#runtime-environment")).toHaveText("local");
     await expect(jsonViewer).toContainText("revision");
-    await expect(jsonViewer).toContainText("100");
+    await expect(jsonViewer).toContainText("102");
     await expect(logEntries).toHaveCount(3);
 
     await card.getByRole("button", { name: "Stream 3 logs" }).click();
@@ -1532,6 +1564,50 @@ test.describe("jQuery Star components", () => {
     expect(geometry.paginationLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
     expect(geometry.paginationRight).toBeLessThanOrEqual(geometry.rootRight);
     expect(geometry.viewportScrollWidth).toBeGreaterThan(geometry.viewportClientWidth);
+  });
+
+  test("access manager passes accessibility checks before and after an SDK patch", async ({
+    page,
+  }) => {
+    const root = page.locator(".access-manager-demo");
+    let results = await new AxeBuilder({ page }).include(".access-manager-demo").analyze();
+    expect(results.violations).toEqual([]);
+
+    await root.getByRole("combobox", { name: "Team member" }).selectOption("luis");
+    await expect(root.locator("#access-manager-permissions")).toHaveAttribute(
+      "data-value",
+      '["components:read","audit:read"]',
+    );
+    results = await new AxeBuilder({ page }).include(".access-manager-demo").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("access manager stacks both native lists inside a mobile card", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const root = page.locator('[data-block="access-manager"]');
+    const geometry = await root.evaluate((element) => {
+      const available = element.querySelector<HTMLElement>('[data-part="available"]')!;
+      const selected = element.querySelector<HTMLElement>('[data-part="selected"]')!;
+      const rootRect = element.getBoundingClientRect();
+      const availableRect = available.getBoundingClientRect();
+      const selectedRect = selected.getBoundingClientRect();
+      return {
+        availableLeft: availableRect.left,
+        availableRight: availableRect.right,
+        rootLeft: rootRect.left,
+        rootRight: rootRect.right,
+        selectedLeft: selectedRect.left,
+        selectedRight: selectedRect.right,
+        windowWidth: window.innerWidth,
+      };
+    });
+
+    expect(geometry.rootLeft).toBeGreaterThanOrEqual(0);
+    expect(geometry.rootRight).toBeLessThanOrEqual(geometry.windowWidth);
+    expect(geometry.availableLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
+    expect(geometry.availableRight).toBeLessThanOrEqual(geometry.rootRight);
+    expect(geometry.selectedLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
+    expect(geometry.selectedRight).toBeLessThanOrEqual(geometry.rootRight);
   });
 
   test("composition primitives pass accessibility checks", async ({ page }) => {

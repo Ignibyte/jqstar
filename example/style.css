@@ -893,6 +893,36 @@ h1 {
   margin: 0 auto 0 0;
 }
 
+.access-manager-demo {
+  margin-top: 16px;
+}
+
+.access-manager-demo > [data-block="access-manager"] > [data-part="header"] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.access-manager-demo [data-access-manager-part="form"] {
+  display: grid;
+  gap: 20px;
+}
+
+.access-manager-demo [data-access-manager-part="footer"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.access-manager-demo [data-access-manager-part="footer"] > p {
+  min-width: min(100%, 24rem);
+  margin: 0 auto 0 0;
+}
+
+.access-manager-demo [data-jqs="transfer-list"][aria-busy="true"] {
+  opacity: 0.65;
+}
+
 .data-table-filter-label {
   display: inline;
   color: #655e55;
@@ -1590,6 +1620,19 @@ pre {
 
   .project-browser-demo > [data-block="project-browser"] > [data-part="header"] {
     grid-template-columns: 1fr;
+  }
+
+  .access-manager-demo > [data-block="access-manager"] > [data-part="header"] {
+    grid-template-columns: 1fr;
+  }
+
+  .access-manager-demo [data-access-manager-part="footer"] {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .access-manager-demo [data-access-manager-part="footer"] > p {
+    margin-right: 0;
   }
 
   .operations-heading {

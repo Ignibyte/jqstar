@@ -1,0 +1,43 @@
+<div
+  id="permission-transfer"
+  data-jqs="transfer-list"
+  data-name="permissions"
+  data-value='["components:read","components:write"]'
+>
+  <div data-part="pane">
+    <label for="permission-transfer-available">Available permissions</label>
+    <select id="permission-transfer-available" data-part="available" multiple size="6">
+      <option value="releases:deploy">Deploy releases</option>
+      <option value="members:invite">Invite members</option>
+      <option value="billing:manage">Manage billing</option>
+    </select>
+  </div>
+  <div data-part="controls" role="group" aria-label="Assignment controls">
+    <button data-jqs="button" data-part="add" data-variant="outline" type="button">Add →</button>
+    <button data-jqs="button" data-part="remove" data-variant="outline" type="button">
+      ← Remove
+    </button>
+    <button data-jqs="button" data-part="add-all" data-variant="ghost" type="button">
+      Add all
+    </button>
+    <button data-jqs="button" data-part="remove-all" data-variant="ghost" type="button">
+      Remove all
+    </button>
+  </div>
+  <div data-part="pane">
+    <label for="permission-transfer-selected">Assigned permissions</label>
+    <select id="permission-transfer-selected" data-part="selected" multiple size="6">
+      <option value="components:read">Read components</option>
+      <option value="components:write">Write components</option>
+    </select>
+  </div>
+  <div data-part="order-controls" role="group" aria-label="Priority controls">
+    <button data-jqs="button" data-part="move-up" data-variant="outline" type="button">
+      Move up
+    </button>
+    <button data-jqs="button" data-part="move-down" data-variant="outline" type="button">
+      Move down
+    </button>
+  </div>
+  <p data-part="status" aria-live="polite"></p>
+</div>

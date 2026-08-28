@@ -95,4 +95,22 @@ describe("source registry blocks", () => {
     expect(actions).toContain('$.star.action<ProjectBrowserState>("projectBrowser.page"');
     expect(actions).toContain("$.star.get<ProjectBrowserState>(endpoint(root)");
   });
+
+  it("ships Access Manager with Transfer List, Split Button, and typed SDK actions", async () => {
+    const manifest = await registry();
+    const item = manifest.items.find(({ name }) => name === "access-manager");
+    const html = await readFile(resolve("registry/blocks/access-manager.html"), "utf8");
+    const actions = await readFile(resolve("registry/blocks/access-manager.ts"), "utf8");
+
+    expect(item).toMatchObject({ type: "registry:block" });
+    expect(item?.files).toHaveLength(2);
+    expect(item?.registryDependencies).toEqual(
+      expect.arrayContaining(["transfer-list", "split-button", "native-select"]),
+    );
+    expect(html).toContain('data-on:submit__prevent="@accessManager.save"');
+    expect(html).toContain('data-jqs="transfer-list"');
+    expect(html).toContain('data-jqs="split-button"');
+    expect(actions).toContain('$.star.action<AccessManagerState>("accessManager.change"');
+    expect(actions).toContain("$.star[method]<AccessManagerState>(endpoint(root)");
+  });
 });

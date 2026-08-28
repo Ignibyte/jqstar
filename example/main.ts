@@ -3,6 +3,8 @@ import "../src/index";
 import "../src/ui/theme.css";
 import projectBrowserHTML from "../registry/blocks/project-browser.html?raw";
 import "../registry/blocks/project-browser";
+import accessManagerHTML from "../registry/blocks/access-manager.html?raw";
+import "../registry/blocks/access-manager";
 
 interface DemoState extends Record<string, unknown> {
   componentBackendError: string | null;
@@ -644,7 +646,7 @@ $.star.action<DemoState>("refreshOperations", async (context) => {
     if (__JQS_STATIC_DEMO__) {
       await wait(160);
       result = {
-        components: 100,
+        components: 102,
         latency: 76,
         release: "v0.6.0-static",
         requests: 13_428,
@@ -677,7 +679,7 @@ $.star.action<DemoState>("refreshControlPlane", async (context) => {
       const timestamp = new Date();
       result = {
         capacity: 70,
-        components: 100,
+        components: 102,
         connection: "connected",
         environment: "static",
         logs: [
@@ -812,6 +814,9 @@ $.star.action<DemoState>("serverStream", async (context) => {
 
 const projectBrowserMount = document.querySelector<HTMLElement>("#project-browser-demo");
 if (projectBrowserMount) projectBrowserMount.innerHTML = projectBrowserHTML;
+
+const accessManagerMount = document.querySelector<HTMLElement>("#access-manager-demo");
+if (accessManagerMount) accessManagerMount.innerHTML = accessManagerHTML;
 
 $("#app").star();
 

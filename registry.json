@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "jquery-star",
-  "homepage": "https://ignibyte.github.io/jqstar/",
+  "homepage": "https://github.com/Ignibyte/jqstar",
   "items": [
     {
       "name": "button",
@@ -1447,6 +1447,61 @@
           "path": "registry/blocks/project-browser.ts",
           "type": "registry:file",
           "target": "~/blocks/jquery-star/project-browser.ts"
+        }
+      ]
+    },
+    {
+      "name": "transfer-list",
+      "type": "registry:item",
+      "title": "Transfer List",
+      "description": "Two native multi-selects with assignment, ordering, repeated form values, lifecycle events, and server-patchable state.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/transfer-list.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/transfer-list.html"
+        }
+      ]
+    },
+    {
+      "name": "split-button",
+      "type": "registry:item",
+      "title": "Split Button",
+      "description": "A primary native button paired with a keyboard-accessible Dropdown Menu for related actions.",
+      "registryDependencies": ["button", "dropdown-menu"],
+      "files": [
+        {
+          "path": "registry/components/split-button.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/split-button.html"
+        }
+      ]
+    },
+    {
+      "name": "access-manager",
+      "type": "registry:block",
+      "title": "Access Manager",
+      "description": "A server-persisted permission editor built from native selects, Transfer List, Split Button, jQuery actions, and Datastar SDK patches.",
+      "registryDependencies": [
+        "card",
+        "badge",
+        "field",
+        "label",
+        "native-select",
+        "transfer-list",
+        "split-button"
+      ],
+      "files": [
+        {
+          "path": "registry/blocks/access-manager.html",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/access-manager.html"
+        },
+        {
+          "path": "registry/blocks/access-manager.ts",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/access-manager.ts"
         }
       ]
     }

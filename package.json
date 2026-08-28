@@ -4,7 +4,7 @@
   "description": "Datastar-style reactive attributes with real jQuery expressions",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://ignibyte.github.io/jqstar/",
+  "homepage": "https://github.com/Ignibyte/jqstar",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ignibyte/jqstar.git"

@@ -60,6 +60,7 @@ npx jqstar add button dialog command-palette
 npx jqstar add operations-dashboard
 npx jqstar add profile-settings
 npx jqstar add project-browser
+npx jqstar add access-manager
 npx jqstar doctor
 ```
 
@@ -90,7 +91,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components and blocks
 
-The source catalog now includes 105 items: 100 component recipes and five composed blocks. They are
+The source catalog now includes 108 items: 102 component recipes and six composed blocks. They are
 Button, Button Group, Dialog, Alert Dialog, Sheet, Drawer, Field, Form, Label, Input, Input Group,
 File Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
 Collapsible, Accordion, Tabs, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar,
@@ -98,14 +99,15 @@ Tree View, Select, Combobox, Calendar, Range Calendar, Date Picker, Date Range P
 Password Field, Tags Input, Input OTP, Resizable Panels, Scroll Area, Data Table, Toast, Card,
 Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard Key,
 Breadcrumb, Pagination, Navigation Menu, Command Palette, Async Form, Sidebar, Carousel, Toolbar,
-Stepper, Sortable List, File Upload, Multi Select, Time Picker, Color Picker, Rating, Message,
-Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, Bubble, Aspect Ratio, Chart,
-Direction, Marker, Table, Typography, Stat, Timeline, Status, Code Block, Browser Mockup, Diff, Log
-Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial Progress, Indicator, Dock, Swap,
-Key Value, Clipboard, Editable, Operations Dashboard, Profile Settings, and Project Browser. The
-five blocks are Command Palette, Async Form, Operations Dashboard, Profile Settings, and Project
-Browser. Import the precompiled theme for the default appearance. Tailwind is used to author this
-file but is not required in the consuming application.
+Stepper, Sortable List, File Upload, Multi Select, Transfer List, Split Button, Time Picker, Color
+Picker, Rating, Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment,
+Bubble, Aspect Ratio, Chart, Direction, Marker, Table, Typography, Stat, Timeline, Status, Code
+Block, Browser Mockup, Diff, Log Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial
+Progress, Indicator, Dock, Swap, Key Value, Clipboard, Editable, Operations Dashboard, Profile
+Settings, Project Browser, and Access Manager. The six blocks are Command Palette, Async Form,
+Operations Dashboard, Profile Settings, Project Browser, and Access Manager. Import the precompiled
+theme for the default appearance. Tailwind is used to author this file but is not required in the
+consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -410,6 +412,13 @@ Multi Select generates a multi-select listbox and removable tags from a direct n
 selection. Space toggles the focused option, and Control/Command+A selects up to `data-max`. The
 native selected options remain the values in FormData. Use
 `$.star.ui.multiSelect.open|close|toggle|set|select|clear|value()` or `@ui.multi-select.*`.
+
+Transfer List keeps two visible native `<select multiple>` controls. The runtime moves the authored
+options between available and assigned lists, writes ordered repeated hidden inputs from
+`data-name`, and publishes the assignment as JSON `data-value`. Add, remove, add-all, remove-all,
+Enter, double-click, and Move Up/Down all use the same cancelable change boundary. Use
+`$.star.ui.transferList.add|addAll|remove|removeAll|set|up|down|value()` or `@ui.transfer-list.*`.
+Split Button is a zero-runtime composition of a primary Button and Dropdown Menu.
 
 Time Picker wraps `<input type="time">` without replacing its locale-specific picker, required
 state, `min`, `max`, or second-based `step`. Earlier and Later buttons call the native stepping
@@ -792,7 +801,9 @@ process. `/api/demo/runtime` returns the control-plane snapshot. `/api/demo/runt
 official SDK to append escaped log-entry HTML and patch the completion signal. The Profile Settings
 block uses `/api/demo/profile` for validated JSON persistence and `/api/demo/profile/invite` for a
 server-owned invite URL. Project Browser uses `/api/demo/projects` to patch filtered table rows,
-Pagination markup, and result signals through the same SDK:
+Pagination markup, and result signals through the same SDK. Access Manager uses `/api/demo/access`
+to load and persist ordered permission assignments while the SDK replaces the Transfer List and
+patches its signals:
 
 ```sh
 npm run build:self-hosted
@@ -864,17 +875,19 @@ non-timed alternative.
 See [component research](docs/COMPONENT_RESEARCH.md) and
 [component architecture](docs/COMPONENT_ARCHITECTURE.md) for the decisions and verification rules.
 
-## Catalog deployment
+## Local verification
 
-The public catalog workflow is configured to deploy to
-[ignibyte.github.io/jqstar](https://ignibyte.github.io/jqstar/) after the complete proof workflow
-passes on `main`. The Vite base is supplied by the workflow, so local development stays at `/` and a
-future custom domain can switch to `/` without source changes.
+GitHub Actions and Pages deployment are intentionally not configured. Run the complete proof suite
+locally before pushing:
 
-GitHub Pages is static. Its catalog therefore uses explicit in-browser fallbacks for backend
-demonstrations. Local development continues to run real JSON and SSE routes, including streams
-generated with the official Datastar SDK. A future hosted API can replace the fallbacks without
-changing component markup or public action names.
+```bash
+npm run check
+npm run test:package
+```
+
+For visual review, start the catalog with `npm run demo -- --host 127.0.0.1 --port 5174`. Local
+development runs the real JSON and SSE routes, including streams generated with the official
+Datastar SDK. A future hosted API can use the same component markup and public action names.
 
 ## Expression context
 

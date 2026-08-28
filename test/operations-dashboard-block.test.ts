@@ -29,7 +29,7 @@ describe("Operations Dashboard source block", () => {
     const timestamp = new Date();
     const snapshot = {
       capacity: 73,
-      components: 100,
+      components: 102,
       connection: "connected",
       environment: "test",
       logs: [
@@ -64,7 +64,7 @@ describe("Operations Dashboard source block", () => {
 
     await vi.waitFor(() => expect($('[data-dashboard-value="revision"]').text()).toBe("7"));
     expect(fetchMock).toHaveBeenCalledWith("/api/demo/runtime");
-    expect($('[data-dashboard-value="components"]').text()).toBe("100");
+    expect($('[data-dashboard-value="components"]').text()).toBe("102");
     expect($('[data-dashboard-value="region"]').text()).toBe("test-central");
     expect($('[data-dashboard-part="capacity"]').attr("aria-valuenow")).toBe("73");
     expect($('[data-dashboard-part="logs"] [data-part="entry"]')).toHaveLength(1);

@@ -28,7 +28,7 @@ describe("self-hosted proof API", () => {
     const response = await fetch(`${origin}/health`);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      components: 100,
+      components: 102,
       environment: "test",
       service: "jqstar",
       status: "healthy",
@@ -49,7 +49,7 @@ describe("self-hosted proof API", () => {
     const body = await response.json();
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
-      components: 100,
+      components: 102,
       connection: "connected",
       environment: "test",
       region: "us-central",
@@ -115,6 +115,37 @@ describe("self-hosted proof API", () => {
       body: JSON.stringify({ serverCount: 7 }),
     });
     expect(await response.json()).toMatchObject({ serverCount: 17 });
+  });
+
+  it("loads and persists Access Manager assignments through Datastar patches", async () => {
+    const loadedSignals = encodeURIComponent(
+      JSON.stringify({ accessManagerMember: "luis", accessManagerPermissions: [] }),
+    );
+    const loaded = await fetch(`${origin}/api/demo/access?datastar=${loadedSignals}`);
+    const loadedBody = await loaded.text();
+    expect(loaded.headers.get("content-type")).toContain("text/event-stream");
+    expect(loadedBody).toContain("selector #access-manager-permissions");
+    expect(loadedBody).toContain("components:read");
+    expect(loadedBody).toContain("audit:read");
+    expect(loadedBody).toContain("Luis Ortiz access loaded from the backend");
+
+    const saved = await fetch(`${origin}/api/demo/access`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        accessManagerMember: "luis",
+        accessManagerPermissions: ["components:read"],
+      }),
+    });
+    const savedBody = await saved.text();
+    expect(saved.status).toBe(200);
+    expect(savedBody).toContain("Luis Ortiz access saved at revision 2");
+    expect(savedBody).toContain('data-value="[&quot;components:read&quot;]"');
+
+    const reloaded = await fetch(`${origin}/api/demo/access?datastar=${loadedSignals}`);
+    const reloadedBody = await reloaded.text();
+    expect(reloadedBody).toContain("components:read");
+    expect(reloadedBody).toContain('data-value="[&quot;components:read&quot;]"');
   });
 
   it("saves validated profile settings and rotates server-owned invite URLs", async () => {

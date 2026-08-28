@@ -222,6 +222,17 @@ Multi Select provides:
 - Removable selected tags, optional `data-max`, cancelable changes, and JSON root `data-value`
 - `@ui.multi-select.open|close|toggle|set|select|clear` and matching `$.star.ui.multiSelect` methods
 
+Transfer List provides:
+
+- Two labelled native `<select multiple>` controls for available and assigned options
+- Add, remove, all-item, Enter, double-click, and explicit Move Up/Down routes through one state
+  path
+- Ordered repeated hidden inputs from `data-name` and JSON membership in `data-value`
+- Disabled-option protection, cancelable changes, server-patched membership, and detailed added,
+  removed, previous, next, and reason event data
+- `@ui.transfer-list.add|add-all|remove|remove-all|set|up|down` and matching
+  `$.star.ui.transferList` methods
+
 Time Picker provides:
 
 - A direct `<input type="time">` as the locale UI, validity source, and submitted `HH:mm[:ss]` value
@@ -390,7 +401,8 @@ JavaScript.
 Static form and composition primitives provide:
 
 - Label and Native Select styling without replacing native label/control relationships
-- Button Group visual composition while each child remains a native Button
+- Button Group and Split Button visual composition while each action remains a native Button; Split
+  Button delegates its secondary actions to Dropdown Menu
 - Input Group composition around a native input and File Input styling over the native file picker
 - Native `<meter>` ranges with optimum, suboptimal, and low-value presentation
 - Card anatomy through semantic `header`, content, and `footer` elements with stable `data-part`
@@ -400,10 +412,10 @@ Static form and composition primitives provide:
 - Native `<hr>` separators and `<progress>` indicators with theme styling
 - Decorative Skeleton placeholders whose shimmer respects `prefers-reduced-motion`
 
-Label, Native Select, Input Group, File Input, Button Group, Meter, Card, Badge, Alert, Separator,
-Avatar, Skeleton, and Progress have no component runtime. Authors keep control of the appropriate
-native element, label, live-region role, and document structure. The library contributes only stable
-selectors, tokens, variants, and responsive presentation.
+Label, Native Select, Input Group, File Input, Button Group, Split Button, Meter, Card, Badge,
+Alert, Separator, Avatar, Skeleton, and Progress have no component runtime. Authors keep control of
+the appropriate native element, label, live-region role, and document structure. The library
+contributes only stable selectors, tokens, variants, and responsive presentation.
 
 Navigation and command composition provides:
 
@@ -570,7 +582,7 @@ Automated checks are necessary but incomplete. Every interactive component must 
 
 Implemented:
 
-- Button and Button Group
+- Button, Button Group, and Split Button
 - Dialog, Alert Dialog, Sheet, and Drawer
 - Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select, Checkbox, Radio
   Group, Switch, Slider, Number Field, Password Field, Tags Input, and Input OTP
@@ -578,7 +590,7 @@ Implemented:
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
 - Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
-- Multi Select, Time Picker, Color Picker, and Rating
+- Multi Select, Transfer List, Time Picker, Color Picker, and Rating
 - Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, and Bubble
 - Aspect Ratio, Chart, Direction, Marker, Table, and Typography
 - Stat, Timeline, Status, Code Block, Browser Mockup, and Diff
@@ -595,8 +607,10 @@ Implemented:
 - Operations Dashboard as a multi-file block with source-owned markup and typed actions
 - Profile Settings as a multi-file native form, persistence, and invite workflow
 - Project Browser as a multi-file Search Field, Data Table, Pagination, and Datastar SSE workflow
+- Access Manager as a multi-file native select, Transfer List, Split Button, and persisted Datastar
+  SSE workflow
 
-This 105-item source catalog contains 100 component recipes and five composed blocks. It is
+This 108-item source catalog contains 102 component recipes and six composed blocks. It is
 registry-backed and source-owned. Domain-heavy additions can build on these contracts without
 changing the public anatomy.
 
@@ -623,6 +637,15 @@ action module sends those values as Datastar signals to `/api/demo/projects`. Th
 patches `#project-browser-rows`, replaces `#project-browser-pagination`, and updates the result
 signals. Stable `data-row-id` values let Data Table retain selection when a row appears in refreshed
 server markup.
+
+## Access Manager
+
+Access Manager keeps the member picker and both permission lists as native controls. Transfer List
+emits ordered membership, and the copied typed action module sends that state to `/api/demo/access`.
+The backend stores one assignment per member, replaces `#access-manager-permissions` with official
+Datastar SDK element patches, and patches the count, member, message, and permission signals. The
+same source block therefore proves local edits, ordinary FormData values, server reload, and
+persistence without a component-specific request client.
 
 ## Runtime control-plane components
 
@@ -657,8 +680,8 @@ server.
 Node server. `server/index.ts` adds safe static-file resolution, cache policy, security headers,
 health checks, and graceful shutdown. `npm run test:self-hosted` builds the library, site, and
 server, starts the bundled process on an ephemeral port, and verifies the rendered application,
-runtime snapshot, Datastar log stream, Project Browser stream, and browser-applied backend
-contracts.
+runtime snapshot, Datastar log stream, Project Browser stream, Access Manager persistence, and
+browser-applied backend contracts.
 
 The expression runtime currently uses dynamic function compilation. The self-hosted Content Security
 Policy therefore permits `unsafe-eval` for scripts while keeping scripts same-origin and blocking

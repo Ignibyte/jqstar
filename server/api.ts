@@ -176,9 +176,24 @@ const projectItems = [
   },
 ] as const;
 
+const accessMembers = [
+  { id: "maya", name: "Maya Chen" },
+  { id: "luis", name: "Luis Ortiz" },
+  { id: "amina", name: "Amina Yusuf" },
+] as const;
+
+const accessPermissionItems = [
+  { value: "components:read", label: "Read components" },
+  { value: "components:write", label: "Write components" },
+  { value: "releases:deploy", label: "Deploy releases" },
+  { value: "members:invite", label: "Invite members" },
+  { value: "billing:manage", label: "Manage billing" },
+  { value: "audit:read", label: "Read audit log" },
+] as const;
+
 const runtimeLogs = [
   { level: "info", message: "HTTP listener accepted a health probe.", source: "http" },
-  { level: "debug", message: "Registry manifest contains 100 components.", source: "registry" },
+  { level: "debug", message: "Registry manifest contains 102 components.", source: "registry" },
   {
     level: "warn",
     message: "Public deployment is waiting on its hosting target.",
@@ -240,6 +255,19 @@ function projectPaginationHtml(page: number, pageCount: number): string {
     )
     .join("");
   return `<nav id="project-browser-pagination" data-jqs="pagination" data-navigation="manual" data-page="${page}" data-page-count="${pageCount}" data-on:jquery-star:pagination:change="@projectBrowser.page" aria-label="Project results pages"><ul><li><a data-part="previous" href="?page=${previous}"${page <= 1 ? ' aria-disabled="true"' : ""}>Previous</a></li>${pages}<li><a data-part="next" href="?page=${next}"${page >= pageCount ? ' aria-disabled="true"' : ""}>Next</a></li></ul><p data-part="status" aria-live="polite">Page ${page} of ${pageCount}</p></nav>`;
+}
+
+function accessTransferHtml(permissions: readonly string[]): string {
+  const assigned = new Set(permissions);
+  const options = (selected: boolean): string =>
+    accessPermissionItems
+      .filter((permission) => assigned.has(permission.value) === selected)
+      .map(
+        (permission) =>
+          `<option value="${escapeHtml(permission.value)}">${escapeHtml(permission.label)}</option>`,
+      )
+      .join("");
+  return `<div id="access-manager-permissions" data-jqs="transfer-list" data-name="permissions" data-value="${escapeHtml(JSON.stringify(permissions))}" data-on:jquery-star:transfer-list:change="@accessManager.change" data-attr:aria-busy="$accessManagerLoading"><div data-part="pane"><label for="access-manager-available">Available permissions</label><select id="access-manager-available" data-part="available" multiple size="6">${options(false)}</select></div><div data-part="controls" role="group" aria-label="Assignment controls"><button data-jqs="button" data-part="add" data-variant="outline" type="button">Add →</button><button data-jqs="button" data-part="remove" data-variant="outline" type="button">← Remove</button><button data-jqs="button" data-part="add-all" data-variant="ghost" type="button">Add all</button><button data-jqs="button" data-part="remove-all" data-variant="ghost" type="button">Remove all</button></div><div data-part="pane"><label for="access-manager-selected">Assigned permissions</label><select id="access-manager-selected" data-part="selected" multiple size="6">${options(true)}</select></div><div data-part="order-controls" role="group" aria-label="Priority controls"><button data-jqs="button" data-part="move-up" data-variant="outline" type="button">Move up</button><button data-jqs="button" data-part="move-down" data-variant="outline" type="button">Move down</button></div><p data-part="status" aria-live="polite">${permissions.length} assigned</p></div>`;
 }
 
 function json(response: ServerResponse, status: number, value: unknown): void {
@@ -316,13 +344,19 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   let profileRevision = 0;
   let inviteRevision = 0;
   let projectBrowserRevision = 0;
+  let accessRevision = 0;
+  const accessAssignments = new Map<string, string[]>([
+    ["maya", ["components:read", "components:write", "releases:deploy"]],
+    ["luis", ["components:read", "audit:read"]],
+    ["amina", ["components:read", "components:write", "members:invite", "billing:manage"]],
+  ]);
 
   async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
     const url = new URL(request.url ?? "/", "http://localhost");
 
     if (url.pathname === "/health") {
       if (!method(request, response, "GET")) return true;
-      json(response, 200, { components: 100, environment, service: "jqstar", status: "healthy" });
+      json(response, 200, { components: 102, environment, service: "jqstar", status: "healthy" });
       return true;
     }
 
@@ -330,7 +364,7 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       if (!method(request, response, "GET")) return true;
       operationsRevision += 1;
       json(response, 200, {
-        components: 100,
+        components: 102,
         latency: Math.max(48, 82 - operationsRevision * 3),
         release: `v0.6.0-${environment}`,
         requests: 12_840 + operationsRevision * 294,
@@ -354,7 +388,7 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       }));
       json(response, 200, {
         capacity: Math.min(88, 64 + runtimeRevision * 3),
-        components: 100,
+        components: 102,
         connection: "connected",
         environment,
         logs,
@@ -542,6 +576,70 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
         serverCount: current + 10,
         serverMessage: "The JSON response patched these signals.",
       });
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/access") {
+      if (request.method !== "GET" && request.method !== "POST") {
+        response.setHeader("Allow", "GET, POST");
+        json(response, 405, { error: "Method must be GET or POST." });
+        return true;
+      }
+      const read =
+        request.method === "GET"
+          ? await ServerSentEventGenerator.readSignals(webRequest(request))
+          : { success: true as const, signals: await requestBody(request, maximum) };
+      if (!read.success) {
+        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+        response.end(read.error);
+        return true;
+      }
+      const member = String(read.signals.accessManagerMember ?? "maya");
+      const memberRecord = accessMembers.find((candidate) => candidate.id === member);
+      if (!memberRecord) {
+        json(response, 422, { error: "Unknown access member." });
+        return true;
+      }
+      if (request.method === "POST") {
+        const requested = read.signals.accessManagerPermissions;
+        const allowed = new Set<string>(
+          accessPermissionItems.map((permission) => permission.value),
+        );
+        if (
+          !Array.isArray(requested) ||
+          requested.some(
+            (permission) => typeof permission !== "string" || !allowed.has(permission),
+          ) ||
+          new Set(requested).size !== requested.length
+        ) {
+          json(response, 422, { error: "Access permissions must be unique catalog values." });
+          return true;
+        }
+        accessAssignments.set(member, [...requested]);
+      }
+      const permissions = accessAssignments.get(member) ?? [];
+      accessRevision += 1;
+      const revision = accessRevision;
+      const saved = request.method === "POST";
+      const sdkResponse = ServerSentEventGenerator.stream((stream) => {
+        stream.patchElements(accessTransferHtml(permissions), {
+          selector: "#access-manager-permissions",
+          mode: "outer",
+          eventId: `access-${revision}-permissions`,
+        });
+        stream.patchSignals(
+          JSON.stringify({
+            accessManagerCount: permissions.length,
+            accessManagerMember: member,
+            accessManagerMessage: saved
+              ? `${memberRecord.name} access saved at revision ${revision}.`
+              : `${memberRecord.name} access loaded from the backend.`,
+            accessManagerPermissions: permissions,
+          }),
+          { eventId: `access-${revision}-signals` },
+        );
+      });
+      await sendWebResponse(sdkResponse, response);
       return true;
     }
 

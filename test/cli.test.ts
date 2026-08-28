@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(105);
+    expect(items).toHaveLength(108);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -96,6 +96,9 @@ describe("jqstar CLI", () => {
         "editable",
         "profile-settings",
         "project-browser",
+        "transfer-list",
+        "split-button",
+        "access-manager",
       ]),
     );
   });
@@ -112,8 +115,9 @@ describe("jqstar CLI", () => {
       "operations-dashboard",
       "profile-settings",
       "project-browser",
+      "access-manager",
     ]);
-    expect(JSON.parse(components.stdout)).toHaveLength(100);
+    expect(JSON.parse(components.stdout)).toHaveLength(102);
   });
 
   it("initializes a project and copies requested source recipes", async () => {
@@ -181,6 +185,45 @@ describe("jqstar CLI", () => {
     expect(
       await readFile(join(cwd, "blocks/jquery-star/operations-dashboard.ts"), "utf8"),
     ).toContain("installOperationsDashboard");
+  });
+
+  it("installs nested Access Manager component dependencies once", async () => {
+    const cwd = await project();
+    run("init", "--cwd", cwd);
+
+    const added = run("add", "access-manager", "--json", "--cwd", cwd);
+    const files = JSON.parse(added.stdout) as Array<{
+      component: string;
+      dependency: boolean;
+      path: string;
+    }>;
+    const dependencies = files
+      .filter(({ dependency }) => dependency)
+      .map(({ component }) => component);
+
+    expect(added.status).toBe(0);
+    expect(dependencies).toEqual(
+      expect.arrayContaining([
+        "button",
+        "dropdown-menu",
+        "transfer-list",
+        "split-button",
+        "native-select",
+      ]),
+    );
+    expect(dependencies.filter((component) => component === "button")).toHaveLength(1);
+    expect(files.slice(-2)).toEqual([
+      expect.objectContaining({
+        component: "access-manager",
+        dependency: false,
+        path: join(cwd, "blocks/jquery-star/access-manager.html"),
+      }),
+      expect.objectContaining({
+        component: "access-manager",
+        dependency: false,
+        path: join(cwd, "blocks/jquery-star/access-manager.ts"),
+      }),
+    ]);
   });
 
   it("can install only the requested block when dependencies are not wanted", async () => {

@@ -451,6 +451,19 @@ export interface StarMultiSelectStatic {
   value(target: MultiSelectTarget): string[];
 }
 
+export type TransferListTarget = string | HTMLElement;
+
+export interface StarTransferListStatic {
+  add(target: TransferListTarget, values?: readonly string[]): HTMLElement;
+  addAll(target: TransferListTarget): HTMLElement;
+  remove(target: TransferListTarget, values?: readonly string[]): HTMLElement;
+  removeAll(target: TransferListTarget): HTMLElement;
+  set(target: TransferListTarget, values: readonly string[]): HTMLElement;
+  up(target: TransferListTarget, values?: readonly string[]): HTMLElement;
+  down(target: TransferListTarget, values?: readonly string[]): HTMLElement;
+  value(target: TransferListTarget): string[];
+}
+
 export type TimePickerTarget = string | HTMLElement;
 
 export interface StarTimePickerStatic {
@@ -755,6 +768,7 @@ export interface StarUIStatic {
   readonly sortable: StarSortableStatic;
   readonly fileUpload: StarFileUploadStatic;
   readonly multiSelect: StarMultiSelectStatic;
+  readonly transferList: StarTransferListStatic;
   readonly timePicker: StarTimePickerStatic;
   readonly colorPicker: StarColorPickerStatic;
   readonly rating: StarRatingStatic;

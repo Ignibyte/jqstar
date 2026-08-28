@@ -26,6 +26,7 @@ import { createSteppers } from "./stepper";
 import { createSortables } from "./sortable";
 import { createFileUploads } from "./file-upload";
 import { createMultiSelects } from "./multi-select";
+import { createTransferLists } from "./transfer-list";
 import { createTimePickers } from "./time-picker";
 import { createColorPickers } from "./color-picker";
 import { createRatings } from "./rating";
@@ -263,6 +264,7 @@ const enhancementOwnerSelector = [
   "sortable",
   "file-upload",
   "multi-select",
+  "transfer-list",
   "time-picker",
   "color-picker",
   "rating",
@@ -429,6 +431,7 @@ export function createUI(): StarUIStatic {
   const sortables = createSortables();
   const fileUploads = createFileUploads();
   const multiSelects = createMultiSelects();
+  const transferLists = createTransferLists();
   const timePickers = createTimePickers();
   const colorPickers = createColorPickers();
   const ratings = createRatings();
@@ -460,6 +463,7 @@ export function createUI(): StarUIStatic {
     sortables.enhance(root);
     fileUploads.enhance(root);
     multiSelects.enhance(root);
+    transferLists.enhance(root);
     timePickers.enhance(root);
     colorPickers.enhance(root);
     ratings.enhance(root);
@@ -519,6 +523,7 @@ export function createUI(): StarUIStatic {
     sortable: sortables.api,
     fileUpload: fileUploads.api,
     multiSelect: multiSelects.api,
+    transferList: transferLists.api,
     timePicker: timePickers.api,
     colorPicker: colorPickers.api,
     rating: ratings.api,

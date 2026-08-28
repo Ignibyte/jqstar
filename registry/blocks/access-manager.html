@@ -1,0 +1,122 @@
+<section
+  data-jqs="card"
+  data-block="access-manager"
+  data-access-url="/api/demo/access"
+  data-signals="{ accessManagerMember: 'maya', accessManagerPermissions: ['components:read', 'components:write', 'releases:deploy'], accessManagerCount: 3, accessManagerLoading: false, accessManagerError: null, accessManagerMessage: 'Maya Chen has 3 assigned permissions.' }"
+  aria-labelledby="access-manager-title"
+>
+  <header data-part="header">
+    <div>
+      <h2 id="access-manager-title" data-part="title">Access manager</h2>
+      <p data-part="description">
+        Assign and prioritize permissions with native controls and Datastar SDK patches.
+      </p>
+    </div>
+    <span data-jqs="badge" data-variant="success">Backend persisted</span>
+  </header>
+
+  <form data-access-manager-part="form" data-on:submit__prevent="@accessManager.save">
+    <div data-jqs="field">
+      <label data-jqs="label" for="access-manager-member">Team member</label>
+      <select
+        id="access-manager-member"
+        data-jqs="native-select"
+        data-bind:access-manager-member
+        data-on:change="@accessManager.load"
+        name="member"
+      >
+        <option value="maya">Maya Chen · Platform</option>
+        <option value="luis">Luis Ortiz · Developer Experience</option>
+        <option value="amina">Amina Yusuf · Operations</option>
+      </select>
+      <p data-part="description">Changing the member loads their server-owned assignment.</p>
+    </div>
+
+    <div
+      id="access-manager-permissions"
+      data-jqs="transfer-list"
+      data-name="permissions"
+      data-value='["components:read","components:write","releases:deploy"]'
+      data-on:jquery-star:transfer-list:change="@accessManager.change"
+      data-attr:aria-busy="$accessManagerLoading"
+    >
+      <div data-part="pane">
+        <label for="access-manager-available">Available permissions</label>
+        <select id="access-manager-available" data-part="available" multiple size="6">
+          <option value="members:invite">Invite members</option>
+          <option value="billing:manage">Manage billing</option>
+          <option value="audit:read">Read audit log</option>
+        </select>
+      </div>
+      <div data-part="controls" role="group" aria-label="Assignment controls">
+        <button data-jqs="button" data-part="add" data-variant="outline" type="button">
+          Add →
+        </button>
+        <button data-jqs="button" data-part="remove" data-variant="outline" type="button">
+          ← Remove
+        </button>
+        <button data-jqs="button" data-part="add-all" data-variant="ghost" type="button">
+          Add all
+        </button>
+        <button data-jqs="button" data-part="remove-all" data-variant="ghost" type="button">
+          Remove all
+        </button>
+      </div>
+      <div data-part="pane">
+        <label for="access-manager-selected">Assigned permissions</label>
+        <select id="access-manager-selected" data-part="selected" multiple size="6">
+          <option value="components:read">Read components</option>
+          <option value="components:write">Write components</option>
+          <option value="releases:deploy">Deploy releases</option>
+        </select>
+      </div>
+      <div data-part="order-controls" role="group" aria-label="Priority controls">
+        <button data-jqs="button" data-part="move-up" data-variant="outline" type="button">
+          Move up
+        </button>
+        <button data-jqs="button" data-part="move-down" data-variant="outline" type="button">
+          Move down
+        </button>
+      </div>
+      <p data-part="status" aria-live="polite">3 assigned</p>
+    </div>
+
+    <footer data-access-manager-part="footer">
+      <p data-text="$accessManagerMessage" aria-live="polite"></p>
+      <p data-show="$accessManagerError" data-text="$accessManagerError" role="alert"></p>
+      <span data-jqs="badge" data-variant="secondary">
+        <span data-text="$accessManagerCount"></span> assigned
+      </span>
+      <div data-jqs="split-button" role="group" aria-label="Save access">
+        <button
+          data-jqs="button"
+          data-part="primary"
+          type="submit"
+          data-prop:disabled="$accessManagerLoading"
+        >
+          Save access
+        </button>
+        <div data-jqs="menu" data-part="menu">
+          <button
+            data-jqs="button"
+            data-part="trigger"
+            type="button"
+            aria-label="More access actions"
+          >
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div data-part="content" aria-label="Access actions">
+            <button
+              data-part="item"
+              data-value="reload"
+              type="button"
+              data-on:click="@accessManager.reset"
+            >
+              Reload saved access
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </form>
+</section>

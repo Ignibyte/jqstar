@@ -43,12 +43,12 @@ try {
   }
   const healthResponse = await fetch(`${origin}/health`);
   const health = await healthResponse.json();
-  if (!healthResponse.ok || health.status !== "healthy" || health.components !== 100) {
+  if (!healthResponse.ok || health.status !== "healthy" || health.components !== 102) {
     throw new Error("The self-hosted health contract failed.");
   }
   const operationsResponse = await fetch(`${origin}/api/demo/operations`);
   const operations = await operationsResponse.json();
-  if (!operationsResponse.ok || operations.revision !== 1 || operations.components !== 100) {
+  if (!operationsResponse.ok || operations.revision !== 1 || operations.components !== 102) {
     throw new Error("The self-hosted operations contract failed.");
   }
   const runtimeResponse = await fetch(`${origin}/api/demo/runtime`);
@@ -56,7 +56,7 @@ try {
   if (
     !runtimeResponse.ok ||
     runtime.revision !== 1 ||
-    runtime.components !== 100 ||
+    runtime.components !== 102 ||
     runtime.logs?.length !== 3
   ) {
     throw new Error("The self-hosted runtime snapshot contract failed.");
@@ -91,6 +91,19 @@ try {
     !projects.includes("selector #project-browser-pagination")
   ) {
     throw new Error("The self-hosted Project Browser stream contract failed.");
+  }
+  const accessSignals = encodeURIComponent(
+    JSON.stringify({ accessManagerMember: "luis", accessManagerPermissions: [] }),
+  );
+  const accessResponse = await fetch(`${origin}/api/demo/access?datastar=${accessSignals}`);
+  const access = await accessResponse.text();
+  if (
+    !accessResponse.ok ||
+    !access.includes("selector #access-manager-permissions") ||
+    !access.includes("Luis Ortiz access loaded from the backend") ||
+    !access.includes("audit:read")
+  ) {
+    throw new Error("The self-hosted Access Manager stream contract failed.");
   }
   const signals = encodeURIComponent(JSON.stringify({ controlPlaneMessage: "Ready" }));
   const streamResponse = await fetch(`${origin}/api/demo/runtime/stream?datastar=${signals}`);
@@ -144,11 +157,25 @@ try {
     await browserPage
       .locator('[data-block="project-browser"] [data-row-id="deployment-kit"]')
       .waitFor({ state: "visible" });
+    const accessManager = browserPage.locator('[data-block="access-manager"]');
+    await accessManager.getByRole("combobox", { name: "Team member" }).selectOption("luis");
+    await accessManager
+      .locator('#access-manager-permissions[data-value=\'["components:read","audit:read"]\']')
+      .waitFor({ state: "visible" });
+    await accessManager
+      .getByRole("listbox", { name: "Available permissions" })
+      .selectOption("members:invite");
+    await accessManager.getByRole("button", { name: "Add →" }).click();
+    await accessManager.getByRole("button", { name: "Save access", exact: true }).click();
+    await accessManager
+      .locator('[data-text="$accessManagerMessage"]')
+      .filter({ hasText: "Luis Ortiz access saved" })
+      .waitFor({ state: "visible" });
   } finally {
     await browser.close();
   }
   process.stdout.write(
-    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, datastar-log-stream=passed, browser-runtime=passed, browser-project-browser=passed, security-headers=passed\n",
+    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, access-manager-sse=passed, datastar-log-stream=passed, browser-runtime=passed, browser-project-browser=passed, browser-access-manager=passed, security-headers=passed\n",
   );
 } finally {
   child.kill("SIGTERM");

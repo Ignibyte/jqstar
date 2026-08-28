@@ -327,6 +327,31 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-transfer-form">
+     <div id="package-transfer-list" data-jqs="transfer-list" data-name="permissions" data-value='["write"]'>
+       <select data-part="available" multiple><option value="read">Read</option></select>
+       <button data-part="add">Add</button><button data-part="add-all">Add all</button>
+       <select data-part="selected" multiple><option value="write">Write</option></select>
+       <button data-part="remove">Remove</button><button data-part="remove-all">Remove all</button>
+       <button data-part="move-up">Move up</button><button data-part="move-down">Move down</button>
+       <p data-part="status"></p>
+     </div>
+   </form>`,
+);
+const transferList = document.querySelector("#package-transfer-list");
+$.star.ui.enhance(transferList);
+$.star.ui.transferList.add(transferList, ["read"]);
+$.star.ui.transferList.up(transferList, ["read"]);
+if (
+  $.star.ui.transferList.value(transferList).join(",") !== "read,write" ||
+  new FormData(document.querySelector("#package-transfer-form")).getAll("permissions").join(",") !==
+    "read,write"
+) {
+  throw new Error("The ESM bundle failed the Transfer List component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<label for="package-date-control">Package date</label>
    <div id="package-date-picker" data-jqs="date-picker">
      <input id="package-date-control" data-part="control" name="date" value="2026-08-28">
@@ -980,6 +1005,8 @@ const componentSelectors = [
   "[data-jqs=sortable]",
   "[data-jqs=file-upload]",
   "[data-jqs=multi-select]",
+  "[data-jqs=transfer-list]",
+  "[data-jqs=split-button]",
   "[data-jqs=time-picker]",
   "[data-jqs=color-picker]",
   "[data-jqs=rating]",
@@ -1058,6 +1085,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM clipboard=passed, ESM editable=passed, ESM log-viewer=passed, ESM json-viewer=passed, ESM countdown=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM pagination=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM transfer-list=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM clipboard=passed, ESM editable=passed, ESM log-viewer=passed, ESM json-viewer=passed, ESM countdown=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM pagination=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

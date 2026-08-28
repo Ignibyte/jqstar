@@ -50,6 +50,8 @@ sudo journalctl -u jqstar --since today
 The health response should include `"service":"jqstar"` and `"status":"healthy"`.
 `/api/demo/projects` is an SSE route rather than a JSON route. It expects Datastar signals in the
 standard `datastar` query parameter and patches Project Browser rows, Pagination, and result state.
+`/api/demo/access` accepts Datastar signals by GET query or POST JSON body. It keeps the demo member
+assignments in the running process and patches the Access Manager Transfer List and result state.
 
 ## Public traffic
 
