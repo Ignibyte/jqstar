@@ -1,6 +1,6 @@
 # Component system research
 
-Research snapshot: August 27, 2026.
+Research snapshot: August 28, 2026.
 
 The useful systems fall into four groups. Full styled libraries prove component coverage. Headless
 libraries prove behavior and accessibility. Tailwind libraries prove theming and composition. Source
@@ -150,6 +150,16 @@ The first proof contains Button, Dialog, and the native form family:
 - Tree View follows the APG [Tree View pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/):
   focus and selection remain distinct, Right and Left Arrow expand, collapse, or traverse levels,
   and multi-selection uses the recommended modifier-free navigation model.
+- Toolbar follows the APG [Toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/): the
+  group contributes one page tab stop, orientation selects the active Arrow keys, and controls that
+  need Arrow keys retain their native input behavior.
+- Carousel follows the APG [Carousel pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/):
+  the region and slides have explicit role descriptions, rotation can always be stopped, focus and
+  hover pause automatic changes, and each unnamed slide receives a position-based accessible name.
+- Sidebar adopts shadcn's
+  [composable sidebar structure](https://ui.shadcn.com/docs/components/base/sidebar) and its icon,
+  off-canvas, and non-collapsible modes without importing React context. jQuery Star keeps the same
+  useful Cmd/Ctrl+B convention while storing state on source-owned HTML.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

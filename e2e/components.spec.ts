@@ -174,6 +174,53 @@ test.describe("jQuery Star components", () => {
     await expect(status).toHaveText("Tree selection: src, index");
   });
 
+  test("sidebar, carousel, and toolbar compose into a responsive application shell", async ({
+    page,
+  }) => {
+    const card = page.getByRole("region", { name: "Navigation and content controls" });
+    const sidebar = card.locator("#component-sidebar");
+    const trigger = card.locator('#component-sidebar [data-part="trigger"]');
+    const status = card.locator(".workspace-heading output");
+
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await trigger.click();
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await page.keyboard.press("Control+b");
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+
+    const toolbar = card.getByRole("toolbar", { name: "Preview tools" });
+    const grid = toolbar.getByRole("button", { name: "Grid view" });
+    const focus = toolbar.getByRole("button", { name: "Focus mode" });
+    await grid.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(focus).toBeFocused();
+    await focus.click();
+    await expect(focus).toHaveAttribute("aria-pressed", "true");
+    await expect(status).toHaveText("Focus mode toggled");
+
+    await card.getByRole("button", { name: "Next slide" }).click();
+    await expect(card.getByRole("group", { name: "2 of 3" })).toBeVisible();
+    await expect(status).toHaveText("Slide: datastar");
+
+    const carouselContent = card.locator('#component-carousel > [data-part="content"]');
+    const box = await carouselContent.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box!.x + box!.width * 0.75, box!.y + box!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box!.x + box!.width * 0.25, box!.y + box!.height / 2, { steps: 4 });
+    await page.mouse.up();
+    await expect(card.getByRole("group", { name: "3 of 3" })).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(sidebar).toHaveAttribute("data-mobile", "true");
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await trigger.click();
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await page.keyboard.press("Escape");
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(trigger).toBeFocused();
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -723,7 +770,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "60",
+      "63",
     );
   });
 
@@ -803,6 +850,26 @@ test.describe("jQuery Star components", () => {
       );
     });
     results = await new AxeBuilder({ page }).include(".application-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("responsive workspace components pass accessibility checks after interaction", async ({
+    page,
+  }) => {
+    const card = page.locator(".workspace-components-card");
+    await card.getByRole("button", { name: "Focus mode" }).click();
+    await card.getByRole("button", { name: "Next slide" }).click();
+    await card.evaluate(async (element) => {
+      await Promise.allSettled(
+        element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+      );
+    });
+    let results = await new AxeBuilder({ page }).include(".workspace-components-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await card.locator('#component-sidebar [data-part="trigger"]').click();
+    results = await new AxeBuilder({ page }).include(".workspace-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

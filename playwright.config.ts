@@ -6,7 +6,8 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
-  workers: Number(process.env.JQS_E2E_WORKERS ?? 2),
+  timeout: Number(process.env.JQS_E2E_TIMEOUT ?? 60_000),
+  workers: Number(process.env.JQS_E2E_WORKERS ?? 1),
   use: {
     baseURL: "http://127.0.0.1:4173",
     screenshot: "only-on-failure",

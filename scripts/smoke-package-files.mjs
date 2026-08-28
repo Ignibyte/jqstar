@@ -33,6 +33,9 @@ const required = [
   "registry/components/context-menu.html",
   "registry/components/menubar.html",
   "registry/components/tree.html",
+  "registry/components/sidebar.html",
+  "registry/components/carousel.html",
+  "registry/components/toolbar.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

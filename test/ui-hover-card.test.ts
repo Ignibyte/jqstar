@@ -73,6 +73,7 @@ describe("jQuery Star Hover Card", () => {
   });
 
   it("supports actions, cancelable lifecycle, Escape dismissal, and focus return", () => {
+    vi.useFakeTimers();
     const opened = vi.fn();
     root().addEventListener("jquery-star:hover-card:open", opened);
     $("#external").trigger("click");
@@ -89,6 +90,8 @@ describe("jQuery Star Hover Card", () => {
     document.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
     expect(content().hidden).toBe(true);
     expect(document.activeElement).toBe(trigger());
+    vi.advanceTimersByTime(20);
+    expect(content().hidden).toBe(true);
   });
 
   it("re-enhances server-replaced parts while preserving open state", () => {

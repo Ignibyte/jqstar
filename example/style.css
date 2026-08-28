@@ -308,6 +308,93 @@ h1 {
   font-weight: 700;
 }
 
+.workspace-components-card {
+  grid-template-columns: 1fr;
+}
+
+#component-sidebar {
+  --jqs-sidebar-height: 27rem;
+  --jqs-sidebar-width: 14.5rem;
+  --jqs-carousel-height: 13.5rem;
+  --jqs-carousel-padding: 1.75rem 3.75rem;
+}
+
+#component-sidebar > [data-part="panel"] {
+  background: #f5f8f6;
+}
+
+#component-sidebar [data-part="header"] [data-part="icon"] {
+  color: white;
+  background: #087052;
+  border-radius: 7px;
+  font-size: 0.625rem;
+  font-weight: 850;
+}
+
+.workspace-topbar,
+.workspace-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.workspace-topbar {
+  margin-bottom: 28px;
+}
+
+.workspace-heading {
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.workspace-heading h2,
+#component-carousel h3 {
+  margin: 4px 0 0;
+  font-family: Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.workspace-heading h2 {
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
+}
+
+.workspace-heading output {
+  max-width: 15rem;
+  color: #087052;
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-align: right;
+}
+
+.workspace-kicker {
+  color: #087052;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#component-carousel h3 {
+  max-width: 25rem;
+  font-size: clamp(1.35rem, 3.5vw, 2rem);
+}
+
+#component-carousel p {
+  max-width: 28rem;
+  margin: 12px 0 0;
+  color: #655e55;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+#component-carousel code {
+  color: #6e4c0f;
+  font-size: 0.78rem;
+}
+
 .layout-primitives-grid {
   display: grid;
   grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.6fr);
@@ -754,6 +841,31 @@ pre {
 
   .application-components-grid {
     grid-template-columns: 1fr;
+  }
+
+  #component-sidebar {
+    --jqs-sidebar-height: 29rem;
+    --jqs-carousel-height: 16rem;
+    --jqs-carousel-padding: 1.5rem 3.25rem;
+  }
+
+  #component-sidebar > [data-part="content"] {
+    padding: 1rem;
+  }
+
+  .workspace-topbar,
+  .workspace-heading {
+    align-items: flex-start;
+  }
+
+  .workspace-heading {
+    flex-direction: column;
+  }
+
+  .workspace-heading output {
+    max-width: none;
+    margin-left: 0;
+    text-align: left;
   }
 }
 

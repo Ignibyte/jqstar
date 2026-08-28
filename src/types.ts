@@ -373,6 +373,35 @@ export interface StarResizableStatic {
   value(target: ResizableTarget): number[];
 }
 
+export type SidebarTarget = string | HTMLElement;
+
+export interface StarSidebarStatic {
+  open(target: SidebarTarget): HTMLElement;
+  close(target: SidebarTarget): HTMLElement;
+  toggle(target: SidebarTarget): HTMLElement;
+  value(target: SidebarTarget): boolean;
+}
+
+export type CarouselTarget = string | HTMLElement;
+
+export interface StarCarouselStatic {
+  next(target: CarouselTarget): HTMLElement;
+  previous(target: CarouselTarget): HTMLElement;
+  go(target: CarouselTarget, value: string | number): HTMLElement;
+  play(target: CarouselTarget): HTMLElement;
+  pause(target: CarouselTarget): HTMLElement;
+  value(target: CarouselTarget): string;
+}
+
+export type ToolbarTarget = string | HTMLElement;
+
+export interface StarToolbarStatic {
+  focus(target: ToolbarTarget, value?: string): HTMLElement;
+  next(target: ToolbarTarget): HTMLElement;
+  previous(target: ToolbarTarget): HTMLElement;
+  value(target: ToolbarTarget): string | undefined;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -469,6 +498,9 @@ export interface StarUIStatic {
   readonly tagsInput: StarTagsInputStatic;
   readonly inputOTP: StarInputOTPStatic;
   readonly resizable: StarResizableStatic;
+  readonly sidebar: StarSidebarStatic;
+  readonly carousel: StarCarouselStatic;
+  readonly toolbar: StarToolbarStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

@@ -592,6 +592,160 @@
         ></output>
       </section>
 
+      <section
+        class="card workspace-components-card"
+        aria-labelledby="workspace-components-title"
+        data-signals="{ workspaceStatus: 'Overview selected' }"
+      >
+        <div>
+          <p class="label" id="workspace-components-title">Navigation and content controls</p>
+          <p class="hint">
+            Sidebar, Carousel, and Toolbar compose into an application shell without a framework
+            runtime.
+          </p>
+        </div>
+
+        <section
+          id="component-sidebar"
+          data-jqs="sidebar"
+          data-collapsible="icon"
+          data-storage-key="component-workspace"
+        >
+          <aside data-part="panel" aria-label="Project navigation">
+            <header data-part="header">
+              <span data-part="icon" aria-hidden="true">JQ</span>
+              <strong data-part="label">jqstar</strong>
+            </header>
+
+            <div data-part="group">
+              <span data-part="group-label">Workspace</span>
+              <nav data-part="menu" aria-label="Project">
+                <a
+                  data-part="menu-item"
+                  href="#workspace-overview"
+                  aria-current="page"
+                  data-on:click="$workspaceStatus = 'Overview selected'"
+                >
+                  <span data-part="icon" aria-hidden="true">⌂</span>
+                  <span data-part="label">Overview</span>
+                </a>
+                <a
+                  data-part="menu-item"
+                  href="#workspace-overview"
+                  data-on:click="$workspaceStatus = 'Components selected'"
+                >
+                  <span data-part="icon" aria-hidden="true">◇</span>
+                  <span data-part="label">Components</span>
+                </a>
+                <a
+                  data-part="menu-item"
+                  href="#workspace-overview"
+                  data-on:click="$workspaceStatus = 'Activity selected'"
+                >
+                  <span data-part="icon" aria-hidden="true">↗</span>
+                  <span data-part="label">Activity</span>
+                </a>
+              </nav>
+            </div>
+
+            <footer data-part="footer">
+              <span data-part="icon" aria-hidden="true">CP</span>
+              <span data-part="label">Workspace owner</span>
+            </footer>
+          </aside>
+
+          <button data-part="rail" type="button" aria-label="Toggle project sidebar">↔</button>
+
+          <div data-part="content" id="workspace-overview">
+            <header class="workspace-topbar">
+              <button data-part="trigger" type="button" aria-label="Toggle project sidebar">
+                ☰
+              </button>
+
+              <div data-jqs="toolbar" aria-label="Preview tools">
+                <button
+                  data-jqs="toggle"
+                  data-part="item"
+                  data-value="grid"
+                  type="button"
+                  aria-label="Grid view"
+                  data-on:click="$workspaceStatus = 'Grid view toggled'"
+                >
+                  ⊞
+                </button>
+                <button
+                  data-jqs="toggle"
+                  data-part="item"
+                  data-value="focus"
+                  type="button"
+                  aria-label="Focus mode"
+                  data-on:click="$workspaceStatus = 'Focus mode toggled'"
+                >
+                  ◎
+                </button>
+                <span data-part="separator" aria-hidden="true"></span>
+                <button
+                  data-part="item"
+                  data-value="share"
+                  type="button"
+                  data-on:click="$workspaceStatus = 'Share action ready'"
+                >
+                  Share
+                </button>
+              </div>
+            </header>
+
+            <div class="workspace-heading">
+              <div>
+                <span class="workspace-kicker">Release workspace</span>
+                <h2>Ship the HTML you own</h2>
+              </div>
+              <output data-text="$workspaceStatus" aria-live="polite"></output>
+            </div>
+
+            <section
+              id="component-carousel"
+              data-jqs="carousel"
+              data-value="jquery"
+              data-loop
+              aria-label="jQuery Star feature tour"
+              data-on:jquery-star:carousel:change="$workspaceStatus = 'Slide: ' + evt.detail.value"
+            >
+              <div data-part="content">
+                <div data-part="slide" data-value="jquery">
+                  <span class="workspace-kicker">01 · Familiar</span>
+                  <h3>Real jQuery inside declarative events</h3>
+                  <p>
+                    Keep <code>$(el).fadeOut()</code>, plugins, selectors, and the event system you
+                    already know.
+                  </p>
+                </div>
+                <div data-part="slide" data-value="datastar">
+                  <span class="workspace-kicker">02 · Reactive</span>
+                  <h3>Datastar signals and SDK responses</h3>
+                  <p>State and server patches share one HTML-first contract.</p>
+                </div>
+                <div data-part="slide" data-value="owned">
+                  <span class="workspace-kicker">03 · Owned</span>
+                  <h3>Copy components into the application</h3>
+                  <p>The source stays local while jQuery Star supplies tested behavior.</p>
+                </div>
+              </div>
+              <button data-part="previous" type="button">←</button>
+              <button data-part="next" type="button">→</button>
+              <div data-part="indicators" aria-label="Choose feature slide">
+                <button data-part="indicator" data-value="jquery" type="button">jQuery</button>
+                <button data-part="indicator" data-value="datastar" type="button">Datastar</button>
+                <button data-part="indicator" data-value="owned" type="button">Owned</button>
+              </div>
+              <span data-part="status"></span>
+            </section>
+          </div>
+
+          <button data-part="backdrop" type="button" aria-label="Close project sidebar"></button>
+        </section>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -1192,7 +1346,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="60">60 components</td>
+                  <td data-key="coverage" data-value="63">63 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -1622,11 +1776,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="60"
-            max="60"
+            value="63"
+            max="63"
             aria-labelledby="progress-proof-label"
           >
-            60 of 60
+            63 of 63
           </progress>
         </div>
 

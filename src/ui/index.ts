@@ -1,5 +1,6 @@
 import { registerAction } from "../registry";
 import { createDisclosures } from "./disclosure";
+import { createCarousels } from "./carousel";
 import { createForms } from "./form";
 import { createHoverCards } from "./hover-card";
 import { createInputOTPs } from "./input-otp";
@@ -10,6 +11,7 @@ import { createNumberFields } from "./number-field";
 import { createPasswordFields } from "./password-field";
 import { createPopovers } from "./popover";
 import { createResizables } from "./resizable";
+import { createSidebars } from "./sidebar";
 import { createSelects } from "./select";
 import { createComboboxes } from "./combobox";
 import { createCalendars } from "./calendar";
@@ -18,6 +20,7 @@ import { createTabs } from "./tabs";
 import { createToasts } from "./toast";
 import { createTooltips } from "./tooltip";
 import { createToggles } from "./toggle";
+import { createToolbars } from "./toolbar";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -223,6 +226,40 @@ function registerDialogActions(dialog: StarDialogStatic): void {
 }
 
 const documentObservers = new WeakMap<Document, MutationObserver>();
+const enhancementOwnerSelector = [
+  "accordion",
+  "collapsible",
+  "tabs",
+  "popover",
+  "tooltip",
+  "hover-card",
+  "menu",
+  "context-menu",
+  "menubar",
+  "tree",
+  "sidebar",
+  "carousel",
+  "toolbar",
+  "toast",
+  "toast-viewport",
+  "select",
+  "combobox",
+  "data-table",
+  "toggle",
+  "toggle-group",
+  "number-field",
+  "password-field",
+  "tags-input",
+  "input-otp",
+  "resizable",
+  "calendar",
+  "range-calendar",
+  "date-picker",
+  "date-range-picker",
+]
+  .map((name) => `[data-jqs="${name}"]`)
+  .concat('form[data-jqs="form"]', 'dialog[data-jqs="dialog"]')
+  .join(", ");
 
 function dialogElements(root: ParentNode): HTMLDialogElement[] {
   const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-jqs="dialog"]'));
@@ -246,9 +283,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
     for (const mutation of mutations) {
       if (mutation.type === "attributes") {
         enhance(mutation.target as Element);
-        const owner = (mutation.target as Element).closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="context-menu"], [data-jqs="menubar"], [data-jqs="tree"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
-        );
+        const owner = (mutation.target as Element).closest<HTMLElement>(enhancementOwnerSelector);
         if (owner && owner !== mutation.target) enhance(owner);
         continue;
       }
@@ -256,9 +291,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
         enhance(node);
-        const owner = node.parentElement?.closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="context-menu"], [data-jqs="menubar"], [data-jqs="tree"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
-        );
+        const owner = node.parentElement?.closest<HTMLElement>(enhancementOwnerSelector);
         if (owner) enhance(owner);
       }
     }
@@ -307,6 +340,9 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-step",
       "data-selection",
       "data-expanded",
+      "data-loop",
+      "data-autoplay",
+      "data-shortcut",
     ],
     childList: true,
     subtree: true,
@@ -339,6 +375,9 @@ export function createUI(): StarUIStatic {
   const tagsInputs = createTagsInputs();
   const inputOTPs = createInputOTPs();
   const resizables = createResizables();
+  const sidebars = createSidebars();
+  const carousels = createCarousels();
+  const toolbars = createToolbars();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -349,6 +388,9 @@ export function createUI(): StarUIStatic {
     menus.enhance(root);
     menubars.enhance(root);
     trees.enhance(root);
+    sidebars.enhance(root);
+    carousels.enhance(root);
+    toolbars.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -385,6 +427,9 @@ export function createUI(): StarUIStatic {
     tagsInput: tagsInputs.api,
     inputOTP: inputOTPs.api,
     resizable: resizables.api,
+    sidebar: sidebars.api,
+    carousel: carousels.api,
+    toolbar: toolbars.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

@@ -1,0 +1,46 @@
+<section
+  id="workspace-shell"
+  data-jqs="sidebar"
+  data-collapsible="icon"
+  data-storage-key="workspace"
+>
+  <aside data-part="panel" aria-label="Workspace navigation">
+    <header data-part="header">
+      <span data-part="icon" aria-hidden="true">JQ</span>
+      <strong data-part="label">jQuery Star</strong>
+    </header>
+
+    <div data-part="group">
+      <span data-part="group-label">Workspace</span>
+      <nav data-part="menu" aria-label="Workspace">
+        <a data-part="menu-item" href="#overview" aria-current="page">
+          <span data-part="icon" aria-hidden="true">⌂</span>
+          <span data-part="label">Overview</span>
+        </a>
+        <a data-part="menu-item" href="#components">
+          <span data-part="icon" aria-hidden="true">◇</span>
+          <span data-part="label">Components</span>
+        </a>
+        <a data-part="menu-item" href="#activity">
+          <span data-part="icon" aria-hidden="true">↗</span>
+          <span data-part="label">Activity</span>
+        </a>
+      </nav>
+    </div>
+
+    <footer data-part="footer">
+      <span data-part="icon" aria-hidden="true">CP</span>
+      <span data-part="label">Account</span>
+    </footer>
+  </aside>
+
+  <button data-part="rail" type="button" aria-label="Toggle sidebar">↔</button>
+
+  <main data-part="content" id="overview">
+    <button data-part="trigger" type="button" aria-label="Toggle sidebar">☰</button>
+    <h2>Workspace overview</h2>
+    <p>The sidebar becomes an off-canvas panel below 48rem and remembers desktop state.</p>
+  </main>
+
+  <button data-part="backdrop" type="button" aria-label="Close sidebar"></button>
+</section>

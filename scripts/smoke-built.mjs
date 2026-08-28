@@ -542,6 +542,49 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<section id="package-sidebar" data-jqs="sidebar" data-collapsible="icon" data-value="expanded">
+     <aside data-part="panel" aria-label="Package navigation">Navigation</aside>
+     <main data-part="content"><button data-part="trigger">Toggle sidebar</button></main>
+     <button data-part="backdrop">Close sidebar</button>
+   </section>
+   <section id="package-carousel" data-jqs="carousel" data-value="one" data-loop aria-label="Package slides">
+     <div data-part="content">
+       <div data-part="slide" data-value="one">One</div>
+       <div data-part="slide" data-value="two">Two</div>
+     </div>
+     <button data-part="previous">Previous</button>
+     <button data-part="next">Next</button>
+     <span data-part="status"></span>
+   </section>
+   <div id="package-toolbar" data-jqs="toolbar" aria-label="Package tools">
+     <button data-part="item" data-value="one">One</button>
+     <button data-part="item" data-value="two">Two</button>
+     <button data-part="item" data-value="three">Three</button>
+   </div>`,
+);
+const packageSidebar = document.querySelector("#package-sidebar");
+const packageCarousel = document.querySelector("#package-carousel");
+const packageToolbar = document.querySelector("#package-toolbar");
+$.star.ui.enhance(packageSidebar);
+$.star.ui.enhance(packageCarousel);
+$.star.ui.enhance(packageToolbar);
+$.star.ui.sidebar.close(packageSidebar);
+$.star.ui.carousel.next(packageCarousel);
+$.star.ui.toolbar.focus(packageToolbar, "two");
+if (
+  $.star.ui.sidebar.value(packageSidebar) ||
+  packageSidebar.dataset.state !== "collapsed" ||
+  $.star.ui.carousel.value(packageCarousel) !== "two" ||
+  !packageCarousel.querySelector('[data-value="one"]').hidden ||
+  $.star.ui.toolbar.value(packageToolbar) !== "two" ||
+  packageToolbar.role !== "toolbar" ||
+  document.activeElement !== packageToolbar.querySelector('[data-value="two"]')
+) {
+  throw new Error("The ESM bundle failed the Sidebar, Carousel, and Toolbar smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -607,6 +650,9 @@ const componentSelectors = [
   "[data-jqs=context-menu]",
   "[data-jqs=menubar]",
   "[data-jqs=tree]",
+  "[data-jqs=sidebar]",
+  "[data-jqs=carousel]",
+  "[data-jqs=toolbar]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -650,6 +696,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

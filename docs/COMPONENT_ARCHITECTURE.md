@@ -159,6 +159,36 @@ Tree View provides:
   `data-value` / `data-expanded` state
 - `@ui.tree.select|expand|collapse|toggle|focus` and matching `$.star.ui.tree` methods
 
+Sidebar provides:
+
+- `panel`, `content`, `trigger`, `rail`, and `backdrop` parts within one application-shell root
+- Icon, off-canvas, and fixed modes through `data-collapsible`
+- A mobile off-canvas boundary below 48rem with Escape, backdrop close, trigger focus return, and
+  separate restoration of the desktop state
+- Optional `data-storage-key`, a configurable Ctrl/Command shortcut, and server-patched
+  `data-value="expanded|collapsed"`
+- Cancelable `jquery-star:sidebar:before-change`, `jquery-star:sidebar:change`,
+  `@ui.sidebar.open|close|toggle`, and matching `$.star.ui.sidebar` methods
+
+Carousel provides:
+
+- A labelled carousel region, grouped slides, position-based fallback names, live-status changes,
+  and inactive slide hiding
+- Previous, next, indicator, orientation-aware keyboard, and pointer-swipe navigation
+- Optional looping and automatic rotation that pauses for focus, hover, user navigation, and
+  reduced-motion preferences
+- Cancelable `jquery-star:carousel:before-change`, plus `change`, `play`, and `pause` events
+- `@ui.carousel.next|previous|go|play|pause` and matching `$.star.ui.carousel` methods
+
+Toolbar provides:
+
+- One roving tab stop across buttons, links, toggles, and other controls
+- Horizontal or vertical Arrow navigation, Home, End, disabled-item skipping, and optional
+  non-looping edges
+- Native Arrow-key behavior for text, number, range, select, textarea, and editable controls unless
+  `data-toolbar-nav="roving"` is explicit
+- `@ui.toolbar.focus|next|previous` and matching `$.star.ui.toolbar` methods
+
 Select provides:
 
 - A native single-value `<select data-part="control">` as the source for form submission,
@@ -407,7 +437,7 @@ Implemented:
 - Toggle and Toggle Group
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
-- Tree View
+- Tree View, Sidebar, Carousel, and Toolbar
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -416,7 +446,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 60-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 63-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

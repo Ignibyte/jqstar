@@ -79,15 +79,16 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 60 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 63 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
 Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Tags Input, Input OTP,
 Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
-Command Palette, and Async Form. Import the precompiled theme for the default appearance. Tailwind
-is used to author this file but is not required in the consuming application.
+Command Palette, Async Form, Sidebar, Carousel, and Toolbar. Import the precompiled theme for the
+default appearance. Tailwind is used to author this file but is not required in the consuming
+application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -355,6 +356,24 @@ supports the complete Arrow/Home/End/asterisk/typeahead model, and adds Space, S
 Control+A for multi-select trees. Use `$.star.ui.tree.select|expand|collapse|toggle|focus|value()`
 or `@ui.tree.*`; `data-value` remains the server-patch boundary.
 
+Sidebar provides a responsive application shell with `panel`, `content`, `trigger`, `rail`, and
+`backdrop` parts. Choose `data-collapsible="icon"`, `"offcanvas"`, or `"none"`. Below 48rem it
+becomes an off-canvas panel, starts closed, closes on Escape or backdrop click, and restores the
+desktop state when the viewport grows. `data-storage-key` persists desktop state and Ctrl/Command+B
+toggles the first sidebar. Use `$.star.ui.sidebar.open|close|toggle|value()` or `@ui.sidebar.*`.
+
+Carousel keeps each source-owned `slide` in the DOM while exposing one at a time. Previous, next,
+indicator, keyboard, and swipe navigation update `data-value`; `data-loop` enables wrapping.
+`data-autoplay` accepts a delay of at least 1000 milliseconds, pauses for focus, hover, or user
+navigation, and respects reduced-motion preferences. Use
+`$.star.ui.carousel.next|previous|go|play|pause|value()` or `@ui.carousel.*`.
+
+Toolbar groups three or more controls under one keyboard tab stop. Arrow keys follow
+`data-orientation`, Home and End move to the edges, disabled controls are skipped, and
+`data-loop="false"` stops at either edge. Text fields, selects, and other controls that own Arrow
+keys keep their native behavior unless they opt into roving navigation with
+`data-toolbar-nav="roving"`. Use `$.star.ui.toolbar.focus|next|previous|value()` or `@ui.toolbar.*`.
+
 Select keeps a native form control as its value and submission source:
 
 ```html
@@ -545,7 +564,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="60" max="60">60 of 60</progress>
+    <progress data-jqs="progress" value="63" max="63">63 of 63</progress>
   </div>
 </article>
 

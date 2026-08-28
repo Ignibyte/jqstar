@@ -17,6 +17,7 @@ interface HoverCardRecord {
   openTimer: number | undefined;
   pointed: boolean;
   root: HTMLElement;
+  suppressFocusOpen: boolean;
   trigger: HTMLElement;
 }
 
@@ -112,7 +113,10 @@ function closeHoverCard(root: HTMLElement): HTMLElement {
   record.content.dataset.state = "closing";
   hideFloating(record.content);
   syncState(record, false);
-  if (returnFocus && record.trigger.isConnected) record.trigger.focus();
+  if (returnFocus && record.trigger.isConnected) {
+    record.suppressFocusOpen = true;
+    record.trigger.focus();
+  }
   emit(record, "close");
   return root;
 }
@@ -152,6 +156,10 @@ function wire(record: HoverCardRecord): void {
   };
   const focusIn = (): void => {
     record.focused = true;
+    if (record.suppressFocusOpen) {
+      record.suppressFocusOpen = false;
+      return;
+    }
     scheduleOpen(record);
   };
   const focusOut = (): void => {
@@ -239,6 +247,7 @@ function enhanceHoverCard(root: HTMLElement): HoverCardRecord {
       openTimer: undefined,
       pointed: false,
       root,
+      suppressFocusOpen: false,
       trigger,
     };
     records.set(root, record);
@@ -254,6 +263,7 @@ function enhanceHoverCard(root: HTMLElement): HoverCardRecord {
     record.content = content;
     record.focused = false;
     record.pointed = false;
+    record.suppressFocusOpen = false;
     if (!usesNativePopover(content)) content.hidden = !record.open;
     if (contentChanged && record.open) showFloating(content);
   }

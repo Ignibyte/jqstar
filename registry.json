@@ -800,6 +800,46 @@
           "target": "~/components/jquery-star/tree.html"
         }
       ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:item",
+      "title": "Sidebar",
+      "description": "A responsive application shell with icon, off-canvas, shortcut, persistence, and named-action behavior.",
+      "files": [
+        {
+          "path": "registry/components/sidebar.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/sidebar.html"
+        }
+      ]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:item",
+      "title": "Carousel",
+      "description": "An accessible slide carousel with controls, indicators, swipe gestures, and user-controlled rotation.",
+      "files": [
+        {
+          "path": "registry/components/carousel.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/carousel.html"
+        }
+      ]
+    },
+    {
+      "name": "toolbar",
+      "type": "registry:item",
+      "title": "Toolbar",
+      "description": "A compact control group with orientation-aware roving focus and native input escape hatches.",
+      "registryDependencies": ["toggle"],
+      "files": [
+        {
+          "path": "registry/components/toolbar.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/toolbar.html"
+        }
+      ]
     }
   ]
 }
