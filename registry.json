@@ -1043,6 +1043,86 @@
           "target": "~/components/jquery-star/bubble.html"
         }
       ]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:item",
+      "title": "Aspect Ratio",
+      "description": "A zero-runtime media frame using the browser's native aspect-ratio layout.",
+      "files": [
+        {
+          "path": "registry/components/aspect-ratio.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/aspect-ratio.html"
+        }
+      ]
+    },
+    {
+      "name": "chart",
+      "type": "registry:item",
+      "title": "Chart",
+      "description": "A responsive bar or line chart rendered from one accessible, server-patchable native table.",
+      "registryDependencies": ["button", "table"],
+      "files": [
+        {
+          "path": "registry/components/chart.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/chart.html"
+        }
+      ]
+    },
+    {
+      "name": "direction",
+      "type": "registry:item",
+      "title": "Direction",
+      "description": "A source-owned region that uses native dir inheritance for left-to-right or right-to-left content.",
+      "files": [
+        {
+          "path": "registry/components/direction.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/direction.html"
+        }
+      ]
+    },
+    {
+      "name": "marker",
+      "type": "registry:item",
+      "title": "Marker",
+      "description": "Inline highlights, separators, and status markers for conversational or document content.",
+      "files": [
+        {
+          "path": "registry/components/marker.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/marker.html"
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "type": "registry:item",
+      "title": "Table",
+      "description": "A responsive presentation layer for semantic native tables without client-side behavior.",
+      "registryDependencies": ["badge"],
+      "files": [
+        {
+          "path": "registry/components/table.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/table.html"
+        }
+      ]
+    },
+    {
+      "name": "typography",
+      "type": "registry:item",
+      "title": "Typography",
+      "description": "Readable, zero-runtime defaults for plain HTML, rendered Markdown, documentation, and chat.",
+      "files": [
+        {
+          "path": "registry/components/typography.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/typography.html"
+        }
+      ]
     }
   ]
 }

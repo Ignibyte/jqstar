@@ -140,6 +140,30 @@ async function sendWebResponse(source: Response, destination: ServerResponse): P
 }
 
 function installProofBackend(middlewares: MiddlewareStack): void {
+  let metricsRevision = 0;
+
+  middlewares.use("/api/demo/metrics", (request, response) => {
+    if (request.method !== "GET") {
+      response.writeHead(405).end();
+      return;
+    }
+    metricsRevision += 1;
+    const offset = metricsRevision * 7;
+    const body = JSON.stringify({
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      message: `The local backend patched four table rows (revision ${metricsRevision}).`,
+      series: [
+        [248 + offset, 326 + offset, 391 + offset, 438 + offset],
+        [112 + offset, 218 + offset, 284 + offset, 347 + offset],
+      ],
+    });
+    response.writeHead(200, {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(body),
+    });
+    response.end(body);
+  });
+
   middlewares.use("/api/demo/feed", (request, response) => {
     if (request.method !== "GET") {
       response.writeHead(405).end();

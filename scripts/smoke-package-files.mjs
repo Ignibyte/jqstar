@@ -51,6 +51,12 @@ const required = [
   "registry/components/questionnaire.html",
   "registry/components/attachment.html",
   "registry/components/bubble.html",
+  "registry/components/aspect-ratio.html",
+  "registry/components/chart.html",
+  "registry/components/direction.html",
+  "registry/components/marker.html",
+  "registry/components/table.html",
+  "registry/components/typography.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

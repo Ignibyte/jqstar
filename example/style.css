@@ -878,6 +878,115 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.reporting-components-card {
+  grid-template-columns: 1fr;
+}
+
+.reporting-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(17rem, 0.7fr);
+  gap: 24px;
+  align-items: start;
+}
+
+#release-metrics-chart,
+.reporting-notes,
+.release-table-proof,
+.marker-proof {
+  min-width: 0;
+}
+
+.metrics-message {
+  color: #06704f;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.reporting-notes {
+  padding: 20px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+  font-size: 0.88rem;
+}
+
+.reporting-notes h2 {
+  font-size: 1.35rem;
+}
+
+.release-aspect-proof [data-part="media"] {
+  display: grid;
+  place-content: center;
+  padding: 2rem;
+  color: white;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(255, 222, 161, 0.9), transparent 23%),
+    linear-gradient(135deg, #083f32, #06704f 56%, #1aa37a);
+  text-align: center;
+}
+
+.release-aspect-proof span {
+  font-family: Georgia, serif;
+  font-size: clamp(3.5rem, 9vw, 6.5rem);
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+}
+
+.release-aspect-proof strong,
+.release-aspect-proof small {
+  display: block;
+}
+
+.release-aspect-proof strong {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+}
+
+.release-aspect-proof small {
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.direction-proof {
+  display: grid;
+  gap: 0.75rem;
+  padding: 20px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+}
+
+.direction-proof h2,
+.direction-proof p {
+  margin: 0;
+}
+
+.direction-proof h2 {
+  font-size: 1.25rem;
+}
+
+.direction-proof p {
+  color: #655e55;
+  line-height: 1.7;
+}
+
+.direction-proof [data-jqs="button"] {
+  justify-self: start;
+}
+
+.marker-proof {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 16px;
+  border: 1px dashed #c9c0b3;
+  border-radius: 12px;
+}
+
 .primitive-title-row,
 .avatar-row,
 .badge-showcase {
@@ -1236,6 +1345,10 @@ pre {
   .conversation-grid,
   .feed-components-card,
   .questionnaire-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .reporting-grid {
     grid-template-columns: 1fr;
   }
 

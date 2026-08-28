@@ -218,6 +218,16 @@ The first proof contains Button, Dialog, and the native form family:
   [Bubble](https://ui.shadcn.com/docs/components/base/bubble) components. They need no runtime
   because file state, conversation alignment, and backend patches remain application data and
   markup.
+- The current shadcn [Aspect Ratio](https://ui.shadcn.com/docs/components/base/aspect-ratio),
+  [Direction](https://ui.shadcn.com/docs/components/base/direction),
+  [Marker](https://ui.shadcn.com/docs/components/radix/marker),
+  [Table](https://ui.shadcn.com/docs/components/base/table), and
+  [Typeset](https://ui.shadcn.com/docs/typeset) contracts map directly to native layout, direction,
+  inline content, table, and document semantics. jQuery Star keeps them zero-runtime.
+- The current shadcn [Chart](https://ui.shadcn.com/docs/components/base/chart) contract informed the
+  responsive plot, legend, tooltip, and configurable series model. jQuery Star uses the same
+  source-owned composition principle but renders from a native table instead of requiring Recharts
+  or a browser framework.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

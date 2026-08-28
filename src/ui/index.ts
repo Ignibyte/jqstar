@@ -32,6 +32,7 @@ import { createMessageScrollers } from "./message-scroller";
 import { createSearchFields } from "./search-field";
 import { createFeeds } from "./feed";
 import { createQuestionnaires } from "./questionnaire";
+import { createCharts } from "./chart";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -262,6 +263,7 @@ const enhancementOwnerSelector = [
   "search-field",
   "feed",
   "questionnaire",
+  "chart",
   "toast",
   "toast-viewport",
   "select",
@@ -418,6 +420,7 @@ export function createUI(): StarUIStatic {
   const searchFields = createSearchFields();
   const feeds = createFeeds();
   const questionnaires = createQuestionnaires();
+  const charts = createCharts();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -442,6 +445,7 @@ export function createUI(): StarUIStatic {
     searchFields.enhance(root);
     feeds.enhance(root);
     questionnaires.enhance(root);
+    charts.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -492,6 +496,7 @@ export function createUI(): StarUIStatic {
     searchField: searchFields.api,
     feed: feeds.api,
     questionnaire: questionnaires.api,
+    chart: charts.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

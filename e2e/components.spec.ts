@@ -990,8 +990,33 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "78",
+      "84",
     );
+  });
+
+  test("reporting primitives share native data with the backend chart", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Backend reporting primitives" });
+    const chart = card.locator("#release-metrics-chart");
+    const data = chart.locator('table[data-part="data"]');
+
+    await expect(chart.locator('[data-part="bar"]')).toHaveCount(8);
+    await expect(data.locator("caption")).toHaveText("Weekly component adoption by runtime");
+    await expect(data.locator("tbody tr").first().locator("td").first()).toHaveText("186");
+
+    await card.getByRole("button", { name: "Line", exact: true }).click();
+    await expect(chart).toHaveAttribute("data-type", "line");
+    await expect(chart.locator('[data-part="line"]')).toHaveCount(2);
+    await expect(chart.locator('[data-part="point"]')).toHaveCount(8);
+
+    await card.getByRole("button", { name: "Refresh from backend" }).click();
+    await expect(data.locator("tbody tr").first().locator("td").first()).not.toHaveText("186");
+    await expect(card.locator(".metrics-message")).toContainText("local backend patched four");
+    await expect(card.locator("#metrics-status-marker")).toContainText("Backend data applied");
+
+    await expect(card.locator('[data-jqs="direction"]')).toHaveAttribute("dir", "rtl");
+    await expect(card.locator('[data-jqs="direction"]')).toHaveCSS("direction", "rtl");
+    await expect(card.getByRole("table", { name: "Release proof" })).toBeVisible();
+    await expect(card.locator('[data-jqs="aspect-ratio"]')).toHaveCSS("aspect-ratio", "16 / 9");
   });
 
   test("button and open dialog pass automated accessibility checks", async ({ page }) => {
@@ -1496,6 +1521,19 @@ test.describe("jQuery Star components", () => {
       );
     });
     results = await new AxeBuilder({ page }).include('[data-jqs="toast-viewport"]').analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("reporting primitives pass accessibility checks before and after refresh", async ({
+    page,
+  }) => {
+    const card = page.locator(".reporting-components-card");
+    let results = await new AxeBuilder({ page }).include(".reporting-components-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.getByRole("button", { name: "Line", exact: true }).click();
+    await card.getByRole("button", { name: "Refresh from backend" }).click();
+    results = await new AxeBuilder({ page }).include(".reporting-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 });

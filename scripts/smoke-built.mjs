@@ -800,6 +800,25 @@ if (document.activeElement !== hoverCard.querySelector('[data-part="trigger"]'))
   throw new Error("The built Hover Card failed focus return.");
 }
 
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<figure id="package-chart" data-jqs="chart" data-type="bar">
+     <figcaption>Package chart</figcaption>
+     <svg data-part="plot"></svg><div data-part="legend"></div><p data-part="status"></p>
+     <table data-part="data"><caption>Package values</caption><thead><tr><th>Month</th><th data-series="builds" data-color="#2563eb">Builds</th></tr></thead><tbody><tr><th>Jan</th><td>12</td></tr><tr><th>Feb</th><td>24</td></tr></tbody></table>
+   </figure>`,
+);
+const packageChart = document.querySelector("#package-chart");
+$.star.ui.enhance(packageChart);
+$.star.ui.chart.setType(packageChart, "line");
+if (
+  $.star.ui.chart.data(packageChart).series[0].values.join(",") !== "12,24" ||
+  packageChart.querySelectorAll('[data-part="line"]').length !== 1 ||
+  packageChart.querySelectorAll('[data-part="point"]').length !== 2
+) {
+  throw new Error("The ESM bundle failed the Chart component smoke test.");
+}
+
 const theme = await readFile(new URL("../dist/jquery-star-ui.css", import.meta.url), "utf8");
 const componentSelectors = [
   "[data-jqs=button]",
@@ -859,6 +878,12 @@ const componentSelectors = [
   "[data-jqs=questionnaire]",
   "[data-jqs=attachment]",
   "[data-jqs=bubble]",
+  "[data-jqs=aspect-ratio]",
+  "[data-jqs=chart]",
+  "[data-jqs=direction]",
+  "[data-jqs=marker]",
+  "[data-jqs=table]",
+  "[data-jqs=typography]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -902,6 +927,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

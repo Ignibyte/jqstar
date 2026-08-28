@@ -20,10 +20,18 @@ interface DemoState extends Record<string, unknown> {
   feedbackSaving: boolean;
   feedMessage: string;
   feedQuery: string;
+  metricsLoading: boolean;
+  metricsMessage: string;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
   serverMessage: string;
+}
+
+interface MetricsResponse {
+  labels: string[];
+  message: string;
+  series: [number[], number[]];
 }
 
 interface FeedResult {
@@ -456,6 +464,52 @@ $.star.action<DemoState>("submitQuestionnaire", async (context) => {
     context.state.questionnaireMessage = error instanceof Error ? error.message : String(error);
   } finally {
     context.state.questionnaireSaving = false;
+  }
+});
+
+function applyMetrics(result: MetricsResponse): void {
+  const chart = document.querySelector<HTMLElement>("#release-metrics-chart")!;
+  const rows = Array.from(
+    chart.querySelectorAll<HTMLTableRowElement>('table[data-part="data"] tbody tr'),
+  );
+  rows.forEach((row, index) => {
+    const label = result.labels[index];
+    const first = result.series[0][index];
+    const second = result.series[1][index];
+    if (label === undefined || first === undefined || second === undefined) return;
+    $(row.cells[0]!).text(label);
+    $(row.cells[1]!).text(first);
+    $(row.cells[2]!).text(second);
+  });
+  $.star.ui.chart.refresh(chart);
+  $("#metrics-status-marker").contents().last().replaceWith(" Backend data applied");
+}
+
+$.star.action<DemoState>("refreshMetrics", async (context) => {
+  context.state.metricsLoading = true;
+  try {
+    let result: MetricsResponse;
+    if (__JQS_STATIC_DEMO__) {
+      await wait(160);
+      result = {
+        labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+        message: "Static Pages fallback applied the same native-table update contract.",
+        series: [
+          [248, 326, 391, 438],
+          [112, 218, 284, 347],
+        ],
+      };
+    } else {
+      const response = await fetch("/api/demo/metrics");
+      result = (await response.json()) as MetricsResponse;
+      if (!response.ok) throw new Error(`Request failed with ${response.status}.`);
+    }
+    applyMetrics(result);
+    context.state.metricsMessage = result.message;
+  } catch (error) {
+    context.state.metricsMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.metricsLoading = false;
   }
 });
 

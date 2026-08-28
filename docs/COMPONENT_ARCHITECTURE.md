@@ -488,6 +488,20 @@ focused, and announced before an application request listener can run. API answe
 native input and change events, and all state rendering uses conditional DOM writes so global
 enhancement cannot create an observer loop.
 
+Reporting and document components provide:
+
+- Chart parses one captioned native table and renders bar or line SVG presentation from the same
+  rows and cells a backend can patch.
+- `refresh`, `setType`, `type`, and `data` are exposed under `$.star.ui.chart`, with equivalent
+  named refresh and type actions.
+- Chart SVG is presentation-only. The source table stays in the accessibility tree and can be made
+  visually available with `data-table-visible`.
+- Chart uses explicit refresh calls and the global enhancement pass. It does not install a
+  component-level observer.
+- Aspect Ratio, Direction, Marker, Table, and Typography are zero-runtime HTML and theme contracts.
+  Direction delegates inheritance to native `dir`; Table preserves native table semantics; and
+  Typography styles ordinary document markup.
+
 ## Styling boundary
 
 Tailwind is an authoring and compilation dependency. It is not a browser dependency. The published
@@ -545,6 +559,7 @@ Implemented:
 - Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
 - Multi Select, Time Picker, Color Picker, and Rating
 - Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, and Bubble
+- Aspect Ratio, Chart, Direction, Marker, Table, and Typography
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -553,7 +568,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 78-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 84-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

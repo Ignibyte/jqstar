@@ -1,0 +1,49 @@
+<figure id="visitors-chart" data-jqs="chart" data-type="bar" aria-labelledby="visitors-title">
+  <figcaption id="visitors-title">Visitors by device</figcaption>
+  <div data-part="toolbar" aria-label="Chart type">
+    <button data-jqs="button" data-size="sm" type="button" data-on:click="@ui.chart.type('bar')">
+      Bar
+    </button>
+    <button
+      data-jqs="button"
+      data-size="sm"
+      data-variant="outline"
+      type="button"
+      data-on:click="@ui.chart.type('line')"
+    >
+      Line
+    </button>
+  </div>
+  <svg data-part="plot"></svg>
+  <div data-part="legend"></div>
+  <p data-part="status"></p>
+  <table data-part="data">
+    <caption>
+      Monthly visitors by device
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Month</th>
+        <th scope="col" data-series="desktop" data-color="#2563eb">Desktop</th>
+        <th scope="col" data-series="mobile" data-color="#0f766e">Mobile</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">January</th>
+        <td>186</td>
+        <td>80</td>
+      </tr>
+      <tr>
+        <th scope="row">February</th>
+        <td>305</td>
+        <td>200</td>
+      </tr>
+      <tr>
+        <th scope="row">March</th>
+        <td>237</td>
+        <td>120</td>
+      </tr>
+    </tbody>
+  </table>
+</figure>

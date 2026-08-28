@@ -79,7 +79,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 78 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 84 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
@@ -88,8 +88,9 @@ Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
 Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
 Select, Time Picker, Color Picker, Rating, Message, Message Scroller, Search Field, Item, Feed,
-Questionnaire, Attachment, and Bubble. Import the precompiled theme for the default appearance.
-Tailwind is used to author this file but is not required in the consuming application.
+Questionnaire, Attachment, Bubble, Aspect Ratio, Chart, Direction, Marker, Table, and Typography.
+Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
+not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -629,7 +630,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="78" max="78">78 of 78</progress>
+    <progress data-jqs="progress" value="84" max="84">84 of 84</progress>
   </div>
 </article>
 
@@ -640,6 +641,43 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
 
 <span data-jqs="skeleton" aria-hidden="true"></span>
 ```
+
+Chart uses one native table as its accessible and server-patchable source of truth. The runtime
+renders a responsive SVG without adding a charting framework:
+
+```html
+<figure id="visitors" data-jqs="chart" data-type="bar">
+  <figcaption>Visitors</figcaption>
+  <svg data-part="plot"></svg>
+  <div data-part="legend"></div>
+  <p data-part="status"></p>
+  <table data-part="data">
+    <caption>
+      Monthly visitors
+    </caption>
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th data-series="visitors">Visitors</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>January</th>
+        <td>186</td>
+      </tr>
+      <tr>
+        <th>February</th>
+        <td>305</td>
+      </tr>
+    </tbody>
+  </table>
+</figure>
+```
+
+After a backend response changes the table, call `$.star.ui.chart.refresh("#visitors")` or the named
+`@ui.chart.refresh('#visitors')` action. Use `@ui.chart.type('line')` from inside the chart to
+switch presentation without changing its data.
 
 Badge and Alert accept `default`, `secondary`, `outline`, `success`, and `danger` variants where
 applicable; Alert also accepts `warning`. Avatar accepts `sm`, `md`, and `lg` sizes. Skeleton is

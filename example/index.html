@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -2076,7 +2076,7 @@ Everything stayed native from browser to backend.</textarea>
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="78">78 components</td>
+                  <td data-key="coverage" data-value="84">84 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -2462,6 +2462,175 @@ Everything stayed native from browser to backend.</textarea>
         ></div>
       </section>
 
+      <section class="card reporting-components-card" aria-labelledby="reporting-components-title">
+        <div>
+          <p class="label" id="reporting-components-title">Backend reporting primitives</p>
+          <p class="hint">
+            One native data source drives the chart, table, status, and static Pages fallback.
+          </p>
+        </div>
+
+        <div class="reporting-grid">
+          <figure
+            id="release-metrics-chart"
+            data-jqs="chart"
+            data-type="bar"
+            aria-labelledby="release-metrics-title"
+          >
+            <figcaption id="release-metrics-title">Weekly component adoption</figcaption>
+            <div data-part="toolbar" aria-label="Chart controls">
+              <button
+                data-jqs="button"
+                data-size="sm"
+                type="button"
+                data-on:click="@ui.chart.type('bar')"
+              >
+                Bar
+              </button>
+              <button
+                data-jqs="button"
+                data-size="sm"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.chart.type('line')"
+              >
+                Line
+              </button>
+              <button
+                id="refresh-release-metrics"
+                data-jqs="button"
+                data-size="sm"
+                data-variant="outline"
+                type="button"
+                data-on:click="@refreshMetrics"
+                data-prop:disabled="$metricsLoading"
+              >
+                Refresh from backend
+              </button>
+            </div>
+            <svg data-part="plot"></svg>
+            <div data-part="legend"></div>
+            <p data-part="status"></p>
+            <table data-part="data">
+              <caption>
+                Weekly component adoption by runtime
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Week</th>
+                  <th scope="col" data-series="jquery-star" data-color="#06704f">jQuery Star</th>
+                  <th scope="col" data-series="server-patches" data-color="#d07929">
+                    Server patches
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Week 1</th>
+                  <td>186</td>
+                  <td>80</td>
+                </tr>
+                <tr>
+                  <th scope="row">Week 2</th>
+                  <td>305</td>
+                  <td>200</td>
+                </tr>
+                <tr>
+                  <th scope="row">Week 3</th>
+                  <td>237</td>
+                  <td>120</td>
+                </tr>
+                <tr>
+                  <th scope="row">Week 4</th>
+                  <td>342</td>
+                  <td>250</td>
+                </tr>
+              </tbody>
+            </table>
+            <output class="metrics-message" data-text="$metricsMessage" aria-live="polite"></output>
+          </figure>
+
+          <article data-jqs="typography" class="reporting-notes">
+            <span id="metrics-status-marker" data-jqs="marker" data-variant="status">
+              <span data-part="icon" aria-hidden="true">✓</span>
+              Native data ready
+            </span>
+            <h2>Server-owned data, browser-owned presentation</h2>
+            <p class="lead">
+              The table remains the source of truth. jQuery Star reads it and draws a responsive SVG
+              without Recharts or a framework runtime.
+            </p>
+            <blockquote>
+              <p>Patch ordinary cells, then call <code>@ui.chart.refresh</code>.</p>
+            </blockquote>
+            <ul>
+              <li>Accessible data is present before JavaScript runs.</li>
+              <li>Bar and line modes share the same server response.</li>
+              <li>The static build exercises the same client contract.</li>
+            </ul>
+          </article>
+
+          <div data-jqs="aspect-ratio" data-ratio="video" class="release-aspect-proof">
+            <div data-part="media" role="img" aria-label="Abstract component release landscape">
+              <span>84</span>
+              <strong>source-owned components</strong>
+              <small>One compiled theme · real HTML</small>
+            </div>
+          </div>
+
+          <section
+            data-jqs="direction"
+            class="direction-proof"
+            dir="rtl"
+            lang="ar"
+            aria-labelledby="direction-proof-title"
+          >
+            <span data-jqs="marker" data-variant="border">RTL</span>
+            <h2 id="direction-proof-title">واجهة أصلية من اليمين إلى اليسار</h2>
+            <p>تنتقل سمة الاتجاه عبر العناصر الأصلية من دون وقت تشغيل إضافي.</p>
+            <button data-jqs="button" data-size="sm" type="button">متابعة</button>
+          </section>
+
+          <div data-jqs="table" class="release-table-proof">
+            <table>
+              <caption>
+                Release proof
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Layer</th>
+                  <th scope="col">Owner</th>
+                  <th scope="col" data-align="numeric">Proof</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Markup</th>
+                  <td>Browser</td>
+                  <td data-align="numeric">Native</td>
+                </tr>
+                <tr>
+                  <th scope="row">Behavior</th>
+                  <td>jQuery Star</td>
+                  <td data-align="numeric">Focused</td>
+                </tr>
+                <tr>
+                  <th scope="row">Data</th>
+                  <td>Backend</td>
+                  <td data-align="numeric">Patchable</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="marker-proof">
+            <span data-jqs="marker">HTML first</span>
+            <span data-jqs="marker" data-variant="separator">jQuery actions</span>
+            <span data-jqs="marker" data-variant="border">Backend ready</span>
+          </p>
+        </div>
+      </section>
+
       <section class="card primitives-component-card" aria-labelledby="primitives-components-title">
         <div>
           <p class="label" id="primitives-components-title">Composition primitives</p>
@@ -2506,11 +2675,11 @@ Everything stayed native from browser to backend.</textarea>
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="78"
-            max="78"
+            value="84"
+            max="84"
             aria-labelledby="progress-proof-label"
           >
-            78 of 78
+            84 of 84
           </progress>
         </div>
 

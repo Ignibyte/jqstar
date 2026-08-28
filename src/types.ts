@@ -532,6 +532,28 @@ export interface StarQuestionnaireStatic {
   answers(target: QuestionnaireTarget): QuestionnaireAnswers;
 }
 
+export type ChartTarget = string | HTMLElement;
+export type ChartType = "bar" | "line";
+
+export interface ChartSeries {
+  key: string;
+  label: string;
+  color: string;
+  values: number[];
+}
+
+export interface ChartData {
+  labels: string[];
+  series: ChartSeries[];
+}
+
+export interface StarChartStatic {
+  refresh(target: ChartTarget): HTMLElement;
+  setType(target: ChartTarget, type: ChartType): HTMLElement;
+  type(target: ChartTarget): ChartType;
+  data(target: ChartTarget): ChartData;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -642,6 +664,7 @@ export interface StarUIStatic {
   readonly searchField: StarSearchFieldStatic;
   readonly feed: StarFeedStatic;
   readonly questionnaire: StarQuestionnaireStatic;
+  readonly chart: StarChartStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;
