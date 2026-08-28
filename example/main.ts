@@ -16,10 +16,27 @@ interface DemoState extends Record<string, unknown> {
   preferencesSaving: boolean;
   feedbackMessage: string;
   feedbackSaving: boolean;
+  feedMessage: string;
+  feedQuery: string;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
   serverMessage: string;
+}
+
+interface FeedResult {
+  value: string;
+  title: string;
+  description: string;
+  meta: string;
+}
+
+interface FeedResponse {
+  cursor: string;
+  done: boolean;
+  items: FeedResult[];
+  message: string;
+  total: number;
 }
 
 const componentSystems = [
@@ -32,8 +49,172 @@ const componentSystems = [
   ["shoelace", "Shoelace"],
 ] as const;
 
+const feedItems: FeedResult[] = [
+  {
+    value: "jquery-star",
+    title: "jQuery Star",
+    description: "Reactive HTML components with real jQuery expressions and native forms.",
+    meta: "Runtime · Source owned",
+  },
+  {
+    value: "datastar",
+    title: "Datastar",
+    description: "Server-driven signals and HTML patch events through the official SDK.",
+    meta: "Server channel · SDK",
+  },
+  {
+    value: "tailwind",
+    title: "Tailwind CSS",
+    description: "Build-time utility CSS used to author the compiled jQuery Star theme.",
+    meta: "Styling · Build time",
+  },
+  {
+    value: "daisyui",
+    title: "daisyUI",
+    description: "A Tailwind component plugin built around reusable class combinations.",
+    meta: "Styling · Plugin",
+  },
+  {
+    value: "radix",
+    title: "Radix Primitives",
+    description: "Unstyled React primitives focused on interaction and accessibility behavior.",
+    meta: "React · Primitives",
+  },
+  {
+    value: "shadcn",
+    title: "shadcn/ui",
+    description: "A source-owned component distribution model that inspired this registry.",
+    meta: "Source registry · React",
+  },
+  {
+    value: "bootstrap",
+    title: "Bootstrap",
+    description: "A broad CSS and JavaScript component framework with established conventions.",
+    meta: "Framework · CSS and JS",
+  },
+  {
+    value: "shoelace",
+    title: "Shoelace",
+    description: "Framework-agnostic components distributed as standards-based custom elements.",
+    meta: "Web components · Runtime",
+  },
+  {
+    value: "alpine",
+    title: "Alpine.js",
+    description: "Attribute-driven client behavior for server-rendered HTML applications.",
+    meta: "HTML-first · Runtime",
+  },
+  {
+    value: "htmx",
+    title: "htmx",
+    description: "HTML attributes that extend links and forms with server-driven requests.",
+    meta: "HTML-first · Server driven",
+  },
+  {
+    value: "lit",
+    title: "Lit",
+    description: "A small library for creating standards-based web components.",
+    meta: "Web components · Authoring",
+  },
+  {
+    value: "native-html",
+    title: "Native HTML",
+    description: "Platform controls, forms, dialogs, popovers, and semantic document structure.",
+    meta: "Platform · No dependency",
+  },
+];
+
 const wait = (duration: number): Promise<void> =>
   new Promise((resolve) => window.setTimeout(resolve, duration));
+
+function feedPage(query: string, requestedCursor: string): FeedResponse {
+  const normalized = query.trim().toLocaleLowerCase();
+  const value = Number(requestedCursor);
+  const cursor = Number.isInteger(value) && value >= 0 ? value : 0;
+  const matches = feedItems.filter((item) =>
+    `${item.title} ${item.description} ${item.meta}`.toLocaleLowerCase().includes(normalized),
+  );
+  const items = matches.slice(cursor, cursor + 3);
+  const nextCursor = cursor + items.length;
+  return {
+    cursor: String(nextCursor),
+    done: nextCursor >= matches.length,
+    items,
+    message: `${nextCursor} of ${matches.length} matching results loaded.`,
+    total: matches.length,
+  };
+}
+
+function appendFeedItems(items: FeedResult[]): void {
+  const $content = $("#component-results-feed > [data-part='content']");
+  for (const item of items) {
+    const initials = item.title
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toLocaleUpperCase();
+    const $item = $("<article>", {
+      "data-jqs": "item",
+      "data-part": "item",
+      "data-value": item.value,
+    });
+    const $media = $("<div>", { "aria-hidden": "true", "data-part": "media" }).text(initials);
+    const $copy = $("<div>", { "data-part": "content" }).append(
+      $("<h3>", { "data-part": "title" }).text(item.title),
+      $("<p>", { "data-part": "description" }).text(item.description),
+      $("<span>", { "data-part": "meta" }).text(item.meta),
+    );
+    const $actions = $("<div>", { "data-part": "actions" }).append(
+      $("<button>", {
+        "data-jqs": "button",
+        "data-size": "sm",
+        "data-variant": "outline",
+        type: "button",
+      }).text("Inspect"),
+    );
+    $item.append($media, $copy, $actions);
+    $content.append($item);
+  }
+}
+
+$.star.action<DemoState>("loadMoreResults", async (context) => {
+  const feed = document.querySelector<HTMLElement>("#component-results-feed")!;
+  const cursor = $.star.ui.feed.state(feed).cursor ?? "0";
+  const query = String(context.state.feedQuery ?? "");
+  try {
+    let result: FeedResponse;
+    if (__JQS_STATIC_DEMO__) {
+      await wait(140);
+      result = feedPage(query, cursor);
+    } else {
+      const params = new URLSearchParams({ cursor, query });
+      const response = await fetch(`/api/demo/feed?${params}`);
+      result = (await response.json()) as FeedResponse;
+      if (!response.ok) throw new Error(`Request failed with ${response.status}.`);
+    }
+    feed.dataset.total = String(result.total);
+    appendFeedItems(result.items);
+    $.star.ui.feed.complete(feed, {
+      added: result.items.length,
+      cursor: result.cursor,
+      done: result.done,
+    });
+    context.state.feedMessage = result.message;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    $.star.ui.feed.fail(feed, message);
+    context.state.feedMessage = message;
+  }
+});
+
+$.star.action<DemoState>("searchResultFeed", () => {
+  const feed = document.querySelector<HTMLElement>("#component-results-feed")!;
+  $(feed).children('[data-part="content"]').empty();
+  feed.removeAttribute("data-total");
+  $.star.ui.feed.reset(feed, { cursor: "0", message: "Searching the catalog…" });
+  $.star.ui.feed.load(feed);
+});
 
 $.star.action<{ itemCount: number }>("removeItem", ({ $element, state }) => {
   const $item = $element!.closest("li");

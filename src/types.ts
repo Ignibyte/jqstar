@@ -478,6 +478,44 @@ export interface StarMessageScrollerStatic {
   unread(target: MessageScrollerTarget): number;
 }
 
+export type SearchFieldTarget = string | HTMLElement;
+
+export interface StarSearchFieldStatic {
+  set(target: SearchFieldTarget, value: string): HTMLElement;
+  clear(target: SearchFieldTarget): HTMLElement;
+  focus(target: SearchFieldTarget): HTMLElement;
+  submit(target: SearchFieldTarget): HTMLElement;
+  value(target: SearchFieldTarget): string;
+}
+
+export type FeedTarget = string | HTMLElement;
+
+export interface FeedState {
+  cursor: string | undefined;
+  done: boolean;
+  loading: boolean;
+}
+
+export interface FeedCompleteOptions {
+  added?: number;
+  cursor?: string;
+  done?: boolean;
+}
+
+export interface FeedResetOptions {
+  cursor?: string;
+  message?: string;
+}
+
+export interface StarFeedStatic {
+  load(target: FeedTarget): HTMLElement;
+  complete(target: FeedTarget, options?: FeedCompleteOptions): HTMLElement;
+  fail(target: FeedTarget, message: string): HTMLElement;
+  reset(target: FeedTarget, options?: FeedResetOptions): HTMLElement;
+  state(target: FeedTarget): FeedState;
+  focus(target: FeedTarget, index: number): HTMLElement;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -585,6 +623,8 @@ export interface StarUIStatic {
   readonly colorPicker: StarColorPickerStatic;
   readonly rating: StarRatingStatic;
   readonly messageScroller: StarMessageScrollerStatic;
+  readonly searchField: StarSearchFieldStatic;
+  readonly feed: StarFeedStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

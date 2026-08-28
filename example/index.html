@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -1193,6 +1193,103 @@ Everything stayed native from browser to backend.</textarea>
         </div>
       </section>
 
+      <section class="card feed-components-card" aria-labelledby="feed-components-title">
+        <div>
+          <p class="label" id="feed-components-title">Backend results feed</p>
+          <p class="hint">
+            Native search submission, source-owned result rows, cursor pagination, and accessible
+            article navigation.
+          </p>
+        </div>
+
+        <form class="feed-search-form" role="search" data-on:submit__prevent="@searchResultFeed">
+          <label for="feed-query">Search the component landscape</label>
+          <div id="feed-search-field" data-jqs="search-field">
+            <span data-part="icon" aria-hidden="true">⌕</span>
+            <input
+              id="feed-query"
+              data-part="control"
+              data-bind:feed-query
+              type="search"
+              name="query"
+              placeholder="Try server, React, or web components"
+            />
+            <button data-part="clear" type="button">Clear</button>
+            <button data-part="submit" type="submit">Search</button>
+          </div>
+        </form>
+
+        <section
+          id="component-results-feed"
+          data-jqs="feed"
+          data-cursor="3"
+          data-total="12"
+          aria-labelledby="feed-results-title"
+        >
+          <div class="feed-heading">
+            <div>
+              <span class="workspace-kicker">Source-owned results</span>
+              <h2 id="feed-results-title">Component landscape</h2>
+            </div>
+            <span data-jqs="badge" data-variant="success">Backend ready</span>
+          </div>
+          <p class="feed-keyboard-help">Use Page Up and Page Down to move between results.</p>
+          <div data-part="content">
+            <article data-jqs="item" data-part="item" data-value="jquery-star">
+              <div data-part="media" aria-hidden="true">JS</div>
+              <div data-part="content">
+                <h3 data-part="title">jQuery Star</h3>
+                <p data-part="description">
+                  Reactive HTML components with real jQuery expressions and native forms.
+                </p>
+                <span data-part="meta">Runtime · Source owned</span>
+              </div>
+              <div data-part="actions">
+                <button data-jqs="button" data-size="sm" data-variant="outline" type="button">
+                  Inspect
+                </button>
+              </div>
+            </article>
+            <article data-jqs="item" data-part="item" data-value="datastar">
+              <div data-part="media" aria-hidden="true">DS</div>
+              <div data-part="content">
+                <h3 data-part="title">Datastar</h3>
+                <p data-part="description">
+                  Server-driven signals and HTML patch events through the official SDK.
+                </p>
+                <span data-part="meta">Server channel · SDK</span>
+              </div>
+              <div data-part="actions">
+                <button data-jqs="button" data-size="sm" data-variant="outline" type="button">
+                  Inspect
+                </button>
+              </div>
+            </article>
+            <article data-jqs="item" data-part="item" data-value="tailwind">
+              <div data-part="media" aria-hidden="true">TC</div>
+              <div data-part="content">
+                <h3 data-part="title">Tailwind CSS</h3>
+                <p data-part="description">
+                  Build-time utility CSS used to author the compiled jQuery Star theme.
+                </p>
+                <span data-part="meta">Styling · Build time</span>
+              </div>
+              <div data-part="actions">
+                <button data-jqs="button" data-size="sm" data-variant="outline" type="button">
+                  Inspect
+                </button>
+              </div>
+            </article>
+          </div>
+          <button data-part="more" type="button" data-on:click="@loadMoreResults">
+            Load more results
+          </button>
+          <div data-part="sentinel" aria-hidden="true"></div>
+          <p data-part="status" aria-live="polite">3 of 12 catalog results loaded.</p>
+          <output class="feed-backend-status" data-text="$feedMessage" aria-live="polite"></output>
+        </section>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -1793,7 +1890,7 @@ Everything stayed native from browser to backend.</textarea>
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="72">72 components</td>
+                  <td data-key="coverage" data-value="75">75 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -2223,11 +2320,11 @@ Everything stayed native from browser to backend.</textarea>
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="72"
-            max="72"
+            value="75"
+            max="75"
             aria-labelledby="progress-proof-label"
           >
-            72 of 72
+            75 of 75
           </progress>
         </div>
 

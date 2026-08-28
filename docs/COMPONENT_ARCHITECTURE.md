@@ -449,6 +449,26 @@ reader scrolls beyond `data-threshold`, it preserves that position and exposes t
 Server patches append Message articles to the source-owned content instead of calling an imperative
 rendering API.
 
+Search and result components provide:
+
+- Search Field backed by one native `input type="search"`, its owning form, and its ordinary
+  FormData query value
+- `set`, `clear`, `focus`, `submit`, and `value` under `$.star.ui.searchField`, with equivalent
+  named actions and cancelable value changes
+- Item as zero-runtime, editable article or row anatomy for media, copy, metadata, footer, and
+  actions
+- Feed as a labelled article collection with position, set-size, busy, cursor, loading, done, and
+  error state
+- Page Up and Page Down article movement plus Control+Home and Control+End feed-boundary movement
+- One visible Load More button shared by pointer activation, keyboard-triggered loading at the end
+  of the feed, imperative loading, and optional Intersection Observer activation
+- `load`, `complete`, `fail`, `reset`, `state`, and `focus` under `$.star.ui.feed`, with equivalent
+  named actions
+
+Feed does not own result HTML or a request client. The application appends source-owned Item
+articles, then calls `complete` with the next cursor and done state. This keeps JSON, Datastar HTML
+patches, and future backend transports on the same component contract.
+
 ## Styling boundary
 
 Tailwind is an authoring and compilation dependency. It is not a browser dependency. The published
@@ -505,7 +525,7 @@ Implemented:
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
 - Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
 - Multi Select, Time Picker, Color Picker, and Rating
-- Message and Message Scroller
+- Message, Message Scroller, Search Field, Item, and Feed
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -514,7 +534,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 72-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 75-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

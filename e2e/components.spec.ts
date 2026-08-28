@@ -349,6 +349,45 @@ test.describe("jQuery Star components", () => {
     await expect(messages.last()).toContainText("4 stars · Delivered");
   });
 
+  test("search field, items, and feed share one cursor-backed results workflow", async ({
+    page,
+  }) => {
+    const card = page.getByRole("region", { name: "Backend results feed" });
+    const form = card.getByRole("search");
+    const search = card.getByRole("searchbox", { name: "Search the component landscape" });
+    const feed = card.getByRole("feed", { name: "Component landscape" });
+    const articles = feed.getByRole("article");
+
+    await expect(articles).toHaveCount(3);
+    await expect(articles.first()).toHaveAttribute("aria-posinset", "1");
+    await expect(articles.first()).toHaveAttribute("aria-setsize", "12");
+    await articles.first().focus();
+    await page.keyboard.press("PageDown");
+    await expect(articles.nth(1)).toBeFocused();
+    await articles.nth(2).focus();
+    await page.keyboard.press("PageDown");
+    await expect(articles).toHaveCount(6);
+    await expect(articles.nth(3)).toBeFocused();
+    await expect(card.locator(".feed-backend-status")).toHaveText(
+      "6 of 12 matching results loaded.",
+    );
+
+    await search.fill("web components");
+    await expect(
+      form.evaluate((element) => new FormData(element as HTMLFormElement).get("query")),
+    ).resolves.toBe("web components");
+    await form.getByRole("button", { name: "Search" }).click();
+    await expect(articles).toHaveCount(2);
+    await expect(feed.getByRole("article", { name: "Shoelace" })).toBeVisible();
+    await expect(feed.getByRole("article", { name: "Lit" })).toBeVisible();
+    await expect(card.getByRole("button", { name: "Load more results" })).toBeHidden();
+
+    const clear = form.getByRole("button", { name: "Clear" });
+    await clear.click();
+    await expect(search).toHaveValue("");
+    await expect(search).toBeFocused();
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -898,7 +937,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "72",
+      "75",
     );
   });
 
@@ -1048,6 +1087,19 @@ test.describe("jQuery Star components", () => {
     const results = await new AxeBuilder({ page })
       .include(".conversation-components-card")
       .analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("search and dynamic feed pass accessibility checks before and after a backend page", async ({
+    page,
+  }) => {
+    const card = page.locator(".feed-components-card");
+    let results = await new AxeBuilder({ page }).include(".feed-components-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.getByRole("button", { name: "Load more results" }).click();
+    await expect(card.getByRole("article")).toHaveCount(6);
+    results = await new AxeBuilder({ page }).include(".feed-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

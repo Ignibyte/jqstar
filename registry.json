@@ -960,6 +960,47 @@
           "target": "~/components/jquery-star/message-scroller.html"
         }
       ]
+    },
+    {
+      "name": "search-field",
+      "type": "registry:item",
+      "title": "Search Field",
+      "description": "A native search form control with clear, focus, submit, loading, server-patchable value, and named actions.",
+      "files": [
+        {
+          "path": "registry/components/search-field.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/search-field.html"
+        }
+      ]
+    },
+    {
+      "name": "item",
+      "type": "registry:item",
+      "title": "Item",
+      "description": "Source-owned content row anatomy with media, title, description, metadata, footer, and actions.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/item.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/item.html"
+        }
+      ]
+    },
+    {
+      "name": "feed",
+      "type": "registry:item",
+      "title": "Feed",
+      "description": "A dynamic article feed with keyboard navigation, load state, a visible Load More fallback, and optional automatic loading.",
+      "registryDependencies": ["item"],
+      "files": [
+        {
+          "path": "registry/components/feed.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/feed.html"
+        }
+      ]
     }
   ]
 }

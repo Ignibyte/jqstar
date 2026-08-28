@@ -21,6 +21,81 @@ const componentSystems = [
   ["shoelace", "Shoelace"],
 ] as const;
 
+const feedItems = [
+  {
+    value: "jquery-star",
+    title: "jQuery Star",
+    description: "Reactive HTML components with real jQuery expressions and native forms.",
+    meta: "Runtime · Source owned",
+  },
+  {
+    value: "datastar",
+    title: "Datastar",
+    description: "Server-driven signals and HTML patch events through the official SDK.",
+    meta: "Server channel · SDK",
+  },
+  {
+    value: "tailwind",
+    title: "Tailwind CSS",
+    description: "Build-time utility CSS used to author the compiled jQuery Star theme.",
+    meta: "Styling · Build time",
+  },
+  {
+    value: "daisyui",
+    title: "daisyUI",
+    description: "A Tailwind component plugin built around reusable class combinations.",
+    meta: "Styling · Plugin",
+  },
+  {
+    value: "radix",
+    title: "Radix Primitives",
+    description: "Unstyled React primitives focused on interaction and accessibility behavior.",
+    meta: "React · Primitives",
+  },
+  {
+    value: "shadcn",
+    title: "shadcn/ui",
+    description: "A source-owned component distribution model that inspired this registry.",
+    meta: "Source registry · React",
+  },
+  {
+    value: "bootstrap",
+    title: "Bootstrap",
+    description: "A broad CSS and JavaScript component framework with established conventions.",
+    meta: "Framework · CSS and JS",
+  },
+  {
+    value: "shoelace",
+    title: "Shoelace",
+    description: "Framework-agnostic components distributed as standards-based custom elements.",
+    meta: "Web components · Runtime",
+  },
+  {
+    value: "alpine",
+    title: "Alpine.js",
+    description: "Attribute-driven client behavior for server-rendered HTML applications.",
+    meta: "HTML-first · Runtime",
+  },
+  {
+    value: "htmx",
+    title: "htmx",
+    description: "HTML attributes that extend links and forms with server-driven requests.",
+    meta: "HTML-first · Server driven",
+  },
+  {
+    value: "lit",
+    title: "Lit",
+    description: "A small library for creating standards-based web components.",
+    meta: "Web components · Authoring",
+  },
+  {
+    value: "native-html",
+    title: "Native HTML",
+    description: "Platform controls, forms, dialogs, popovers, and semantic document structure.",
+    meta: "Platform · No dependency",
+  },
+] as const;
+
 function escapeHtml(value: string): string {
   return value.replace(
     /[&<>"']/g,
@@ -65,6 +140,34 @@ async function sendWebResponse(source: Response, destination: ServerResponse): P
 }
 
 function installProofBackend(middlewares: MiddlewareStack): void {
+  middlewares.use("/api/demo/feed", (request, response) => {
+    if (request.method !== "GET") {
+      response.writeHead(405).end();
+      return;
+    }
+    const url = new URL(request.url ?? "/", "http://localhost");
+    const query = (url.searchParams.get("query") ?? "").trim().toLocaleLowerCase();
+    const requestedCursor = Number(url.searchParams.get("cursor") ?? 0);
+    const cursor = Number.isInteger(requestedCursor) && requestedCursor >= 0 ? requestedCursor : 0;
+    const matches = feedItems.filter((item) =>
+      `${item.title} ${item.description} ${item.meta}`.toLocaleLowerCase().includes(query),
+    );
+    const items = matches.slice(cursor, cursor + 3);
+    const nextCursor = cursor + items.length;
+    const body = JSON.stringify({
+      cursor: String(nextCursor),
+      done: nextCursor >= matches.length,
+      items,
+      message: `${nextCursor} of ${matches.length} matching results loaded.`,
+      total: matches.length,
+    });
+    response.writeHead(200, {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(body),
+    });
+    response.end(body);
+  });
+
   middlewares.use("/api/demo/increment", async (request, response) => {
     if (request.method !== "POST") {
       response.writeHead(405).end();

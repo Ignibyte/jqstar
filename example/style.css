@@ -617,6 +617,68 @@ h1 {
   width: 100%;
 }
 
+.feed-components-card {
+  grid-template-columns: minmax(15rem, 0.75fr) minmax(0, 1.5fr);
+  gap: 20px 28px;
+  align-items: start;
+}
+
+.feed-components-card > :first-child {
+  grid-column: 1;
+}
+
+.feed-search-form {
+  display: grid;
+  grid-column: 1;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: #f8faf9;
+}
+
+.feed-search-form > label {
+  color: #2d2a26;
+  font-size: 0.8125rem;
+  font-weight: 750;
+}
+
+#component-results-feed {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+}
+
+.feed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feed-heading h2 {
+  margin: 3px 0 0;
+  font-family: Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.feed-keyboard-help {
+  margin: -2px 0 0;
+  color: #655e55;
+  font-size: 0.75rem;
+}
+
+.feed-backend-status {
+  min-height: 1.25rem;
+  margin: -4px 0 0;
+  color: #06704f;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .layout-primitives-grid {
   display: grid;
   grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.6fr);
@@ -1093,8 +1155,16 @@ pre {
   #project-stepper > [data-part="panel"][data-value="details"],
   .workflow-assets-grid,
   .preferences-grid,
-  .conversation-grid {
+  .conversation-grid,
+  .feed-components-card {
     grid-template-columns: 1fr;
+  }
+
+  .feed-components-card > :first-child,
+  .feed-search-form,
+  #component-results-feed {
+    grid-row: auto;
+    grid-column: 1;
   }
 
   .preferences-submit {

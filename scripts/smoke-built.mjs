@@ -708,6 +708,43 @@ $.star.ui.messageScroller.latest(packageMessageScroller);
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-search-form" role="search">
+     <div id="package-search" data-jqs="search-field">
+       <input data-part="control" type="search" name="query"><button data-part="clear">Clear</button><button data-part="submit">Search</button>
+     </div>
+   </form>
+   <section id="package-feed" data-jqs="feed" data-cursor="1" aria-label="Package results">
+     <div data-part="content"><article data-jqs="item" data-part="item"><h2 data-part="title">First result</h2><p data-part="description">First description</p></article></div>
+     <button data-part="more">Load more</button><div data-part="sentinel"></div><p data-part="status">One result</p>
+   </section>`,
+);
+const packageSearchForm = document.querySelector("#package-search-form");
+const packageSearch = document.querySelector("#package-search");
+const packageFeed = document.querySelector("#package-feed");
+$.star.ui.enhance(packageSearchForm);
+$.star.ui.enhance(packageFeed);
+$.star.ui.searchField.set(packageSearch, "proof");
+$.star.ui.feed.load(packageFeed);
+packageFeed
+  .querySelector('[data-part="content"]')
+  .insertAdjacentHTML(
+    "beforeend",
+    '<article data-jqs="item" data-part="item"><h2 data-part="title">Second result</h2><p data-part="description">Second description</p></article>',
+  );
+$.star.ui.feed.complete(packageFeed, { added: 1, cursor: "2", done: true });
+if (
+  new FormData(packageSearchForm).get("query") !== "proof" ||
+  $.star.ui.searchField.value(packageSearch) !== "proof" ||
+  $.star.ui.feed.state(packageFeed).cursor !== "2" ||
+  packageFeed.querySelector('[data-part="content"]').getAttribute("role") !== "feed" ||
+  packageFeed.querySelectorAll('[data-part="item"]')[1]?.getAttribute("aria-posinset") !== "2" ||
+  packageFeed.querySelectorAll('[data-part="item"]')[1]?.getAttribute("aria-setsize") !== "2"
+) {
+  throw new Error("The ESM bundle failed the Search Field, Item, and Feed smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -785,6 +822,9 @@ const componentSelectors = [
   "[data-jqs=rating]",
   "[data-jqs=message]",
   "[data-jqs=message-scroller]",
+  "[data-jqs=search-field]",
+  "[data-jqs=item]",
+  "[data-jqs=feed]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -828,6 +868,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

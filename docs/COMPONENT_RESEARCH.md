@@ -193,6 +193,18 @@ The first proof contains Button, Dialog, and the native form family:
   additions. It determines whether the reader is near the latest message from `scrollHeight`,
   `clientHeight`, and `scrollTop`, using a threshold because those values can have different
   rounding behavior.
+- Search Field keeps MDN's native
+  [`input type="search"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/search)
+  submission and event contract. Enhancement adds clear, focus, loading, and server-patch hooks
+  without replacing the searchbox or form.
+- Feed follows the APG [Feed pattern](https://www.w3.org/WAI/ARIA/apg/patterns/feed/): a labelled
+  feed contains named articles with position and set-size metadata, exposes busy state while items
+  change, and supports Page Up, Page Down, Control+Home, and Control+End navigation. A visible Load
+  More button remains available when automatic loading is disabled or unavailable.
+- Optional automatic Feed loading uses the browser's
+  [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+  instead of synchronous scroll handlers. The observer activates the same authored Load More button
+  and is disconnected when component parts change.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is
