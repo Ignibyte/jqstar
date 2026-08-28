@@ -1,0 +1,27 @@
+<button
+  data-jqs="button"
+  type="button"
+  aria-haspopup="dialog"
+  data-on:click="@ui.dialog.open('#example-dialog', '#example-dialog-cancel')"
+>
+  Open dialog
+</button>
+
+<dialog id="example-dialog" data-jqs="dialog" data-close-on-backdrop>
+  <div data-part="content">
+    <h2 data-part="title">Edit account</h2>
+    <p data-part="description">Changes are applied when you save.</p>
+    <div data-part="footer">
+      <button
+        id="example-dialog-cancel"
+        data-jqs="button"
+        data-variant="outline"
+        type="button"
+        data-on:click="@ui.dialog.close('cancel')"
+      >
+        Cancel
+      </button>
+      <button data-jqs="button" type="button" data-on:click="@ui.dialog.close('save')">Save</button>
+    </div>
+  </div>
+</dialog>

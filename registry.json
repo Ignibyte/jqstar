@@ -1,0 +1,477 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "jquery-star",
+  "homepage": "https://ignibyte.github.io/jqstar/",
+  "items": [
+    {
+      "name": "button",
+      "type": "registry:item",
+      "title": "Button",
+      "description": "Button variants and sizes using native button semantics.",
+      "files": [
+        {
+          "path": "registry/components/button.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/button.html"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:item",
+      "title": "Dialog",
+      "description": "A modal dialog with focus return and named actions.",
+      "files": [
+        {
+          "path": "registry/components/dialog.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/dialog.html"
+        }
+      ]
+    },
+    {
+      "name": "field",
+      "type": "registry:item",
+      "title": "Field",
+      "description": "Label, description, validation message, and control anatomy.",
+      "files": [
+        {
+          "path": "registry/components/field.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/field.html"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:item",
+      "title": "Input",
+      "description": "A labelled native input with reactive binding.",
+      "files": [
+        {
+          "path": "registry/components/input.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/input.html"
+        }
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:item",
+      "title": "Textarea",
+      "description": "A labelled native textarea with reactive binding.",
+      "files": [
+        {
+          "path": "registry/components/textarea.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/textarea.html"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:item",
+      "title": "Checkbox",
+      "description": "A native checkbox with shared field styling.",
+      "files": [
+        {
+          "path": "registry/components/checkbox.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/checkbox.html"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:item",
+      "title": "Switch",
+      "description": "A native checkbox presented as an on-off switch.",
+      "files": [
+        {
+          "path": "registry/components/switch.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/switch.html"
+        }
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:item",
+      "title": "Collapsible",
+      "description": "A native details disclosure with component lifecycle events.",
+      "files": [
+        {
+          "path": "registry/components/collapsible.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/collapsible.html"
+        }
+      ]
+    },
+    {
+      "name": "accordion",
+      "type": "registry:item",
+      "title": "Accordion",
+      "description": "Single or multiple native disclosure groups.",
+      "files": [
+        {
+          "path": "registry/components/accordion.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/accordion.html"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:item",
+      "title": "Tabs",
+      "description": "Keyboard-accessible tabs with automatic or manual activation.",
+      "files": [
+        {
+          "path": "registry/components/tabs.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/tabs.html"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:item",
+      "title": "Popover",
+      "description": "A collision-aware non-modal floating panel.",
+      "files": [
+        {
+          "path": "registry/components/popover.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/popover.html"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:item",
+      "title": "Tooltip",
+      "description": "Hover and focus help text without focus movement.",
+      "files": [
+        {
+          "path": "registry/components/tooltip.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/tooltip.html"
+        }
+      ]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:item",
+      "title": "Dropdown Menu",
+      "description": "A menu button with keyboard navigation and selection.",
+      "files": [
+        {
+          "path": "registry/components/dropdown-menu.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/dropdown-menu.html"
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:item",
+      "title": "Select",
+      "description": "A custom listbox backed by a native select control.",
+      "files": [
+        {
+          "path": "registry/components/select.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/select.html"
+        }
+      ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:item",
+      "title": "Combobox",
+      "description": "Editable local or server-backed suggestions with a committed form value.",
+      "files": [
+        {
+          "path": "registry/components/combobox.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/combobox.html"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:item",
+      "title": "Data Table",
+      "description": "Native table sorting, filtering, pagination, and stable selection.",
+      "files": [
+        {
+          "path": "registry/components/data-table.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/data-table.html"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:item",
+      "title": "Toast",
+      "description": "Timed or actionable notifications with keyboard access.",
+      "files": [
+        {
+          "path": "registry/components/toast.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/toast.html"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:item",
+      "title": "Card",
+      "description": "A zero-runtime content container with semantic parts.",
+      "files": [
+        {
+          "path": "registry/components/card.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/card.html"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:item",
+      "title": "Badge",
+      "description": "Compact status and category labels.",
+      "files": [
+        {
+          "path": "registry/components/badge.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/badge.html"
+        }
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:item",
+      "title": "Alert",
+      "description": "Semantic status and warning messages.",
+      "files": [
+        {
+          "path": "registry/components/alert.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/alert.html"
+        }
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:item",
+      "title": "Separator",
+      "description": "Horizontal and vertical visual separators.",
+      "files": [
+        {
+          "path": "registry/components/separator.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/separator.html"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:item",
+      "title": "Avatar",
+      "description": "Image and text-fallback avatar presentation.",
+      "files": [
+        {
+          "path": "registry/components/avatar.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/avatar.html"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:item",
+      "title": "Skeleton",
+      "description": "Reduced-motion-aware decorative loading placeholders.",
+      "files": [
+        {
+          "path": "registry/components/skeleton.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/skeleton.html"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:item",
+      "title": "Progress",
+      "description": "A themed native progress indicator.",
+      "files": [
+        {
+          "path": "registry/components/progress.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/progress.html"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:item",
+      "title": "Breadcrumb",
+      "description": "A labelled navigation trail with native links and current-page state.",
+      "files": [
+        {
+          "path": "registry/components/breadcrumb.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/breadcrumb.html"
+        }
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:item",
+      "title": "Pagination",
+      "description": "Landmark-based page navigation with current and disabled states.",
+      "files": [
+        {
+          "path": "registry/components/pagination.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/pagination.html"
+        }
+      ]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:item",
+      "title": "Navigation Menu",
+      "description": "Site navigation links with a disclosure-style popover section.",
+      "files": [
+        {
+          "path": "registry/components/navigation-menu.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/navigation-menu.html"
+        }
+      ]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:item",
+      "title": "Radio Group",
+      "description": "A native, keyboard-accessible single-choice fieldset.",
+      "files": [
+        {
+          "path": "registry/components/radio-group.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/radio-group.html"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:item",
+      "title": "Slider",
+      "description": "A themed native range input that works with reactive binding.",
+      "files": [
+        {
+          "path": "registry/components/slider.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/slider.html"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:item",
+      "title": "Toggle",
+      "description": "A pressed-state button with lifecycle events and named actions.",
+      "files": [
+        {
+          "path": "registry/components/toggle.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/toggle.html"
+        }
+      ]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:item",
+      "title": "Toggle Group",
+      "description": "Single or multiple pressed-state controls with roving keyboard focus and form values.",
+      "files": [
+        {
+          "path": "registry/components/toggle-group.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/toggle-group.html"
+        }
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:item",
+      "title": "Sheet",
+      "description": "A side panel composed from Dialog with native modality and focus return.",
+      "registryDependencies": ["button", "dialog"],
+      "files": [
+        {
+          "path": "registry/components/sheet.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/sheet.html"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:item",
+      "title": "Spinner",
+      "description": "A reduced-motion-aware loading indicator.",
+      "files": [
+        {
+          "path": "registry/components/spinner.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/spinner.html"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "type": "registry:item",
+      "title": "Empty State",
+      "description": "A composed blank-slate state with title, description, and action slots.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/empty.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/empty.html"
+        }
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:item",
+      "title": "Keyboard Key",
+      "description": "A compact visual treatment for keyboard shortcuts.",
+      "files": [
+        {
+          "path": "registry/components/kbd.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/kbd.html"
+        }
+      ]
+    },
+    {
+      "name": "command-palette",
+      "type": "registry:block",
+      "title": "Command Palette",
+      "description": "A searchable command dialog composed from Dialog and inline Combobox.",
+      "files": [
+        {
+          "path": "registry/components/command-palette.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/command-palette.html"
+        }
+      ]
+    }
+  ]
+}

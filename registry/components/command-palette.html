@@ -1,0 +1,49 @@
+<button
+  data-jqs="button"
+  data-variant="outline"
+  type="button"
+  aria-haspopup="dialog"
+  data-on:click="@ui.dialog.open('#command-palette', '#command-query')"
+>
+  Open command palette <span aria-hidden="true">⌘K</span>
+</button>
+
+<dialog id="command-palette" data-jqs="dialog" data-component="command" data-close-on-backdrop>
+  <div data-part="content">
+    <div data-jqs="command">
+      <header data-part="header">
+        <h2 data-part="title">Jump to a page</h2>
+        <p data-part="description">Type to filter, then press Enter to choose.</p>
+      </header>
+      <div
+        data-jqs="combobox"
+        data-inline
+        data-filter="contains"
+        data-on:jquery-star:combobox:select="@ui.dialog.close('select')"
+      >
+        <label for="command-query">Search commands</label>
+        <input id="command-query" data-part="control" type="search" />
+        <input data-part="value" type="hidden" name="command" />
+        <div data-part="content">
+          <div data-part="option" data-value="components">Browse components</div>
+          <div data-part="option" data-value="docs">Open documentation</div>
+          <div data-part="option" data-value="settings">Project settings</div>
+          <div data-part="empty">No matching commands.</div>
+        </div>
+        <span data-part="status"></span>
+      </div>
+      <footer data-part="footer">
+        <span>↑↓ navigate · Enter choose</span>
+        <button
+          data-jqs="button"
+          data-size="sm"
+          data-variant="ghost"
+          type="button"
+          data-on:click="@ui.dialog.close('cancel')"
+        >
+          Close
+        </button>
+      </footer>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,29 @@
+<button
+  data-jqs="button"
+  type="button"
+  aria-haspopup="dialog"
+  data-on:click="@ui.dialog.open('#settings-sheet', '#settings-sheet-close')"
+>
+  Open settings
+</button>
+
+<dialog id="settings-sheet" data-jqs="dialog" data-variant="sheet" data-close-on-backdrop>
+  <div data-part="content">
+    <header data-part="header">
+      <h2 data-part="title">Settings</h2>
+      <p data-part="description">Adjust the page without leaving your current context.</p>
+    </header>
+    <div>Sheet content</div>
+    <footer data-part="footer">
+      <button
+        id="settings-sheet-close"
+        data-jqs="button"
+        data-variant="outline"
+        type="button"
+        data-on:click="@ui.dialog.close('close')"
+      >
+        Close
+      </button>
+    </footer>
+  </div>
+</dialog>

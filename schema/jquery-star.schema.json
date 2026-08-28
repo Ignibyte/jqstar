@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "jQuery Star project configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "output": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project-relative directory where component recipes are copied."
+    },
+    "registry": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional path to a compatible source registry."
+    }
+  },
+  "required": ["output"]
+}

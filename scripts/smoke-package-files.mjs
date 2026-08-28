@@ -1,0 +1,30 @@
+import { spawnSync } from "node:child_process";
+
+const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const result = spawnSync(npm, ["pack", "--dry-run", "--json"], {
+  cwd: process.cwd(),
+  encoding: "utf8",
+});
+
+if (result.status !== 0) {
+  throw new Error(`npm pack --dry-run failed:\n${result.stderr}`);
+}
+
+const report = JSON.parse(result.stdout);
+const files = new Set(report[0]?.files?.map((file) => file.path));
+const required = [
+  "bin/jqstar.mjs",
+  "dist/jquery-star.js",
+  "dist/jquery-star-ui.css",
+  "registry.json",
+  "registry/components/button.html",
+  "registry/components/command-palette.html",
+  "schema/jquery-star.schema.json",
+];
+const missing = required.filter((path) => !files.has(path));
+
+if (missing.length > 0) {
+  throw new Error(`The npm package is missing distribution files:\n${missing.join("\n")}`);
+}
+
+process.stdout.write(`package contents proof: ${files.size} files, registry and CLI passed\n`);

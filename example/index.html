@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jQuery Star · reactive HTML components powered by jQuery</title>
+    <meta
+      name="description"
+      content="A source-owned component system with Datastar-style reactive attributes, accessible HTML, and real jQuery expressions."
+    />
+    <meta property="og:title" content="jQuery Star" />
+    <meta
+      property="og:description"
+      content="Reactive HTML components. Actual jQuery. A source-owned registry with accessible behavior and a Datastar-compatible server channel."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ignibyte.github.io/jqstar/" />
+    <meta property="og:image" content="https://ignibyte.github.io/jqstar/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="jQuery Star — Reactive HTML. Actual jQuery." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="jQuery Star" />
+    <meta name="twitter:description" content="Reactive HTML. Actual jQuery." />
+    <meta name="twitter:image" content="https://ignibyte.github.io/jqstar/og.png" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main
+      id="app"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60 }"
+      data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
+    >
+      <p class="eyebrow">jQuery Star · attribute proof</p>
+      <h1>Reactive markup.<br />Actual jQuery.</h1>
+      <p class="lede">
+        Dollar names are state. The dollar function is still jQuery. Named actions move longer
+        behavior back into JavaScript.
+      </p>
+
+      <section class="card component-card" aria-labelledby="components-title">
+        <div>
+          <p class="label" id="components-title">Component system proof</p>
+          <p class="hint">Tailwind-compiled styles, native semantics, and jQuery Star actions.</p>
+        </div>
+
+        <div class="button-showcase" aria-label="Button variants">
+          <button data-jqs="button" type="button">Primary</button>
+          <button data-jqs="button" data-variant="secondary" type="button">Secondary</button>
+          <button data-jqs="button" data-variant="outline" type="button">Outline</button>
+          <button data-jqs="button" data-variant="ghost" type="button">Ghost</button>
+          <button data-jqs="button" data-variant="danger" type="button">Danger</button>
+          <button data-jqs="button" type="button" disabled>Disabled</button>
+          <button
+            id="open-proof-dialog"
+            data-jqs="button"
+            data-size="lg"
+            type="button"
+            aria-haspopup="dialog"
+            data-on:click="@ui.dialog.open('#proof-dialog', '#proof-dialog-cancel')"
+          >
+            Open verified dialog
+          </button>
+        </div>
+
+        <dialog id="proof-dialog" data-jqs="dialog" data-close-on-backdrop>
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Keep building this system?</h2>
+              <p data-part="description">
+                The browser owns modality and focus containment. jQuery Star owns actions, lifecycle
+                events, state attributes, and styling hooks.
+              </p>
+            </header>
+
+            <div data-part="footer">
+              <button
+                id="proof-dialog-cancel"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('cancelled')"
+              >
+                Cancel
+              </button>
+              <button data-jqs="button" type="button" data-on:click="@ui.dialog.close('confirmed')">
+                Keep going
+              </button>
+            </div>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card controls-component-card" aria-labelledby="controls-components-title">
+        <div>
+          <p class="label" id="controls-components-title">Choice and toggle controls</p>
+          <p class="hint">
+            Native form behavior where the platform is strongest; focused jQuery Star behavior where
+            a composite widget earns it.
+          </p>
+        </div>
+
+        <div class="controls-showcase">
+          <fieldset data-jqs="radio-group">
+            <legend>Preview density</legend>
+            <label
+              ><input type="radio" name="density" value="comfortable" checked /> Comfortable</label
+            >
+            <label><input type="radio" name="density" value="compact" /> Compact</label>
+            <label><input type="radio" name="density" value="system" /> Follow system</label>
+          </fieldset>
+
+          <div data-jqs="field">
+            <label data-part="label" for="component-volume">
+              Preview volume: <output data-text="$componentVolume"></output>%
+            </label>
+            <input
+              id="component-volume"
+              data-jqs="slider"
+              data-bind:component-volume
+              type="range"
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div class="toggle-showcase">
+            <button id="live-preview-toggle" data-jqs="toggle" type="button">Live preview</button>
+            <div
+              id="format-toggle-group"
+              data-jqs="toggle-group"
+              data-type="multiple"
+              data-value="bold"
+              data-name="formatting"
+              aria-label="Text formatting"
+            >
+              <button data-part="item" data-value="bold" type="button"><strong>B</strong></button>
+              <button data-part="item" data-value="italic" type="button"><em>I</em></button>
+              <button data-part="item" data-value="underline" type="button"><u>U</u></button>
+              <button data-part="item" data-value="strike" type="button" disabled><s>S</s></button>
+            </div>
+          </div>
+
+          <div class="sheet-showcase">
+            <button
+              id="open-proof-sheet"
+              data-jqs="button"
+              data-variant="outline"
+              type="button"
+              aria-haspopup="dialog"
+              data-on:click="@ui.dialog.open('#proof-sheet', '#proof-sheet-close')"
+            >
+              Open side sheet
+            </button>
+            <span class="shortcut-proof">
+              Command palette <kbd data-jqs="kbd">⌘</kbd> <kbd data-jqs="kbd">K</kbd>
+            </span>
+            <span role="status" class="spinner-proof">
+              <span data-jqs="spinner" aria-hidden="true"></span>
+              Component batch building
+            </span>
+          </div>
+        </div>
+
+        <dialog id="proof-sheet" data-jqs="dialog" data-variant="sheet" data-close-on-backdrop>
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Component settings</h2>
+              <p data-part="description">
+                Sheet reuses Dialog’s native modality, focus return, lifecycle events, and actions.
+              </p>
+            </header>
+            <div data-jqs="empty">
+              <h3 data-part="title">No overrides yet</h3>
+              <p data-part="description">
+                Add a local theme override when the default component tokens are not enough.
+              </p>
+              <button data-jqs="button" type="button">Add override</button>
+            </div>
+            <footer data-part="footer">
+              <button
+                id="proof-sheet-close"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('close')"
+              >
+                Close
+              </button>
+            </footer>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card form-component-card" aria-labelledby="form-components-title">
+        <div>
+          <p class="label" id="form-components-title">Native form components</p>
+          <p class="hint">Accessible controls bound directly to jQuery Star signals.</p>
+        </div>
+
+        <div class="component-form">
+          <div data-jqs="field">
+            <label data-part="label" for="component-email">Email address</label>
+            <p data-part="description" id="component-email-description">
+              Used only for this browser proof.
+            </p>
+            <input
+              id="component-email"
+              data-jqs="input"
+              data-bind:component-email
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              aria-describedby="component-email-description"
+            />
+          </div>
+
+          <div data-jqs="field">
+            <label data-part="label" for="component-notes">Notes</label>
+            <textarea
+              id="component-notes"
+              data-jqs="textarea"
+              data-bind:component-notes
+              placeholder="Add context for the team"
+            ></textarea>
+          </div>
+
+          <label data-jqs="checkbox">
+            <input data-part="control" data-bind:component-terms type="checkbox" />
+            <span data-part="indicator" aria-hidden="true"></span>
+            <span data-part="label">Accept the component contract</span>
+          </label>
+
+          <label data-jqs="switch">
+            <input
+              data-part="control"
+              data-bind:component-notifications
+              type="checkbox"
+              role="switch"
+            />
+            <span data-part="track" aria-hidden="true">
+              <span data-part="thumb"></span>
+            </span>
+            <span data-part="label">Component notifications</span>
+          </label>
+
+          <output
+            class="component-form-preview"
+            data-text="($componentEmail || 'No email') + ' · ' + ($componentTerms ? 'accepted' : 'not accepted') + ' · notifications ' + ($componentNotifications ? 'on' : 'off')"
+            aria-live="polite"
+          ></output>
+        </div>
+      </section>
+
+      <section class="card select-component-card" aria-labelledby="select-components-title">
+        <div>
+          <p class="label" id="select-components-title">Select component</p>
+          <p class="hint">A custom listbox backed by a real form select and reactive signal.</p>
+        </div>
+
+        <form id="select-proof-form" class="select-showcase">
+          <label id="framework-select-label" for="framework-select-control">UI foundation</label>
+          <div id="framework-select" data-jqs="select" data-placeholder="Choose a foundation">
+            <select
+              id="framework-select-control"
+              data-part="control"
+              data-bind:component-framework
+              name="framework"
+            >
+              <optgroup label="This project">
+                <option value="jquery-star">jQuery Star</option>
+                <option value="datastar">Datastar</option>
+              </optgroup>
+              <optgroup label="Reference systems">
+                <option value="radix">Radix Primitives</option>
+                <option value="daisyui">daisyUI</option>
+                <option value="legacy" disabled>Legacy widget (unavailable)</option>
+              </optgroup>
+            </select>
+          </div>
+          <output
+            class="select-preview"
+            data-text="'Selected value: ' + $componentFramework"
+            aria-live="polite"
+          ></output>
+          <button data-jqs="button" data-variant="outline" data-size="sm" type="reset">
+            Reset choice
+          </button>
+        </form>
+      </section>
+
+      <section class="card combobox-component-card" aria-labelledby="combobox-components-title">
+        <div>
+          <p class="label" id="combobox-components-title">Server-backed Combobox</p>
+          <p class="hint">
+            Editable query, committed value, and results streamed by the Datastar SDK when a backend
+            is connected.
+          </p>
+        </div>
+
+        <form id="combobox-proof-form" class="combobox-showcase">
+          <label for="technology-combobox-control">Find a UI system</label>
+          <div
+            id="technology-combobox"
+            data-jqs="combobox"
+            data-filter="manual"
+            data-min-length="1"
+            data-attr:data-loading="$componentComboboxLoading"
+          >
+            <input
+              id="technology-combobox-control"
+              data-part="control"
+              data-bind:component-query
+              data-on:input__debounce.180ms="@searchComponents"
+              name="technologyQuery"
+              placeholder="Type to search systems"
+            />
+            <input
+              data-part="value"
+              data-bind:component-selection
+              type="hidden"
+              name="technology"
+            />
+            <div id="technology-combobox-content" data-part="content">
+              <div data-part="option" data-value="jquery-star">jQuery Star</div>
+              <div data-part="option" data-value="datastar">Datastar</div>
+              <div data-part="option" data-value="daisyui">daisyUI</div>
+              <div data-part="option" data-value="radix">Radix Primitives</div>
+              <div data-part="option" data-value="tailwind">Tailwind CSS</div>
+              <div data-part="option" data-value="bootstrap">Bootstrap</div>
+              <div data-part="option" data-value="shoelace">Shoelace</div>
+              <div data-part="loading" hidden>Searching the server…</div>
+              <div data-part="empty" hidden>No matching systems</div>
+            </div>
+          </div>
+          <div class="combobox-status" aria-live="polite">
+            <span
+              data-text="$componentComboboxLoading ? 'Searching…' : $componentResultCount + ' results'"
+            ></span>
+            <span data-show="$componentComboboxError" data-text="$componentComboboxError"></span>
+          </div>
+          <output
+            class="combobox-preview"
+            data-text="$componentSelection ? 'Committed value: ' + $componentSelection : 'No committed value'"
+          ></output>
+          <button
+            data-jqs="button"
+            data-variant="outline"
+            data-size="sm"
+            type="button"
+            data-on:click="@ui.combobox.clear('#technology-combobox')"
+          >
+            Clear search
+          </button>
+        </form>
+      </section>
+
+      <section class="card data-table-component-card" aria-labelledby="data-table-components-title">
+        <div>
+          <p class="label" id="data-table-components-title">Data Table</p>
+          <p class="hint">
+            Native table semantics with sorting, filtering, pagination, and stable selection.
+          </p>
+        </div>
+
+        <div id="systems-data-table" data-jqs="data-table" data-page-size="3">
+          <div data-part="toolbar">
+            <label class="data-table-filter-label" for="systems-table-filter">Filter systems</label>
+            <input
+              id="systems-table-filter"
+              data-part="filter"
+              type="search"
+              placeholder="Search table"
+            />
+            <span data-part="selection-status" aria-live="polite"></span>
+          </div>
+          <div data-part="viewport">
+            <table data-part="table">
+              <caption>
+                Component system comparison
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <input
+                      data-part="select-all"
+                      type="checkbox"
+                      aria-label="Select visible systems"
+                    />
+                  </th>
+                  <th scope="col" data-key="name">
+                    <button data-part="sort" type="button">System</button>
+                  </th>
+                  <th scope="col" data-key="kind">
+                    <button data-part="sort" type="button">Kind</button>
+                  </th>
+                  <th scope="col" data-key="runtime">
+                    <button data-part="sort" type="button">Runtime</button>
+                  </th>
+                  <th scope="col" data-key="coverage" data-type="number">
+                    <button data-part="sort" type="button">Coverage</button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-row-id="jquery-star">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select jQuery Star" />
+                  </td>
+                  <th scope="row" data-key="name">jQuery Star</th>
+                  <td data-key="kind">Behavior + theme</td>
+                  <td data-key="runtime">jQuery</td>
+                  <td data-key="coverage" data-value="36">36 components</td>
+                </tr>
+                <tr data-row-id="datastar">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Datastar" />
+                  </td>
+                  <th scope="row" data-key="name">Datastar</th>
+                  <td data-key="kind">Server hypermedia</td>
+                  <td data-key="runtime">Framework-neutral</td>
+                  <td data-key="coverage" data-value="4">4 core plugins</td>
+                </tr>
+                <tr data-row-id="daisyui">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select daisyUI" />
+                  </td>
+                  <th scope="row" data-key="name">daisyUI</th>
+                  <td data-key="kind">Theme</td>
+                  <td data-key="runtime">CSS</td>
+                  <td data-key="coverage" data-value="65">65 components</td>
+                </tr>
+                <tr data-row-id="radix">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Radix" />
+                  </td>
+                  <th scope="row" data-key="name">Radix Primitives</th>
+                  <td data-key="kind">Headless behavior</td>
+                  <td data-key="runtime">React</td>
+                  <td data-key="coverage" data-value="32">32 primitives</td>
+                </tr>
+                <tr data-row-id="bootstrap">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Bootstrap" />
+                  </td>
+                  <th scope="row" data-key="name">Bootstrap</th>
+                  <td data-key="kind">Full framework</td>
+                  <td data-key="runtime">JavaScript</td>
+                  <td data-key="coverage" data-value="24">24 components</td>
+                </tr>
+                <tr data-row-id="shoelace">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Shoelace" />
+                  </td>
+                  <th scope="row" data-key="name">Shoelace</th>
+                  <td data-key="kind">Web components</td>
+                  <td data-key="runtime">Framework-neutral</td>
+                  <td data-key="coverage" data-value="50">50 components</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div data-part="pagination">
+            <button
+              data-jqs="button"
+              data-part="previous"
+              data-variant="outline"
+              data-size="sm"
+              type="button"
+            >
+              Previous
+            </button>
+            <span data-part="page-status" aria-live="polite"></span>
+            <button
+              data-jqs="button"
+              data-part="next"
+              data-variant="outline"
+              data-size="sm"
+              type="button"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card disclosure-component-card" aria-labelledby="disclosure-components-title">
+        <div>
+          <p class="label" id="disclosure-components-title">Disclosure components</p>
+          <p class="hint">Native details behavior with synchronized state and lifecycle events.</p>
+        </div>
+
+        <div class="disclosure-showcase">
+          <details id="server-collapsible" data-jqs="collapsible">
+            <summary data-part="trigger">
+              How does Datastar fit?
+              <span data-part="indicator" aria-hidden="true"></span>
+            </summary>
+            <div data-part="content">
+              Datastar patches signals and HTML. The component survives those updates because its
+              public state lives in native attributes and stable data parts.
+            </div>
+          </details>
+
+          <div
+            id="component-accordion"
+            data-jqs="accordion"
+            data-mode="single"
+            data-collapsible="false"
+          >
+            <details data-part="item" open>
+              <summary data-part="trigger">
+                Native foundation
+                <span data-part="indicator" aria-hidden="true"></span>
+              </summary>
+              <div data-part="content">
+                Details and summary provide pointer, Enter, and Space behavior without replacing
+                browser semantics.
+              </div>
+            </details>
+            <details data-part="item">
+              <summary data-part="trigger">
+                jQuery Star behavior
+                <span data-part="indicator" aria-hidden="true"></span>
+              </summary>
+              <div data-part="content">
+                Named actions, cancelable lifecycle events, data-state hooks, and programmatic APIs
+                layer on top.
+              </div>
+            </details>
+            <details data-part="item">
+              <summary data-part="trigger">
+                Tailwind theme
+                <span data-part="indicator" aria-hidden="true"></span>
+              </summary>
+              <div data-part="content">
+                The published CSS is compiled ahead of time, so consuming applications do not need
+                Tailwind.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="card tabs-component-card" aria-labelledby="tabs-components-title">
+        <div>
+          <p class="label" id="tabs-components-title">Tabs component</p>
+          <p class="hint">Roving focus with automatic or manual activation.</p>
+        </div>
+
+        <div id="architecture-tabs" data-jqs="tabs" data-value="runtime">
+          <div data-part="list" aria-label="Component architecture">
+            <button data-part="trigger" data-value="runtime" type="button">Runtime</button>
+            <button data-part="trigger" data-value="server" type="button">Server</button>
+            <button data-part="trigger" data-value="theme" type="button">Theme</button>
+          </div>
+          <div data-part="panel" data-value="runtime">
+            <strong>jQuery Star runtime</strong>
+            <p>Expressions, named actions, component behavior, and real jQuery plugins.</p>
+          </div>
+          <div data-part="panel" data-value="server">
+            <strong>Datastar server channel</strong>
+            <p>Signal patches and HTML morphs generated with the official Datastar SDK.</p>
+          </div>
+          <div data-part="panel" data-value="theme">
+            <strong>Tailwind-compiled theme</strong>
+            <p>CSS variables and semantic data selectors with no runtime Tailwind dependency.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card overlay-component-card" aria-labelledby="overlay-components-title">
+        <div>
+          <p class="label" id="overlay-components-title">Overlay components</p>
+          <p class="hint">Top-layer placement, light dismissal, hover, focus, and Escape.</p>
+        </div>
+
+        <div class="overlay-showcase">
+          <div
+            id="deployment-popover"
+            data-jqs="popover"
+            data-side="bottom"
+            data-align="start"
+            data-initial-focus="[data-part='close']"
+          >
+            <button data-jqs="button" data-part="trigger" data-variant="outline" type="button">
+              Deployment
+            </button>
+            <div data-part="content">
+              <h2 data-part="title">Ready to deploy</h2>
+              <p data-part="description">
+                The compiled theme, runtime, and Datastar-compatible server channel are verified.
+              </p>
+              <div data-part="footer">
+                <button
+                  data-jqs="button"
+                  data-part="close"
+                  data-size="sm"
+                  type="button"
+                  data-on:click="@ui.popover.close"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="verification-tooltip" data-jqs="tooltip" data-side="top" data-align="center">
+            <button data-jqs="button" data-part="trigger" data-variant="ghost" type="button">
+              Hover or focus me
+            </button>
+            <div data-part="content">Verified with pointer and keyboard</div>
+          </div>
+
+          <div id="proof-menu" data-jqs="menu" data-side="bottom" data-align="end">
+            <button data-jqs="button" data-part="trigger" data-variant="secondary" type="button">
+              Actions
+            </button>
+            <div data-part="content">
+              <div data-part="label">Proof actions</div>
+              <button data-part="item" data-value="inspect" type="button">
+                Inspect component <span data-part="shortcut">⌘I</span>
+              </button>
+              <button
+                data-part="checkbox-item"
+                data-value="persistent"
+                data-checked="true"
+                data-close-on-select="false"
+                type="button"
+              >
+                Keep menu open
+              </button>
+              <div data-part="separator"></div>
+              <button data-part="item" data-value="disabled" data-disabled type="button">
+                Publish later
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card navigation-component-card" aria-labelledby="navigation-components-title">
+        <div>
+          <p class="label" id="navigation-components-title">Navigation components</p>
+          <p class="hint">
+            Native landmarks and links, with disclosure behavior for site navigation.
+          </p>
+        </div>
+
+        <div class="navigation-showcase">
+          <nav data-jqs="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+              <li><a href="#app">Home</a></li>
+              <li><a href="#navigation-components-title">Components</a></li>
+              <li><a href="#navigation-components-title" aria-current="page">Navigation</a></li>
+            </ol>
+          </nav>
+
+          <nav id="primary-navigation" data-jqs="navigation-menu" aria-label="Primary">
+            <ul data-part="list">
+              <li><a data-part="link" href="#app" aria-current="page">Overview</a></li>
+              <li>
+                <div
+                  id="product-navigation"
+                  data-jqs="popover"
+                  data-side="bottom"
+                  data-align="start"
+                >
+                  <button data-part="trigger" type="button">Products</button>
+                  <div data-part="content" aria-label="Products">
+                    <a data-part="link" href="#data-table-components-title">
+                      <strong>Data Table</strong>
+                      <span data-part="description">Sorting, filtering, selection, and pages.</span>
+                    </a>
+                    <a data-part="link" href="#combobox-components-title">
+                      <strong>Combobox</strong>
+                      <span data-part="description">Local or server-backed suggestions.</span>
+                    </a>
+                    <a data-part="link" href="#overlay-components-title">
+                      <strong>Overlays</strong>
+                      <span data-part="description">Popover, tooltip, menu, and dialog.</span>
+                    </a>
+                    <a data-part="link" href="#primitives-components-title">
+                      <strong>Primitives</strong>
+                      <span data-part="description">Composable zero-runtime presentation.</span>
+                    </a>
+                  </div>
+                </div>
+              </li>
+              <li><a data-part="link" href="#server-title">Server</a></li>
+            </ul>
+          </nav>
+
+          <nav data-jqs="pagination" aria-label="Component pages">
+            <ul>
+              <li><span data-part="previous" aria-disabled="true">Previous</span></li>
+              <li>
+                <a data-part="page" href="#navigation-components-title" aria-current="page">1</a>
+              </li>
+              <li><a data-part="page" href="#navigation-components-title">2</a></li>
+              <li><a data-part="page" href="#navigation-components-title">3</a></li>
+              <li><a data-part="next" href="#navigation-components-title">Next</a></li>
+            </ul>
+          </nav>
+        </div>
+      </section>
+
+      <section class="card command-component-card" aria-labelledby="command-components-title">
+        <div>
+          <p class="label" id="command-components-title">Command Palette</p>
+          <p class="hint">
+            A registry block composed from the verified Dialog and Combobox contracts.
+          </p>
+        </div>
+        <button
+          id="command-palette-trigger"
+          data-jqs="button"
+          data-variant="outline"
+          type="button"
+          aria-haspopup="dialog"
+          data-on:click="@ui.dialog.open('#command-palette-dialog', '#command-query')"
+        >
+          Open command palette <span aria-hidden="true">⌘K</span>
+        </button>
+
+        <dialog
+          id="command-palette-dialog"
+          data-jqs="dialog"
+          data-component="command"
+          data-close-on-backdrop
+        >
+          <div data-part="content">
+            <div data-jqs="command">
+              <header data-part="header">
+                <h2 data-part="title">Jump to a component</h2>
+                <p data-part="description">Type to filter, then press Enter to choose.</p>
+              </header>
+              <div
+                id="command-combobox"
+                data-jqs="combobox"
+                data-inline
+                data-filter="contains"
+                data-on:jquery-star:combobox:select="@ui.dialog.close('select')"
+              >
+                <label for="command-query">Search commands</label>
+                <input id="command-query" data-part="control" type="search" />
+                <input data-part="value" type="hidden" name="command" />
+                <div data-part="content">
+                  <div data-part="option" data-value="components">
+                    Browse components <span data-part="shortcut">G C</span>
+                  </div>
+                  <div data-part="option" data-value="server">
+                    Open server proof <span data-part="shortcut">G S</span>
+                  </div>
+                  <div data-part="option" data-value="settings">
+                    Project settings <span data-part="shortcut">⌘ ,</span>
+                  </div>
+                  <div data-part="empty">No matching commands.</div>
+                </div>
+                <span data-part="status"></span>
+              </div>
+              <footer data-part="footer">
+                <span>↑↓ navigate · Enter choose</span>
+                <button
+                  data-jqs="button"
+                  data-size="sm"
+                  data-variant="ghost"
+                  type="button"
+                  data-on:click="@ui.dialog.close('cancel')"
+                >
+                  Close
+                </button>
+              </footer>
+            </div>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card toast-component-card" aria-labelledby="toast-components-title">
+        <div>
+          <p class="label" id="toast-components-title">Toast component</p>
+          <p class="hint">Polite announcements, pause-on-interaction, F8 access, and swipe.</p>
+        </div>
+        <button
+          data-jqs="button"
+          data-variant="outline"
+          type="button"
+          data-on:click="@ui.toast.show({ title: 'Build verified', description: 'All component checks passed.', variant: 'success', duration: 1600 })"
+        >
+          Show verified toast
+        </button>
+        <div
+          data-jqs="toast-viewport"
+          data-duration="5000"
+          aria-label="Proof notifications (F8)"
+        ></div>
+      </section>
+
+      <section class="card primitives-component-card" aria-labelledby="primitives-components-title">
+        <div>
+          <p class="label" id="primitives-components-title">Composition primitives</p>
+          <p class="hint">Zero-runtime building blocks compiled into the same theme.</p>
+        </div>
+
+        <article data-jqs="card" aria-labelledby="primitive-card-title">
+          <header data-part="header">
+            <div class="primitive-title-row">
+              <h2 data-part="title" id="primitive-card-title">Release candidate</h2>
+              <span data-jqs="badge" data-variant="success">Verified</span>
+            </div>
+            <p data-part="description">A composable card with semantic parts and no JavaScript.</p>
+          </header>
+          <div data-part="content">
+            <div class="avatar-row">
+              <span data-jqs="avatar" data-size="lg" role="img" aria-label="Chad Peppers">CP</span>
+              <span>
+                <strong>Component library</strong><br />Tailwind-authored, jQuery-powered
+              </span>
+            </div>
+            <hr data-jqs="separator" />
+            <div class="badge-showcase" aria-label="Badge variants">
+              <span data-jqs="badge">Primary</span>
+              <span data-jqs="badge" data-variant="secondary">Secondary</span>
+              <span data-jqs="badge" data-variant="outline">Outline</span>
+              <span data-jqs="badge" data-variant="danger">Blocked</span>
+            </div>
+          </div>
+          <footer data-part="footer">
+            <button data-jqs="button" data-size="sm" type="button">Review release</button>
+          </footer>
+        </article>
+
+        <div data-jqs="alert" data-variant="success" role="status">
+          <strong data-part="title">All checks passed</strong>
+          <span data-part="description">The component proof is ready for another layer.</span>
+        </div>
+
+        <div class="progress-proof">
+          <label id="progress-proof-label" for="progress-proof">Component coverage</label>
+          <progress
+            id="progress-proof"
+            data-jqs="progress"
+            value="36"
+            max="36"
+            aria-labelledby="progress-proof-label"
+          >
+            36 of 36
+          </progress>
+        </div>
+
+        <div class="skeleton-proof">
+          <span data-jqs="skeleton" aria-hidden="true"></span>
+          <span data-jqs="skeleton" aria-hidden="true"></span>
+        </div>
+      </section>
+
+      <section class="card counter-card" aria-labelledby="counter-title">
+        <div>
+          <p class="label" id="counter-title">The exact expression</p>
+          <p class="hint"><code>$count++</code> reacts. <code>$(el)</code> is jQuery.</p>
+        </div>
+        <div class="counter-controls">
+          <button class="disappear" type="button" data-on:click="$count++; $(el).fadeOut(180)">
+            Increment and disappear
+          </button>
+          <button
+            class="restore"
+            type="button"
+            data-on:click="$(el).siblings('.disappear').fadeIn(180)"
+          >
+            Bring it back
+          </button>
+          <output data-text="$count" data-attr:aria-label="'Current count: ' + $count">0</output>
+        </div>
+      </section>
+
+      <section class="card list-card" aria-labelledby="actions-title">
+        <div>
+          <p class="label" id="actions-title">Named actions</p>
+          <p class="hint"><code>data-on:click="@removeItem"</code></p>
+        </div>
+        <strong class="remaining" data-text="$itemCount + ' items remain'"></strong>
+        <ul>
+          <li><span>Write the markup</span><button data-on:click="@removeItem">Remove</button></li>
+          <li><span>Keep real jQuery</span><button data-on:click="@removeItem">Remove</button></li>
+          <li><span>Ship the proof</span><button data-on:click="@removeItem">Remove</button></li>
+        </ul>
+        <p class="empty" data-show="$itemCount === 0">Everything is gone.</p>
+      </section>
+
+      <section class="card model-card" aria-labelledby="model-title">
+        <div>
+          <p class="label" id="model-title">Two-way state</p>
+          <p class="hint"><code>data-bind:name</code> writes <code>$name</code>.</p>
+        </div>
+        <label>
+          Display name
+          <input name="displayName" data-bind:name autocomplete="off" />
+        </label>
+        <p class="preview" data-text="$greeting"></p>
+      </section>
+
+      <section class="card server-card" aria-labelledby="server-title">
+        <div>
+          <p class="label" id="server-title">Backend actions</p>
+          <p class="hint">
+            <code>@post</code> patches JSON. <code>@get</code> consumes the official Datastar SDK.
+          </p>
+        </div>
+        <output class="server-count" data-text="$serverCount">0</output>
+        <div class="server-controls">
+          <button
+            type="button"
+            data-on:click="@serverIncrement"
+            data-prop:disabled="$serverLoading"
+          >
+            Add 10 on the server
+          </button>
+          <button
+            class="restore"
+            type="button"
+            data-on:click="@serverStream"
+            data-prop:disabled="$serverLoading"
+          >
+            Stream from the Datastar SDK
+          </button>
+          <span class="request-state" data-show="$serverLoading">Request in progress…</span>
+        </div>
+        <p class="server-message" data-text="$serverMessage"></p>
+        <p class="server-error" data-show="$serverError" data-text="$serverError"></p>
+        <ul id="server-feed" aria-live="polite"></ul>
+      </section>
+
+      <pre><code>&lt;button
+  data-on:click="$count++; $(el).fadeOut()"
+&gt;
+  Increment and disappear
+&lt;/button&gt;
+
+&lt;button data-on:click="@removeItem"&gt;
+  Remove
+&lt;/button&gt;
+
+&lt;button data-on:click="@post('/items')"&gt;
+  Save on the server
+&lt;/button&gt;</code></pre>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

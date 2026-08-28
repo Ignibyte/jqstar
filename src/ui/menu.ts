@@ -1,0 +1,448 @@
+import { registerAction } from "../registry";
+import type { MenuTarget, StarContext, StarMenuStatic } from "../types";
+import {
+  hideFloating,
+  positionFloating,
+  prepareFloating,
+  showFloating,
+  usesNativePopover,
+} from "./floating";
+
+type MenuItemPart = "item" | "checkbox-item" | "radio-item";
+type InitialFocus = "first" | "last";
+
+interface MenuRecord {
+  cleanups: Array<() => void>;
+  content: HTMLElement;
+  open: boolean;
+  root: HTMLElement;
+  search: string;
+  searchTimer: number | undefined;
+  trigger: HTMLElement;
+}
+
+interface MenuEventDetail {
+  content: HTMLElement;
+  item?: HTMLElement;
+  menu: HTMLElement;
+  trigger: HTMLElement;
+  value?: string;
+}
+
+interface MenuCollection {
+  api: StarMenuStatic;
+  enhance(root: ParentNode): void;
+}
+
+const records = new WeakMap<HTMLElement, MenuRecord>();
+const activeRecords = new Set<MenuRecord>();
+let menuId = 0;
+let globalListenersInstalled = false;
+
+function menuRoot(value: Element | null): HTMLElement | undefined {
+  return value instanceof HTMLElement && value.matches('[data-jqs="menu"]') ? value : undefined;
+}
+
+function directPart(root: HTMLElement, part: "trigger" | "content"): HTMLElement {
+  const element = Array.from(root.children).find(
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.getAttribute("data-part") === part,
+  );
+  if (!element) throw new Error(`Menu #${root.id} needs a direct data-part="${part}" child.`);
+  return element;
+}
+
+function itemPart(item: HTMLElement): MenuItemPart | undefined {
+  const part = item.getAttribute("data-part");
+  return part === "item" || part === "checkbox-item" || part === "radio-item" ? part : undefined;
+}
+
+function menuItems(record: MenuRecord): HTMLElement[] {
+  return Array.from(
+    record.content.querySelectorAll<HTMLElement>(
+      '[data-part="item"], [data-part="checkbox-item"], [data-part="radio-item"]',
+    ),
+  ).filter((item) => item.closest('[data-jqs="menu"]') === record.root);
+}
+
+function isDisabled(item: HTMLElement): boolean {
+  return (
+    item.hasAttribute("disabled") ||
+    item.getAttribute("aria-disabled") === "true" ||
+    item.dataset.disabled !== undefined
+  );
+}
+
+function focusableItems(record: MenuRecord): HTMLElement[] {
+  return menuItems(record).filter((item) => !item.hasAttribute("disabled"));
+}
+
+function itemValue(item: HTMLElement): string {
+  return item.getAttribute("data-value")?.trim() || item.textContent?.trim() || "";
+}
+
+function emit(
+  record: MenuRecord,
+  name: "before-open" | "open" | "before-close" | "close" | "select",
+  cancelable = false,
+  item?: HTMLElement,
+): boolean {
+  const detail: MenuEventDetail = {
+    content: record.content,
+    menu: record.root,
+    trigger: record.trigger,
+    ...(item ? { item, value: itemValue(item) } : {}),
+  };
+  return record.root.dispatchEvent(
+    new CustomEvent(`jquery-star:menu:${name}`, {
+      bubbles: true,
+      cancelable,
+      detail,
+    }),
+  );
+}
+
+function clearSearch(record: MenuRecord): void {
+  if (record.searchTimer !== undefined) window.clearTimeout(record.searchTimer);
+  record.searchTimer = undefined;
+  record.search = "";
+}
+
+function syncState(record: MenuRecord, open: boolean): void {
+  record.open = open;
+  if (open) {
+    for (const other of [...activeRecords]) {
+      if (other !== record) closeMenu(other.root, false);
+    }
+    activeRecords.delete(record);
+    activeRecords.add(record);
+  } else {
+    activeRecords.delete(record);
+    clearSearch(record);
+  }
+  record.root.dataset.state = open ? "open" : "closed";
+  record.content.dataset.state = open ? "open" : "closed";
+  record.trigger.setAttribute("aria-expanded", String(open));
+}
+
+function focusItem(record: MenuRecord, which: InitialFocus): void {
+  const items = focusableItems(record);
+  const item = which === "last" ? items[items.length - 1] : items[0];
+  (item ?? record.content).focus();
+}
+
+function openMenu(root: HTMLElement, initialFocus: InitialFocus = "first"): HTMLElement {
+  const record = records.get(root) ?? enhanceMenu(root);
+  if (record.open || !emit(record, "before-open", true)) return root;
+  record.root.dataset.state = "opening";
+  record.content.dataset.state = "opening";
+  showFloating(record.content);
+  syncState(record, true);
+  positionFloating(record.root, record.trigger, record.content, {
+    align: "start",
+    side: "bottom",
+  });
+  focusItem(record, initialFocus);
+  emit(record, "open");
+  return root;
+}
+
+function closeMenu(root: HTMLElement, restoreFocus = true): HTMLElement {
+  const record = records.get(root) ?? enhanceMenu(root);
+  if (!record.open || !emit(record, "before-close", true)) return root;
+  record.root.dataset.state = "closing";
+  record.content.dataset.state = "closing";
+  hideFloating(record.content);
+  syncState(record, false);
+  if (restoreFocus && record.trigger.isConnected) record.trigger.focus();
+  emit(record, "close");
+  return root;
+}
+
+function toggleMenu(root: HTMLElement): HTMLElement {
+  return (records.get(root) ?? enhanceMenu(root)).open ? closeMenu(root) : openMenu(root);
+}
+
+function setChecked(item: HTMLElement, checked: boolean): void {
+  item.dataset.checked = String(checked);
+  item.dataset.state = checked ? "checked" : "unchecked";
+  item.setAttribute("aria-checked", String(checked));
+}
+
+function updateCheckedItem(record: MenuRecord, item: HTMLElement): void {
+  const part = itemPart(item);
+  if (part === "checkbox-item") {
+    setChecked(item, item.getAttribute("aria-checked") !== "true");
+  } else if (part === "radio-item") {
+    const group = item.closest('[data-part="radio-group"]') ?? record.content;
+    for (const candidate of group.querySelectorAll<HTMLElement>('[data-part="radio-item"]')) {
+      if (candidate.closest('[data-jqs="menu"]') === record.root) {
+        setChecked(candidate, candidate === item);
+      }
+    }
+  }
+}
+
+function activateItem(record: MenuRecord, item: HTMLElement, event: MouseEvent): void {
+  if (isDisabled(item)) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+  if (!emit(record, "select", true, item)) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+  updateCheckedItem(record, item);
+  if (item.getAttribute("data-close-on-select") !== "false") closeMenu(record.root);
+}
+
+function moveFocus(record: MenuRecord, item: HTMLElement, offset: number): void {
+  const items = focusableItems(record);
+  const current = items.indexOf(item);
+  if (current < 0 || items.length === 0) return;
+  items[(current + offset + items.length) % items.length]?.focus();
+}
+
+function typeahead(record: MenuRecord, item: HTMLElement, key: string): void {
+  if (record.searchTimer !== undefined) window.clearTimeout(record.searchTimer);
+  record.search += key.toLocaleLowerCase();
+  record.searchTimer = window.setTimeout(() => clearSearch(record), 500);
+  const items = focusableItems(record);
+  const current = items.indexOf(item);
+  const ordered = [...items.slice(current + 1), ...items.slice(0, current + 1)];
+  ordered
+    .find((candidate) =>
+      candidate.textContent?.trim().toLocaleLowerCase().startsWith(record.search),
+    )
+    ?.focus();
+}
+
+function contentKeydown(record: MenuRecord, event: KeyboardEvent): void {
+  const item =
+    event.target instanceof HTMLElement
+      ? event.target.closest<HTMLElement>(
+          '[data-part="item"], [data-part="checkbox-item"], [data-part="radio-item"]',
+        )
+      : null;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeMenu(record.root);
+    return;
+  }
+  if (event.key === "Tab") {
+    closeMenu(record.root, false);
+    return;
+  }
+  if (!item || !itemPart(item)) return;
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    moveFocus(record, item, event.key === "ArrowDown" ? 1 : -1);
+  } else if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    focusItem(record, event.key === "Home" ? "first" : "last");
+  } else if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    item.click();
+  } else if (event.key.length === 1 && /\S/.test(event.key)) {
+    typeahead(record, item, event.key);
+  }
+}
+
+function hasClickAction(trigger: HTMLElement): boolean {
+  return Array.from(trigger.attributes).some((attribute) => attribute.name === "data-on:click");
+}
+
+function wire(record: MenuRecord): void {
+  const triggerClick = (): void => {
+    toggleMenu(record.root);
+  };
+  const triggerKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    openMenu(record.root, event.key === "ArrowUp" ? "last" : "first");
+  };
+  if (!hasClickAction(record.trigger)) {
+    record.trigger.addEventListener("click", triggerClick);
+    record.cleanups.push(() => record.trigger.removeEventListener("click", triggerClick));
+  }
+  record.trigger.addEventListener("keydown", triggerKeydown);
+  record.cleanups.push(() => record.trigger.removeEventListener("keydown", triggerKeydown));
+
+  const keydown = (event: KeyboardEvent): void => contentKeydown(record, event);
+  record.content.addEventListener("keydown", keydown);
+  record.cleanups.push(() => record.content.removeEventListener("keydown", keydown));
+
+  for (const item of menuItems(record)) {
+    const click = (event: MouseEvent): void => activateItem(record, item, event);
+    const pointerMove = (): void => {
+      if (!item.hasAttribute("disabled")) item.focus();
+    };
+    item.addEventListener("click", click);
+    item.addEventListener("pointermove", pointerMove);
+    record.cleanups.push(
+      () => item.removeEventListener("click", click),
+      () => item.removeEventListener("pointermove", pointerMove),
+    );
+  }
+}
+
+function installGlobalListeners(): void {
+  if (globalListenersInstalled || typeof document === "undefined") return;
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (!(event.target instanceof Node)) return;
+      for (const record of [...activeRecords]) {
+        if (!record.root.isConnected) activeRecords.delete(record);
+        else if (!record.root.contains(event.target)) closeMenu(record.root, false);
+      }
+    },
+    true,
+  );
+  const reposition = (): void => {
+    for (const record of [...activeRecords]) {
+      if (record.root.isConnected) {
+        positionFloating(record.root, record.trigger, record.content, {
+          align: "start",
+          side: "bottom",
+        });
+      } else {
+        activeRecords.delete(record);
+      }
+    }
+  };
+  window.addEventListener("resize", reposition);
+  window.addEventListener("scroll", reposition, true);
+  globalListenersInstalled = true;
+}
+
+function prepareItems(record: MenuRecord): void {
+  for (const item of menuItems(record)) {
+    const part = itemPart(item)!;
+    item.setAttribute(
+      "role",
+      part === "checkbox-item"
+        ? "menuitemcheckbox"
+        : part === "radio-item"
+          ? "menuitemradio"
+          : "menuitem",
+    );
+    item.tabIndex = -1;
+    if (item.hasAttribute("disabled") || item.dataset.disabled !== undefined) {
+      item.setAttribute("aria-disabled", "true");
+    }
+    if (part !== "item") {
+      const checked =
+        item.getAttribute("aria-checked") === "true" || item.dataset.checked === "true";
+      setChecked(item, checked);
+    }
+  }
+  for (const separator of record.content.querySelectorAll<HTMLElement>('[data-part="separator"]')) {
+    separator.setAttribute("role", "separator");
+  }
+  for (const group of record.content.querySelectorAll<HTMLElement>('[data-part="radio-group"]')) {
+    group.setAttribute("role", "group");
+  }
+}
+
+function enhanceMenu(root: HTMLElement): MenuRecord {
+  root.id ||= `jqs-menu-${++menuId}`;
+  const trigger = directPart(root, "trigger");
+  const content = directPart(root, "content");
+  trigger.id ||= `${root.id}-trigger`;
+  content.id ||= `${root.id}-content`;
+  prepareFloating(content);
+  content.setAttribute("role", "menu");
+  content.tabIndex = -1;
+  trigger.setAttribute("aria-haspopup", "menu");
+  trigger.setAttribute("aria-controls", content.id);
+  if (!content.hasAttribute("aria-label") && !content.hasAttribute("aria-labelledby")) {
+    content.setAttribute("aria-labelledby", trigger.id);
+  }
+
+  let record = records.get(root);
+  if (!record) {
+    record = {
+      cleanups: [],
+      content,
+      open: false,
+      root,
+      search: "",
+      searchTimer: undefined,
+      trigger,
+    };
+    records.set(root, record);
+    if (!usesNativePopover(content)) content.hidden = true;
+  } else {
+    const contentChanged = record.content !== content;
+    if (contentChanged && record.open) hideFloating(record.content);
+    for (const cleanup of record.cleanups) cleanup();
+    record.cleanups = [];
+    record.trigger = trigger;
+    record.content = content;
+    if (!usesNativePopover(content)) content.hidden = !record.open;
+    if (contentChanged && record.open) showFloating(content);
+  }
+
+  prepareItems(record);
+  syncState(record, record.open);
+  wire(record);
+  installGlobalListeners();
+  if (record.open) {
+    positionFloating(record.root, record.trigger, record.content, {
+      align: "start",
+      side: "bottom",
+    });
+    if (!record.content.contains(document.activeElement)) focusItem(record, "first");
+  }
+  return record;
+}
+
+function enhanceTree(root: ParentNode): void {
+  const elements: Element[] = root instanceof Element ? [root] : [];
+  elements.push(...Array.from(root.querySelectorAll('[data-jqs="menu"]')));
+  for (const element of elements) {
+    const menu = menuRoot(element);
+    if (menu) enhanceMenu(menu);
+  }
+}
+
+function resolveRoot(target: MenuTarget, root: ParentNode = document): HTMLElement {
+  const resolved =
+    typeof target === "string" ? menuRoot(root.querySelector(target)) : menuRoot(target);
+  if (resolved) return resolved;
+  throw new Error(`Menu target did not match a data-jqs="menu" element: ${String(target)}`);
+}
+
+function controlledMenu(context: StarContext, target?: unknown): HTMLElement {
+  if (target instanceof HTMLElement && target.matches('[data-jqs="menu"]')) return target;
+  if (typeof target === "string") {
+    const local = context.root.querySelector(target);
+    return resolveRoot(local instanceof HTMLElement ? local : target);
+  }
+  const root = context.element?.closest('[data-jqs="menu"]') ?? null;
+  const resolved = menuRoot(root);
+  if (resolved) return resolved;
+  throw new Error('Menu action needs a root selector or an element inside data-jqs="menu".');
+}
+
+function registerActions(api: StarMenuStatic): void {
+  for (const operation of ["open", "close", "toggle"] as const) {
+    registerAction(`ui.menu.${operation}`, (context) => {
+      const root = controlledMenu(context, context.args?.[0]);
+      return api[operation](root);
+    });
+  }
+}
+
+export function createMenus(): MenuCollection {
+  const api: StarMenuStatic = {
+    open: (target) => openMenu(resolveRoot(target)),
+    close: (target) => closeMenu(resolveRoot(target)),
+    toggle: (target) => toggleMenu(resolveRoot(target)),
+  };
+  registerActions(api);
+  return { api, enhance: enhanceTree };
+}

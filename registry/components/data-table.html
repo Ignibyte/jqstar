@@ -1,0 +1,37 @@
+<div data-jqs="data-table" data-page-size="5">
+  <div data-part="toolbar">
+    <label for="example-table-filter">Filter projects</label>
+    <input id="example-table-filter" data-part="filter" type="search" />
+    <span data-part="selection-status"></span>
+  </div>
+  <div data-part="viewport">
+    <table data-part="table">
+      <caption>
+        Projects
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">
+            <input data-part="select-all" type="checkbox" aria-label="Select visible projects" />
+          </th>
+          <th scope="col" data-key="name"><button data-part="sort" type="button">Name</button></th>
+          <th scope="col" data-key="updated" data-type="date">
+            <button data-part="sort" type="button">Updated</button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-row-id="alpha">
+          <td><input data-part="row-select" type="checkbox" aria-label="Select Alpha" /></td>
+          <th scope="row" data-key="name">Alpha</th>
+          <td data-key="updated">2026-08-28</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div data-part="pagination">
+    <button data-part="previous" type="button">Previous</button>
+    <span data-part="page-status"></span>
+    <button data-part="next" type="button">Next</button>
+  </div>
+</div>
