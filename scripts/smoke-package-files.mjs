@@ -27,6 +27,9 @@ const required = [
   "registry/components/number-field.html",
   "registry/components/password-field.html",
   "registry/components/tags-input.html",
+  "registry/components/input-otp.html",
+  "registry/components/resizable.html",
+  "registry/components/scroll-area.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

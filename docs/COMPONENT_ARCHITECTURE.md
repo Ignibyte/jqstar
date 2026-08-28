@@ -256,6 +256,35 @@ These fields keep the same progressive-enhancement boundary as Select, Date Pick
 controls own platform behavior, while the component runtime coordinates only the additional buttons,
 tokens, state hooks, and lifecycle contracts.
 
+Input OTP provides:
+
+- One native text, password, or telephone input as the sole focus, autofill, validation, paste, and
+  form-submission boundary
+- `autocomplete="one-time-code"`, numeric `inputmode`, native `maxlength`, and configurable
+  per-character filtering through `data-pattern`
+- Generated visual slots hidden from assistive technology that mirror the native value
+- `@ui.input-otp.set|clear|focus`, equivalent `$.star.ui.inputOTP` methods, cancelable
+  `before-change`, `change`, and one-shot `complete` lifecycle events
+- Stable `data-value` and completion state for server patches without replacing the native input
+
+Resizable Panels provides:
+
+- Two or more alternating direct Panel and Handle parts laid out horizontally or vertically
+- Pointer and touch dragging plus orientation-aware Arrow keys, Home, End, and Enter
+  collapse/restore behavior
+- Focusable `separator` handles with label, controlled pane, orientation, minimum, maximum, and
+  current-value semantics
+- Per-panel minimum and maximum percentages enforced by the same constraint path for every input
+  method
+- JSON `data-value`, optional local `data-storage-key`, server-patch reconciliation, and
+  `@ui.resizable.set|resize|collapse|reset` plus matching `$.star.ui.resizable` methods
+- Cancelable before-change, change, resize-start, and resize-end lifecycle events
+
+Scroll Area preserves native overflow and keyboard behavior. The only required behavioral element is
+a focusable, labelled `data-part="viewport"`; the theme contributes scrollbar presentation, focus
+indication, overscroll containment, and vertical or horizontal layout without translating content in
+JavaScript.
+
 Static form and composition primitives provide:
 
 - Label and Native Select styling without replacing native label/control relationships
@@ -350,18 +379,19 @@ Implemented:
 - Button and Button Group
 - Dialog, Alert Dialog, Sheet, and Drawer
 - Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select, Checkbox, Radio
-  Group, Switch, Slider, Number Field, Password Field, and Tags Input
+  Group, Switch, Slider, Number Field, Password Field, Tags Input, and Input OTP
 - Toggle and Toggle Group
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, and Dropdown Menu
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
+- Resizable Panels and Scroll Area
 - Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, and
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 54-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 57-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

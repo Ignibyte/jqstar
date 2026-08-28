@@ -326,6 +326,26 @@ export interface StarTagsInputStatic {
   value(target: TagsInputTarget): string[];
 }
 
+export type InputOTPTarget = string | HTMLElement;
+
+export interface StarInputOTPStatic {
+  set(target: InputOTPTarget, value: string): HTMLElement;
+  clear(target: InputOTPTarget): HTMLElement;
+  focus(target: InputOTPTarget): HTMLElement;
+  value(target: InputOTPTarget): string;
+  complete(target: InputOTPTarget): boolean;
+}
+
+export type ResizableTarget = string | HTMLElement;
+
+export interface StarResizableStatic {
+  set(target: ResizableTarget, sizes: readonly number[]): HTMLElement;
+  resize(target: ResizableTarget, handleIndex: number, primarySize: number): HTMLElement;
+  collapse(target: ResizableTarget, handleIndex?: number): HTMLElement;
+  reset(target: ResizableTarget): HTMLElement;
+  value(target: ResizableTarget): number[];
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -417,6 +437,8 @@ export interface StarUIStatic {
   readonly numberField: StarNumberFieldStatic;
   readonly passwordField: StarPasswordFieldStatic;
   readonly tagsInput: StarTagsInputStatic;
+  readonly inputOTP: StarInputOTPStatic;
+  readonly resizable: StarResizableStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

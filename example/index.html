@@ -326,6 +326,96 @@
         </form>
       </section>
 
+      <section class="card layout-primitives-card" aria-labelledby="layout-primitives-title">
+        <div>
+          <p class="label" id="layout-primitives-title">Verification and layout primitives</p>
+          <p class="hint">
+            One autofillable code input, a real keyboard splitter, and native scrolling composed in
+            source-owned HTML.
+          </p>
+        </div>
+
+        <div class="layout-primitives-grid">
+          <form class="otp-proof" aria-label="Verification code proof">
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-otp">Verification code</label>
+              <div id="component-input-otp" data-jqs="input-otp" data-length="6">
+                <input
+                  id="component-otp"
+                  data-part="control"
+                  type="text"
+                  name="code"
+                  autocomplete="one-time-code"
+                  inputmode="numeric"
+                  pattern="[0-9]{6}"
+                  required
+                />
+                <div data-part="slots"></div>
+                <p data-part="status"></p>
+              </div>
+              <p data-part="description">
+                Paste or autofill works because all six digits live in one native input.
+              </p>
+            </div>
+            <button
+              data-jqs="button"
+              data-size="sm"
+              data-variant="outline"
+              type="button"
+              data-on:click="@ui.input-otp.clear('#component-input-otp')"
+            >
+              Clear code
+            </button>
+          </form>
+
+          <div class="resizable-proof">
+            <div
+              id="component-resizable"
+              data-jqs="resizable"
+              data-value="[35,65]"
+              data-step="5"
+              data-storage-key="catalog-workspace"
+            >
+              <aside data-part="panel" data-min="25" data-max="60">
+                <h2 data-part="title">Navigation</h2>
+                <nav aria-label="Workspace">
+                  <a href="#components-title">Overview</a>
+                  <a href="#layout-primitives-title" aria-current="page">Layout</a>
+                  <a href="#server-title">Backend</a>
+                </nav>
+              </aside>
+              <div data-part="handle" aria-label="Resize project navigation"></div>
+              <section data-part="panel" data-min="30">
+                <h2 data-part="title">Activity</h2>
+                <div
+                  data-jqs="scroll-area"
+                  style="--jqs-scroll-area-height: 10rem; --jqs-scroll-area-padding: 0.75rem"
+                >
+                  <div data-part="viewport" tabindex="0" aria-label="Component activity">
+                    <ol class="activity-list">
+                      <li><strong>Input OTP</strong><span>Native autofill retained</span></li>
+                      <li><strong>Resizable</strong><span>Pointer and keyboard ready</span></li>
+                      <li><strong>Scroll Area</strong><span>Native overflow retained</span></li>
+                      <li><strong>Tags Input</strong><span>Repeated form values</span></li>
+                      <li><strong>Date Range</strong><span>Backend-ready values</span></li>
+                    </ol>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <button
+              data-jqs="button"
+              data-size="sm"
+              data-variant="outline"
+              type="button"
+              data-on:click="@ui.resizable.reset('#component-resizable')"
+            >
+              Reset panels
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -926,7 +1016,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="54">54 components</td>
+                  <td data-key="coverage" data-value="57">57 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -1356,11 +1446,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="54"
-            max="54"
+            value="57"
+            max="57"
             aria-labelledby="progress-proof-label"
           >
-            54 of 54
+            57 of 57
           </progress>
         </div>
 

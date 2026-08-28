@@ -79,15 +79,15 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 54 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 57 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Select, Combobox, Calendar, Range Calendar, Date Picker, Date
-Range Picker, Number Field, Password Field, Tags Input, Data Table, Toast, Card, Badge, Alert,
-Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb,
-Pagination, Navigation Menu, Command Palette, and Async Form. Import the precompiled theme for the
-default appearance. Tailwind is used to author this file but is not required in the consuming
-application.
+Range Picker, Number Field, Password Field, Tags Input, Input OTP, Resizable Panels, Scroll Area,
+Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty
+State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form.
+Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
+not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -461,6 +461,22 @@ creates one hidden input per tag using `data-name`. Tags are serialized as a JSO
 cancelable `before-change` followed by `change` component events; Number Field and Tags Input also
 dispatch ordinary bubbling input/change events.
 
+Input OTP renders visual slots over one native input instead of splitting a code into six controls.
+That preserves paste, `autocomplete="one-time-code"`, mobile `inputmode`, validation, and ordinary
+form submission. `data-length` and `data-pattern` constrain the code. Use
+`$.star.ui.inputOTP.set|clear|focus|value|complete()` or `@ui.input-otp.*`; completion emits
+`jquery-star:input-otp:complete` once for each transition to a full code.
+
+Resizable Panels accepts two or more alternating direct `panel` and `handle` parts. Panel
+`data-min`/`data-max` constraints apply equally to pointer, touch, Arrow keys, Home, End, API calls,
+and server-patched JSON sizes. Enter collapses or restores the panel before a handle. Optional
+`data-storage-key` persistence never replaces the public `data-value` state. Use
+`$.star.ui.resizable.set|resize|collapse|reset|value()` or `@ui.resizable.*` actions.
+
+Scroll Area deliberately has no runtime. A focusable `data-part="viewport"` retains native wheel,
+touch, scrollbar, and keyboard behavior while the theme supplies cross-browser scrollbar styling,
+focus treatment, overscroll containment, and vertical or horizontal presentation.
+
 Data Table enhances native table markup rather than turning it into an application grid:
 
 ```html
@@ -516,7 +532,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="54" max="54">54 of 54</progress>
+    <progress data-jqs="progress" value="57" max="57">57 of 57</progress>
   </div>
 </article>
 

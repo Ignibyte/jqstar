@@ -444,6 +444,41 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-verification-form">
+     <div id="package-input-otp" data-jqs="input-otp" data-length="6">
+       <input data-part="control" type="text" name="code" aria-label="Package verification code">
+       <div data-part="slots"></div>
+       <span data-part="status"></span>
+     </div>
+   </form>
+   <div id="package-resizable" data-jqs="resizable" data-value='[30,70]'>
+     <section data-part="panel" data-min="20" data-max="60">Navigation</section>
+     <div data-part="handle" aria-label="Resize package navigation"></div>
+     <section data-part="panel" data-min="40">Content</section>
+   </div>`,
+);
+const packageVerificationForm = document.querySelector("#package-verification-form");
+const packageInputOTP = document.querySelector("#package-input-otp");
+const packageResizable = document.querySelector("#package-resizable");
+$.star.ui.enhance(packageVerificationForm);
+$.star.ui.enhance(packageResizable);
+$.star.ui.inputOTP.set(packageInputOTP, "12a3456");
+$.star.ui.resizable.resize(packageResizable, 0, 40);
+const packageSplitter = packageResizable.querySelector('[data-part="handle"]');
+if (
+  $.star.ui.inputOTP.value(packageInputOTP) !== "123456" ||
+  !$.star.ui.inputOTP.complete(packageInputOTP) ||
+  new FormData(packageVerificationForm).get("code") !== "123456" ||
+  packageInputOTP.querySelectorAll('[data-part="slot"]').length !== 6 ||
+  JSON.stringify($.star.ui.resizable.value(packageResizable)) !== JSON.stringify([40, 60]) ||
+  packageSplitter.role !== "separator" ||
+  packageSplitter.getAttribute("aria-valuenow") !== "40"
+) {
+  throw new Error("The ESM bundle failed the Input OTP and Resizable component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -503,6 +538,9 @@ const componentSelectors = [
   "[data-jqs=number-field]",
   "[data-jqs=password-field]",
   "[data-jqs=tags-input]",
+  "[data-jqs=input-otp]",
+  "[data-jqs=resizable]",
+  "[data-jqs=scroll-area]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -546,6 +584,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

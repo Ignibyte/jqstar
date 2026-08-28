@@ -2,10 +2,12 @@ import { registerAction } from "../registry";
 import { createDisclosures } from "./disclosure";
 import { createForms } from "./form";
 import { createHoverCards } from "./hover-card";
+import { createInputOTPs } from "./input-otp";
 import { createMenus } from "./menu";
 import { createNumberFields } from "./number-field";
 import { createPasswordFields } from "./password-field";
 import { createPopovers } from "./popover";
+import { createResizables } from "./resizable";
 import { createSelects } from "./select";
 import { createComboboxes } from "./combobox";
 import { createCalendars } from "./calendar";
@@ -243,7 +245,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       if (mutation.type === "attributes") {
         enhance(mutation.target as Element);
         const owner = (mutation.target as Element).closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner && owner !== mutation.target) enhance(owner);
         continue;
@@ -253,7 +255,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
         if (!(node instanceof Element)) continue;
         enhance(node);
         const owner = node.parentElement?.closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner) enhance(owner);
       }
@@ -297,6 +299,10 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-show-label",
       "data-hide-label",
       "data-add-on-blur",
+      "data-length",
+      "data-pattern",
+      "data-storage-key",
+      "data-step",
     ],
     childList: true,
     subtree: true,
@@ -325,6 +331,8 @@ export function createUI(): StarUIStatic {
   const numberFields = createNumberFields();
   const passwordFields = createPasswordFields();
   const tagsInputs = createTagsInputs();
+  const inputOTPs = createInputOTPs();
+  const resizables = createResizables();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -341,6 +349,8 @@ export function createUI(): StarUIStatic {
     numberFields.enhance(root);
     passwordFields.enhance(root);
     tagsInputs.enhance(root);
+    inputOTPs.enhance(root);
+    resizables.enhance(root);
     calendars.enhance(root);
     forms.enhance(root);
   };
@@ -362,6 +372,8 @@ export function createUI(): StarUIStatic {
     numberField: numberFields.api,
     passwordField: passwordFields.api,
     tagsInput: tagsInputs.api,
+    inputOTP: inputOTPs.api,
+    resizable: resizables.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

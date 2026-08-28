@@ -720,6 +720,46 @@
           "target": "~/components/jquery-star/tags-input.html"
         }
       ]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:item",
+      "title": "Input OTP",
+      "description": "A single native one-time-code input with visual slots and completion events.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/input-otp.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/input-otp.html"
+        }
+      ]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:item",
+      "title": "Resizable Panels",
+      "description": "Constrained panel layouts with pointer, touch, keyboard, lifecycle, and optional persistence.",
+      "files": [
+        {
+          "path": "registry/components/resizable.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/resizable.html"
+        }
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:item",
+      "title": "Scroll Area",
+      "description": "A styled native overflow viewport with keyboard scrolling and stable focus treatment.",
+      "files": [
+        {
+          "path": "registry/components/scroll-area.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/scroll-area.html"
+        }
+      ]
     }
   ]
 }

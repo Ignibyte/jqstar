@@ -266,6 +266,84 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.layout-primitives-card {
+  grid-template-columns: 1fr;
+}
+
+.layout-primitives-grid {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.6fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.otp-proof,
+.resizable-proof {
+  display: grid;
+  gap: 12px;
+}
+
+.otp-proof > [data-jqs="button"],
+.resizable-proof > [data-jqs="button"] {
+  justify-self: start;
+}
+
+#component-resizable {
+  --jqs-resizable-height: 16rem;
+}
+
+#component-resizable [data-part="panel"] {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+#component-resizable [data-part="title"] {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+#component-resizable nav {
+  display: grid;
+  gap: 4px;
+}
+
+#component-resizable nav a {
+  overflow: hidden;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #655e55;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+
+#component-resizable nav a[aria-current="page"] {
+  color: #066347;
+  background: #dff7ec;
+  font-weight: 750;
+}
+
+.activity-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-list li {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5dfd5;
+  font-size: 0.75rem;
+}
+
+.activity-list span {
+  color: #777066;
+}
+
 .select-component-card {
   grid-template-columns: 1fr;
 }
@@ -625,6 +703,10 @@ pre {
 
   .advanced-tags-field {
     grid-column: auto;
+  }
+
+  .layout-primitives-grid {
+    grid-template-columns: 1fr;
   }
 }
 

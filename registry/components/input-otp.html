@@ -1,0 +1,18 @@
+<div data-jqs="field">
+  <label data-jqs="label" for="verification-code">Verification code</label>
+  <div id="verification-code-field" data-jqs="input-otp" data-length="6">
+    <input
+      id="verification-code"
+      data-part="control"
+      type="text"
+      name="code"
+      autocomplete="one-time-code"
+      inputmode="numeric"
+      pattern="[0-9]{6}"
+      required
+    />
+    <div data-part="slots"></div>
+    <p data-part="status"></p>
+  </div>
+  <p data-part="description">Enter the six-digit code sent to your device.</p>
+</div>

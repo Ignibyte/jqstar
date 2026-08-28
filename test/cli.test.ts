@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(54);
+    expect(items).toHaveLength(57);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -45,6 +45,9 @@ describe("jqstar CLI", () => {
         "number-field",
         "password-field",
         "tags-input",
+        "input-otp",
+        "resizable",
+        "scroll-area",
       ]),
     );
   });

@@ -131,6 +131,18 @@ The first proof contains Button, Dialog, and the native form family:
   [TagGroup](https://react-spectrum.adobe.com/react-aria/TagGroup.html) removal and keyboard model.
   Repeated hidden inputs preserve ordinary backend serialization instead of exposing an opaque
   client-only value.
+- Input OTP follows MDN's
+  [one-time password guidance](https://developer.mozilla.org/en-US/docs/Web/Security/Authentication/OTP):
+  one native input retains `autocomplete="one-time-code"`, `inputmode="numeric"`, length,
+  validation, paste, and form behavior. Visual slots never become six competing focus or autofill
+  targets.
+- Resizable Panels follows the APG
+  [Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) for separator
+  value semantics and orientation-aware Arrow keys, Home, End, and collapse/restore behavior.
+- Scroll Area follows Radix's
+  [native-scrolling boundary](https://www.radix-ui.com/primitives/docs/components/scroll-area):
+  browser overflow remains responsible for wheel, touch, and keyboard scrolling; styling does not
+  translate content through a parallel JavaScript scroll model.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

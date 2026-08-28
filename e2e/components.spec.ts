@@ -87,6 +87,51 @@ test.describe("jQuery Star components", () => {
     ).resolves.toBe("3");
   });
 
+  test("OTP, resizable panels, and scroll area retain platform behavior", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Verification and layout primitives" });
+    const otpForm = card.getByRole("form", { name: "Verification code proof" });
+    const otp = card.getByRole("textbox", { name: "Verification code", exact: true });
+    await otp.fill("12a345");
+    await expect(otp).toHaveValue("12345");
+    await otp.fill("1234567");
+    await expect(otp).toHaveValue("123456");
+    await expect(card.locator('#component-input-otp [data-part="slot"]')).toHaveCount(6);
+    await expect(card.locator('#component-input-otp [data-part="status"]')).toHaveText(
+      "Code complete.",
+    );
+    await expect(
+      otpForm.evaluate((element) => new FormData(element as HTMLFormElement).get("code")),
+    ).resolves.toBe("123456");
+
+    const splitter = card.getByRole("separator", { name: "Resize project navigation" });
+    await splitter.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "40");
+    await page.keyboard.press("End");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "60");
+    await page.keyboard.press("Enter");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "25");
+    await page.keyboard.press("Enter");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "60");
+
+    await card.getByRole("button", { name: "Reset panels" }).click();
+    await expect(splitter).toHaveAttribute("aria-valuenow", "50");
+    const splitterBox = await splitter.boundingBox();
+    expect(splitterBox).not.toBeNull();
+    await page.mouse.move(splitterBox!.x + splitterBox!.width / 2, splitterBox!.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + 20, { steps: 4 });
+    await page.mouse.up();
+    await expect
+      .poll(async () => Number(await splitter.getAttribute("aria-valuenow")))
+      .toBeGreaterThan(50);
+
+    const viewport = card.locator('[data-jqs="scroll-area"] > [data-part="viewport"]');
+    await viewport.focus();
+    await page.keyboard.press("End");
+    await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -636,7 +681,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "54",
+      "57",
     );
   });
 
@@ -676,6 +721,16 @@ test.describe("jQuery Star components", () => {
     await tags.fill("accessibility");
     await tags.press("Enter");
     const results = await new AxeBuilder({ page }).include(".advanced-fields-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("OTP and resizable layout pass accessibility checks after interaction", async ({ page }) => {
+    const card = page.locator(".layout-primitives-card");
+    await card.getByRole("textbox", { name: "Verification code", exact: true }).fill("123456");
+    const splitter = card.getByRole("separator", { name: "Resize project navigation" });
+    await splitter.focus();
+    await page.keyboard.press("ArrowRight");
+    const results = await new AxeBuilder({ page }).include(".layout-primitives-card").analyze();
     expect(results.violations).toEqual([]);
   });
 
