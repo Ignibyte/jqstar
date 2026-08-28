@@ -10,6 +10,8 @@ interface DemoState extends Record<string, unknown> {
   componentComboboxLoading: boolean;
   componentQuery: string;
   componentResultCount: number;
+  projectMessage: string;
+  projectSaving: boolean;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
@@ -118,6 +120,36 @@ $.star.action<DemoState>("submitComponentAccount", async (context) => {
     context.state.componentBackendMessage = message;
   } finally {
     context.state.componentBackendSaving = false;
+  }
+});
+
+$.star.action<DemoState>("submitProject", async (context) => {
+  const form = context.element?.closest("form");
+  if (!(form instanceof HTMLFormElement)) throw new Error("Project action needs its form.");
+  if (!$.star.ui.form.validate(form)) return;
+  const body = new FormData(form);
+  context.state.projectSaving = true;
+
+  try {
+    if (__JQS_STATIC_DEMO__) {
+      await wait(180);
+      const files = body.getAll("assets").filter((value) => value instanceof File && value.name);
+      const priorities = body.getAll("priority");
+      context.state.projectMessage = `Static preview received ${files.length} file${files.length === 1 ? "" : "s"} and ${priorities.length} ordered priorities through FormData.`;
+      return;
+    }
+    const response = await fetch("/api/demo/project", {
+      method: "POST",
+      body,
+      headers: { "Datastar-Request": "true" },
+    });
+    const result = (await response.json()) as { message?: string };
+    if (!response.ok) throw new Error(result.message ?? `Request failed with ${response.status}.`);
+    context.state.projectMessage = result.message ?? "Project received.";
+  } catch (error) {
+    context.state.projectMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.projectSaving = false;
   }
 });
 

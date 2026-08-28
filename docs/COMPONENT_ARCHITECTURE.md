@@ -189,6 +189,30 @@ Toolbar provides:
   `data-toolbar-nav="roving"` is explicit
 - `@ui.toolbar.focus|next|previous` and matching `$.star.ui.toolbar` methods
 
+Stepper provides:
+
+- An ordered-list step model with `aria-current="step"`, roving trigger focus, and one visible
+  labelled panel
+- Optional linear navigation that runs native constraint validation before forward transitions
+- Explicit completion state, cancelable transitions, completion events, and server-patched
+  `data-value`
+- `@ui.stepper.next|previous|go|complete` and matching `$.star.ui.stepper` methods
+
+Sortable List provides:
+
+- Stable item identity from unique `data-value` attributes and JSON order in the root `data-value`
+- Equivalent drag, keyboard grab/move/drop, and visible Up/Down controls
+- Repeated hidden inputs from `data-name`, so ordinary FormData preserves order
+- Cancelable changes, live announcements, server-patched order, `@ui.sortable.move|up|down`, and
+  matching `$.star.ui.sortable` methods
+
+File Upload provides:
+
+- A native file input as the only selection and FormData source
+- Pointer selection and file drop through the same count, byte-size, and `accept` validation
+- Removable generated file rows, form-reset synchronization, and ordinary input/change events
+- `@ui.fileUpload.clear|remove` and matching `$.star.ui.fileUpload` methods
+
 Select provides:
 
 - A native single-value `<select data-part="control">` as the source for form submission,
@@ -437,7 +461,7 @@ Implemented:
 - Toggle and Toggle Group
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
-- Tree View, Sidebar, Carousel, and Toolbar
+- Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -446,7 +470,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 63-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 66-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

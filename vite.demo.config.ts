@@ -138,6 +138,22 @@ function installProofBackend(middlewares: MiddlewareStack): void {
     response.end(body);
   });
 
+  middlewares.use("/api/demo/project", async (request, response) => {
+    if (request.method !== "POST") {
+      response.writeHead(405).end();
+      return;
+    }
+    const source = await requestText(request);
+    const body = JSON.stringify({
+      message: `The local backend received a ${source.length.toLocaleString()} byte multipart project submission.`,
+    });
+    response.writeHead(200, {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(body),
+    });
+    response.end(body);
+  });
+
   middlewares.use("/api/demo/autocomplete", async (request, response) => {
     const sdkRequest = new Request(new URL(request.url ?? "/", "http://localhost"));
     const read = await ServerSentEventGenerator.readSignals(sdkRequest);

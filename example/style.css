@@ -395,6 +395,76 @@ h1 {
   font-size: 0.78rem;
 }
 
+.workflow-components-card {
+  grid-template-columns: 1fr;
+}
+
+#project-workflow-form,
+.workflow-panel-copy,
+.workflow-review {
+  display: grid;
+  gap: 10px;
+}
+
+#project-stepper > [data-part="panel"] {
+  min-height: 17rem;
+}
+
+#project-stepper > [data-part="panel"][data-value="details"] {
+  grid-template-columns: minmax(0, 0.8fr) minmax(15rem, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+
+.workflow-panel-copy h2,
+.workflow-review h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: clamp(1.35rem, 3.5vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.workflow-panel-copy p,
+.workflow-review p {
+  margin: 0;
+  color: #655e55;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.workflow-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.workflow-assets-grid > div {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.workflow-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workflow-result {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #06704f;
+  background: #dff7ec;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
 .layout-primitives-grid {
   display: grid;
   grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.6fr);
@@ -866,6 +936,11 @@ pre {
     max-width: none;
     margin-left: 0;
     text-align: left;
+  }
+
+  #project-stepper > [data-part="panel"][data-value="details"],
+  .workflow-assets-grid {
+    grid-template-columns: 1fr;
   }
 }
 

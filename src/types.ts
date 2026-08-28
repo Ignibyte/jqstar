@@ -402,6 +402,33 @@ export interface StarToolbarStatic {
   value(target: ToolbarTarget): string | undefined;
 }
 
+export type StepperTarget = string | HTMLElement;
+
+export interface StarStepperStatic {
+  next(target: StepperTarget): HTMLElement;
+  previous(target: StepperTarget): HTMLElement;
+  go(target: StepperTarget, value: string): HTMLElement;
+  complete(target: StepperTarget, value?: string, completed?: boolean): HTMLElement;
+  value(target: StepperTarget): string;
+}
+
+export type SortableTarget = string | HTMLElement;
+
+export interface StarSortableStatic {
+  move(target: SortableTarget, value: string, index: number): HTMLElement;
+  up(target: SortableTarget, value: string): HTMLElement;
+  down(target: SortableTarget, value: string): HTMLElement;
+  value(target: SortableTarget): string[];
+}
+
+export type FileUploadTarget = string | HTMLElement;
+
+export interface StarFileUploadStatic {
+  clear(target: FileUploadTarget): HTMLElement;
+  remove(target: FileUploadTarget, file: number | string): HTMLElement;
+  files(target: FileUploadTarget): File[];
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -501,6 +528,9 @@ export interface StarUIStatic {
   readonly sidebar: StarSidebarStatic;
   readonly carousel: StarCarouselStatic;
   readonly toolbar: StarToolbarStatic;
+  readonly stepper: StarStepperStatic;
+  readonly sortable: StarSortableStatic;
+  readonly fileUpload: StarFileUploadStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

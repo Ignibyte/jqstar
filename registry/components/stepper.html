@@ -1,0 +1,34 @@
+<form data-jqs="form">
+  <div data-jqs="stepper" data-linear data-value="details" style="--jqs-step-count: 3">
+    <ol data-part="list">
+      <li data-part="step" data-value="details">
+        <button data-part="trigger" type="button">Details</button>
+      </li>
+      <li data-part="step" data-value="assets">
+        <button data-part="trigger" type="button">Assets</button>
+      </li>
+      <li data-part="step" data-value="review">
+        <button data-part="trigger" type="button">Review</button>
+      </li>
+    </ol>
+
+    <section data-part="panel" data-value="details">
+      <label data-jqs="field">
+        <span data-part="label">Project name</span>
+        <input data-part="control" name="name" required />
+      </label>
+    </section>
+    <section data-part="panel" data-value="assets">Add project files here.</section>
+    <section data-part="panel" data-value="review">
+      Review the native form values before submitting.
+    </section>
+
+    <div data-part="actions">
+      <button data-jqs="button" data-part="previous" data-variant="outline" type="button">
+        Back
+      </button>
+      <button data-jqs="button" data-part="next" type="button">Continue</button>
+    </div>
+    <p data-part="status"></p>
+  </div>
+</form>

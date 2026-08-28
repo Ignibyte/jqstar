@@ -79,16 +79,16 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 63 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 66 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
 Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Tags Input, Input OTP,
 Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
-Command Palette, Async Form, Sidebar, Carousel, and Toolbar. Import the precompiled theme for the
-default appearance. Tailwind is used to author this file but is not required in the consuming
-application.
+Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload.
+Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
+not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -374,6 +374,20 @@ Toolbar groups three or more controls under one keyboard tab stop. Arrow keys fo
 keys keep their native behavior unless they opt into roving navigation with
 `data-toolbar-nav="roving"`. Use `$.star.ui.toolbar.focus|next|previous|value()` or `@ui.toolbar.*`.
 
+Stepper models a sequential workflow as an ordered list and source-owned panels. The active trigger
+uses `aria-current="step"`; `data-value` is the server-patch boundary. Add `data-linear` to require
+adjacent forward progress and native constraint validation. Use
+`$.star.ui.stepper.next|previous|go|complete|value()` or `@ui.stepper.*`.
+
+Sortable List preserves each source-owned item while publishing its order as a JSON `data-value` and
+repeated hidden inputs from `data-name`. Dragging, keyboard grab/move/drop, and visible Up/Down
+buttons produce the same order. Use `$.star.ui.sortable.move|up|down|value()` or `@ui.sortable.*`.
+
+File Upload keeps a real `<input type="file">` as its source, so `new FormData(form)` receives the
+browser `FileList` directly. It adds drop handling, removable file rows, `accept`, `data-max-files`,
+and `data-max-size` validation. Use `$.star.ui.fileUpload.clear|remove|files()` or
+`@ui.fileUpload.*`.
+
 Select keeps a native form control as its value and submission source:
 
 ```html
@@ -564,7 +578,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="63" max="63">63 of 63</progress>
+    <progress data-jqs="progress" value="66" max="66">66 of 66</progress>
   </div>
 </article>
 

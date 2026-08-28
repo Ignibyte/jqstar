@@ -221,6 +221,50 @@ test.describe("jQuery Star components", () => {
     await expect(trigger).toBeFocused();
   });
 
+  test("stepper, file upload, and sortable list submit one native multipart workflow", async ({
+    page,
+  }) => {
+    const card = page.getByRole("region", { name: "Backend-ready project workflow" });
+    const form = card.locator("#project-workflow-form");
+    const stepper = card.locator("#project-stepper");
+    const next = stepper.getByRole("button", { name: "Continue" });
+
+    await next.click();
+    await expect(stepper).toHaveAttribute("data-value", "details");
+    await card.getByRole("textbox", { name: "Project name" }).fill("Proof workspace");
+    await next.click();
+    await expect(stepper).toHaveAttribute("data-value", "assets");
+
+    const input = card.locator('input[type="file"][name="assets"]');
+    await input.setInputFiles({
+      name: "proof.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("jQuery Star proof"),
+    });
+    await expect(card.getByText("proof.pdf")).toBeVisible();
+
+    const handle = card.getByRole("button", { name: "Reorder Documentation" });
+    await handle.focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("Space");
+    await card.getByRole("button", { name: "Move Documentation up" }).click();
+    await expect(
+      form.evaluate((element) => new FormData(element as HTMLFormElement).getAll("priority")),
+    ).resolves.toEqual(["docs", "design", "api"]);
+    await expect(
+      form.evaluate((element) => {
+        const file = new FormData(element as HTMLFormElement).get("assets");
+        return file instanceof File ? file.name : "";
+      }),
+    ).resolves.toBe("proof.pdf");
+
+    await next.click();
+    await expect(stepper).toHaveAttribute("data-value", "review");
+    await card.getByRole("button", { name: "Send project" }).click();
+    await expect(card.locator(".workflow-result")).toContainText("local backend received");
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -650,8 +694,8 @@ test.describe("jQuery Star components", () => {
     await expect(visibleRows.nth(1)).toContainText("Bootstrap");
 
     await root.getByRole("button", { name: "Coverage" }).click();
-    await expect(visibleRows.nth(0)).toContainText("daisyUI");
-    await expect(visibleRows.nth(1)).toContainText("jQuery Star");
+    await expect(visibleRows.nth(0)).toContainText("jQuery Star");
+    await expect(visibleRows.nth(1)).toContainText("daisyUI");
 
     const filter = root.getByRole("searchbox", { name: "Filter systems" });
     await filter.fill("Framework-neutral");
@@ -770,7 +814,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "63",
+      "66",
     );
   });
 
@@ -870,6 +914,22 @@ test.describe("jQuery Star components", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await card.locator('#component-sidebar [data-part="trigger"]').click();
     results = await new AxeBuilder({ page }).include(".workspace-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("backend-ready workflow passes accessibility checks in active states", async ({ page }) => {
+    const card = page.locator(".workflow-components-card");
+    let results = await new AxeBuilder({ page }).include(".workflow-components-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.getByRole("textbox", { name: "Project name" }).fill("Accessible project");
+    await card.getByRole("button", { name: "Continue" }).click();
+    await card.locator('input[type="file"]').setInputFiles({
+      name: "accessible.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("accessible proof"),
+    });
+    results = await new AxeBuilder({ page }).include(".workflow-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

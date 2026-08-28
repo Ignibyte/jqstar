@@ -585,6 +585,51 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-workflow">
+     <div id="package-stepper" data-jqs="stepper" data-value="details" data-validate="false">
+       <ol data-part="list">
+         <li data-part="step" data-value="details"><button data-part="trigger">Details</button></li>
+         <li data-part="step" data-value="review"><button data-part="trigger">Review</button></li>
+       </ol>
+       <section data-part="panel" data-value="details">Details</section>
+       <section data-part="panel" data-value="review">Review</section>
+       <button data-part="previous">Back</button><button data-part="next">Next</button>
+     </div>
+     <div id="package-sortable" data-jqs="sortable" data-name="priority">
+       <ol data-part="list">
+         <li data-part="item" data-value="one"><button data-part="handle">Move</button><button data-part="up">Up</button><button data-part="down">Down</button></li>
+         <li data-part="item" data-value="two"><button data-part="handle">Move</button><button data-part="up">Up</button><button data-part="down">Down</button></li>
+       </ol>
+     </div>
+     <div id="package-upload" data-jqs="file-upload"><input data-part="control" type="file" name="asset"><label data-part="dropzone">File</label><ul data-part="list"></ul></div>
+   </form>`,
+);
+const packageStepper = document.querySelector("#package-stepper");
+const packageSortable = document.querySelector("#package-sortable");
+const packageUpload = document.querySelector("#package-upload");
+$.star.ui.enhance(document.querySelector("#package-workflow"));
+$.star.ui.stepper.next(packageStepper);
+$.star.ui.sortable.move(packageSortable, "two", 0);
+const packageFile = new File(["proof"], "proof.txt", { type: "text/plain" });
+Object.defineProperty(packageUpload.querySelector('[data-part="control"]'), "files", {
+  configurable: true,
+  value: [packageFile],
+});
+packageUpload
+  .querySelector('[data-part="control"]')
+  .dispatchEvent(new Event("change", { bubbles: true }));
+if (
+  $.star.ui.stepper.value(packageStepper) !== "review" ||
+  $.star.ui.sortable.value(packageSortable).join(",") !== "two,one" ||
+  new FormData(document.querySelector("#package-workflow")).getAll("priority").join(",") !==
+    "two,one" ||
+  $.star.ui.fileUpload.files(packageUpload)[0]?.name !== "proof.txt"
+) {
+  throw new Error("The ESM bundle failed the Stepper, Sortable, and File Upload smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -653,6 +698,9 @@ const componentSelectors = [
   "[data-jqs=sidebar]",
   "[data-jqs=carousel]",
   "[data-jqs=toolbar]",
+  "[data-jqs=stepper]",
+  "[data-jqs=sortable]",
+  "[data-jqs=file-upload]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -696,6 +744,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

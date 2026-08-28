@@ -840,6 +840,47 @@
           "target": "~/components/jquery-star/toolbar.html"
         }
       ]
+    },
+    {
+      "name": "stepper",
+      "type": "registry:item",
+      "title": "Stepper",
+      "description": "A linear or non-linear workflow with native validation, ordered-list semantics, and server-patchable state.",
+      "registryDependencies": ["button", "field", "form"],
+      "files": [
+        {
+          "path": "registry/components/stepper.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/stepper.html"
+        }
+      ]
+    },
+    {
+      "name": "sortable",
+      "type": "registry:item",
+      "title": "Sortable List",
+      "description": "An ordered collection with drag, keyboard reordering, visible pointer alternatives, and repeated native form values.",
+      "files": [
+        {
+          "path": "registry/components/sortable.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/sortable.html"
+        }
+      ]
+    },
+    {
+      "name": "file-upload",
+      "type": "registry:item",
+      "title": "File Upload",
+      "description": "A native file input with drop handling, file validation, removable previews, and direct FormData compatibility.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/file-upload.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/file-upload.html"
+        }
+      ]
     }
   ]
 }

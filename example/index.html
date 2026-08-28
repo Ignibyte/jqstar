@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -746,6 +746,153 @@
         </section>
       </section>
 
+      <section class="card workflow-components-card" aria-labelledby="workflow-components-title">
+        <div>
+          <p class="label" id="workflow-components-title">Backend-ready project workflow</p>
+          <p class="hint">
+            Stepper, File Upload, and Sortable List compose into one multipart form. GitHub Pages
+            simulates the response; the local demo sends the same FormData to a real endpoint.
+          </p>
+        </div>
+
+        <form
+          id="project-workflow-form"
+          data-jqs="form"
+          enctype="multipart/form-data"
+          data-on:submit__prevent="@submitProject"
+        >
+          <div
+            id="project-stepper"
+            data-jqs="stepper"
+            data-linear
+            data-value="details"
+            style="--jqs-step-count: 3"
+          >
+            <ol data-part="list">
+              <li data-part="step" data-value="details">
+                <button data-part="trigger" type="button">Details</button>
+              </li>
+              <li data-part="step" data-value="assets">
+                <button data-part="trigger" type="button">Assets</button>
+              </li>
+              <li data-part="step" data-value="review">
+                <button data-part="trigger" type="button">Review</button>
+              </li>
+            </ol>
+
+            <section data-part="panel" data-value="details">
+              <div class="workflow-panel-copy">
+                <span class="workspace-kicker">Step one</span>
+                <h2>Name the project</h2>
+                <p>Native constraint validation prevents an incomplete forward transition.</p>
+              </div>
+              <div data-jqs="field">
+                <label data-jqs="label" for="project-name">Project name</label>
+                <input id="project-name" data-jqs="input" name="name" required />
+                <p data-part="description">This value is submitted without serialization code.</p>
+                <p data-part="message" hidden></p>
+              </div>
+            </section>
+
+            <section data-part="panel" data-value="assets">
+              <div class="workflow-assets-grid">
+                <div>
+                  <div class="workflow-panel-copy">
+                    <span class="workspace-kicker">Native files</span>
+                    <h2>Add project assets</h2>
+                  </div>
+                  <div data-jqs="file-upload" data-max-files="3" data-max-size="5242880">
+                    <input
+                      data-part="control"
+                      type="file"
+                      name="assets"
+                      accept="image/*,.pdf"
+                      multiple
+                    />
+                    <label data-part="dropzone">
+                      <span><strong>Choose files</strong><br />or drop images and PDFs here</span>
+                    </label>
+                    <ul data-part="list"></ul>
+                    <p data-part="status"></p>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="workflow-panel-copy">
+                    <span class="workspace-kicker">Ordered values</span>
+                    <h2>Set the work priority</h2>
+                  </div>
+                  <div id="project-priority" data-jqs="sortable" data-name="priority">
+                    <ol data-part="list">
+                      <li data-part="item" data-value="design" data-label="Design system">
+                        <button data-part="handle" type="button">⋮⋮</button>
+                        <span data-part="label">Design system</span>
+                        <button data-part="up" type="button" aria-label="Move Design system up">
+                          ↑
+                        </button>
+                        <button data-part="down" type="button" aria-label="Move Design system down">
+                          ↓
+                        </button>
+                      </li>
+                      <li data-part="item" data-value="api" data-label="API contract">
+                        <button data-part="handle" type="button">⋮⋮</button>
+                        <span data-part="label">API contract</span>
+                        <button data-part="up" type="button" aria-label="Move API contract up">
+                          ↑
+                        </button>
+                        <button data-part="down" type="button" aria-label="Move API contract down">
+                          ↓
+                        </button>
+                      </li>
+                      <li data-part="item" data-value="docs" data-label="Documentation">
+                        <button data-part="handle" type="button">⋮⋮</button>
+                        <span data-part="label">Documentation</span>
+                        <button data-part="up" type="button" aria-label="Move Documentation up">
+                          ↑
+                        </button>
+                        <button data-part="down" type="button" aria-label="Move Documentation down">
+                          ↓
+                        </button>
+                      </li>
+                    </ol>
+                    <p data-part="status"></p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section data-part="panel" data-value="review">
+              <div class="workflow-review">
+                <span class="workspace-kicker">Native handoff</span>
+                <h2>Submit the assembled form</h2>
+                <p>
+                  The file input remains a real FileList. Priority is represented by repeated hidden
+                  inputs. The backend receives both through <code>new FormData(form)</code>.
+                </p>
+                <button
+                  id="project-submit"
+                  data-jqs="button"
+                  type="submit"
+                  data-prop:disabled="$projectSaving"
+                >
+                  <span data-show="!$projectSaving">Send project</span>
+                  <span data-show="$projectSaving">Sending…</span>
+                </button>
+              </div>
+            </section>
+
+            <div class="workflow-actions" data-part="actions">
+              <button data-jqs="button" data-part="previous" data-variant="outline" type="button">
+                Back
+              </button>
+              <button data-jqs="button" data-part="next" type="button">Continue</button>
+            </div>
+            <p data-part="status"></p>
+          </div>
+          <output class="workflow-result" data-text="$projectMessage" aria-live="polite"></output>
+        </form>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -1346,7 +1493,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="63">63 components</td>
+                  <td data-key="coverage" data-value="66">66 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -1776,11 +1923,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="63"
-            max="63"
+            value="66"
+            max="66"
             aria-labelledby="progress-proof-label"
           >
-            63 of 63
+            66 of 66
           </progress>
         </div>
 

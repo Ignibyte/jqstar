@@ -21,6 +21,9 @@ import { createToasts } from "./toast";
 import { createTooltips } from "./tooltip";
 import { createToggles } from "./toggle";
 import { createToolbars } from "./toolbar";
+import { createSteppers } from "./stepper";
+import { createSortables } from "./sortable";
+import { createFileUploads } from "./file-upload";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -240,6 +243,9 @@ const enhancementOwnerSelector = [
   "sidebar",
   "carousel",
   "toolbar",
+  "stepper",
+  "sortable",
+  "file-upload",
   "toast",
   "toast-viewport",
   "select",
@@ -343,6 +349,12 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-loop",
       "data-autoplay",
       "data-shortcut",
+      "data-linear",
+      "data-validate",
+      "data-max-files",
+      "data-max-size",
+      "accept",
+      "multiple",
     ],
     childList: true,
     subtree: true,
@@ -378,6 +390,9 @@ export function createUI(): StarUIStatic {
   const sidebars = createSidebars();
   const carousels = createCarousels();
   const toolbars = createToolbars();
+  const steppers = createSteppers();
+  const sortables = createSortables();
+  const fileUploads = createFileUploads();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -391,6 +406,9 @@ export function createUI(): StarUIStatic {
     sidebars.enhance(root);
     carousels.enhance(root);
     toolbars.enhance(root);
+    steppers.enhance(root);
+    sortables.enhance(root);
+    fileUploads.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -430,6 +448,9 @@ export function createUI(): StarUIStatic {
     sidebar: sidebars.api,
     carousel: carousels.api,
     toolbar: toolbars.api,
+    stepper: steppers.api,
+    sortable: sortables.api,
+    fileUpload: fileUploads.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

@@ -160,6 +160,18 @@ The first proof contains Button, Dialog, and the native form family:
   [composable sidebar structure](https://ui.shadcn.com/docs/components/base/sidebar) and its icon,
   off-canvas, and non-collapsible modes without importing React context. jQuery Star keeps the same
   useful Cmd/Ctrl+B convention while storing state on source-owned HTML.
+- Stepper uses an ordered list and `aria-current="step"`, matching the platform-neutral semantics
+  described by [WAI-ARIA](https://www.w3.org/TR/wai-aria-1.3/#aria-current). Linear forward
+  navigation keeps browser constraint validation instead of inventing a second validation layer.
+- Sortable List follows WCAG 2.2
+  [Dragging Movements](https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html): visible
+  Up and Down buttons provide a single-pointer alternative to dragging, while keyboard reordering
+  exposes the same operation.
+- File Upload builds on the browser
+  [File API](https://developer.mozilla.org/en-US/docs/Web/API/File_API) and
+  [file drag-and-drop model](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop).
+  The selected `FileList` stays on the native input, which keeps multipart FormData compatible with
+  any backend.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is
