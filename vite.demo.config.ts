@@ -29,9 +29,14 @@ function escapeHtml(value: string): string {
   );
 }
 
-async function requestBody(request: IncomingMessage): Promise<Record<string, unknown>> {
+async function requestText(request: IncomingMessage): Promise<string> {
   let source = "";
   for await (const chunk of request) source += String(chunk);
+  return source;
+}
+
+async function requestBody(request: IncomingMessage): Promise<Record<string, unknown>> {
+  const source = await requestText(request);
   if (!source) return {};
   try {
     const value = JSON.parse(source) as unknown;
@@ -107,6 +112,30 @@ function installProofBackend(middlewares: MiddlewareStack): void {
       );
     });
     await sendWebResponse(sdkResponse, response);
+  });
+
+  middlewares.use("/api/demo/account", async (request, response) => {
+    if (request.method !== "POST") {
+      response.writeHead(405).end();
+      return;
+    }
+    const source = await requestText(request);
+    const taken = source.toLocaleLowerCase().includes("taken@example.com");
+    const body = JSON.stringify(
+      taken
+        ? {
+            errors: {
+              _form: "The server rejected one field. Your file selection was left intact.",
+              email: "That account already exists. Try another email.",
+            },
+          }
+        : { message: "The local backend accepted the multipart form." },
+    );
+    response.writeHead(taken ? 422 : 200, {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(body),
+    });
+    response.end(body);
   });
 
   middlewares.use("/api/demo/autocomplete", async (request, response) => {

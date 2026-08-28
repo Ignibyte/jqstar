@@ -121,6 +121,37 @@ h1 {
   font-weight: 700;
 }
 
+.range-backend-card {
+  grid-template-columns: 1fr;
+}
+
+.range-backend-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.range-form-showcase {
+  display: grid;
+  gap: 18px;
+}
+
+#component-backend-form {
+  padding: 18px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+}
+
+.backend-form-status {
+  margin: 0;
+  color: #06704f;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .form-surfaces-card {
   grid-template-columns: 1fr;
 }
@@ -563,6 +594,10 @@ pre {
   }
 
   .calendar-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .range-backend-grid {
     grid-template-columns: 1fr;
   }
 

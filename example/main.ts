@@ -3,6 +3,9 @@ import "../src/index";
 import "../src/ui/theme.css";
 
 interface DemoState extends Record<string, unknown> {
+  componentBackendError: string | null;
+  componentBackendMessage: string;
+  componentBackendSaving: boolean;
   componentComboboxError: string | null;
   componentComboboxLoading: boolean;
   componentQuery: string;
@@ -66,6 +69,56 @@ $.star.action<DemoState>("searchComponents", async (context) => {
   }
   state.componentResultCount = matches.length;
   state.componentComboboxLoading = false;
+});
+
+$.star.action<DemoState>("submitComponentAccount", async (context) => {
+  const form = context.element?.closest("form");
+  if (!(form instanceof HTMLFormElement)) throw new Error("Account action needs its form.");
+  $.star.ui.form.clearErrors(form);
+  context.state.componentBackendSaving = true;
+  context.state.componentBackendError = null;
+
+  try {
+    let status = 200;
+    let result: { errors?: Record<string, string | string[]>; message?: string };
+    if (__JQS_STATIC_DEMO__) {
+      await wait(180);
+      const email = String(new FormData(form).get("email") ?? "");
+      status = email.toLocaleLowerCase() === "taken@example.com" ? 422 : 200;
+      result =
+        status === 422
+          ? {
+              errors: {
+                _form: "The server rejected one field. Your file selection was left intact.",
+                email: "That account already exists. Try another email.",
+              },
+            }
+          : { message: "Static preview accepted the same multipart request contract." };
+    } else {
+      const response = await fetch("/api/demo/account", {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "Datastar-Request": "true" },
+      });
+      status = response.status;
+      result = (await response.json()) as typeof result;
+    }
+
+    if (status === 422 && result.errors) {
+      $.star.ui.form.setErrors(form, result.errors);
+      context.state.componentBackendMessage =
+        "The 422 response became native browser validity. Edit the email to clear it.";
+      return;
+    }
+    if (status >= 400) throw new Error(result.message ?? `Request failed with ${status}.`);
+    context.state.componentBackendMessage = result.message ?? "Account saved.";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    context.state.componentBackendError = message;
+    context.state.componentBackendMessage = message;
+  } finally {
+    context.state.componentBackendSaving = false;
+  }
 });
 
 $.star.action<DemoState>("serverIncrement", async (context) => {

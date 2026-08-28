@@ -310,6 +310,22 @@ export interface StarCalendarStatic {
   value(target: CalendarTarget): string | undefined;
 }
 
+export type RangeCalendarTarget = string | HTMLElement;
+
+export interface RangeCalendarValue {
+  start?: string;
+  end?: string;
+}
+
+export interface StarRangeCalendarStatic {
+  select(target: RangeCalendarTarget, start: CalendarDate, end?: CalendarDate): HTMLElement;
+  clear(target: RangeCalendarTarget): HTMLElement;
+  month(target: RangeCalendarTarget, date: CalendarDate): HTMLElement;
+  next(target: RangeCalendarTarget): HTMLElement;
+  previous(target: RangeCalendarTarget): HTMLElement;
+  value(target: RangeCalendarTarget): RangeCalendarValue;
+}
+
 export type DatePickerTarget = string | HTMLElement;
 
 export interface StarDatePickerStatic {
@@ -319,6 +335,16 @@ export interface StarDatePickerStatic {
   value(target: DatePickerTarget): string | undefined;
 }
 
+export type DateRangePickerTarget = string | HTMLElement;
+
+export interface StarDateRangePickerStatic {
+  open(target: DateRangePickerTarget): HTMLElement;
+  close(target: DateRangePickerTarget): HTMLElement;
+  select(target: DateRangePickerTarget, start: CalendarDate, end?: CalendarDate): HTMLElement;
+  clear(target: DateRangePickerTarget): HTMLElement;
+  value(target: DateRangePickerTarget): RangeCalendarValue;
+}
+
 export type FormTarget = string | HTMLFormElement;
 
 export interface StarFormValidateOptions {
@@ -326,10 +352,23 @@ export interface StarFormValidateOptions {
   report?: boolean;
 }
 
+export type StarFormErrors = Record<string, string | readonly string[] | null | undefined>;
+
+export interface StarFormErrorOptions {
+  focus?: boolean;
+  replace?: boolean;
+}
+
 export interface StarFormStatic {
   validate(target: FormTarget, options?: StarFormValidateOptions): boolean;
   valid(target: FormTarget): boolean;
   focusInvalid(target: FormTarget): HTMLElement | undefined;
+  setErrors(
+    target: FormTarget,
+    errors: StarFormErrors,
+    options?: StarFormErrorOptions,
+  ): HTMLFormElement;
+  clearErrors(target: FormTarget, names?: string | readonly string[]): HTMLFormElement;
   reset(target: FormTarget): HTMLFormElement;
 }
 
@@ -349,7 +388,9 @@ export interface StarUIStatic {
   readonly toggle: StarToggleStatic;
   readonly toggleGroup: StarToggleGroupStatic;
   readonly calendar: StarCalendarStatic;
+  readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;
+  readonly dateRangePicker: StarDateRangePickerStatic;
   readonly form: StarFormStatic;
   enhance(root?: ParentNode): void;
 }

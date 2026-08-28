@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -385,6 +385,139 @@
         </div>
       </section>
 
+      <section class="card range-backend-card" aria-labelledby="range-backend-title">
+        <div>
+          <p class="label" id="range-backend-title">Date ranges and backend-ready forms</p>
+          <p class="hint">
+            Continuous range selection, two native form values, multipart upload, and structured
+            server errors through browser validity.
+          </p>
+        </div>
+
+        <div class="range-backend-grid">
+          <div>
+            <h2 class="showcase-title">Sprint window</h2>
+            <div
+              id="component-range-calendar"
+              data-jqs="range-calendar"
+              data-month="2026-08"
+              data-start="2026-08-28"
+              data-end="2026-08-31"
+              data-disabled-dates="2026-09-03"
+              data-week-start="1"
+              aria-label="Sprint window"
+            >
+              <div data-part="header">
+                <button data-part="previous" type="button" aria-label="Previous month">←</button>
+                <h2 data-part="heading"></h2>
+                <button data-part="next" type="button" aria-label="Next month">→</button>
+              </div>
+              <div data-part="grid"></div>
+              <p data-part="status"></p>
+            </div>
+          </div>
+
+          <div class="range-form-showcase">
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-trip-start">Travel dates</label>
+              <div id="component-range-picker" data-jqs="date-range-picker">
+                <input
+                  id="component-trip-start"
+                  data-part="start-control"
+                  data-bind:component-trip-start
+                  name="startDate"
+                  value="2026-08-28"
+                  autocomplete="off"
+                />
+                <input
+                  data-part="end-control"
+                  data-bind:component-trip-end
+                  name="endDate"
+                  value="2026-08-31"
+                  autocomplete="off"
+                  aria-label="Travel end date"
+                />
+                <div
+                  id="component-range-popover"
+                  data-jqs="popover"
+                  data-part="popover"
+                  data-side="bottom"
+                  data-align="end"
+                >
+                  <button data-part="trigger" type="button">
+                    <span aria-hidden="true">▦</span>
+                    <span data-part="value" hidden>Choose dates</span>
+                  </button>
+                  <div data-part="content" aria-label="Travel date range calendar">
+                    <div data-jqs="range-calendar" data-month="2026-08" data-week-start="1">
+                      <div data-part="header">
+                        <button data-part="previous" type="button" aria-label="Previous month">
+                          ←
+                        </button>
+                        <h2 data-part="heading"></h2>
+                        <button data-part="next" type="button" aria-label="Next month">→</button>
+                      </div>
+                      <div data-part="grid"></div>
+                      <p data-part="status"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form
+              id="component-backend-form"
+              data-jqs="form"
+              data-on:submit__prevent="@submitComponentAccount"
+              data-on:reset="$componentBackendMessage = 'Try taken@example.com to see structured server validation.'; $componentBackendError = null"
+              enctype="multipart/form-data"
+              aria-label="Backend account proof"
+            >
+              <div data-jqs="field">
+                <label data-jqs="label" for="component-backend-email">Account email</label>
+                <input
+                  id="component-backend-email"
+                  data-jqs="input"
+                  name="email"
+                  type="email"
+                  value="taken@example.com"
+                  required
+                />
+                <p data-part="description">The local endpoint returns a real 422 error map.</p>
+                <p data-part="message" hidden></p>
+              </div>
+              <div data-jqs="field">
+                <label data-jqs="label" for="component-backend-file">Optional avatar</label>
+                <input
+                  id="component-backend-file"
+                  data-jqs="file-input"
+                  name="avatar"
+                  type="file"
+                  accept="image/*"
+                />
+              </div>
+              <p data-part="server-message" hidden></p>
+              <div data-part="actions">
+                <button data-jqs="button" data-variant="outline" type="reset">Reset</button>
+                <button
+                  data-jqs="button"
+                  type="submit"
+                  data-prop:disabled="$componentBackendSaving"
+                >
+                  <span data-show="!$componentBackendSaving">Send multipart form</span>
+                  <span data-show="$componentBackendSaving">Sending…</span>
+                </button>
+              </div>
+              <p
+                class="backend-form-status"
+                data-text="$componentBackendMessage"
+                aria-live="polite"
+              ></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
       <section class="card form-surfaces-card" aria-labelledby="form-surfaces-title">
         <div>
           <p class="label" id="form-surfaces-title">Validated forms and composed surfaces</p>
@@ -719,7 +852,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="48">48 components</td>
+                  <td data-key="coverage" data-value="51">51 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -1149,11 +1282,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="48"
-            max="48"
+            value="51"
+            max="51"
             aria-labelledby="progress-proof-label"
           >
-            48 of 48
+            51 of 51
           </progress>
         </div>
 

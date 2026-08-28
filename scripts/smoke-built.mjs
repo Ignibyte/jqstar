@@ -334,6 +334,41 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<label for="package-range-start">Package range</label>
+   <div id="package-range-picker" data-jqs="date-range-picker">
+     <input id="package-range-start" data-part="start-control" name="start" value="2026-08-28">
+     <input data-part="end-control" name="end" value="2026-08-30" aria-label="Package range end">
+     <div id="package-range-popover" data-jqs="popover" data-part="popover">
+       <button data-part="trigger"><span data-part="value"></span></button>
+       <div data-part="content">
+         <div id="package-range-calendar" data-jqs="range-calendar" data-month="2026-08">
+           <div data-part="header">
+             <button data-part="previous">Previous</button>
+             <h2 data-part="heading"></h2>
+             <button data-part="next">Next</button>
+           </div>
+           <div data-part="grid"></div>
+           <p data-part="status"></p>
+         </div>
+       </div>
+     </div>
+   </div>`,
+);
+const dateRangePicker = document.querySelector("#package-range-picker");
+const packageRangeCalendar = document.querySelector("#package-range-calendar");
+$.star.ui.enhance(dateRangePicker);
+$.star.ui.dateRangePicker.select(dateRangePicker, "2026-09-04", "2026-09-01");
+if (
+  JSON.stringify($.star.ui.dateRangePicker.value(dateRangePicker)) !==
+    JSON.stringify({ start: "2026-09-01", end: "2026-09-04" }) ||
+  packageRangeCalendar.querySelector('[data-value="2026-09-02"]').dataset.state !== "in-range" ||
+  packageRangeCalendar.querySelectorAll('[aria-selected="true"]').length !== 4
+) {
+  throw new Error("The ESM bundle failed the Range Calendar and Date Range Picker smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<form id="package-form" data-jqs="form">
      <div data-jqs="field">
        <label for="package-email">Package email</label>
@@ -352,6 +387,17 @@ packageEmail.value = "proof@example.com";
 packageEmail.dispatchEvent(new Event("input", { bubbles: true }));
 if (!$.star.ui.form.valid(packageForm) || packageEmail.hasAttribute("aria-invalid")) {
   throw new Error("The ESM bundle failed the Form valid-state smoke test.");
+}
+$.star.ui.form.setErrors(packageForm, { email: "Already registered." });
+if (
+  !packageEmail.validity.customError ||
+  packageEmail.validationMessage !== "Already registered."
+) {
+  throw new Error("The ESM bundle failed the Form backend-error smoke test.");
+}
+$.star.ui.form.clearErrors(packageForm);
+if (packageEmail.validity.customError) {
+  throw new Error("The ESM bundle failed to clear Form backend errors.");
 }
 
 document.body.insertAdjacentHTML(
@@ -409,7 +455,9 @@ const componentSelectors = [
   "[data-jqs=combobox]",
   "[data-jqs=data-table]",
   "[data-jqs=calendar]",
+  "[data-jqs=range-calendar]",
   "[data-jqs=date-picker]",
+  "[data-jqs=date-range-picker]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -453,6 +501,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM form=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

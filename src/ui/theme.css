@@ -560,6 +560,17 @@ form[data-jqs="form"] [data-jqs="field"][data-invalid="true"] > [data-part="labe
   color: var(--color-jqs-danger);
 }
 
+form[data-jqs="form"] > [data-part="server-message"] {
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid color-mix(in oklab, var(--color-jqs-danger) 45%, var(--color-jqs-border));
+  border-radius: var(--radius-jqs-md);
+  color: var(--color-jqs-danger-hover);
+  background: color-mix(in oklab, var(--color-jqs-danger) 8%, var(--color-jqs-background));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
 [data-jqs="input"],
 [data-jqs="textarea"] {
   box-sizing: border-box;
@@ -1147,7 +1158,7 @@ meter[data-jqs="meter"]::-moz-meter-bar {
   background: var(--color-jqs-primary);
 }
 
-[data-jqs="calendar"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) {
   box-sizing: border-box;
   display: grid;
   width: min(19rem, 100%);
@@ -1159,22 +1170,22 @@ meter[data-jqs="meter"]::-moz-meter-bar {
   background: var(--color-jqs-background);
 }
 
-[data-jqs="calendar"] > [data-part="header"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) > [data-part="header"] {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
   gap: 0.5rem;
   align-items: center;
 }
 
-[data-jqs="calendar"] [data-part="heading"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="heading"] {
   margin: 0;
   text-align: center;
   font-size: 0.875rem;
   font-weight: 750;
 }
 
-[data-jqs="calendar"] [data-part="previous"],
-[data-jqs="calendar"] [data-part="next"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="previous"],
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="next"] {
   display: inline-grid;
   width: 2.25rem;
   height: 2.25rem;
@@ -1189,35 +1200,35 @@ meter[data-jqs="meter"]::-moz-meter-bar {
   outline: none;
 }
 
-[data-jqs="calendar"] [data-part="previous"]:hover,
-[data-jqs="calendar"] [data-part="next"]:hover {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="previous"]:hover,
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="next"]:hover {
   background: var(--color-jqs-muted);
 }
 
-[data-jqs="calendar"] [data-part="previous"]:focus-visible,
-[data-jqs="calendar"] [data-part="next"]:focus-visible {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="previous"]:focus-visible,
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="next"]:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-jqs-ring) 35%, transparent);
 }
 
-[data-jqs="calendar"] [data-part="previous"]:disabled,
-[data-jqs="calendar"] [data-part="next"]:disabled {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="previous"]:disabled,
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="next"]:disabled {
   cursor: not-allowed;
   opacity: 0.35;
 }
 
-[data-jqs="calendar"] > [data-part="grid"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) > [data-part="grid"] {
   display: grid;
   gap: 0.125rem;
 }
 
-[data-jqs="calendar"] [data-part="weekdays"],
-[data-jqs="calendar"] [data-part="week"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="weekdays"],
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="week"] {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.125rem;
 }
 
-[data-jqs="calendar"] [data-part="weekdays"] > span {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="weekdays"] > span {
   display: grid;
   min-height: 1.75rem;
   place-items: center;
@@ -1227,12 +1238,12 @@ meter[data-jqs="meter"]::-moz-meter-bar {
   text-transform: uppercase;
 }
 
-[data-jqs="calendar"] [role="gridcell"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [role="gridcell"] {
   display: grid;
   place-items: center;
 }
 
-[data-jqs="calendar"] [data-part="day"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"] {
   display: inline-grid;
   width: 2.25rem;
   max-width: 100%;
@@ -1250,32 +1261,55 @@ meter[data-jqs="meter"]::-moz-meter-bar {
   outline: none;
 }
 
-[data-jqs="calendar"] [data-part="day"]:hover {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"]:hover {
   background: var(--color-jqs-muted);
 }
 
-[data-jqs="calendar"] [data-part="day"]:focus-visible {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"]:focus-visible {
   border-color: var(--color-jqs-primary);
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-jqs-ring) 35%, transparent);
 }
 
-[data-jqs="calendar"] [data-part="day"][data-month="adjacent"] {
-  color: color-mix(in oklab, var(--color-jqs-muted-foreground) 58%, transparent);
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"][data-month="adjacent"] {
+  color: var(--color-jqs-muted-foreground);
 }
 
-[data-jqs="calendar"] [data-part="day"][aria-current="date"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"][aria-current="date"] {
   border-color: var(--color-jqs-border);
   font-weight: 800;
 }
 
-[data-jqs="calendar"] [data-part="day"][data-state="selected"] {
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"][data-state="selected"] {
   border-color: var(--color-jqs-primary);
   color: var(--color-jqs-primary-foreground);
   background: var(--color-jqs-primary);
   font-weight: 750;
 }
 
-[data-jqs="calendar"] [data-part="day"]:disabled {
+[data-jqs="range-calendar"] [data-part="day"][data-state="in-range"] {
+  border-radius: var(--radius-jqs-sm);
+  color: var(--color-jqs-foreground);
+  background: color-mix(in oklab, var(--color-jqs-primary) 16%, var(--color-jqs-background));
+}
+
+[data-jqs="range-calendar"] [data-part="day"][data-state="range-start"],
+[data-jqs="range-calendar"] [data-part="day"][data-state="range-end"],
+[data-jqs="range-calendar"] [data-part="day"][data-state="range-start-end"] {
+  border-color: var(--color-jqs-primary);
+  color: var(--color-jqs-primary-foreground);
+  background: var(--color-jqs-primary);
+  font-weight: 750;
+}
+
+[data-jqs="range-calendar"] > [data-part="status"] {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--color-jqs-muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+:is([data-jqs="calendar"], [data-jqs="range-calendar"]) [data-part="day"]:disabled {
   cursor: not-allowed;
   opacity: 0.3;
 }
@@ -1339,6 +1373,72 @@ meter[data-jqs="meter"]::-moz-meter-bar {
 }
 
 [data-jqs="date-picker"] [data-jqs="calendar"] {
+  width: 100%;
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.16);
+}
+
+[data-jqs="date-range-picker"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  width: min(34rem, 100%);
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+[data-jqs="date-range-picker"] > [data-part="start-control"],
+[data-jqs="date-range-picker"] > [data-part="end-control"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-jqs-border);
+  border-radius: var(--radius-jqs-md);
+  color: var(--color-jqs-foreground);
+  background: var(--color-jqs-background);
+  font: inherit;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+[data-jqs="date-range-picker"] > [data-part="start-control"]:focus-visible,
+[data-jqs="date-range-picker"] > [data-part="end-control"]:focus-visible {
+  border-color: var(--color-jqs-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-jqs-ring) 35%, transparent);
+}
+
+[data-jqs="date-range-picker"] > [data-part="popover"] > [data-part="trigger"] {
+  display: inline-grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--color-jqs-border);
+  border-radius: var(--radius-jqs-md);
+  color: var(--color-jqs-foreground);
+  background: var(--color-jqs-background);
+  cursor: pointer;
+  font: inherit;
+  outline: none;
+}
+
+[data-jqs="date-range-picker"] > [data-part="popover"] > [data-part="trigger"]:hover {
+  background: var(--color-jqs-muted);
+}
+
+[data-jqs="date-range-picker"] > [data-part="popover"] > [data-part="trigger"]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-jqs-ring) 35%, transparent);
+}
+
+[data-jqs="date-range-picker"] > [data-part="popover"] > [data-part="content"] {
+  width: min(21rem, calc(100vw - 1rem));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-jqs="date-range-picker"] [data-jqs="range-calendar"] {
   width: 100%;
   box-shadow: 0 16px 40px rgb(15 23 42 / 0.16);
 }

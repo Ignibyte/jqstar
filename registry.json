@@ -637,6 +637,47 @@
           "target": "~/components/jquery-star/file-input.html"
         }
       ]
+    },
+    {
+      "name": "range-calendar",
+      "type": "registry:item",
+      "title": "Range Calendar",
+      "description": "An accessible calendar grid for continuous start and end date selection.",
+      "files": [
+        {
+          "path": "registry/components/range-calendar.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/range-calendar.html"
+        }
+      ]
+    },
+    {
+      "name": "date-range-picker",
+      "type": "registry:item",
+      "title": "Date Range Picker",
+      "description": "Two native form values composed from Popover and Range Calendar behavior.",
+      "registryDependencies": ["field", "label", "popover", "range-calendar"],
+      "files": [
+        {
+          "path": "registry/components/date-range-picker.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/date-range-picker.html"
+        }
+      ]
+    },
+    {
+      "name": "async-form",
+      "type": "registry:block",
+      "title": "Async Form",
+      "description": "A validated multipart form wired to backend actions, pending state, and server errors.",
+      "registryDependencies": ["form", "field", "label", "input", "file-input", "button"],
+      "files": [
+        {
+          "path": "registry/components/async-form.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/async-form.html"
+        }
+      ]
     }
   ]
 }

@@ -240,7 +240,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       if (mutation.type === "attributes") {
         enhance(mutation.target as Element);
         const owner = (mutation.target as Element).closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner && owner !== mutation.target) enhance(owner);
         continue;
@@ -250,7 +250,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
         if (!(node instanceof Element)) continue;
         enhance(node);
         const owner = node.parentElement?.closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner) enhance(owner);
       }
@@ -263,6 +263,8 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-mode",
       "data-collapsible",
       "data-value",
+      "data-start",
+      "data-end",
       "data-activation",
       "data-orientation",
       "data-filter",
@@ -343,7 +345,9 @@ export function createUI(): StarUIStatic {
     toggle: toggles.toggle,
     toggleGroup: toggles.toggleGroup,
     calendar: calendars.calendar,
+    rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,
+    dateRangePicker: calendars.dateRangePicker,
     form: forms.api,
     enhance,
   };

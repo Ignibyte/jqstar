@@ -19,6 +19,7 @@ describe("jQuery Star Form", () => {
     document.body.innerHTML = `
       <main id="app">
         <button id="external" data-on:click="@ui.form.validate('#profile-form')">Validate</button>
+        <button id="server-errors" data-on:click="@ui.form.set-errors('#profile-form', {email: 'Already registered.'})">Server error</button>
         <form id="profile-form" data-jqs="form">
           <div data-jqs="field">
             <label data-part="label" for="profile-email">Email</label>
@@ -28,6 +29,7 @@ describe("jQuery Star Form", () => {
           </div>
           <button type="reset">Reset</button>
           <button type="submit">Save</button>
+          <p data-part="server-message" hidden></p>
         </form>
       </main>
     `;
@@ -87,6 +89,52 @@ describe("jQuery Star Form", () => {
     expect(prevent).toHaveBeenCalledOnce();
     expect(submitted).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("maps backend field errors into native validity and clears them on edit", () => {
+    email().value = "taken@example.com";
+    const serverInvalid = vi.fn();
+    form().addEventListener("jquery-star:form:server-invalid", serverInvalid);
+    $.star.ui.form.setErrors(form(), {
+      _form: "We could not save this profile.",
+      email: ["Already registered.", "Use another address."],
+    });
+
+    expect(email().validity.customError).toBe(true);
+    expect(email().validationMessage).toBe("Already registered. Use another address.");
+    expect(email().getAttribute("aria-invalid")).toBe("true");
+    expect(message().textContent).toBe("Already registered. Use another address.");
+    expect(form().dataset.serverInvalid).toBe("true");
+    expect(form().querySelector('[data-part="server-message"]')?.textContent).toBe(
+      "We could not save this profile.",
+    );
+    expect(document.activeElement).toBe(email());
+    expect(serverInvalid).toHaveBeenCalledOnce();
+
+    email().value = "available@example.com";
+    email().dispatchEvent(new Event("input", { bubbles: true }));
+    expect(email().validity.customError).toBe(false);
+    expect(email().hasAttribute("aria-invalid")).toBe(false);
+    expect(message().hidden).toBe(true);
+
+    $.star.ui.form.clearErrors(form());
+    expect(form().hasAttribute("data-server-invalid")).toBe(false);
+    const serverMessage = form().querySelector<HTMLElement>('[data-part="server-message"]')!;
+    expect(serverMessage.hidden).toBe(true);
+    expect(serverMessage.hasAttribute("role")).toBe(false);
+    expect(serverMessage.hasAttribute("tabindex")).toBe(false);
+  });
+
+  it("supports backend error named actions and selective clearing", () => {
+    email().value = "taken@example.com";
+    $("#server-errors").trigger("click");
+    expect(email().validationMessage).toBe("Already registered.");
+
+    email().disabled = true;
+    $.star.ui.form.clearErrors(form(), "email");
+    expect(email().validity.customError).toBe(false);
+    expect(email().hasAttribute("data-jqs-server-validation")).toBe(false);
+    expect(message().hidden).toBe(true);
   });
 
   it("supports named validation and API reset without leaving stale errors", async () => {

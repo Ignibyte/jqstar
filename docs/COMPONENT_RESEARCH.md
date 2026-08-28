@@ -117,7 +117,14 @@ The first proof contains Button, Dialog, and the native form family:
 - Form delegates its validity model to the HTML Standard's native
   [Constraint Validation API](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constraint-validation).
   It reflects native failures into stable Field parts and leaves `FormData`, including multipart
-  file inputs, on the same backend-action path.
+  file inputs, on the same backend-action path. Structured backend errors use the standard's
+  `setCustomValidity()` hook, so custom server messages participate in the same `ValidityState`
+  instead of creating a parallel error model.
+- Range Calendar retains the APG
+  [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
+  and represents the continuous selection through `aria-selected` grid cells. Endpoint text is
+  included in each day button's accessible name, and Date Range Picker retains two native form
+  controls rather than serializing an opaque widget value.
 - Hover Card follows WCAG 2.2
   [Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html):
   it is dismissible with Escape, hoverable across the floating content, and persistent while pointer

@@ -79,14 +79,14 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 48 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 51 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
-Tooltip, Hover Card, Dropdown Menu, Select, Combobox, Calendar, Date Picker, Data Table, Toast,
-Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard
-Key, Breadcrumb, Pagination, Navigation Menu, and Command Palette. Import the precompiled theme for
-the default appearance. Tailwind is used to author this file but is not required in the consuming
-application.
+Tooltip, Hover Card, Dropdown Menu, Select, Combobox, Calendar, Range Calendar, Date Picker, Date
+Range Picker, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress,
+Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, Command Palette, and
+Async Form. Import the precompiled theme for the default appearance. Tailwind is used to author this
+file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -177,10 +177,29 @@ anatomy:
 
 Invalid controls retain the browser's `ValidityState` and `validationMessage`; Form reflects them
 through `aria-invalid`, the associated message, and `data-invalid` on Field. Input clears only
-runtime-owned errors as it becomes valid. Use `$.star.ui.form.validate|valid|focusInvalid|reset()`
-or `@ui.form.validate|focus-invalid|reset`. Form emits `jquery-star:form:invalid`, cancelable
-`before-submit`, `submit`, and `reset` events. File Input stays native, so the existing
-`contentType: 'form'` backend action includes selected files through `FormData`.
+runtime-owned errors as it becomes valid. Use
+`$.star.ui.form.validate|valid|focusInvalid|setErrors|clearErrors|reset()` or
+`@ui.form.validate|focus-invalid|set-errors|clear-errors|reset`. Form emits
+`jquery-star:form:invalid|server-invalid`, cancelable `before-submit`, `submit`, and `reset` events.
+File Input stays native, so the existing `contentType: 'form'` backend action includes selected
+files through `FormData`.
+
+A future backend can return a conventional field-error map from a 422 response. Applying that map
+uses `setCustomValidity()`, so browser validation, focus, Field state, and messages remain one
+model:
+
+```ts
+const result = await fetch("/api/profile", { method: "POST", body: new FormData(form) });
+const body = await result.json();
+
+if (result.status === 422) {
+  $.star.ui.form.setErrors(form, body.errors);
+}
+```
+
+Keys match native control names; `_form` targets a direct `data-part="server-message"`. Editing a
+field clears only the server error installed for that control. `clearErrors()` can clear all errors
+or selected names.
 
 Radio Group and Slider deliberately retain native controls. Toggle adds managed `aria-pressed`
 state, while Toggle Group adds single or multiple selection, required selection, arrow-key roving
@@ -414,6 +433,17 @@ focus starts on the selected date, and selecting a day closes the popup and rest
 registry recipe for the complete anatomy, or call `$.star.ui.datePicker.open|close|select|value()`
 and `@ui.date-picker.*` from existing markup.
 
+Range Calendar uses the same grid keyboard contract with `data-start` and `data-end`. A completed
+range marks every selected grid cell, announces its endpoints, normalizes reverse selection, and
+rejects spans containing disabled dates. After a completed range, the next selection starts a new
+one. Use `$.star.ui.rangeCalendar.select|clear|month|next|previous|value()` or the matching
+`@ui.range-calendar.*` actions.
+
+Date Range Picker composes Popover and Range Calendar with separate native start and end inputs. The
+first selection keeps the popup open; the completed range dispatches ordinary input/change events,
+closes it, and restores focus. Use `$.star.ui.dateRangePicker` or
+`@ui.date-range-picker.open|close|select|clear`.
+
 Data Table enhances native table markup rather than turning it into an application grid:
 
 ```html
@@ -469,7 +499,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="48" max="48">48 of 48</progress>
+    <progress data-jqs="progress" value="51" max="51">51 of 51</progress>
   </div>
 </article>
 

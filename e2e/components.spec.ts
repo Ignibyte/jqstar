@@ -326,6 +326,55 @@ test.describe("jQuery Star components", () => {
     await expect(page.locator(".date-form-preview")).toContainText("europe-london");
   });
 
+  test("date ranges and backend validation retain native form contracts", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Date ranges and backend-ready forms" });
+    const calendar = page.locator("#component-range-calendar");
+    await expect(calendar.locator('[data-value="2026-08-28"]')).toHaveAttribute(
+      "data-state",
+      "range-start",
+    );
+    await expect(calendar.locator('[data-value="2026-08-29"]')).toHaveAttribute(
+      "data-state",
+      "in-range",
+    );
+    await calendar.locator('[data-value="2026-09-01"]').click();
+    await expect(calendar).toHaveAttribute("data-start", "2026-09-01");
+    await expect(calendar).not.toHaveAttribute("data-end");
+    await calendar.locator('[data-value="2026-09-02"]').click();
+    await expect(calendar).toHaveAttribute("data-end", "2026-09-02");
+    await expect(calendar.locator('[data-part="status"]')).toContainText("Range selected");
+
+    const picker = page.locator("#component-range-picker");
+    const start = picker.getByRole("textbox", { name: "Travel dates" });
+    const end = picker.getByRole("textbox", { name: "Travel end date" });
+    const trigger = picker.locator(':scope > [data-part="popover"] > [data-part="trigger"]');
+    await trigger.click();
+    const dialog = page.getByRole("dialog", { name: "Travel date range calendar" });
+    await expect(dialog).toBeVisible();
+    await dialog.locator('[data-value="2026-08-29"]').click();
+    await expect(start).toHaveValue("2026-08-29");
+    await expect(end).toHaveValue("");
+    await expect(dialog).toBeVisible();
+    await dialog.locator('[data-value="2026-08-31"]').click();
+    await expect(end).toHaveValue("2026-08-31");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+
+    const form = card.getByRole("form", { name: "Backend account proof" });
+    const email = form.getByRole("textbox", { name: "Account email" });
+    await form.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(email).toHaveAttribute("aria-invalid", "true");
+    await expect(form.locator('[data-part="message"]')).toContainText("already exists");
+    await expect(page.locator(".backend-form-status")).toContainText("422 response");
+
+    await email.fill("available@example.com");
+    await expect(email).not.toHaveAttribute("aria-invalid", "true");
+    await form.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(page.locator(".backend-form-status")).toContainText(
+      "local backend accepted the multipart form",
+    );
+  });
+
   test("validated forms and composed surfaces retain native behavior", async ({ page }) => {
     const card = page.getByRole("region", { name: "Validated forms and composed surfaces" });
     const form = card.getByRole("form", { name: "Profile proof" });
@@ -437,7 +486,7 @@ test.describe("jQuery Star components", () => {
 
     await root.getByRole("button", { name: "Coverage" }).click();
     await expect(visibleRows.nth(0)).toContainText("daisyUI");
-    await expect(visibleRows.nth(1)).toContainText("Shoelace");
+    await expect(visibleRows.nth(1)).toContainText("jQuery Star");
 
     const filter = root.getByRole("searchbox", { name: "Filter systems" });
     await filter.fill("Framework-neutral");
@@ -556,7 +605,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "48",
+      "51",
     );
   });
 
@@ -785,6 +834,35 @@ test.describe("jQuery Star components", () => {
     expect(results.violations).toEqual([]);
     await page.keyboard.press("Escape");
     await expect(card.getByRole("textbox", { name: "Delivery date" })).toBeVisible();
+  });
+
+  test("range and backend form states pass accessibility checks", async ({ page }) => {
+    const card = page.locator(".range-backend-card");
+    const waitForAnimations = async (): Promise<void> => {
+      await card.evaluate(async (element) => {
+        await Promise.allSettled(
+          element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+        );
+      });
+    };
+    await waitForAnimations();
+    let results = await new AxeBuilder({ page }).include(".range-backend-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await page.locator('#component-range-picker [data-part="trigger"]').click();
+    await expect(page.getByRole("dialog", { name: "Travel date range calendar" })).toBeVisible();
+    await waitForAnimations();
+    results = await new AxeBuilder({ page }).include(".range-backend-card").analyze();
+    expect(results.violations).toEqual([]);
+    await page.keyboard.press("Escape");
+
+    await card.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(card.getByRole("textbox", { name: "Account email" })).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    results = await new AxeBuilder({ page }).include(".range-backend-card").analyze();
+    expect(results.violations).toEqual([]);
   });
 
   test("validated forms and composed surfaces pass accessibility checks in visible states", async ({

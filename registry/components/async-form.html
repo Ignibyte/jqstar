@@ -1,0 +1,29 @@
+<form
+  id="account-form"
+  data-jqs="form"
+  data-signals="{ saving: false, saveError: null }"
+  data-on:submit__prevent="@post('/api/account', { contentType: 'form', pending: 'saving', error: 'saveError', retry: 'never' })"
+  enctype="multipart/form-data"
+>
+  <div data-jqs="field">
+    <label data-jqs="label" for="account-email">Email</label>
+    <input id="account-email" data-jqs="input" name="email" type="email" required />
+    <p data-part="message" hidden></p>
+  </div>
+
+  <div data-jqs="field">
+    <label data-jqs="label" for="account-avatar">Avatar</label>
+    <input id="account-avatar" data-jqs="file-input" name="avatar" type="file" accept="image/*" />
+    <p data-part="description">Submitted as native multipart FormData.</p>
+  </div>
+
+  <p data-part="server-message" data-show="$saveError" data-text="$saveError" hidden></p>
+
+  <div data-part="actions">
+    <button data-jqs="button" data-variant="outline" type="reset">Reset</button>
+    <button data-jqs="button" type="submit" data-prop:disabled="$saving">
+      <span data-show="!$saving">Save account</span>
+      <span data-show="$saving">Saving…</span>
+    </button>
+  </div>
+</form>

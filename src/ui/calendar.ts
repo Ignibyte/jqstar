@@ -1,16 +1,24 @@
 import { registerAction } from "../registry";
 import type {
   CalendarTarget,
+  DateRangePickerTarget,
   DatePickerTarget,
+  RangeCalendarTarget,
+  RangeCalendarValue,
   StarCalendarStatic,
   StarContext,
+  StarDateRangePickerStatic,
   StarDatePickerStatic,
   StarPopoverStatic,
+  StarRangeCalendarStatic,
 } from "../types";
 
 interface CalendarRecord {
   cleanup: () => void;
+  end: string | undefined;
   focusDate: string | undefined;
+  range: boolean;
+  start: string | undefined;
   value: string | undefined;
   view: Date;
 }
@@ -26,16 +34,29 @@ interface CalendarEventDetail {
   value?: string | undefined;
 }
 
+interface RangeCalendarEventDetail {
+  calendar: HTMLElement;
+  complete: boolean;
+  end?: string | undefined;
+  previousEnd?: string | undefined;
+  previousStart?: string | undefined;
+  start?: string | undefined;
+}
+
 interface CalendarCollection {
   calendar: StarCalendarStatic;
+  dateRangePicker: StarDateRangePickerStatic;
   datePicker: StarDatePickerStatic;
   enhance(root: ParentNode): void;
+  rangeCalendar: StarRangeCalendarStatic;
 }
 
 const calendarRecords = new WeakMap<HTMLElement, CalendarRecord>();
 const pickerRecords = new WeakMap<HTMLElement, DatePickerRecord>();
+const rangePickerRecords = new WeakMap<HTMLElement, DatePickerRecord>();
 let calendarId = 0;
 let pickerId = 0;
+let rangePickerId = 0;
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const monthFormatter = new Intl.DateTimeFormat(undefined, {
@@ -115,8 +136,20 @@ function calendarRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="calendar"]') ? value : undefined;
 }
 
+function rangeCalendarRoot(value: Element | null): HTMLElement | undefined {
+  return value instanceof HTMLElement && value.matches('[data-jqs="range-calendar"]')
+    ? value
+    : undefined;
+}
+
 function pickerRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="date-picker"]')
+    ? value
+    : undefined;
+}
+
+function rangePickerRoot(value: Element | null): HTMLElement | undefined {
+  return value instanceof HTMLElement && value.matches('[data-jqs="date-range-picker"]')
     ? value
     : undefined;
 }
@@ -128,11 +161,39 @@ function resolveCalendar(target: CalendarTarget, root: ParentNode = document): H
   throw new Error(`Calendar target did not match data-jqs="calendar": ${String(target)}`);
 }
 
+function resolveRangeCalendar(
+  target: RangeCalendarTarget,
+  root: ParentNode = document,
+): HTMLElement {
+  const resolved =
+    typeof target === "string"
+      ? rangeCalendarRoot(root.querySelector(target))
+      : rangeCalendarRoot(target);
+  if (resolved) return resolved;
+  throw new Error(
+    `Range Calendar target did not match data-jqs="range-calendar": ${String(target)}`,
+  );
+}
+
 function resolvePicker(target: DatePickerTarget, root: ParentNode = document): HTMLElement {
   const resolved =
     typeof target === "string" ? pickerRoot(root.querySelector(target)) : pickerRoot(target);
   if (resolved) return resolved;
   throw new Error(`Date Picker target did not match data-jqs="date-picker": ${String(target)}`);
+}
+
+function resolveRangePicker(
+  target: DateRangePickerTarget,
+  root: ParentNode = document,
+): HTMLElement {
+  const resolved =
+    typeof target === "string"
+      ? rangePickerRoot(root.querySelector(target))
+      : rangePickerRoot(target);
+  if (resolved) return resolved;
+  throw new Error(
+    `Date Range Picker target did not match data-jqs="date-range-picker": ${String(target)}`,
+  );
 }
 
 function dateLimit(root: HTMLElement, name: "min" | "max"): Date | undefined {
@@ -171,6 +232,51 @@ function emit(
   );
 }
 
+function emitRange(
+  root: HTMLElement,
+  name: "before-change" | "change" | "invalid-range" | "view-change",
+  detail: RangeCalendarEventDetail,
+  cancelable = false,
+): boolean {
+  return root.dispatchEvent(
+    new CustomEvent(`jquery-star:range-calendar:${name}`, {
+      bubbles: true,
+      cancelable,
+      detail,
+    }),
+  );
+}
+
+function rangeValue(record: CalendarRecord): RangeCalendarValue {
+  return {
+    ...(record.start ? { start: record.start } : {}),
+    ...(record.end ? { end: record.end } : {}),
+  };
+}
+
+function orderedRange(start: Date, end: Date): [Date, Date] {
+  return start <= end ? [start, end] : [end, start];
+}
+
+function inRange(value: string, start: string | undefined, end: string | undefined): boolean {
+  return start !== undefined && end !== undefined && value >= start && value <= end;
+}
+
+function rangeHasDisabled(root: HTMLElement, start: Date, end: Date): boolean {
+  const [first, last] = orderedRange(start, end);
+  for (let current = first; current <= last; current = addDays(current, 1)) {
+    if (isDisabled(root, current)) return true;
+  }
+  return false;
+}
+
+function rangeStatus(root: HTMLElement, message: string): void {
+  const status = directPart(root, "status");
+  if (!status) return;
+  status.setAttribute("aria-live", "polite");
+  status.textContent = message;
+}
+
 function weekStart(root: HTMLElement): number {
   return root.dataset.weekStart === "1" ? 1 : 0;
 }
@@ -183,7 +289,10 @@ function firstGridDate(root: HTMLElement, view: Date): Date {
 function renderSignature(root: HTMLElement, record: CalendarRecord): string {
   return [
     monthIso(record.view),
+    record.range ? "range" : "single",
     record.value ?? "",
+    record.start ?? "",
+    record.end ?? "",
     record.focusDate ?? "",
     root.dataset.min ?? "",
     root.dataset.max ?? "",
@@ -202,8 +311,27 @@ function dayButton(root: HTMLElement, date: Date, record: CalendarRecord): HTMLB
   button.dataset.value = value;
   button.dataset.month = monthIso(date) === monthIso(record.view) ? "current" : "adjacent";
   button.textContent = String(date.getUTCDate());
-  button.setAttribute("aria-label", dayFormatter.format(date));
-  button.dataset.state = record.value === value ? "selected" : "unselected";
+  let label = dayFormatter.format(date);
+  if (record.range) {
+    if (record.start === value && record.end === value) {
+      button.dataset.state = "range-start-end";
+      label += ", selected range";
+    } else if (record.start === value) {
+      button.dataset.state = "range-start";
+      label += record.end ? ", start of selected range" : ", start date, choose an end date";
+    } else if (record.end === value) {
+      button.dataset.state = "range-end";
+      label += ", end of selected range";
+    } else if (inRange(value, record.start, record.end)) {
+      button.dataset.state = "in-range";
+      label += ", in selected range";
+    } else {
+      button.dataset.state = "unselected";
+    }
+  } else {
+    button.dataset.state = record.value === value ? "selected" : "unselected";
+  }
+  button.setAttribute("aria-label", label);
   if (value === dateIso(today())) button.setAttribute("aria-current", "date");
   button.disabled = isDisabled(root, date);
   button.tabIndex = -1;
@@ -269,7 +397,11 @@ function renderCalendar(root: HTMLElement, record: CalendarRecord): void {
       const date = addDays(first, rowIndex * 7 + column);
       const cell = document.createElement("span");
       cell.setAttribute("role", "gridcell");
-      cell.setAttribute("aria-selected", String(record.value === dateIso(date)));
+      const value = dateIso(date);
+      const selected = record.range
+        ? record.start === value || inRange(value, record.start, record.end)
+        : record.value === value;
+      cell.setAttribute("aria-selected", String(selected));
       const button = dayButton(root, date, record);
       buttons.push(button);
       cell.append(button);
@@ -299,7 +431,15 @@ function requestView(root: HTMLElement, date: Date, focus = false): HTMLElement 
   if (root.dataset.month !== monthIso(record.view)) root.dataset.month = monthIso(record.view);
   renderCalendar(root, record);
   if (previous !== monthIso(record.view)) {
-    emit(root, "view-change", { calendar: root, date: monthIso(record.view) });
+    if (record.range) {
+      emitRange(root, "view-change", {
+        calendar: root,
+        complete: record.end !== undefined,
+        ...rangeValue(record),
+      });
+    } else {
+      emit(root, "view-change", { calendar: root, date: monthIso(record.view) });
+    }
   }
   if (focus) {
     const button = root.querySelector<HTMLButtonElement>(
@@ -338,6 +478,95 @@ function requestSelection(root: HTMLElement, date: Date): HTMLElement {
   return root;
 }
 
+function requestRangeSelection(root: HTMLElement, date: Date, endDate?: Date): HTMLElement {
+  const record = calendarRecords.get(root) ?? enhanceCalendar(root);
+  if (!record.range || isDisabled(root, date) || (endDate && isDisabled(root, endDate)))
+    return root;
+
+  const previousStart = record.start;
+  const previousEnd = record.end;
+  let nextStart: Date;
+  let nextEnd: Date | undefined;
+  if (endDate) {
+    [nextStart, nextEnd] = orderedRange(date, endDate);
+  } else if (!record.start || record.end) {
+    nextStart = date;
+  } else {
+    [nextStart, nextEnd] = orderedRange(parseDate(record.start), date);
+  }
+
+  if (nextEnd && rangeHasDisabled(root, nextStart, nextEnd)) {
+    const detail = {
+      calendar: root,
+      complete: record.end !== undefined,
+      previousEnd,
+      previousStart,
+      ...rangeValue(record),
+    };
+    rangeStatus(root, "That range includes an unavailable date. Choose another end date.");
+    emitRange(root, "invalid-range", detail);
+    return root;
+  }
+
+  const start = dateIso(nextStart);
+  const end = nextEnd ? dateIso(nextEnd) : undefined;
+  const detail: RangeCalendarEventDetail = {
+    calendar: root,
+    complete: end !== undefined,
+    end,
+    previousEnd,
+    previousStart,
+    start,
+  };
+  if (!emitRange(root, "before-change", detail, true)) return root;
+
+  const activeDay =
+    document.activeElement instanceof HTMLButtonElement &&
+    root.contains(document.activeElement) &&
+    document.activeElement.dataset.part === "day";
+  record.start = start;
+  record.end = end;
+  record.focusDate = dateIso(endDate ?? date);
+  record.view = startOfMonth(endDate ?? date);
+  root.dataset.start = start;
+  if (end) root.dataset.end = end;
+  else delete root.dataset.end;
+  renderCalendar(root, record);
+  if (activeDay) {
+    root
+      .querySelector<HTMLButtonElement>(`[data-part="day"][data-value="${record.focusDate}"]`)
+      ?.focus();
+  }
+  rangeStatus(
+    root,
+    end
+      ? `Range selected, ${dayFormatter.format(nextStart)} through ${dayFormatter.format(nextEnd!)}.`
+      : `${dayFormatter.format(nextStart)} selected as the start date. Choose an end date.`,
+  );
+  emitRange(root, "change", detail);
+  return root;
+}
+
+function clearRange(root: HTMLElement): HTMLElement {
+  const record = calendarRecords.get(root) ?? enhanceCalendar(root);
+  if (!record.range || (!record.start && !record.end)) return root;
+  const detail: RangeCalendarEventDetail = {
+    calendar: root,
+    complete: false,
+    previousEnd: record.end,
+    previousStart: record.start,
+  };
+  if (!emitRange(root, "before-change", detail, true)) return root;
+  record.start = undefined;
+  record.end = undefined;
+  delete root.dataset.start;
+  delete root.dataset.end;
+  renderCalendar(root, record);
+  rangeStatus(root, "Date range cleared.");
+  emitRange(root, "change", detail);
+  return root;
+}
+
 function keyboardDate(
   root: HTMLElement,
   button: HTMLButtonElement,
@@ -373,7 +602,10 @@ function wireCalendar(root: HTMLElement): () => void {
     } else if (target.dataset.part === "next") {
       requestView(root, addMonths((calendarRecords.get(root) ?? enhanceCalendar(root)).view, 1));
     } else if (target.dataset.part === "day" && target.dataset.value) {
-      requestSelection(root, parseDate(target.dataset.value));
+      const record = calendarRecords.get(root) ?? enhanceCalendar(root);
+      const date = parseDate(target.dataset.value);
+      if (record.range) requestRangeSelection(root, date);
+      else requestSelection(root, date);
     }
   };
   const keydown = (event: KeyboardEvent): void => {
@@ -400,22 +632,46 @@ function wireCalendar(root: HTMLElement): () => void {
 function enhanceCalendar(root: HTMLElement): CalendarRecord {
   root.id ||= `jqs-calendar-${++calendarId}`;
   let record = calendarRecords.get(root);
+  const range = root.matches('[data-jqs="range-calendar"]');
   const requestedValue = root.dataset.value?.trim();
+  let requestedStart = root.dataset.start?.trim();
+  let requestedEnd = root.dataset.end?.trim();
   const requestedMonth = root.dataset.month?.trim();
   const valueDate = requestedValue ? parseDate(requestedValue, "data-value") : undefined;
+  let startDate = requestedStart ? parseDate(requestedStart, "data-start") : undefined;
+  let endDate = requestedEnd ? parseDate(requestedEnd, "data-end") : undefined;
+  if (endDate && !startDate) {
+    throw new Error(`Range Calendar #${root.id} needs data-start when data-end is present.`);
+  }
+  if (startDate && endDate && endDate < startDate) {
+    [startDate, endDate] = orderedRange(startDate, endDate);
+    requestedStart = dateIso(startDate);
+    requestedEnd = dateIso(endDate);
+    root.dataset.start = requestedStart;
+    root.dataset.end = requestedEnd;
+  }
   const monthDate = requestedMonth ? parseDate(`${requestedMonth}-01`, "data-month") : undefined;
 
   if (!record) {
     record = {
       cleanup: () => undefined,
-      focusDate: requestedValue,
-      value: requestedValue,
-      view: startOfMonth(monthDate ?? valueDate ?? today()),
+      end: range ? requestedEnd : undefined,
+      focusDate: range ? (requestedEnd ?? requestedStart) : requestedValue,
+      range,
+      start: range ? requestedStart : undefined,
+      value: range ? undefined : requestedValue,
+      view: startOfMonth(monthDate ?? (range ? startDate : valueDate) ?? today()),
     };
     calendarRecords.set(root, record);
     record.cleanup = wireCalendar(root);
   } else {
-    if (requestedValue !== record.value) {
+    if (range) {
+      if (requestedStart !== record.start || requestedEnd !== record.end) {
+        record.start = requestedStart || undefined;
+        record.end = requestedEnd || undefined;
+        record.focusDate = requestedEnd || requestedStart || record.focusDate;
+      }
+    } else if (requestedValue !== record.value) {
       record.value = requestedValue || undefined;
       record.focusDate = requestedValue || record.focusDate;
     }
@@ -423,6 +679,19 @@ function enhanceCalendar(root: HTMLElement): CalendarRecord {
   }
 
   renderCalendar(root, record);
+  if (range) {
+    if (record.start && record.end) {
+      rangeStatus(
+        root,
+        `Range selected, ${dayFormatter.format(parseDate(record.start))} through ${dayFormatter.format(parseDate(record.end))}.`,
+      );
+    } else if (record.start) {
+      rangeStatus(
+        root,
+        `${dayFormatter.format(parseDate(record.start))} selected as the start date. Choose an end date.`,
+      );
+    }
+  }
   return record;
 }
 
@@ -546,6 +815,177 @@ function enhancePicker(root: HTMLElement, popovers: StarPopoverStatic): DatePick
   return record;
 }
 
+function rangePickerParts(root: HTMLElement): {
+  calendar: HTMLElement;
+  endControl: HTMLInputElement;
+  popover: HTMLElement;
+  startControl: HTMLInputElement;
+  value: HTMLElement | undefined;
+} {
+  const startControl = directPart(root, "start-control");
+  const endControl = directPart(root, "end-control");
+  const popover = directPart(root, "popover");
+  const calendar = popover?.querySelector('[data-jqs="range-calendar"]') ?? null;
+  if (!(startControl instanceof HTMLInputElement)) {
+    throw new Error(
+      `Date Range Picker #${root.id} needs a direct input[data-part="start-control"] child.`,
+    );
+  }
+  if (!(endControl instanceof HTMLInputElement)) {
+    throw new Error(
+      `Date Range Picker #${root.id} needs a direct input[data-part="end-control"] child.`,
+    );
+  }
+  if (!(popover instanceof HTMLElement) || !popover.matches('[data-jqs="popover"]')) {
+    throw new Error(
+      `Date Range Picker #${root.id} needs a direct data-part="popover" Popover child.`,
+    );
+  }
+  if (!(calendar instanceof HTMLElement)) {
+    throw new Error(`Date Range Picker #${root.id} needs a Range Calendar inside its Popover.`);
+  }
+  return {
+    calendar,
+    endControl,
+    popover,
+    startControl,
+    value:
+      popover.querySelector<HTMLElement>('[data-part="trigger"] [data-part="value"]') ?? undefined,
+  };
+}
+
+function rangePickerLabel(start: string | undefined, end: string | undefined): string {
+  if (start && end) {
+    return `${dayFormatter.format(parseDate(start))} through ${dayFormatter.format(parseDate(end))}`;
+  }
+  if (start) return `${dayFormatter.format(parseDate(start))}, choose an end date`;
+  return "Choose date range";
+}
+
+function syncRangePicker(
+  root: HTMLElement,
+  start: string | undefined,
+  end: string | undefined,
+): void {
+  const parts = rangePickerParts(root);
+  parts.startControl.readOnly = true;
+  parts.endControl.readOnly = true;
+  if (parts.startControl.value !== (start ?? "")) parts.startControl.value = start ?? "";
+  if (parts.endControl.value !== (end ?? "")) parts.endControl.value = end ?? "";
+  if (parts.calendar.dataset.start !== (start ?? "")) {
+    if (start) parts.calendar.dataset.start = start;
+    else delete parts.calendar.dataset.start;
+  }
+  if (parts.calendar.dataset.end !== (end ?? "")) {
+    if (end) parts.calendar.dataset.end = end;
+    else delete parts.calendar.dataset.end;
+  }
+  enhanceCalendar(parts.calendar);
+  const visible = start ? `${start}${end ? ` – ${end}` : " – …"}` : "Choose dates";
+  if (parts.value && parts.value.textContent !== visible) parts.value.textContent = visible;
+  const trigger = directPart(parts.popover, "trigger");
+  if (trigger) trigger.setAttribute("aria-label", rangePickerLabel(start, end));
+}
+
+function openRangePicker(root: HTMLElement, popovers: StarPopoverStatic): HTMLElement {
+  const parts = rangePickerParts(root);
+  const record = calendarRecords.get(parts.calendar) ?? enhanceCalendar(parts.calendar);
+  const focusDate = record.end ?? record.start ?? dateIso(today());
+  requestView(parts.calendar, parseDate(focusDate));
+  popovers.open(parts.popover);
+  queueMicrotask(() => {
+    parts.calendar
+      .querySelector<HTMLButtonElement>(`[data-part="day"][data-value="${focusDate}"]`)
+      ?.focus();
+  });
+  return root;
+}
+
+function dispatchControlChange(control: HTMLInputElement): void {
+  control.dispatchEvent(new Event("input", { bubbles: true }));
+  control.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function wireRangePicker(root: HTMLElement, popovers: StarPopoverStatic): () => void {
+  const parts = rangePickerParts(root);
+  const calendarChange = (event: Event): void => {
+    const detail = (event as CustomEvent<RangeCalendarEventDetail>).detail;
+    const previousStart = parts.startControl.value;
+    const previousEnd = parts.endControl.value;
+    syncRangePicker(root, detail.start, detail.end);
+    if (previousStart !== parts.startControl.value) dispatchControlChange(parts.startControl);
+    if (previousEnd !== parts.endControl.value) dispatchControlChange(parts.endControl);
+    root.dispatchEvent(
+      new CustomEvent("jquery-star:date-range-picker:change", {
+        bubbles: true,
+        detail: {
+          complete: detail.complete,
+          dateRangePicker: root,
+          end: detail.end,
+          previousEnd,
+          previousStart,
+          start: detail.start,
+        },
+      }),
+    );
+    if (!detail.complete) return;
+    popovers.close(parts.popover);
+    if (parts.popover.dataset.state === "closed") directPart(parts.popover, "trigger")?.focus();
+  };
+  const controlClick = (): void => {
+    openRangePicker(root, popovers);
+  };
+  const controlKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== "ArrowDown") return;
+    event.preventDefault();
+    openRangePicker(root, popovers);
+  };
+  const triggerClick = (event: MouseEvent): void => {
+    const target = event.target instanceof Element ? event.target.closest("button") : null;
+    const trigger = directPart(parts.popover, "trigger");
+    if (target !== trigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (parts.popover.dataset.state === "open") popovers.close(parts.popover);
+    else openRangePicker(root, popovers);
+  };
+  parts.calendar.addEventListener("jquery-star:range-calendar:change", calendarChange);
+  for (const control of [parts.startControl, parts.endControl]) {
+    control.addEventListener("click", controlClick);
+    control.addEventListener("keydown", controlKeydown);
+  }
+  root.addEventListener("click", triggerClick, true);
+  return () => {
+    parts.calendar.removeEventListener("jquery-star:range-calendar:change", calendarChange);
+    for (const control of [parts.startControl, parts.endControl]) {
+      control.removeEventListener("click", controlClick);
+      control.removeEventListener("keydown", controlKeydown);
+    }
+    root.removeEventListener("click", triggerClick, true);
+  };
+}
+
+function enhanceRangePicker(root: HTMLElement, popovers: StarPopoverStatic): DatePickerRecord {
+  root.id ||= `jqs-date-range-picker-${++rangePickerId}`;
+  const parts = rangePickerParts(root);
+  const content = directPart(parts.popover, "content");
+  if (content && !content.hasAttribute("aria-label") && !content.hasAttribute("aria-labelledby")) {
+    const fieldLabel = parts.startControl.labels?.[0]?.textContent?.trim();
+    content.setAttribute("aria-label", `${fieldLabel || "Choose dates"} calendar`);
+  }
+  syncRangePicker(
+    root,
+    parts.startControl.value || parts.calendar.dataset.start || undefined,
+    parts.endControl.value || parts.calendar.dataset.end || undefined,
+  );
+  let record = rangePickerRecords.get(root);
+  if (!record) {
+    record = { cleanup: wireRangePicker(root, popovers) };
+    rangePickerRecords.set(root, record);
+  }
+  return record;
+}
+
 function controlledCalendar(context: StarContext, target?: unknown): HTMLElement {
   if (target instanceof HTMLElement && target.matches('[data-jqs="calendar"]')) return target;
   if (typeof target === "string" && target.startsWith("#"))
@@ -554,12 +994,31 @@ function controlledCalendar(context: StarContext, target?: unknown): HTMLElement
   return resolveCalendar(closest instanceof HTMLElement ? closest : String(target));
 }
 
+function controlledRangeCalendar(context: StarContext, target?: unknown): HTMLElement {
+  if (target instanceof HTMLElement && target.matches('[data-jqs="range-calendar"]')) return target;
+  if (typeof target === "string" && target.startsWith("#")) {
+    return resolveRangeCalendar(target, context.root);
+  }
+  const closest = context.element?.closest('[data-jqs="range-calendar"]') ?? null;
+  return resolveRangeCalendar(closest instanceof HTMLElement ? closest : String(target));
+}
+
 function controlledPicker(context: StarContext, target?: unknown): HTMLElement {
   if (target instanceof HTMLElement && target.matches('[data-jqs="date-picker"]')) return target;
   if (typeof target === "string" && target.startsWith("#"))
     return resolvePicker(target, context.root);
   const closest = context.element?.closest('[data-jqs="date-picker"]') ?? null;
   return resolvePicker(closest instanceof HTMLElement ? closest : String(target));
+}
+
+function controlledRangePicker(context: StarContext, target?: unknown): HTMLElement {
+  if (target instanceof HTMLElement && target.matches('[data-jqs="date-range-picker"]'))
+    return target;
+  if (typeof target === "string" && target.startsWith("#")) {
+    return resolveRangePicker(target, context.root);
+  }
+  const closest = context.element?.closest('[data-jqs="date-range-picker"]') ?? null;
+  return resolveRangePicker(closest instanceof HTMLElement ? closest : String(target));
 }
 
 export function createCalendars(popovers: StarPopoverStatic): CalendarCollection {
@@ -581,6 +1040,30 @@ export function createCalendars(popovers: StarPopoverStatic): CalendarCollection
       return (calendarRecords.get(root) ?? enhanceCalendar(root)).value;
     },
   };
+  const rangeCalendar: StarRangeCalendarStatic = {
+    select: (target, start, end) =>
+      requestRangeSelection(
+        resolveRangeCalendar(target),
+        parseDate(start),
+        end === undefined ? undefined : parseDate(end),
+      ),
+    clear: (target) => clearRange(resolveRangeCalendar(target)),
+    month: (target, date) => requestView(resolveRangeCalendar(target), parseDate(date)),
+    next: (target) => {
+      const root = resolveRangeCalendar(target);
+      const record = calendarRecords.get(root) ?? enhanceCalendar(root);
+      return requestView(root, addMonths(record.view, 1));
+    },
+    previous: (target) => {
+      const root = resolveRangeCalendar(target);
+      const record = calendarRecords.get(root) ?? enhanceCalendar(root);
+      return requestView(root, addMonths(record.view, -1));
+    },
+    value: (target) => {
+      const root = resolveRangeCalendar(target);
+      return rangeValue(calendarRecords.get(root) ?? enhanceCalendar(root));
+    },
+  };
   const datePicker: StarDatePickerStatic = {
     open: (target) => openPicker(resolvePicker(target), popovers),
     close: (target) => {
@@ -596,6 +1079,37 @@ export function createCalendars(popovers: StarPopoverStatic): CalendarCollection
     },
     value: (target) => pickerParts(resolvePicker(target)).control.value || undefined,
   };
+  const dateRangePicker: StarDateRangePickerStatic = {
+    open: (target) => openRangePicker(resolveRangePicker(target), popovers),
+    close: (target) => {
+      const root = resolveRangePicker(target);
+      popovers.close(rangePickerParts(root).popover);
+      return root;
+    },
+    select: (target, start, end) => {
+      const root = resolveRangePicker(target);
+      enhanceRangePicker(root, popovers);
+      requestRangeSelection(
+        rangePickerParts(root).calendar,
+        parseDate(start),
+        end === undefined ? undefined : parseDate(end),
+      );
+      return root;
+    },
+    clear: (target) => {
+      const root = resolveRangePicker(target);
+      enhanceRangePicker(root, popovers);
+      clearRange(rangePickerParts(root).calendar);
+      return root;
+    },
+    value: (target) => {
+      const parts = rangePickerParts(resolveRangePicker(target));
+      return {
+        ...(parts.startControl.value ? { start: parts.startControl.value } : {}),
+        ...(parts.endControl.value ? { end: parts.endControl.value } : {}),
+      };
+    },
+  };
 
   registerAction("ui.calendar.select", (context) => {
     const first = context.args?.[0];
@@ -610,6 +1124,28 @@ export function createCalendars(popovers: StarPopoverStatic): CalendarCollection
   for (const operation of ["next", "previous"] as const) {
     registerAction(`ui.calendar.${operation}`, (context) =>
       calendar[operation](controlledCalendar(context, context.args?.[0])),
+    );
+  }
+  registerAction("ui.range-calendar.select", (context) => {
+    const first = context.args?.[0];
+    const explicit = typeof first === "string" && first.startsWith("#");
+    const root = controlledRangeCalendar(context, explicit ? first : undefined);
+    const start = explicit ? context.args?.[1] : first;
+    const end = explicit ? context.args?.[2] : context.args?.[1];
+    if (typeof start !== "string" && !(start instanceof Date)) {
+      throw new Error("ui.range-calendar.select needs an ISO start date.");
+    }
+    if (end !== undefined && typeof end !== "string" && !(end instanceof Date)) {
+      throw new Error("ui.range-calendar.select end must be an ISO date.");
+    }
+    return rangeCalendar.select(root, start, end);
+  });
+  registerAction("ui.range-calendar.clear", (context) =>
+    rangeCalendar.clear(controlledRangeCalendar(context, context.args?.[0])),
+  );
+  for (const operation of ["next", "previous"] as const) {
+    registerAction(`ui.range-calendar.${operation}`, (context) =>
+      rangeCalendar[operation](controlledRangeCalendar(context, context.args?.[0])),
     );
   }
   registerAction("ui.date-picker.open", (context) =>
@@ -628,6 +1164,29 @@ export function createCalendars(popovers: StarPopoverStatic): CalendarCollection
     }
     return datePicker.select(root, value);
   });
+  registerAction("ui.date-range-picker.open", (context) =>
+    dateRangePicker.open(controlledRangePicker(context, context.args?.[0])),
+  );
+  registerAction("ui.date-range-picker.close", (context) =>
+    dateRangePicker.close(controlledRangePicker(context, context.args?.[0])),
+  );
+  registerAction("ui.date-range-picker.clear", (context) =>
+    dateRangePicker.clear(controlledRangePicker(context, context.args?.[0])),
+  );
+  registerAction("ui.date-range-picker.select", (context) => {
+    const first = context.args?.[0];
+    const explicit = typeof first === "string" && first.startsWith("#");
+    const root = controlledRangePicker(context, explicit ? first : undefined);
+    const start = explicit ? context.args?.[1] : first;
+    const end = explicit ? context.args?.[2] : context.args?.[1];
+    if (typeof start !== "string" && !(start instanceof Date)) {
+      throw new Error("ui.date-range-picker.select needs an ISO start date.");
+    }
+    if (end !== undefined && typeof end !== "string" && !(end instanceof Date)) {
+      throw new Error("ui.date-range-picker.select end must be an ISO date.");
+    }
+    return dateRangePicker.select(root, start, end);
+  });
 
   const enhance = (root: ParentNode): void => {
     const calendars: Element[] = root instanceof Element ? [root] : [];
@@ -637,13 +1196,27 @@ export function createCalendars(popovers: StarPopoverStatic): CalendarCollection
       if (calendarElement) enhanceCalendar(calendarElement);
     }
 
+    const rangeCalendars: Element[] = root instanceof Element ? [root] : [];
+    rangeCalendars.push(...Array.from(root.querySelectorAll('[data-jqs="range-calendar"]')));
+    for (const element of rangeCalendars) {
+      const calendarElement = rangeCalendarRoot(element);
+      if (calendarElement) enhanceCalendar(calendarElement);
+    }
+
     const pickers: Element[] = root instanceof Element ? [root] : [];
     pickers.push(...Array.from(root.querySelectorAll('[data-jqs="date-picker"]')));
     for (const element of pickers) {
       const picker = pickerRoot(element);
       if (picker) enhancePicker(picker, popovers);
     }
+
+    const rangePickers: Element[] = root instanceof Element ? [root] : [];
+    rangePickers.push(...Array.from(root.querySelectorAll('[data-jqs="date-range-picker"]')));
+    for (const element of rangePickers) {
+      const picker = rangePickerRoot(element);
+      if (picker) enhanceRangePicker(picker, popovers);
+    }
   };
 
-  return { calendar, datePicker, enhance };
+  return { calendar, datePicker, dateRangePicker, enhance, rangeCalendar };
 }

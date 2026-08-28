@@ -1,5 +1,11 @@
 import { registerAction } from "../registry";
-import type { FormTarget, StarContext, StarFormStatic, StarFormValidateOptions } from "../types";
+import type {
+  FormTarget,
+  StarContext,
+  StarFormErrors,
+  StarFormStatic,
+  StarFormValidateOptions,
+} from "../types";
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -11,6 +17,7 @@ interface FormRecord {
 
 interface FormEventDetail {
   controls?: FormControl[];
+  errors?: StarFormErrors;
   form: HTMLFormElement;
   submitter?: HTMLElement | null;
 }
@@ -37,10 +44,14 @@ function resolveForm(target: FormTarget, root: ParentNode = document): HTMLFormE
   throw new Error(`Form target did not match form[data-jqs="form"]: ${String(target)}`);
 }
 
-function controls(form: HTMLFormElement): FormControl[] {
+function allControls(form: HTMLFormElement): FormControl[] {
   return Array.from(form.querySelectorAll<FormControl>("input, select, textarea")).filter(
-    (control) => control.form === form && control.willValidate,
+    (control) => control.form === form,
   );
+}
+
+function controls(form: HTMLFormElement): FormControl[] {
+  return allControls(form).filter((control) => control.willValidate);
 }
 
 function fieldFor(control: FormControl): HTMLElement | undefined {
@@ -103,6 +114,97 @@ function clearInvalid(control: FormControl): void {
   }
 }
 
+function clearServerError(control: FormControl): void {
+  if (control.dataset.jqsServerValidation !== "invalid") return;
+  control.setCustomValidity("");
+  delete control.dataset.jqsServerValidation;
+  clearInvalid(control);
+}
+
+function formMessage(form: HTMLFormElement): HTMLElement | undefined {
+  return Array.from(form.children).find(
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.dataset.part === "server-message",
+  );
+}
+
+function clearFormMessage(form: HTMLFormElement): void {
+  const message = formMessage(form);
+  if (message?.dataset.jqsServerValidation === "invalid") {
+    message.textContent = "";
+    message.hidden = true;
+    if (message.dataset.jqsServerRole === "added") message.removeAttribute("role");
+    if (message.dataset.jqsServerTabindex === "added") message.removeAttribute("tabindex");
+    delete message.dataset.jqsServerRole;
+    delete message.dataset.jqsServerTabindex;
+    delete message.dataset.jqsServerValidation;
+  }
+  delete form.dataset.serverInvalid;
+}
+
+function clearServerErrors(form: HTMLFormElement, names?: string | readonly string[]): void {
+  const selected = new Set(typeof names === "string" ? [names] : (names ?? []));
+  const all = selected.size === 0;
+  for (const control of allControls(form)) {
+    if (all || selected.has(control.name)) clearServerError(control);
+  }
+  if (all || selected.has("_form")) clearFormMessage(form);
+  if (
+    !allControls(form).some((control) => control.dataset.jqsServerValidation === "invalid") &&
+    formMessage(form)?.dataset.jqsServerValidation !== "invalid"
+  ) {
+    delete form.dataset.serverInvalid;
+  }
+}
+
+function errorMessage(value: StarFormErrors[string]): string {
+  return (Array.isArray(value) ? value : [value])
+    .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    .join(" ");
+}
+
+function setFormMessage(form: HTMLFormElement, message: string): void {
+  const target = formMessage(form);
+  if (!target) return;
+  target.textContent = message;
+  target.hidden = false;
+  if (!target.hasAttribute("role")) {
+    target.setAttribute("role", "alert");
+    target.dataset.jqsServerRole = "added";
+  }
+  if (!target.hasAttribute("tabindex")) {
+    target.tabIndex = -1;
+    target.dataset.jqsServerTabindex = "added";
+  }
+  target.dataset.jqsServerValidation = "invalid";
+  form.dataset.serverInvalid = "true";
+}
+
+function applyServerErrors(form: HTMLFormElement, errors: StarFormErrors): FormControl[] {
+  const invalid: FormControl[] = [];
+  const unmatched: string[] = [];
+  for (const [name, value] of Object.entries(errors)) {
+    const message = errorMessage(value);
+    if (!message) continue;
+    if (name === "_form") {
+      setFormMessage(form, message);
+      continue;
+    }
+    const control = controls(form).find((candidate) => candidate.name === name);
+    if (!control) {
+      unmatched.push(message);
+      continue;
+    }
+    control.setCustomValidity(message);
+    control.dataset.jqsServerValidation = "invalid";
+    markInvalid(control);
+    invalid.push(control);
+  }
+  if (unmatched.length > 0) setFormMessage(form, unmatched.join(" "));
+  if (invalid.length > 0) form.dataset.serverInvalid = "true";
+  return invalid;
+}
+
 function syncMarkedControl(control: FormControl): void {
   if (control.dataset.jqsValidation !== "invalid") return;
   if (control.validity.valid) clearInvalid(control);
@@ -111,7 +213,7 @@ function syncMarkedControl(control: FormControl): void {
 
 function emit(
   form: HTMLFormElement,
-  name: "before-submit" | "submit" | "invalid" | "reset",
+  name: "before-submit" | "submit" | "invalid" | "server-invalid" | "reset",
   detail: FormEventDetail,
   cancelable = false,
 ): boolean {
@@ -147,6 +249,7 @@ function queueInvalid(record: FormRecord): void {
 }
 
 function clearForm(form: HTMLFormElement): void {
+  clearServerErrors(form);
   for (const control of controls(form)) clearInvalid(control);
 }
 
@@ -172,7 +275,13 @@ function wire(record: FormRecord): () => void {
       control instanceof HTMLSelectElement ||
       control instanceof HTMLTextAreaElement
     ) {
-      if (control.form === record.form) syncMarkedControl(control);
+      if (control.form !== record.form) return;
+      if (control.dataset.jqsServerValidation === "invalid") {
+        clearServerError(control);
+        if (!control.validity.valid) markInvalid(control);
+      } else {
+        syncMarkedControl(control);
+      }
     }
   };
   const submit = (event: SubmitEvent): void => {
@@ -239,6 +348,20 @@ export function createForms(): FormCollection {
     validate: (target, options) => validateForm(resolveForm(target), options),
     valid: (target) => invalidControls(resolveForm(target)).length === 0,
     focusInvalid: (target) => focusInvalid(resolveForm(target)),
+    setErrors: (target, errors, options = {}) => {
+      const form = resolveForm(target);
+      enhanceForm(form);
+      if (options.replace !== false) clearServerErrors(form);
+      const invalid = applyServerErrors(form, errors);
+      emit(form, "server-invalid", { controls: invalid, errors, form });
+      if (options.focus !== false) (invalid[0] ?? formMessage(form))?.focus();
+      return form;
+    },
+    clearErrors: (target, names) => {
+      const form = resolveForm(target);
+      clearServerErrors(form, names);
+      return form;
+    },
     reset: (target) => {
       const form = resolveForm(target);
       enhanceForm(form);
@@ -252,6 +375,30 @@ export function createForms(): FormCollection {
   registerAction("ui.form.focus-invalid", (context) =>
     api.focusInvalid(controlledForm(context, context.args?.[0])),
   );
+  registerAction("ui.form.set-errors", (context) => {
+    const first = context.args?.[0];
+    const explicit = typeof first === "string" && first.startsWith("#");
+    const form = controlledForm(context, explicit ? first : undefined);
+    const errors = (explicit ? context.args?.[1] : first) as StarFormErrors | undefined;
+    if (!errors || typeof errors !== "object" || Array.isArray(errors)) {
+      throw new Error("ui.form.set-errors needs a field-error object.");
+    }
+    return api.setErrors(form, errors);
+  });
+  registerAction("ui.form.clear-errors", (context) => {
+    const first = context.args?.[0];
+    const explicit = typeof first === "string" && first.startsWith("#");
+    const form = controlledForm(context, explicit ? first : undefined);
+    const names = explicit ? context.args?.[1] : first;
+    if (
+      names !== undefined &&
+      typeof names !== "string" &&
+      !(Array.isArray(names) && names.every((name) => typeof name === "string"))
+    ) {
+      throw new Error("ui.form.clear-errors names must be a string or string array.");
+    }
+    return api.clearErrors(form, names as string | string[] | undefined);
+  });
   registerAction("ui.form.reset", (context) =>
     api.reset(controlledForm(context, context.args?.[0])),
   );

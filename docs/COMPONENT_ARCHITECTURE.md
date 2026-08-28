@@ -198,6 +198,17 @@ Calendar and Date Picker provide:
   for placement, Escape/outside dismissal, and focus return
 - `@ui.date-picker.open|close|select` and `$.star.ui.datePicker.open|close|select|value`
 
+Range Calendar and Date Range Picker extend that contract with:
+
+- ISO `data-start` and `data-end` state, continuous selected grid cells, announced endpoints, and an
+  incomplete start state that prompts for the end date
+- Reverse-range normalization and rejection of ranges that cross unavailable dates
+- Two native Date Range Picker inputs so start and end remain ordinary `FormData` values
+- `@ui.range-calendar.select|clear|next|previous` and
+  `$.star.ui.rangeCalendar.select|clear|month|next|previous|value`
+- `@ui.date-range-picker.open|close|select|clear` and the matching `$.star.ui.dateRangePicker` API
+- Cancelable before-change, change, invalid-range, and view-change lifecycle events
+
 The selected day, focused day, and viewed month are separate state. Keyboard exploration therefore
 does not submit a value, and a server patch can replace `data-value` or `data-month` without
 replacing the component API. Date Picker writes the native input only after Calendar selection and
@@ -217,6 +228,9 @@ Form provides:
 - `jquery-star:form:invalid|before-submit|submit|reset`, with cancelable `before-submit`
 - Compatibility with `data-bind:*`, ordinary `FormData`, and existing JSON, URL-encoded, or
   multipart backend actions
+- Structured backend errors through `setCustomValidity()`, matched by native control name, plus an
+  optional `_form` message and `jquery-star:form:server-invalid` event
+- `setErrors` and `clearErrors` APIs/actions that clear only runtime-owned server validity
 
 The runtime never invents a second validation model. Server-owned errors can use separate messages
 and state; only elements marked as runtime validation state are cleared by subsequent input.
@@ -320,13 +334,13 @@ Implemented:
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, and Dropdown Menu
 - Select, Combobox, and server-backed Autocomplete
-- Calendar and Date Picker
+- Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
 - Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, and
   Keyboard Key
-- Breadcrumb, Pagination, Navigation Menu, and Command Palette
+- Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 48-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 51-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

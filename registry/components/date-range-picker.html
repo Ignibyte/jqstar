@@ -1,0 +1,36 @@
+<div data-jqs="field">
+  <label data-jqs="label" for="trip-start">Trip dates</label>
+  <div id="trip-range-picker" data-jqs="date-range-picker">
+    <input
+      id="trip-start"
+      data-part="start-control"
+      name="startDate"
+      autocomplete="off"
+      placeholder="Start date"
+    />
+    <input
+      data-part="end-control"
+      name="endDate"
+      autocomplete="off"
+      placeholder="End date"
+      aria-label="Trip end date"
+    />
+    <div data-jqs="popover" data-part="popover" data-side="bottom" data-align="end">
+      <button data-part="trigger" type="button">
+        <span aria-hidden="true">▦</span>
+        <span data-part="value" hidden>Choose dates</span>
+      </button>
+      <div data-part="content" aria-label="Trip date range calendar">
+        <div data-jqs="range-calendar">
+          <div data-part="header">
+            <button data-part="previous" type="button" aria-label="Previous month">←</button>
+            <h2 data-part="heading"></h2>
+            <button data-part="next" type="button" aria-label="Next month">→</button>
+          </div>
+          <div data-part="grid"></div>
+          <p data-part="status"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
