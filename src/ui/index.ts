@@ -31,6 +31,7 @@ import { createRatings } from "./rating";
 import { createMessageScrollers } from "./message-scroller";
 import { createSearchFields } from "./search-field";
 import { createFeeds } from "./feed";
+import { createQuestionnaires } from "./questionnaire";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -260,6 +261,7 @@ const enhancementOwnerSelector = [
   "message-scroller",
   "search-field",
   "feed",
+  "questionnaire",
   "toast",
   "toast-viewport",
   "select",
@@ -364,6 +366,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-autoplay",
       "data-shortcut",
       "data-linear",
+      "data-disabled",
       "data-validate",
       "data-max-files",
       "data-max-size",
@@ -414,6 +417,7 @@ export function createUI(): StarUIStatic {
   const messageScrollers = createMessageScrollers();
   const searchFields = createSearchFields();
   const feeds = createFeeds();
+  const questionnaires = createQuestionnaires();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -437,6 +441,7 @@ export function createUI(): StarUIStatic {
     messageScrollers.enhance(root);
     searchFields.enhance(root);
     feeds.enhance(root);
+    questionnaires.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -486,6 +491,7 @@ export function createUI(): StarUIStatic {
     messageScroller: messageScrollers.api,
     searchField: searchFields.api,
     feed: feeds.api,
+    questionnaire: questionnaires.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

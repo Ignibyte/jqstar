@@ -1,0 +1,95 @@
+<form enctype="multipart/form-data" data-on:submit__prevent="@saveBuildBrief">
+  <section id="build-questionnaire" data-jqs="questionnaire" data-value="direction">
+    <header data-part="header">
+      <strong>Build brief</strong>
+      <span data-part="progress-label"></span>
+      <progress data-part="progress" aria-label="Question progress"></progress>
+    </header>
+
+    <fieldset data-part="item" data-value="direction" data-name="direction" data-required>
+      <legend>What should we build next?</legend>
+      <p data-part="description">Choose an option or write your own answer.</p>
+      <div data-part="choices">
+        <label data-part="choice" data-shortcut="1">
+          <input data-part="control" type="radio" name="direction" value="component" />
+          <span data-part="choice-copy">
+            <strong>Component</strong>
+            <small>Add one focused primitive.</small>
+          </span>
+          <kbd>1</kbd>
+        </label>
+        <label data-part="choice" data-shortcut="2">
+          <input data-part="control" type="radio" name="direction" value="workflow" />
+          <span data-part="choice-copy">
+            <strong>Workflow</strong>
+            <small>Compose several primitives.</small>
+          </span>
+          <kbd>2</kbd>
+        </label>
+      </div>
+      <label data-part="input">
+        Another direction
+        <input data-part="freeform" placeholder="Write a short answer" />
+      </label>
+      <p data-part="error" role="alert"></p>
+    </fieldset>
+
+    <fieldset
+      data-part="item"
+      data-value="constraints"
+      data-name="constraints"
+      data-multiple
+      data-required
+      data-min="1"
+      data-max="2"
+      data-skippable
+    >
+      <legend>Which constraints matter most?</legend>
+      <p data-part="description">Choose up to two, or skip this question.</p>
+      <div data-part="choices">
+        <label data-part="choice" data-shortcut="1">
+          <input data-part="control" type="checkbox" name="constraints" value="accessible" />
+          <span data-part="choice-copy"><strong>Accessible</strong></span>
+          <kbd>1</kbd>
+        </label>
+        <label data-part="choice" data-shortcut="2">
+          <input data-part="control" type="checkbox" name="constraints" value="server-ready" />
+          <span data-part="choice-copy"><strong>Server-ready</strong></span>
+          <kbd>2</kbd>
+        </label>
+        <label data-part="choice" data-shortcut="3">
+          <input data-part="control" type="checkbox" name="constraints" value="portable" />
+          <span data-part="choice-copy"><strong>Portable</strong></span>
+          <kbd>3</kbd>
+        </label>
+      </div>
+      <p data-part="error" role="alert"></p>
+    </fieldset>
+
+    <fieldset data-part="item" data-value="delivery" data-name="delivery" data-required>
+      <legend>How should it ship?</legend>
+      <div data-part="choices">
+        <label data-part="choice" data-shortcut="1">
+          <input data-part="control" type="radio" name="delivery" value="source" />
+          <span data-part="choice-copy"><strong>Source-owned recipe</strong></span>
+          <kbd>1</kbd>
+        </label>
+        <label data-part="choice" data-shortcut="2">
+          <input data-part="control" type="radio" name="delivery" value="package" />
+          <span data-part="choice-copy"><strong>Package API</strong></span>
+          <kbd>2</kbd>
+        </label>
+      </div>
+      <p data-part="error" role="alert"></p>
+    </fieldset>
+
+    <div data-part="actions">
+      <button data-part="previous" type="button">Previous</button>
+      <button data-part="skip" type="button">Skip</button>
+      <button data-part="reset" type="button">Reset</button>
+      <button data-part="next" type="button">Next</button>
+      <button data-part="submit" type="submit">Send brief</button>
+    </div>
+    <p data-part="status"></p>
+  </section>
+</form>

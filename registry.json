@@ -1001,6 +1001,48 @@
           "target": "~/components/jquery-star/feed.html"
         }
       ]
+    },
+    {
+      "name": "questionnaire",
+      "type": "registry:item",
+      "title": "Questionnaire",
+      "description": "An ordered native form flow with single, multiple, freeform, optional, conditional, shortcut, validation, resume, and server-patchable behavior.",
+      "registryDependencies": ["button", "progress"],
+      "files": [
+        {
+          "path": "registry/components/questionnaire.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/questionnaire.html"
+        }
+      ]
+    },
+    {
+      "name": "attachment",
+      "type": "registry:item",
+      "title": "Attachment",
+      "description": "Source-owned file and image presentation with metadata, upload state, progress, and actions.",
+      "registryDependencies": ["button", "progress"],
+      "files": [
+        {
+          "path": "registry/components/attachment.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/attachment.html"
+        }
+      ]
+    },
+    {
+      "name": "bubble",
+      "type": "registry:item",
+      "title": "Bubble",
+      "description": "Source-owned conversational content with incoming, accent, and reaction anatomy for composition inside messages.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/bubble.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/bubble.html"
+        }
+      ]
     }
   ]
 }

@@ -18,6 +18,7 @@ Object.assign(globalThis, {
   HTMLElement: dom.window.HTMLElement,
   HTMLButtonElement: dom.window.HTMLButtonElement,
   HTMLFormElement: dom.window.HTMLFormElement,
+  HTMLFieldSetElement: dom.window.HTMLFieldSetElement,
   HTMLInputElement: dom.window.HTMLInputElement,
   HTMLLIElement: dom.window.HTMLLIElement,
   HTMLOListElement: dom.window.HTMLOListElement,
@@ -745,6 +746,36 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-questionnaire-form">
+     <section id="package-questionnaire" data-jqs="questionnaire" data-value="direction">
+       <progress data-part="progress" aria-label="Question progress"></progress><span data-part="progress-label"></span>
+       <fieldset data-part="item" data-value="direction" data-name="direction" data-required>
+         <legend>Direction</legend><input data-part="control" type="radio" name="direction" value="workflow"><p data-part="error"></p>
+       </fieldset>
+       <fieldset data-part="item" data-value="constraints" data-name="constraints" data-multiple data-required>
+         <legend>Constraints</legend><input data-part="control" type="checkbox" name="constraints" value="accessible"><input data-part="control" type="checkbox" name="constraints" value="server-ready"><p data-part="error"></p>
+       </fieldset>
+       <div data-part="actions"><button data-part="previous">Previous</button><button data-part="next">Next</button><button data-part="submit">Submit</button></div><p data-part="status"></p>
+     </section>
+   </form>`,
+);
+const packageQuestionnaireForm = document.querySelector("#package-questionnaire-form");
+const packageQuestionnaire = document.querySelector("#package-questionnaire");
+$.star.ui.enhance(packageQuestionnaire);
+$.star.ui.questionnaire.answer(packageQuestionnaire, "direction", "workflow");
+$.star.ui.questionnaire.next(packageQuestionnaire);
+$.star.ui.questionnaire.answer(packageQuestionnaire, "constraints", ["accessible", "server-ready"]);
+if (
+  $.star.ui.questionnaire.value(packageQuestionnaire) !== "constraints" ||
+  $.star.ui.questionnaire.answers(packageQuestionnaire).direction !== "workflow" ||
+  new FormData(packageQuestionnaireForm).getAll("constraints").join(",") !==
+    "accessible,server-ready"
+) {
+  throw new Error("The ESM bundle failed the Questionnaire component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -825,6 +856,9 @@ const componentSelectors = [
   "[data-jqs=search-field]",
   "[data-jqs=item]",
   "[data-jqs=feed]",
+  "[data-jqs=questionnaire]",
+  "[data-jqs=attachment]",
+  "[data-jqs=bubble]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -868,6 +902,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

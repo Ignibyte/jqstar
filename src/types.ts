@@ -516,6 +516,22 @@ export interface StarFeedStatic {
   focus(target: FeedTarget, index: number): HTMLElement;
 }
 
+export type QuestionnaireTarget = string | HTMLElement;
+export type QuestionnaireAnswer = string | string[] | undefined;
+export type QuestionnaireAnswers = Record<string, QuestionnaireAnswer>;
+
+export interface StarQuestionnaireStatic {
+  next(target: QuestionnaireTarget): HTMLElement;
+  previous(target: QuestionnaireTarget): HTMLElement;
+  go(target: QuestionnaireTarget, value: string | number): HTMLElement;
+  skip(target: QuestionnaireTarget): HTMLElement;
+  reset(target: QuestionnaireTarget): HTMLElement;
+  submit(target: QuestionnaireTarget): HTMLElement;
+  value(target: QuestionnaireTarget): string;
+  answer(target: QuestionnaireTarget, name: string, answer: QuestionnaireAnswer): HTMLElement;
+  answers(target: QuestionnaireTarget): QuestionnaireAnswers;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -625,6 +641,7 @@ export interface StarUIStatic {
   readonly messageScroller: StarMessageScrollerStatic;
   readonly searchField: StarSearchFieldStatic;
   readonly feed: StarFeedStatic;
+  readonly questionnaire: StarQuestionnaireStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

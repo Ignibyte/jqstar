@@ -205,6 +205,19 @@ The first proof contains Button, Dialog, and the native form family:
   [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
   instead of synchronous scroll handlers. The observer activates the same authored Load More button
   and is disconnected when component parts change.
+- Questionnaire follows W3C's
+  [form grouping guidance](https://www.w3.org/WAI/tutorials/forms/grouping/): related radio and
+  checkbox choices remain inside real fieldsets with visible legends. This preserves native group
+  names, keyboard behavior, and submission instead of recreating them with generic containers.
+- The current shadcn
+  [Questionnaire contract](https://ui.shadcn.com/docs/components/base/questionnaire) informed the
+  supported single, multiple, freeform, skippable, controlled, and keyboard cases. jQuery Star maps
+  those capabilities to native HTML and `FormData` instead of a React component state model.
+- Attachment and Bubble follow the source-owned anatomy shown in shadcn's current
+  [Attachment](https://ui.shadcn.com/docs/components/base/attachment) and
+  [Bubble](https://ui.shadcn.com/docs/components/base/bubble) components. They need no runtime
+  because file state, conversation alignment, and backend patches remain application data and
+  markup.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

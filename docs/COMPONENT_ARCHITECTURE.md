@@ -469,6 +469,25 @@ Feed does not own result HTML or a request client. The application appends sourc
 articles, then calls `complete` with the next cursor and done state. This keeps JSON, Datastar HTML
 patches, and future backend transports on the same component contract.
 
+Clarification and conversational content components provide:
+
+- Questionnaire as direct native fieldsets with legends, named radio or checkbox controls, optional
+  freeform input, and ordinary form serialization
+- Ordered previous, next, indexed or named navigation; explicit skip values; required and min/max
+  selection validation; visible choice shortcuts; reset; resume; and conditional `data-disabled`
+  questions
+- `next`, `previous`, `go`, `skip`, `reset`, `submit`, `value`, `answer`, and `answers` under
+  `$.star.ui.questionnaire`, with equivalent named actions and cancelable change, skip, and submit
+  boundaries
+- Attachment as zero-runtime file or image anatomy for media, name, metadata, status, progress, and
+  actions
+- Bubble as zero-runtime conversational content and reaction anatomy that composes inside Message
+
+Questionnaire validates during the owning form's capture phase. An invalid question is made active,
+focused, and announced before an application request listener can run. API answer writes dispatch
+native input and change events, and all state rendering uses conditional DOM writes so global
+enhancement cannot create an observer loop.
+
 ## Styling boundary
 
 Tailwind is an authoring and compilation dependency. It is not a browser dependency. The published
@@ -525,7 +544,7 @@ Implemented:
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
 - Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
 - Multi Select, Time Picker, Color Picker, and Rating
-- Message, Message Scroller, Search Field, Item, and Feed
+- Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, and Bubble
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -534,7 +553,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 75-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 78-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

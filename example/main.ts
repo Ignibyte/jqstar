@@ -12,6 +12,8 @@ interface DemoState extends Record<string, unknown> {
   componentResultCount: number;
   projectMessage: string;
   projectSaving: boolean;
+  questionnaireMessage: string;
+  questionnaireSaving: boolean;
   preferencesMessage: string;
   preferencesSaving: boolean;
   feedbackMessage: string;
@@ -414,6 +416,46 @@ $.star.action<DemoState>("submitFeedback", async (context) => {
     context.state.feedbackMessage = error instanceof Error ? error.message : String(error);
   } finally {
     context.state.feedbackSaving = false;
+  }
+});
+
+$.star.action<DemoState>("submitQuestionnaire", async (context) => {
+  const form = context.element?.closest("form");
+  const questionnaire = form?.querySelector<HTMLElement>('[data-jqs="questionnaire"]');
+  if (!(form instanceof HTMLFormElement) || !questionnaire) {
+    throw new Error("Questionnaire action needs its form and questionnaire root.");
+  }
+  const body = new FormData(form);
+  const answers = $.star.ui.questionnaire.answers(questionnaire);
+  context.state.questionnaireSaving = true;
+
+  try {
+    let message: string;
+    if (__JQS_STATIC_DEMO__) {
+      await wait(160);
+      message = `Static preview sent ${Array.from(body.entries()).length} native form values through the backend contract.`;
+    } else {
+      const response = await fetch("/api/demo/questionnaire", {
+        method: "POST",
+        body,
+        headers: { "Datastar-Request": "true" },
+      });
+      const result = (await response.json()) as { message?: string };
+      if (!response.ok)
+        throw new Error(result.message ?? `Request failed with ${response.status}.`);
+      message = result.message ?? "Build brief received.";
+    }
+    const display = (answer: string | string[] | undefined): string =>
+      Array.isArray(answer) ? answer.join(" and ") : (answer ?? "not answered");
+    $("#questionnaire-summary").text(
+      `Build ${display(answers.direction)} with ${display(answers.constraints)} constraints, delivered as ${display(answers.delivery)}.`,
+    );
+    $("#questionnaire-result").prop("hidden", false);
+    context.state.questionnaireMessage = message;
+  } catch (error) {
+    context.state.questionnaireMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.questionnaireSaving = false;
   }
 });
 

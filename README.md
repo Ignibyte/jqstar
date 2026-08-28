@@ -79,7 +79,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 75 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 78 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
@@ -87,9 +87,9 @@ Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Ta
 Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
 Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
-Select, Time Picker, Color Picker, Rating, Message, Message Scroller, Search Field, Item, and Feed.
-Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
-not required in the consuming application.
+Select, Time Picker, Color Picker, Rating, Message, Message Scroller, Search Field, Item, Feed,
+Questionnaire, Attachment, and Bubble. Import the precompiled theme for the default appearance.
+Tailwind is used to author this file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -427,6 +427,18 @@ navigation. Its visible Load More button is always the backend action boundary. 
 uses Intersection Observer to activate that same button instead of creating a separate loading path.
 Use `$.star.ui.feed.load|complete|fail|reset|state|focus()` or `@ui.feed.*`.
 
+Questionnaire turns direct native `<fieldset>` questions into an ordered form flow. It supports
+single, multiple, freeform, skippable, and conditionally disabled questions while preserving radio,
+checkbox, hidden skip, and text values in `FormData`. Number shortcuts activate visible choices,
+`data-value` can resume or server-patch the active question, and validation stops invalid
+submissions before application request handlers run. Use
+`$.star.ui.questionnaire.next|previous|go|skip|reset|submit|value|answer|answers()` or
+`@ui.questionnaire.*`.
+
+Attachment and Bubble are zero-runtime source recipes. Attachment presents file or image metadata,
+upload progress, state, and actions. Bubble presents conversational content and reactions; Message
+still owns sender metadata and alignment.
+
 Select keeps a native form control as its value and submission source:
 
 ```html
@@ -617,7 +629,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="75" max="75">75 of 75</progress>
+    <progress data-jqs="progress" value="78" max="78">78 of 78</progress>
   </div>
 </article>
 

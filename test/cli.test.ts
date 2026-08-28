@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(75);
+    expect(items).toHaveLength(78);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -66,6 +66,9 @@ describe("jqstar CLI", () => {
         "search-field",
         "item",
         "feed",
+        "questionnaire",
+        "attachment",
+        "bubble",
       ]),
     );
   });

@@ -388,6 +388,59 @@ test.describe("jQuery Star components", () => {
     await expect(search).toBeFocused();
   });
 
+  test("questionnaire, attachment, and bubble create one backend-ready brief", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Agent clarification workflow" });
+    const form = card.locator("#component-questionnaire-form");
+    const questionnaire = card.locator("#component-questionnaire");
+    const next = card.getByRole("button", { name: "Next" });
+
+    await expect(card.locator('[data-jqs="attachment"]')).toContainText("component-contract.pdf");
+    await next.click();
+    await expect(card.getByText("Choose an answer to continue.")).toBeVisible();
+    await expect(questionnaire).toHaveAttribute("data-value", "direction");
+
+    const workflow = card.getByRole("radio", { name: /Workflow/ });
+    await workflow.focus();
+    await page.keyboard.press("2");
+    await expect(workflow).toBeChecked();
+    await next.click();
+    await expect(questionnaire).toHaveAttribute("data-value", "constraints");
+
+    await card
+      .locator('[data-value="constraints"] [data-part="choice"]')
+      .filter({ hasText: "Accessible" })
+      .click();
+    await card
+      .locator('[data-value="constraints"] [data-part="choice"]')
+      .filter({ hasText: "Server-ready" })
+      .click();
+    await expect(
+      form.evaluate((element) => new FormData(element as HTMLFormElement).getAll("constraints")),
+    ).resolves.toEqual(["accessible", "server-ready"]);
+    await next.click();
+    await card
+      .locator('[data-value="delivery"] [data-part="choice"]')
+      .filter({ hasText: "Source-owned recipe" })
+      .click();
+
+    await expect(
+      form.evaluate((element) => Object.fromEntries(new FormData(element as HTMLFormElement))),
+    ).resolves.toEqual({
+      constraints: "server-ready",
+      delivery: "source",
+      direction: "workflow",
+    });
+    await card.getByRole("button", { name: "Create brief" }).click();
+    await expect(card.locator(".questionnaire-result-stack > output")).toContainText(
+      "local backend received",
+    );
+    const result = card.getByRole("article", { name: "Message from Build agent" });
+    await expect(result).toBeVisible();
+    await expect(result.locator('[data-jqs="bubble"]')).toContainText(
+      "Build workflow with accessible and server-ready constraints, delivered as source.",
+    );
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -937,7 +990,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "75",
+      "78",
     );
   });
 
@@ -1274,6 +1327,36 @@ test.describe("jQuery Star components", () => {
 
   test("composition primitives pass accessibility checks", async ({ page }) => {
     const results = await new AxeBuilder({ page }).include(".primitives-component-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("questionnaire workflow passes accessibility checks before and after submission", async ({
+    page,
+  }) => {
+    const card = page.locator(".questionnaire-components-card");
+    let results = await new AxeBuilder({ page })
+      .include(".questionnaire-components-card")
+      .analyze();
+    expect(results.violations).toEqual([]);
+
+    await card
+      .locator('[data-value="direction"] [data-part="choice"]')
+      .filter({ hasText: "Workflow" })
+      .click();
+    await card.getByRole("button", { name: "Next" }).click();
+    await card
+      .locator('[data-value="constraints"] [data-part="choice"]')
+      .filter({ hasText: "Accessible" })
+      .click();
+    await card.getByRole("button", { name: "Next" }).click();
+    await card
+      .locator('[data-value="delivery"] [data-part="choice"]')
+      .filter({ hasText: "Source-owned recipe" })
+      .click();
+    await card.getByRole("button", { name: "Create brief" }).click();
+    await expect(card.getByRole("article", { name: "Message from Build agent" })).toBeVisible();
+
+    results = await new AxeBuilder({ page }).include(".questionnaire-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 
