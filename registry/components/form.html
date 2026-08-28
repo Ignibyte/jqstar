@@ -1,0 +1,16 @@
+<form
+  id="profile-form"
+  data-jqs="form"
+  data-on:submit__prevent="@post('/profile', { contentType: 'form' })"
+>
+  <div data-jqs="field">
+    <label data-jqs="label" for="profile-email">Email</label>
+    <input id="profile-email" data-jqs="input" name="email" type="email" required />
+    <p data-part="description">We use this address for account notices.</p>
+    <p data-part="message" hidden></p>
+  </div>
+  <div data-part="actions">
+    <button data-jqs="button" data-variant="outline" type="reset">Reset</button>
+    <button data-jqs="button" type="submit">Save profile</button>
+  </div>
+</form>

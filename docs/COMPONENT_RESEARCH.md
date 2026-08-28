@@ -114,6 +114,19 @@ The first proof contains Button, Dialog, and the native form family:
   [modal Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) and editable
   [Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) contracts. Inline mode keeps the
   listbox inside the dialog's focus and visual boundary.
+- Form delegates its validity model to the HTML Standard's native
+  [Constraint Validation API](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constraint-validation).
+  It reflects native failures into stable Field parts and leaves `FormData`, including multipart
+  file inputs, on the same backend-action path.
+- Hover Card follows WCAG 2.2
+  [Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html):
+  it is dismissible with Escape, hoverable across the floating content, and persistent while pointer
+  or focus remains inside. Interactive content stays in normal tab order instead of using Tooltip's
+  descriptive relationship.
+- Alert Dialog follows the APG
+  [Alert and Message Dialogs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/) while
+  reusing native Dialog modality. Drawer is a presentation variant over that same native behavior,
+  not another focus-management system.
 - Distribution follows shadcn's
   [framework-neutral source registry](https://ui.shadcn.com/docs/registry/github) format. The
   upstream builder validates all item paths and emits one installable item document per recipe.

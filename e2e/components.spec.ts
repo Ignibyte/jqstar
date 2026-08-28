@@ -326,6 +326,57 @@ test.describe("jQuery Star components", () => {
     await expect(page.locator(".date-form-preview")).toContainText("europe-london");
   });
 
+  test("validated forms and composed surfaces retain native behavior", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Validated forms and composed surfaces" });
+    const form = card.getByRole("form", { name: "Profile proof" });
+    const email = form.getByRole("textbox", { name: "Work email" });
+    const site = form.getByRole("textbox", { name: "Project site" });
+
+    await form.getByRole("button", { name: "Validate profile" }).click();
+    await expect(email).toBeFocused();
+    await expect(email).toHaveAttribute("aria-invalid", "true");
+    await expect(site).toHaveAttribute("aria-invalid", "true");
+    await expect(form.locator('[data-part="message"]:not([hidden])')).toHaveCount(2);
+
+    await email.fill("proof@example.com");
+    await site.fill("jqstar");
+    await expect(email).not.toHaveAttribute("aria-invalid", "true");
+    await expect(site).not.toHaveAttribute("aria-invalid", "true");
+    await form.getByRole("button", { name: "Validate profile" }).click();
+    await expect(form.getByRole("status")).toHaveText("Profile is valid and ready to submit.");
+    await expect(form.getByLabel("Reference files")).toHaveAttribute("multiple", "");
+
+    const hoverCard = page.locator("#maintainer-hover-card");
+    const hoverTrigger = hoverCard.getByRole("link", { name: "Preview maintainer" });
+    const hoverContent = hoverCard.locator(':scope > [data-part="content"]');
+    await hoverTrigger.focus();
+    await expect(hoverContent).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(hoverContent.getByRole("link", { name: "View component system" })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(hoverContent).toBeHidden();
+    await expect(hoverTrigger).toBeFocused();
+
+    const alertTrigger = card.getByRole("button", { name: "Open alert dialog" });
+    const alertDialog = page.getByRole("alertdialog", { name: "Delete the draft?" });
+    await alertTrigger.click();
+    await expect(alertDialog).toBeVisible();
+    await expect(alertDialog.getByRole("button", { name: "Keep draft" })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(alertDialog).toBeHidden();
+    await expect(alertTrigger).toBeFocused();
+
+    const drawerTrigger = card.getByRole("button", { name: "Open bottom drawer" });
+    const drawer = page.getByRole("dialog", { name: "Backend connection" });
+    await drawerTrigger.click();
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toHaveCSS("position", "fixed");
+    await expect(drawer.getByRole("button", { name: "Close drawer" })).toBeFocused();
+    await drawer.getByRole("button", { name: "Close drawer" }).click();
+    await expect(drawer).toBeHidden();
+    await expect(drawerTrigger).toBeFocused();
+  });
+
   test("combobox keeps query and committed value separate across SDK result patches", async ({
     page,
   }) => {
@@ -505,7 +556,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "42",
+      "48",
     );
   });
 
@@ -734,6 +785,43 @@ test.describe("jQuery Star components", () => {
     expect(results.violations).toEqual([]);
     await page.keyboard.press("Escape");
     await expect(card.getByRole("textbox", { name: "Delivery date" })).toBeVisible();
+  });
+
+  test("validated forms and composed surfaces pass accessibility checks in visible states", async ({
+    page,
+  }) => {
+    const card = page.locator(".form-surfaces-card");
+    const waitForAnimations = async (target = card): Promise<void> => {
+      await target.evaluate(async (element) => {
+        await Promise.allSettled(
+          element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+        );
+      });
+    };
+    await waitForAnimations();
+    let results = await new AxeBuilder({ page }).include(".form-surfaces-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await page.getByRole("link", { name: "Preview maintainer" }).focus();
+    const hoverContent = page.locator('#maintainer-hover-card > [data-part="content"]');
+    await expect(hoverContent).toBeVisible();
+    await waitForAnimations(hoverContent);
+    results = await new AxeBuilder({ page }).include(".form-surfaces-card").analyze();
+    expect(results.violations).toEqual([]);
+    await page.keyboard.press("Escape");
+
+    await card.getByRole("button", { name: "Open alert dialog" }).click();
+    const alertDialog = page.getByRole("alertdialog", { name: "Delete the draft?" });
+    await waitForAnimations(alertDialog);
+    results = await new AxeBuilder({ page }).include("#delete-alert-dialog").analyze();
+    expect(results.violations).toEqual([]);
+    await page.keyboard.press("Escape");
+
+    await card.getByRole("button", { name: "Open bottom drawer" }).click();
+    const drawer = page.getByRole("dialog", { name: "Backend connection" });
+    await waitForAnimations(drawer);
+    results = await new AxeBuilder({ page }).include("#proof-drawer").analyze();
+    expect(results.violations).toEqual([]);
   });
 
   test("navigation components pass accessibility checks when closed and open", async ({ page }) => {

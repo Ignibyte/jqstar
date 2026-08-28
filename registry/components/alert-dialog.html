@@ -1,0 +1,36 @@
+<button
+  data-jqs="button"
+  data-variant="danger"
+  type="button"
+  data-on:click="@ui.dialog.open('#delete-alert', '#delete-alert-cancel')"
+>
+  Delete project
+</button>
+
+<dialog id="delete-alert" data-jqs="dialog" role="alertdialog">
+  <div data-part="content">
+    <header data-part="header">
+      <h2 data-part="title">Delete this project?</h2>
+      <p data-part="description">This action cannot be undone.</p>
+    </header>
+    <footer data-part="footer">
+      <button
+        id="delete-alert-cancel"
+        data-jqs="button"
+        data-variant="outline"
+        type="button"
+        data-on:click="@ui.dialog.close('cancel')"
+      >
+        Cancel
+      </button>
+      <button
+        data-jqs="button"
+        data-variant="danger"
+        type="button"
+        data-on:click="@ui.dialog.close('confirm')"
+      >
+        Delete
+      </button>
+    </footer>
+  </div>
+</dialog>

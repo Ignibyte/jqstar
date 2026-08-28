@@ -39,6 +39,11 @@ namespace. Dialog currently provides:
 
 The two `before-*` events are cancelable.
 
+Alert Dialog and Drawer compose Dialog instead of forking its modality. Alert Dialog adds the APG
+`alertdialog` role and requires both a visible label and described alert message. Drawer adds only a
+bottom-docked `data-variant="drawer"` presentation. Both retain native inertness, initial focus,
+Escape, lifecycle cancellation, and focus return.
+
 Collapsible and Accordion provide:
 
 - `@ui.collapsible.open|close|toggle('#details-selector')`
@@ -100,8 +105,22 @@ Tooltip provides:
 - Hover persistence across the trigger and tooltip content
 - A validation error when tooltip content contains interactive controls
 
-The `before-*` events are cancelable. Tooltip, Popover, and the upcoming menu share top-layer
-fallback and four-sided collision-aware placement, but keep separate interaction models.
+The `before-*` events are cancelable. Tooltip, Popover, and Menu share top-layer fallback and
+four-sided collision-aware placement, but keep separate interaction models.
+
+Hover Card provides:
+
+- Pointer and focus opening with configurable open and close delays
+- Persistent visibility while either the trigger or content contains pointer or keyboard focus
+- Interactive content in normal DOM tab order, without flattening it into `aria-describedby`
+- Escape and outside-press dismissal, with focus return when dismissal occurs inside the card
+- Collision-aware four-sided placement and the same native Popover/fallback boundary
+- `@ui.hover-card.open|close`, equivalent `$.star.ui.hoverCard` methods, and cancelable
+  `jquery-star:hover-card:before-open|open|before-close|close` lifecycle events
+
+This contract implements WCAG 2.2's dismissible, hoverable, and persistent requirements for content
+shown on hover or focus. It is not a Tooltip because it can contain links and controls, and it is
+not a Dialog because opening it does not move focus or make the page inert.
 
 Dropdown Menu provides:
 
@@ -187,10 +206,26 @@ in the same path. The keyboard model follows the WAI-ARIA APG
 [Grid Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/) and
 [Date Picker Dialog Example](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/).
 
+Form provides:
+
+- Delegation to native `checkValidity()`, `reportValidity()`, `ValidityState`, and localized
+  `validationMessage`
+- Runtime-owned `aria-invalid`, Field `data-invalid`, and described message state that clears as a
+  marked control becomes valid
+- First-invalid focus without replacing native inputs or their submission behavior
+- `@ui.form.validate|focus-invalid|reset` and `$.star.ui.form.validate|valid|focusInvalid|reset`
+- `jquery-star:form:invalid|before-submit|submit|reset`, with cancelable `before-submit`
+- Compatibility with `data-bind:*`, ordinary `FormData`, and existing JSON, URL-encoded, or
+  multipart backend actions
+
+The runtime never invents a second validation model. Server-owned errors can use separate messages
+and state; only elements marked as runtime validation state are cleared by subsequent input.
+
 Static form and composition primitives provide:
 
 - Label and Native Select styling without replacing native label/control relationships
 - Button Group visual composition while each child remains a native Button
+- Input Group composition around a native input and File Input styling over the native file picker
 - Native `<meter>` ranges with optimum, suboptimal, and low-value presentation
 - Card anatomy through semantic `header`, content, and `footer` elements with stable `data-part`
   hooks
@@ -199,10 +234,10 @@ Static form and composition primitives provide:
 - Native `<hr>` separators and `<progress>` indicators with theme styling
 - Decorative Skeleton placeholders whose shimmer respects `prefers-reduced-motion`
 
-Label, Native Select, Button Group, Meter, Card, Badge, Alert, Separator, Avatar, Skeleton, and
-Progress have no component runtime. Authors keep control of the appropriate native element, label,
-live-region role, and document structure. The library contributes only stable selectors, tokens,
-variants, and responsive presentation.
+Label, Native Select, Input Group, File Input, Button Group, Meter, Card, Badge, Alert, Separator,
+Avatar, Skeleton, and Progress have no component runtime. Authors keep control of the appropriate
+native element, label, live-region role, and document structure. The library contributes only stable
+selectors, tokens, variants, and responsive presentation.
 
 Navigation and command composition provides:
 
@@ -278,11 +313,12 @@ Automated checks are necessary but incomplete. Every interactive component must 
 Implemented:
 
 - Button and Button Group
-- Dialog and Sheet
-- Field, Label, Input, Textarea, Native Select, Checkbox, Radio Group, Switch, and Slider
+- Dialog, Alert Dialog, Sheet, and Drawer
+- Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select, Checkbox, Radio
+  Group, Switch, and Slider
 - Toggle and Toggle Group
 - Collapsible, Accordion, and Tabs
-- Popover, Tooltip, and Dropdown Menu
+- Popover, Tooltip, Hover Card, and Dropdown Menu
 - Select, Combobox, and server-backed Autocomplete
 - Calendar and Date Picker
 - Data Table and Toast
@@ -290,8 +326,8 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, and Command Palette
 
-This 42-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 48-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
-Reusable overlay, focus, collection navigation, and positioning helpers should be extracted only
-when a second component proves the shared contract.
+Shared mechanics stay below the public contracts: components reuse floating placement and top-layer
+fallback, while each interaction model keeps its own focus, dismissal, state, and event semantics.

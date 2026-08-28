@@ -215,6 +215,13 @@ export interface StarTooltipStatic {
   close(target: TooltipTarget): HTMLElement;
 }
 
+export type HoverCardTarget = string | HTMLElement;
+
+export interface StarHoverCardStatic {
+  open(target: HoverCardTarget): HTMLElement;
+  close(target: HoverCardTarget): HTMLElement;
+}
+
 export type MenuTarget = string | HTMLElement;
 
 export interface StarMenuStatic {
@@ -312,6 +319,20 @@ export interface StarDatePickerStatic {
   value(target: DatePickerTarget): string | undefined;
 }
 
+export type FormTarget = string | HTMLFormElement;
+
+export interface StarFormValidateOptions {
+  focus?: boolean;
+  report?: boolean;
+}
+
+export interface StarFormStatic {
+  validate(target: FormTarget, options?: StarFormValidateOptions): boolean;
+  valid(target: FormTarget): boolean;
+  focusInvalid(target: FormTarget): HTMLElement | undefined;
+  reset(target: FormTarget): HTMLFormElement;
+}
+
 export interface StarUIStatic {
   readonly dialog: StarDialogStatic;
   readonly collapsible: StarDisclosureStatic;
@@ -319,6 +340,7 @@ export interface StarUIStatic {
   readonly tabs: StarTabsStatic;
   readonly popover: StarPopoverStatic;
   readonly tooltip: StarTooltipStatic;
+  readonly hoverCard: StarHoverCardStatic;
   readonly menu: StarMenuStatic;
   readonly toast: StarToastStatic;
   readonly select: StarSelectStatic;
@@ -328,6 +350,7 @@ export interface StarUIStatic {
   readonly toggleGroup: StarToggleGroupStatic;
   readonly calendar: StarCalendarStatic;
   readonly datePicker: StarDatePickerStatic;
+  readonly form: StarFormStatic;
   enhance(root?: ParentNode): void;
 }
 

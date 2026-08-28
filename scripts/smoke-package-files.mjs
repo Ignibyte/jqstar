@@ -19,6 +19,8 @@ const required = [
   "registry.json",
   "registry/components/button.html",
   "registry/components/command-palette.html",
+  "registry/components/form.html",
+  "registry/components/hover-card.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

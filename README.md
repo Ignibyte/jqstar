@@ -79,13 +79,14 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 42 recipes: Button, Button Group, Dialog, Sheet, Field,
-Label, Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
-Collapsible, Accordion, Tabs, Popover, Tooltip, Dropdown Menu, Select, Combobox, Calendar, Date
-Picker, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress,
-Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, and Command Palette.
-Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
-not required in the consuming application.
+The component-system proof now includes 48 recipes: Button, Button Group, Dialog, Alert Dialog,
+Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
+Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
+Tooltip, Hover Card, Dropdown Menu, Select, Combobox, Calendar, Date Picker, Data Table, Toast,
+Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard
+Key, Breadcrumb, Pagination, Navigation Menu, and Command Palette. Import the precompiled theme for
+the default appearance. Tailwind is used to author this file but is not required in the consuming
+application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -140,6 +141,9 @@ dismissal, and `aria-expanded` on the trigger. JavaScript can call the same beha
 Sheet is a Dialog composition rather than a second modal system. Add `data-variant="sheet"` to dock
 the native dialog to the right, or add `data-side="left"` to reverse it. It retains Dialog's named
 actions, modality, focus return, Escape behavior, accessible relationships, and lifecycle events.
+Drawer uses that same behavior with `data-variant="drawer"` and a bottom-docked presentation. Alert
+Dialog uses `role="alertdialog"` plus a required title and description for interruptive decisions;
+it should not replace ordinary non-blocking Alert or Toast messages.
 
 Form components keep native form behavior and use the existing `data-bind:*` directives:
 
@@ -156,6 +160,27 @@ Form components keep native form behavior and use the existing `data-bind:*` dir
   <span data-part="label">Notifications</span>
 </label>
 ```
+
+Add `data-jqs="form"` when the form should surface native constraint failures through its Field
+anatomy:
+
+```html
+<form data-jqs="form" data-on:submit__prevent="@post('/profile', { contentType: 'form' })">
+  <div data-jqs="field">
+    <label data-jqs="label" for="profile-email">Email</label>
+    <input id="profile-email" data-jqs="input" name="email" type="email" required />
+    <p data-part="message" hidden></p>
+  </div>
+  <button data-jqs="button" type="submit">Save</button>
+</form>
+```
+
+Invalid controls retain the browser's `ValidityState` and `validationMessage`; Form reflects them
+through `aria-invalid`, the associated message, and `data-invalid` on Field. Input clears only
+runtime-owned errors as it becomes valid. Use `$.star.ui.form.validate|valid|focusInvalid|reset()`
+or `@ui.form.validate|focus-invalid|reset`. Form emits `jquery-star:form:invalid`, cancelable
+`before-submit`, `submit`, and `reset` events. File Input stays native, so the existing
+`contentType: 'form'` backend action includes selected files through `FormData`.
 
 Radio Group and Slider deliberately retain native controls. Toggle adds managed `aria-pressed`
 state, while Toggle Group adds single or multiple selection, required selection, arrow-key roving
@@ -259,6 +284,24 @@ Tooltip opens from hover or keyboard focus without moving focus:
 The runtime adds `role="tooltip"` and preserves any existing `aria-describedby` tokens on the
 trigger. `data-delay` and `data-close-delay` control timing in milliseconds. Tooltip content must be
 non-interactive; use Popover when the floating content contains controls.
+
+Hover Card is the focus-and-hover counterpart for richer supplemental content:
+
+```html
+<div data-jqs="hover-card">
+  <a data-part="trigger" href="/people/ada">Ada Lovelace</a>
+  <div data-part="content">
+    <h2 data-part="title">Ada Lovelace</h2>
+    <p data-part="description">Mathematician and early programmer.</p>
+    <a href="/people/ada">View profile</a>
+  </div>
+</div>
+```
+
+The card is hoverable, remains open while focus or the pointer is inside either part, and can be
+dismissed with Escape without losing trigger focus. `data-delay`, `data-close-delay`, `data-side`,
+and `data-align` tune timing and placement. APIs and cancelable lifecycle events are available under
+`$.star.ui.hoverCard`, `@ui.hover-card.*`, and `jquery-star:hover-card:*`.
 
 Dropdown Menu uses `data-jqs="menu"` and menu-specific parts:
 
@@ -426,7 +469,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="42" max="42">42 of 42</progress>
+    <progress data-jqs="progress" value="48" max="48">48 of 48</progress>
   </div>
 </article>
 

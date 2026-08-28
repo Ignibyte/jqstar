@@ -16,6 +16,7 @@ Object.assign(globalThis, {
   HTMLDetailsElement: dom.window.HTMLDetailsElement,
   HTMLElement: dom.window.HTMLElement,
   HTMLButtonElement: dom.window.HTMLButtonElement,
+  HTMLFormElement: dom.window.HTMLFormElement,
   HTMLInputElement: dom.window.HTMLInputElement,
   HTMLOptionElement: dom.window.HTMLOptionElement,
   HTMLOptGroupElement: dom.window.HTMLOptGroupElement,
@@ -23,6 +24,7 @@ Object.assign(globalThis, {
   HTMLTableCellElement: dom.window.HTMLTableCellElement,
   HTMLTableElement: dom.window.HTMLTableElement,
   HTMLTableRowElement: dom.window.HTMLTableRowElement,
+  HTMLTextAreaElement: dom.window.HTMLTextAreaElement,
   KeyboardEvent: dom.window.KeyboardEvent,
   MutationObserver: dom.window.MutationObserver,
   Node: dom.window.Node,
@@ -330,6 +332,54 @@ if (
   throw new Error("The ESM bundle failed the Calendar and Date Picker component smoke test.");
 }
 
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<form id="package-form" data-jqs="form">
+     <div data-jqs="field">
+       <label for="package-email">Package email</label>
+       <input id="package-email" name="email" type="email" required>
+       <p data-part="message" hidden></p>
+     </div>
+   </form>`,
+);
+const packageForm = document.querySelector("#package-form");
+const packageEmail = document.querySelector("#package-email");
+$.star.ui.enhance(packageForm);
+if ($.star.ui.form.validate(packageForm) || packageEmail.ariaInvalid !== "true") {
+  throw new Error("The ESM bundle failed the Form invalid-state smoke test.");
+}
+packageEmail.value = "proof@example.com";
+packageEmail.dispatchEvent(new Event("input", { bubbles: true }));
+if (!$.star.ui.form.valid(packageForm) || packageEmail.hasAttribute("aria-invalid")) {
+  throw new Error("The ESM bundle failed the Form valid-state smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<div id="package-hover-card" data-jqs="hover-card">
+     <a data-part="trigger" href="#package-profile">Package maintainer</a>
+     <div data-part="content">
+       <h2 data-part="title">Package maintainer</h2>
+       <a id="package-profile" href="#profile">View profile</a>
+     </div>
+   </div>`,
+);
+const hoverCard = document.querySelector("#package-hover-card");
+$.star.ui.enhance(hoverCard);
+$.star.ui.hoverCard.open(hoverCard);
+if (
+  hoverCard.dataset.state !== "open" ||
+  hoverCard.querySelector('[data-part="trigger"]').ariaExpanded !== "true" ||
+  hoverCard.querySelector('[data-part="content"]').hidden
+) {
+  throw new Error("The ESM bundle failed the Hover Card component smoke test.");
+}
+hoverCard.querySelector("#package-profile").focus();
+$.star.ui.hoverCard.close(hoverCard);
+if (document.activeElement !== hoverCard.querySelector('[data-part="trigger"]')) {
+  throw new Error("The built Hover Card failed focus return.");
+}
+
 const theme = await readFile(new URL("../dist/jquery-star-ui.css", import.meta.url), "utf8");
 const componentSelectors = [
   "[data-jqs=button]",
@@ -337,6 +387,9 @@ const componentSelectors = [
   "[data-jqs=field]",
   "[data-jqs=input]",
   "[data-jqs=textarea]",
+  "form[data-jqs=form]",
+  "[data-jqs=file-input]",
+  "[data-jqs=input-group]",
   "[data-jqs=label]",
   "[data-jqs=native-select]",
   "[data-jqs=button-group]",
@@ -348,6 +401,7 @@ const componentSelectors = [
   "[data-jqs=tabs]",
   "[data-jqs=popover]",
   "[data-jqs=tooltip]",
+  "[data-jqs=hover-card]",
   "[data-jqs=menu]",
   "[data-jqs=toast-viewport]",
   "[data-jqs=toast]",
@@ -399,6 +453,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM form=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

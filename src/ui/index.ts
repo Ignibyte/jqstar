@@ -1,5 +1,7 @@
 import { registerAction } from "../registry";
 import { createDisclosures } from "./disclosure";
+import { createForms } from "./form";
+import { createHoverCards } from "./hover-card";
 import { createMenus } from "./menu";
 import { createPopovers } from "./popover";
 import { createSelects } from "./select";
@@ -238,7 +240,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       if (mutation.type === "attributes") {
         enhance(mutation.target as Element);
         const owner = (mutation.target as Element).closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner && owner !== mutation.target) enhance(owner);
         continue;
@@ -248,7 +250,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
         if (!(node instanceof Element)) continue;
         enhance(node);
         const owner = node.parentElement?.closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner) enhance(owner);
       }
@@ -304,6 +306,8 @@ export function createUI(): StarUIStatic {
   const dataTables = createDataTables();
   const popovers = createPopovers();
   const calendars = createCalendars(popovers.api);
+  const forms = createForms();
+  const hoverCards = createHoverCards();
   const tooltips = createTooltips();
   const toasts = createToasts();
   const toggles = createToggles();
@@ -312,6 +316,7 @@ export function createUI(): StarUIStatic {
     disclosures.enhance(root);
     tabs.enhance(root);
     popovers.enhance(root);
+    hoverCards.enhance(root);
     tooltips.enhance(root);
     menus.enhance(root);
     toasts.enhance(root);
@@ -320,6 +325,7 @@ export function createUI(): StarUIStatic {
     dataTables.enhance(root);
     toggles.enhance(root);
     calendars.enhance(root);
+    forms.enhance(root);
   };
   const ui: StarUIStatic = {
     dialog,
@@ -328,6 +334,7 @@ export function createUI(): StarUIStatic {
     tabs: tabs.api,
     popover: popovers.api,
     tooltip: tooltips.api,
+    hoverCard: hoverCards.api,
     menu: menus.api,
     toast: toasts.api,
     select: selects.api,
@@ -337,6 +344,7 @@ export function createUI(): StarUIStatic {
     toggleGroup: toggles.toggleGroup,
     calendar: calendars.calendar,
     datePicker: calendars.datePicker,
+    form: forms.api,
     enhance,
   };
   registerDialogActions(dialog);

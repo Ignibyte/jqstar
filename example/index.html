@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentCapacity: 68, componentTimezone: 'america-chicago' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -385,6 +385,182 @@
         </div>
       </section>
 
+      <section class="card form-surfaces-card" aria-labelledby="form-surfaces-title">
+        <div>
+          <p class="label" id="form-surfaces-title">Validated forms and composed surfaces</p>
+          <p class="hint">
+            Browser constraint validation, multipart-ready files, hover detail, and native modal
+            compositions.
+          </p>
+        </div>
+
+        <div class="form-surfaces-grid">
+          <form
+            id="component-profile-form"
+            data-jqs="form"
+            aria-label="Profile proof"
+            data-on:submit__prevent="$componentFormSubmitted = true"
+            data-on:reset="$componentFormSubmitted = false"
+          >
+            <div data-jqs="field">
+              <label data-jqs="label" for="profile-proof-email">Work email</label>
+              <input
+                id="profile-proof-email"
+                data-jqs="input"
+                name="email"
+                type="email"
+                required
+                aria-describedby="profile-proof-email-help"
+              />
+              <p id="profile-proof-email-help" data-part="description">
+                Required and validated by the browser.
+              </p>
+              <p data-part="message" hidden></p>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="profile-proof-site">Project site</label>
+              <div data-jqs="input-group">
+                <span data-part="addon" aria-hidden="true">https://</span>
+                <input
+                  id="profile-proof-site"
+                  data-jqs="input"
+                  name="site"
+                  required
+                  autocomplete="url"
+                />
+                <span data-part="addon" aria-hidden="true">.dev</span>
+              </div>
+              <p data-part="message" hidden></p>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="profile-proof-files">Reference files</label>
+              <input
+                id="profile-proof-files"
+                data-jqs="file-input"
+                name="attachments"
+                type="file"
+                accept="image/png,image/jpeg,application/pdf"
+                multiple
+              />
+              <p data-part="description">Ready for multipart submission to our future backend.</p>
+            </div>
+
+            <div data-part="actions">
+              <button data-jqs="button" data-variant="outline" type="reset">Reset form</button>
+              <button data-jqs="button" type="submit">Validate profile</button>
+            </div>
+            <p
+              class="form-success"
+              role="status"
+              data-show="$componentFormSubmitted"
+              data-text="$componentFormSubmitted ? 'Profile is valid and ready to submit.' : ''"
+            ></p>
+          </form>
+
+          <div class="surface-compositions">
+            <div id="maintainer-hover-card" data-jqs="hover-card" data-delay="120">
+              <a data-part="trigger" href="#maintainer-profile">Preview maintainer</a>
+              <div data-part="content">
+                <div class="hover-card-person">
+                  <span data-jqs="avatar" role="img" aria-label="Ada Lovelace">AL</span>
+                  <div>
+                    <h2 data-part="title">Ada Lovelace</h2>
+                    <p data-part="description">Maintains the component proof and backend seam.</p>
+                  </div>
+                </div>
+                <a id="maintainer-profile" href="#components-title">View component system</a>
+              </div>
+            </div>
+
+            <div class="surface-actions">
+              <button
+                id="open-delete-alert"
+                data-jqs="button"
+                data-variant="danger"
+                type="button"
+                data-on:click="@ui.dialog.open('#delete-alert-dialog', '#delete-alert-cancel')"
+              >
+                Open alert dialog
+              </button>
+              <button
+                id="open-proof-drawer"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.open('#proof-drawer', '#proof-drawer-close')"
+              >
+                Open bottom drawer
+              </button>
+            </div>
+
+            <p class="surface-note">
+              Alert Dialog and Drawer reuse Dialog modality, Escape, initial focus, lifecycle
+              events, and focus return.
+            </p>
+          </div>
+        </div>
+
+        <dialog id="delete-alert-dialog" data-jqs="dialog" role="alertdialog">
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Delete the draft?</h2>
+              <p data-part="description">
+                This interrupts the workflow because the draft cannot be restored.
+              </p>
+            </header>
+            <footer data-part="footer">
+              <button
+                id="delete-alert-cancel"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('cancel')"
+              >
+                Keep draft
+              </button>
+              <button
+                data-jqs="button"
+                data-variant="danger"
+                type="button"
+                data-on:click="@ui.dialog.close('confirm')"
+              >
+                Delete draft
+              </button>
+            </footer>
+          </div>
+        </dialog>
+
+        <dialog id="proof-drawer" data-jqs="dialog" data-variant="drawer" data-close-on-backdrop>
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Backend connection</h2>
+              <p data-part="description">
+                Keep the same components when this static catalog connects to our hosted API.
+              </p>
+            </header>
+            <div data-jqs="empty">
+              <h3 data-part="title">No endpoint required yet</h3>
+              <p data-part="description">
+                The local proof already runs the official Datastar SDK contract.
+              </p>
+            </div>
+            <footer data-part="footer">
+              <button
+                id="proof-drawer-close"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('close')"
+              >
+                Close drawer
+              </button>
+            </footer>
+          </div>
+        </dialog>
+      </section>
+
       <section class="card select-component-card" aria-labelledby="select-components-title">
         <div>
           <p class="label" id="select-components-title">Select component</p>
@@ -543,7 +719,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="42">42 components</td>
+                  <td data-key="coverage" data-value="48">48 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -973,11 +1149,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="42"
-            max="42"
+            value="48"
+            max="48"
             aria-labelledby="progress-proof-label"
           >
-            42 of 42
+            48 of 48
           </progress>
         </div>
 

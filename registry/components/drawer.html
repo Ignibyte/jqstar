@@ -1,0 +1,29 @@
+<button
+  data-jqs="button"
+  data-variant="outline"
+  type="button"
+  data-on:click="@ui.dialog.open('#settings-drawer', '#settings-drawer-close')"
+>
+  Open drawer
+</button>
+
+<dialog id="settings-drawer" data-jqs="dialog" data-variant="drawer" data-close-on-backdrop>
+  <div data-part="content">
+    <header data-part="header">
+      <h2 data-part="title">Project settings</h2>
+      <p data-part="description">A bottom drawer composed from the native Dialog contract.</p>
+    </header>
+    <div>Drawer content</div>
+    <footer data-part="footer">
+      <button
+        id="settings-drawer-close"
+        data-jqs="button"
+        data-variant="outline"
+        type="button"
+        data-on:click="@ui.dialog.close('close')"
+      >
+        Close
+      </button>
+    </footer>
+  </div>
+</dialog>

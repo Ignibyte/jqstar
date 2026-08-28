@@ -554,6 +554,89 @@
           "target": "~/components/jquery-star/command-palette.html"
         }
       ]
+    },
+    {
+      "name": "form",
+      "type": "registry:item",
+      "title": "Form",
+      "description": "Native constraint validation with accessible field errors, lifecycle events, and backend-ready submission.",
+      "registryDependencies": ["field", "label", "input", "button"],
+      "files": [
+        {
+          "path": "registry/components/form.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/form.html"
+        }
+      ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:item",
+      "title": "Hover Card",
+      "description": "Hoverable, focusable, dismissible supplemental content with collision-aware placement.",
+      "files": [
+        {
+          "path": "registry/components/hover-card.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/hover-card.html"
+        }
+      ]
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:item",
+      "title": "Alert Dialog",
+      "description": "An interruptive confirmation dialog composed from the native Dialog behavior.",
+      "registryDependencies": ["button", "dialog"],
+      "files": [
+        {
+          "path": "registry/components/alert-dialog.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/alert-dialog.html"
+        }
+      ]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:item",
+      "title": "Drawer",
+      "description": "A bottom-docked modal surface composed from the native Dialog behavior.",
+      "registryDependencies": ["button", "dialog"],
+      "files": [
+        {
+          "path": "registry/components/drawer.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/drawer.html"
+        }
+      ]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:item",
+      "title": "Input Group",
+      "description": "A native input composed with leading and trailing visual addons.",
+      "registryDependencies": ["field", "label", "input"],
+      "files": [
+        {
+          "path": "registry/components/input-group.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/input-group.html"
+        }
+      ]
+    },
+    {
+      "name": "file-input",
+      "type": "registry:item",
+      "title": "File Input",
+      "description": "A themed native file control compatible with multipart backend actions.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/file-input.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/file-input.html"
+        }
+      ]
     }
   ]
 }

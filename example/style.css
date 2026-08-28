@@ -121,6 +121,55 @@ h1 {
   font-weight: 700;
 }
 
+.form-surfaces-card {
+  grid-template-columns: 1fr;
+}
+
+.form-surfaces-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.8fr);
+  gap: 24px;
+  align-items: start;
+}
+
+#component-profile-form,
+.surface-compositions {
+  padding: 18px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+}
+
+.surface-compositions {
+  display: grid;
+  gap: 18px;
+}
+
+.surface-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.surface-note,
+.form-success {
+  margin: 0;
+  color: #655e55;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.form-success {
+  color: #06704f;
+  font-weight: 700;
+}
+
+.hover-card-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .controls-component-card {
   grid-template-columns: 1fr;
 }
@@ -514,6 +563,10 @@ pre {
   }
 
   .calendar-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .form-surfaces-grid {
     grid-template-columns: 1fr;
   }
 }
