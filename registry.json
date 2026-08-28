@@ -1504,6 +1504,35 @@
           "target": "~/blocks/jquery-star/access-manager.ts"
         }
       ]
+    },
+    {
+      "name": "audit-log",
+      "type": "registry:block",
+      "title": "Audit Log",
+      "description": "A server-owned access history with member and text filters, Pagination, automatic Access Manager refresh, typed jQuery actions, and Datastar SDK patches.",
+      "registryDependencies": [
+        "card",
+        "badge",
+        "field",
+        "label",
+        "native-select",
+        "search-field",
+        "data-table",
+        "pagination",
+        "button"
+      ],
+      "files": [
+        {
+          "path": "registry/blocks/audit-log.html",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/audit-log.html"
+        },
+        {
+          "path": "registry/blocks/audit-log.ts",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/audit-log.ts"
+        }
+      ]
     }
   ]
 }

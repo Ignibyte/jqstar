@@ -191,6 +191,54 @@ const accessPermissionItems = [
   { value: "audit:read", label: "Read audit log" },
 ] as const;
 
+interface AccessAuditEntry {
+  actor: string;
+  added: string[];
+  id: string;
+  member: string;
+  permissions: string[];
+  removed: string[];
+  reordered: boolean;
+  revision: number;
+  timestamp: string;
+}
+
+const initialAccessAuditEntries: AccessAuditEntry[] = [
+  {
+    actor: "Nora Singh",
+    added: ["billing:manage"],
+    id: "access-audit-3",
+    member: "amina",
+    permissions: ["components:read", "components:write", "members:invite", "billing:manage"],
+    removed: [],
+    reordered: false,
+    revision: 3,
+    timestamp: "2026-08-28T15:24:00.000Z",
+  },
+  {
+    actor: "Eli Brooks",
+    added: ["audit:read"],
+    id: "access-audit-2",
+    member: "luis",
+    permissions: ["components:read", "audit:read"],
+    removed: [],
+    reordered: false,
+    revision: 2,
+    timestamp: "2026-08-28T14:42:00.000Z",
+  },
+  {
+    actor: "Nora Singh",
+    added: ["components:write", "releases:deploy"],
+    id: "access-audit-1",
+    member: "maya",
+    permissions: ["components:read", "components:write", "releases:deploy"],
+    removed: [],
+    reordered: false,
+    revision: 1,
+    timestamp: "2026-08-28T13:10:00.000Z",
+  },
+];
+
 const runtimeLogs = [
   { level: "info", message: "HTTP listener accepted a health probe.", source: "http" },
   { level: "debug", message: "Registry manifest contains 102 components.", source: "registry" },
@@ -270,6 +318,85 @@ function accessTransferHtml(permissions: readonly string[]): string {
   return `<div id="access-manager-permissions" data-jqs="transfer-list" data-name="permissions" data-value="${escapeHtml(JSON.stringify(permissions))}" data-on:jquery-star:transfer-list:change="@accessManager.change" data-attr:aria-busy="$accessManagerLoading"><div data-part="pane"><label for="access-manager-available">Available permissions</label><select id="access-manager-available" data-part="available" multiple size="6">${options(false)}</select></div><div data-part="controls" role="group" aria-label="Assignment controls"><button data-jqs="button" data-part="add" data-variant="outline" type="button">Add →</button><button data-jqs="button" data-part="remove" data-variant="outline" type="button">← Remove</button><button data-jqs="button" data-part="add-all" data-variant="ghost" type="button">Add all</button><button data-jqs="button" data-part="remove-all" data-variant="ghost" type="button">Remove all</button></div><div data-part="pane"><label for="access-manager-selected">Assigned permissions</label><select id="access-manager-selected" data-part="selected" multiple size="6">${options(true)}</select></div><div data-part="order-controls" role="group" aria-label="Priority controls"><button data-jqs="button" data-part="move-up" data-variant="outline" type="button">Move up</button><button data-jqs="button" data-part="move-down" data-variant="outline" type="button">Move down</button></div><p data-part="status" aria-live="polite">${permissions.length} assigned</p></div>`;
 }
 
+function accessPermissionLabel(value: string): string {
+  return accessPermissionItems.find((permission) => permission.value === value)?.label ?? value;
+}
+
+function accessAuditPresentation(entry: AccessAuditEntry): {
+  kind: "added" | "changed" | "removed" | "reordered" | "unchanged";
+  label: string;
+  summary: string;
+  variant: "danger" | "outline" | "secondary" | "success";
+} {
+  const added = entry.added.map(accessPermissionLabel);
+  const removed = entry.removed.map(accessPermissionLabel);
+  if (added.length && removed.length) {
+    return {
+      kind: "changed",
+      label: "Changed",
+      summary: `Added ${added.join(", ")}; removed ${removed.join(", ")}.`,
+      variant: "secondary",
+    };
+  }
+  if (added.length) {
+    return {
+      kind: "added",
+      label: "Added",
+      summary: `Added ${added.join(", ")}.`,
+      variant: "success",
+    };
+  }
+  if (removed.length) {
+    return {
+      kind: "removed",
+      label: "Removed",
+      summary: `Removed ${removed.join(", ")}.`,
+      variant: "danger",
+    };
+  }
+  if (entry.reordered) {
+    return {
+      kind: "reordered",
+      label: "Reordered",
+      summary: "Changed permission priority.",
+      variant: "secondary",
+    };
+  }
+  return {
+    kind: "unchanged",
+    label: "No change",
+    summary: "Saved without permission changes.",
+    variant: "outline",
+  };
+}
+
+function accessAuditRowHtml(entry: AccessAuditEntry): string {
+  const member = accessMembers.find((candidate) => candidate.id === entry.member)!;
+  const presentation = accessAuditPresentation(entry);
+  const timestamp = new Date(entry.timestamp).toLocaleString("en-US", {
+    day: "numeric",
+    hour: "2-digit",
+    hour12: false,
+    minute: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  });
+  const permissions = entry.permissions.map(accessPermissionLabel).join(", ");
+  return `<tr data-row-id="${escapeHtml(entry.id)}"><td data-key="timestamp" data-value="${escapeHtml(entry.timestamp)}"><time datetime="${escapeHtml(entry.timestamp)}">${escapeHtml(timestamp)} UTC</time><small>${escapeHtml(entry.actor)}</small></td><th scope="row" data-key="member" data-value="${escapeHtml(entry.member)}">${escapeHtml(member.name)}</th><td data-key="change" data-value="${presentation.kind}"><span data-jqs="badge" data-variant="${presentation.variant}">${presentation.label}</span><span data-part="change-summary">${escapeHtml(presentation.summary)}</span></td><td data-key="permissions">${escapeHtml(permissions || "No assigned permissions")}</td><td data-key="revision" data-value="${entry.revision}">#${entry.revision}</td></tr>`;
+}
+
+function accessAuditPaginationHtml(page: number, pageCount: number): string {
+  const previous = Math.max(1, page - 1);
+  const next = Math.min(pageCount, page + 1);
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1)
+    .map(
+      (value) =>
+        `<li><a data-part="page" data-page="${value}" href="?audit-page=${value}"${value === page ? ' aria-current="page"' : ""}>${value}</a></li>`,
+    )
+    .join("");
+  return `<nav id="audit-log-pagination" data-jqs="pagination" data-navigation="manual" data-page="${page}" data-page-count="${pageCount}" data-on:jquery-star:pagination:change="@auditLog.page" aria-label="Access audit pages"><ul><li><a data-part="previous" href="?audit-page=${previous}"${page <= 1 ? ' aria-disabled="true"' : ""}>Previous</a></li>${pages}<li><a data-part="next" href="?audit-page=${next}"${page >= pageCount ? ' aria-disabled="true"' : ""}>Next</a></li></ul><p data-part="status" aria-live="polite">Page ${page} of ${pageCount}</p></nav>`;
+}
+
 function json(response: ServerResponse, status: number, value: unknown): void {
   const body = JSON.stringify(value);
   response.writeHead(status, {
@@ -345,11 +472,19 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   let inviteRevision = 0;
   let projectBrowserRevision = 0;
   let accessRevision = 0;
+  let accessAuditRevision = 3;
+  let accessAuditStreamRevision = 0;
   const accessAssignments = new Map<string, string[]>([
     ["maya", ["components:read", "components:write", "releases:deploy"]],
     ["luis", ["components:read", "audit:read"]],
     ["amina", ["components:read", "components:write", "members:invite", "billing:manage"]],
   ]);
+  const accessAuditEntries = initialAccessAuditEntries.map((entry) => ({
+    ...entry,
+    added: [...entry.added],
+    permissions: [...entry.permissions],
+    removed: [...entry.removed],
+  }));
 
   async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
     const url = new URL(request.url ?? "/", "http://localhost");
@@ -615,7 +750,27 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
           json(response, 422, { error: "Access permissions must be unique catalog values." });
           return true;
         }
-        accessAssignments.set(member, [...requested]);
+        const previous = accessAssignments.get(member) ?? [];
+        const permissions = [...requested];
+        const previousSet = new Set(previous);
+        const nextSet = new Set(permissions);
+        accessAssignments.set(member, permissions);
+        accessAuditRevision += 1;
+        accessAuditEntries.unshift({
+          actor: "Current user",
+          added: permissions.filter((permission) => !previousSet.has(permission)),
+          id: `access-audit-${accessAuditRevision}`,
+          member,
+          permissions,
+          removed: previous.filter((permission) => !nextSet.has(permission)),
+          reordered:
+            previous.length === permissions.length &&
+            previous.every((permission) => nextSet.has(permission)) &&
+            previous.some((permission, index) => permissions[index] !== permission),
+          revision: accessAuditRevision,
+          timestamp: new Date().toISOString(),
+        });
+        if (accessAuditEntries.length > 100) accessAuditEntries.length = 100;
       }
       const permissions = accessAssignments.get(member) ?? [];
       accessRevision += 1;
@@ -638,6 +793,77 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
           }),
           { eventId: `access-${revision}-signals` },
         );
+      });
+      await sendWebResponse(sdkResponse, response);
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/access/audit") {
+      if (!method(request, response, "GET")) return true;
+      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+      if (!read.success) {
+        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+        response.end(read.error);
+        return true;
+      }
+      const requestedMember = String(read.signals.auditLogMember ?? "all");
+      const member =
+        requestedMember === "all" ||
+        accessMembers.some((candidate) => candidate.id === requestedMember)
+          ? requestedMember
+          : "all";
+      const query = String(read.signals.auditLogQuery ?? "")
+        .trim()
+        .toLocaleLowerCase();
+      const requestedPage = Number(read.signals.auditLogPage ?? 1);
+      const matches = accessAuditEntries.filter((entry) => {
+        if (member !== "all" && entry.member !== member) return false;
+        if (!query) return true;
+        const memberRecord = accessMembers.find((candidate) => candidate.id === entry.member)!;
+        const searchable = [
+          entry.actor,
+          memberRecord.name,
+          ...entry.permissions.map(accessPermissionLabel),
+          accessAuditPresentation(entry).summary,
+        ]
+          .join(" ")
+          .toLocaleLowerCase();
+        return searchable.includes(query);
+      });
+      const pageSize = 3;
+      const pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
+      const page = Math.min(
+        Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1),
+        pageCount,
+      );
+      const entries = matches.slice((page - 1) * pageSize, page * pageSize);
+      accessAuditStreamRevision += 1;
+      const streamRevision = accessAuditStreamRevision;
+      const sdkResponse = ServerSentEventGenerator.stream((stream) => {
+        stream.patchSignals(
+          JSON.stringify({
+            auditLogCount: matches.length,
+            auditLogMember: member,
+            auditLogMessage: `${matches.length} access event${matches.length === 1 ? "" : "s"}. Page ${page} of ${pageCount}.`,
+            auditLogPage: page,
+          }),
+          { eventId: `audit-log-${streamRevision}-signals` },
+        );
+        stream.patchElements(
+          entries.length
+            ? entries.map(accessAuditRowHtml).join("")
+            : '<tr><td colspan="5">No access events match these filters.</td></tr>',
+          {
+            selector: "#audit-log-rows",
+            mode: "inner",
+            eventId: `audit-log-${streamRevision}-rows`,
+          },
+        );
+        stream.patchElements(accessAuditPaginationHtml(page, pageCount), {
+          selector: "#audit-log-pagination",
+          mode: "outer",
+          eventId: `audit-log-${streamRevision}-pagination`,
+        });
       });
       await sendWebResponse(sdkResponse, response);
       return true;

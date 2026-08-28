@@ -1,0 +1,153 @@
+<section
+  data-jqs="card"
+  data-block="audit-log"
+  data-audit-url="/api/demo/access/audit"
+  data-signals="{ auditLogQuery: '', auditLogMember: 'all', auditLogPage: 1, auditLogCount: 3, auditLogLoading: false, auditLogError: null, auditLogMessage: '3 access events. Page 1 of 1.' }"
+  data-on:jquery-star:access-manager:saved__window="@auditLog.refresh"
+  aria-labelledby="audit-log-title"
+>
+  <header data-part="header">
+    <div>
+      <h2 id="audit-log-title" data-part="title">Access audit log</h2>
+      <p data-part="description">
+        Server-owned permission history that refreshes after Access Manager saves.
+      </p>
+    </div>
+    <span data-jqs="badge" data-variant="success">Live history</span>
+  </header>
+
+  <form role="search" data-audit-log-part="filters" data-on:submit__prevent="@auditLog.filter">
+    <div data-jqs="field">
+      <label data-jqs="label" for="audit-log-member">Team member</label>
+      <select
+        id="audit-log-member"
+        data-jqs="native-select"
+        data-bind:audit-log-member
+        data-on:change="@auditLog.filter"
+        name="member"
+      >
+        <option value="all">All team members</option>
+        <option value="maya">Maya Chen</option>
+        <option value="luis">Luis Ortiz</option>
+        <option value="amina">Amina Yusuf</option>
+      </select>
+    </div>
+    <div data-jqs="field">
+      <label data-jqs="label" for="audit-log-query">Search history</label>
+      <div data-jqs="search-field">
+        <span data-part="icon" aria-hidden="true">⌕</span>
+        <input
+          id="audit-log-query"
+          data-part="control"
+          data-bind:audit-log-query
+          type="search"
+          name="query"
+          placeholder="Actor, member, or permission"
+        />
+        <button data-part="clear" type="button">Clear</button>
+        <button data-part="submit" type="submit">Search</button>
+      </div>
+    </div>
+  </form>
+
+  <div
+    id="audit-log-table"
+    data-jqs="data-table"
+    data-processing="manual"
+    data-attr:aria-busy="$auditLogLoading"
+  >
+    <div data-part="toolbar">
+      <span data-text="$auditLogCount + ' access events'"></span>
+    </div>
+    <div data-part="viewport">
+      <table data-part="table">
+        <caption>
+          Permission changes recorded by the backend
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Time and actor</th>
+            <th scope="col">Member</th>
+            <th scope="col">Change</th>
+            <th scope="col">Resulting permissions</th>
+            <th scope="col">Revision</th>
+          </tr>
+        </thead>
+        <tbody id="audit-log-rows">
+          <tr data-row-id="access-audit-3">
+            <td data-key="timestamp" data-value="2026-08-28T15:24:00.000Z">
+              <time datetime="2026-08-28T15:24:00.000Z">Aug 28, 15:24 UTC</time>
+              <small>Nora Singh</small>
+            </td>
+            <th scope="row" data-key="member" data-value="amina">Amina Yusuf</th>
+            <td data-key="change" data-value="added">
+              <span data-jqs="badge" data-variant="success">Added</span>
+              <span data-part="change-summary">Added Manage billing.</span>
+            </td>
+            <td data-key="permissions">
+              Read components, Write components, Invite members, Manage billing
+            </td>
+            <td data-key="revision" data-value="3">#3</td>
+          </tr>
+          <tr data-row-id="access-audit-2">
+            <td data-key="timestamp" data-value="2026-08-28T14:42:00.000Z">
+              <time datetime="2026-08-28T14:42:00.000Z">Aug 28, 14:42 UTC</time>
+              <small>Eli Brooks</small>
+            </td>
+            <th scope="row" data-key="member" data-value="luis">Luis Ortiz</th>
+            <td data-key="change" data-value="added">
+              <span data-jqs="badge" data-variant="success">Added</span>
+              <span data-part="change-summary">Added Read audit log.</span>
+            </td>
+            <td data-key="permissions">Read components, Read audit log</td>
+            <td data-key="revision" data-value="2">#2</td>
+          </tr>
+          <tr data-row-id="access-audit-1">
+            <td data-key="timestamp" data-value="2026-08-28T13:10:00.000Z">
+              <time datetime="2026-08-28T13:10:00.000Z">Aug 28, 13:10 UTC</time>
+              <small>Nora Singh</small>
+            </td>
+            <th scope="row" data-key="member" data-value="maya">Maya Chen</th>
+            <td data-key="change" data-value="added">
+              <span data-jqs="badge" data-variant="success">Added</span>
+              <span data-part="change-summary">Added Write components, Deploy releases.</span>
+            </td>
+            <td data-key="permissions">Read components, Write components, Deploy releases</td>
+            <td data-key="revision" data-value="1">#1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <nav
+    id="audit-log-pagination"
+    data-jqs="pagination"
+    data-navigation="manual"
+    data-page="1"
+    data-page-count="1"
+    data-on:jquery-star:pagination:change="@auditLog.page"
+    aria-label="Access audit pages"
+  >
+    <ul>
+      <li><a data-part="previous" href="?audit-page=1" aria-disabled="true">Previous</a></li>
+      <li><a data-part="page" data-page="1" href="?audit-page=1" aria-current="page">1</a></li>
+      <li><a data-part="next" href="?audit-page=1" aria-disabled="true">Next</a></li>
+    </ul>
+    <p data-part="status" aria-live="polite">Page 1 of 1</p>
+  </nav>
+
+  <footer data-part="footer">
+    <p data-text="$auditLogMessage" aria-live="polite"></p>
+    <p data-show="$auditLogError" data-text="$auditLogError" role="alert"></p>
+    <button
+      data-jqs="button"
+      data-variant="outline"
+      type="button"
+      data-on:click="@auditLog.refresh"
+      data-prop:disabled="$auditLogLoading"
+    >
+      Refresh history
+    </button>
+  </footer>
+</section>

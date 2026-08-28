@@ -61,6 +61,7 @@ npx jqstar add operations-dashboard
 npx jqstar add profile-settings
 npx jqstar add project-browser
 npx jqstar add access-manager
+npx jqstar add audit-log
 npx jqstar doctor
 ```
 
@@ -91,7 +92,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components and blocks
 
-The source catalog now includes 108 items: 102 component recipes and six composed blocks. They are
+The source catalog now includes 109 items: 102 component recipes and seven composed blocks. They are
 Button, Button Group, Dialog, Alert Dialog, Sheet, Drawer, Field, Form, Label, Input, Input Group,
 File Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
 Collapsible, Accordion, Tabs, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar,
@@ -104,10 +105,10 @@ Picker, Rating, Message, Message Scroller, Search Field, Item, Feed, Questionnai
 Bubble, Aspect Ratio, Chart, Direction, Marker, Table, Typography, Stat, Timeline, Status, Code
 Block, Browser Mockup, Diff, Log Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial
 Progress, Indicator, Dock, Swap, Key Value, Clipboard, Editable, Operations Dashboard, Profile
-Settings, Project Browser, and Access Manager. The six blocks are Command Palette, Async Form,
-Operations Dashboard, Profile Settings, Project Browser, and Access Manager. Import the precompiled
-theme for the default appearance. Tailwind is used to author this file but is not required in the
-consuming application.
+Settings, Project Browser, Access Manager, and Audit Log. The seven blocks are Command Palette,
+Async Form, Operations Dashboard, Profile Settings, Project Browser, Access Manager, and Audit Log.
+Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
+not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -803,7 +804,9 @@ block uses `/api/demo/profile` for validated JSON persistence and `/api/demo/pro
 server-owned invite URL. Project Browser uses `/api/demo/projects` to patch filtered table rows,
 Pagination markup, and result signals through the same SDK. Access Manager uses `/api/demo/access`
 to load and persist ordered permission assignments while the SDK replaces the Transfer List and
-patches its signals:
+patches its signals. Each successful write records a server-owned entry. Audit Log reads those
+entries from `/api/demo/access/audit`, patches filtered rows and Pagination, and refreshes when it
+receives the Access Manager saved event:
 
 ```sh
 npm run build:self-hosted

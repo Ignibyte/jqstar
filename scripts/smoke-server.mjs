@@ -105,6 +105,19 @@ try {
   ) {
     throw new Error("The self-hosted Access Manager stream contract failed.");
   }
+  const auditSignals = encodeURIComponent(
+    JSON.stringify({ auditLogMember: "all", auditLogPage: 1, auditLogQuery: "" }),
+  );
+  const auditResponse = await fetch(`${origin}/api/demo/access/audit?datastar=${auditSignals}`);
+  const audit = await auditResponse.text();
+  if (
+    !auditResponse.ok ||
+    !audit.includes("selector #audit-log-rows") ||
+    !audit.includes("selector #audit-log-pagination") ||
+    !audit.includes("Amina Yusuf")
+  ) {
+    throw new Error("The self-hosted Audit Log stream contract failed.");
+  }
   const signals = encodeURIComponent(JSON.stringify({ controlPlaneMessage: "Ready" }));
   const streamResponse = await fetch(`${origin}/api/demo/runtime/stream?datastar=${signals}`);
   const stream = await streamResponse.text();
@@ -171,11 +184,20 @@ try {
       .locator('[data-text="$accessManagerMessage"]')
       .filter({ hasText: "Luis Ortiz access saved" })
       .waitFor({ state: "visible" });
+    const auditLog = browserPage.locator('[data-block="audit-log"]');
+    await auditLog
+      .locator('#audit-log-rows [data-row-id="access-audit-4"]')
+      .filter({ hasText: "Luis Ortiz" })
+      .waitFor({ state: "visible" });
+    await auditLog
+      .locator('[data-part="change-summary"]')
+      .filter({ hasText: "Added Invite members" })
+      .waitFor({ state: "visible" });
   } finally {
     await browser.close();
   }
   process.stdout.write(
-    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, access-manager-sse=passed, datastar-log-stream=passed, browser-runtime=passed, browser-project-browser=passed, browser-access-manager=passed, security-headers=passed\n",
+    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, access-manager-sse=passed, audit-log-sse=passed, datastar-log-stream=passed, browser-runtime=passed, browser-project-browser=passed, browser-access-manager=passed, browser-audit-log=passed, security-headers=passed\n",
   );
 } finally {
   child.kill("SIGTERM");

@@ -930,6 +930,14 @@ test.describe("jQuery Star components", () => {
     await expect(root.locator('[data-text="$accessManagerMessage"]')).toContainText(
       "Maya Chen access saved",
     );
+    const auditLog = page.locator('[data-block="audit-log"]');
+    await expect(auditLog.locator("#audit-log-rows tr").first()).toContainText("Maya Chen");
+    await expect(auditLog.locator("#audit-log-rows tr").first()).toContainText(
+      "Added Read audit log",
+    );
+    await expect(auditLog.locator("#audit-log-pagination")).toHaveAttribute("data-page-count", "2");
+    await auditLog.locator('[data-part="page"][data-page="2"]').click();
+    await expect(auditLog.locator('#audit-log-rows [data-row-id="access-audit-1"]')).toBeVisible();
 
     await root.getByRole("combobox", { name: "Team member" }).selectOption("luis");
     await expect(root.locator("#access-manager-permissions")).toHaveAttribute(
@@ -944,6 +952,25 @@ test.describe("jQuery Star components", () => {
     await expect(root.locator('#access-manager-selected option[value="audit:read"]')).toHaveCount(
       1,
     );
+  });
+
+  test("audit log filters server-owned access history", async ({ page }) => {
+    const root = page.locator('[data-block="audit-log"]');
+    const rows = root.locator("#audit-log-rows tr");
+
+    await root.getByRole("combobox", { name: "Team member" }).selectOption("amina");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText("Amina Yusuf");
+
+    await root.getByRole("searchbox", { name: "Search history" }).fill("billing");
+    await root.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText("Manage billing");
+
+    await root.getByRole("searchbox", { name: "Search history" }).fill("missing permission");
+    await root.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText("No access events match these filters");
   });
 
   test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({ page }) => {
@@ -1608,6 +1635,49 @@ test.describe("jQuery Star components", () => {
     expect(geometry.availableRight).toBeLessThanOrEqual(geometry.rootRight);
     expect(geometry.selectedLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
     expect(geometry.selectedRight).toBeLessThanOrEqual(geometry.rootRight);
+  });
+
+  test("audit log passes accessibility checks after filtering", async ({ page }) => {
+    const root = page.locator(".audit-log-demo");
+    let results = await new AxeBuilder({ page }).include(".audit-log-demo").analyze();
+    expect(results.violations).toEqual([]);
+
+    await root.getByRole("combobox", { name: "Team member" }).selectOption("luis");
+    await expect(root.locator("#audit-log-rows tr")).toHaveCount(1);
+    results = await new AxeBuilder({ page }).include(".audit-log-demo").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("audit log keeps filters and table viewport inside a mobile card", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const root = page.locator('[data-block="audit-log"]');
+    const geometry = await root.evaluate((element) => {
+      const filter = element.querySelector<HTMLElement>('[data-audit-log-part="filters"]')!;
+      const viewport = element.querySelector<HTMLElement>('[data-part="viewport"]')!;
+      const rootRect = element.getBoundingClientRect();
+      const filterRect = filter.getBoundingClientRect();
+      const viewportRect = viewport.getBoundingClientRect();
+      return {
+        filterLeft: filterRect.left,
+        filterRight: filterRect.right,
+        rootLeft: rootRect.left,
+        rootRight: rootRect.right,
+        viewportLeft: viewportRect.left,
+        viewportRight: viewportRect.right,
+        viewportScrollWidth: viewport.scrollWidth,
+        windowWidth: window.innerWidth,
+      };
+    });
+
+    expect(geometry.rootLeft).toBeGreaterThanOrEqual(0);
+    expect(geometry.rootRight).toBeLessThanOrEqual(geometry.windowWidth);
+    expect(geometry.filterLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
+    expect(geometry.filterRight).toBeLessThanOrEqual(geometry.rootRight);
+    expect(geometry.viewportLeft).toBeGreaterThanOrEqual(geometry.rootLeft);
+    expect(geometry.viewportRight).toBeLessThanOrEqual(geometry.rootRight);
+    expect(geometry.viewportScrollWidth).toBeGreaterThan(
+      geometry.viewportRight - geometry.viewportLeft,
+    );
   });
 
   test("composition primitives pass accessibility checks", async ({ page }) => {

@@ -96,6 +96,8 @@ describe("Access Manager source block", () => {
   });
 
   it("persists changed Transfer List membership through the official SDK path", async () => {
+    const savedEvent = vi.fn();
+    root().addEventListener("jquery-star:access-manager:saved", savedEvent);
     const available = root().querySelector<HTMLSelectElement>("#access-manager-available")!;
     available.querySelector<HTMLOptionElement>('option[value="audit:read"]')!.selected = true;
     available.dispatchEvent(new Event("change", { bubbles: true }));
@@ -127,6 +129,8 @@ describe("Access Manager source block", () => {
       },
     ]);
     expect($.star.ui.transferList.value("#access-manager-permissions")).toContain("audit:read");
+    expect(savedEvent).toHaveBeenCalledOnce();
+    expect((savedEvent.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({ member: "maya" });
   });
 
   it("loads another member and re-enhances the server-replaced Transfer List", async () => {

@@ -609,8 +609,9 @@ Implemented:
 - Project Browser as a multi-file Search Field, Data Table, Pagination, and Datastar SSE workflow
 - Access Manager as a multi-file native select, Transfer List, Split Button, and persisted Datastar
   SSE workflow
+- Audit Log as a multi-file Search Field, Data Table, Pagination, and access-history workflow
 
-This 108-item source catalog contains 102 component recipes and six composed blocks. It is
+This 109-item source catalog contains 102 component recipes and seven composed blocks. It is
 registry-backed and source-owned. Domain-heavy additions can build on these contracts without
 changing the public anatomy.
 
@@ -647,6 +648,15 @@ Datastar SDK element patches, and patches the count, member, message, and permis
 same source block therefore proves local edits, ordinary FormData values, server reload, and
 persistence without a component-specific request client.
 
+## Audit Log
+
+Audit Log keeps its member filter, search input, table, and page links as native HTML. Successful
+Access Manager writes record the actor, member, ordered result, permission delta, timestamp, and
+revision in server-owned history. The save action emits `jquery-star:access-manager:saved` only
+after the backend request succeeds. Audit Log listens at the window boundary and refreshes through
+`/api/demo/access/audit`, where the Datastar SDK patches filtered rows, Pagination, and result
+signals. Either block can still be copied and used alone.
+
 ## Runtime control-plane components
 
 Log Viewer keeps authored `<ol>/<li>` semantics while placing `role="log"` and live-region state on
@@ -680,8 +690,8 @@ server.
 Node server. `server/index.ts` adds safe static-file resolution, cache policy, security headers,
 health checks, and graceful shutdown. `npm run test:self-hosted` builds the library, site, and
 server, starts the bundled process on an ephemeral port, and verifies the rendered application,
-runtime snapshot, Datastar log stream, Project Browser stream, Access Manager persistence, and
-browser-applied backend contracts.
+runtime snapshot, Datastar log stream, Project Browser stream, Access Manager persistence, Audit Log
+history, and browser-applied backend contracts.
 
 The expression runtime currently uses dynamic function compilation. The self-hosted Content Security
 Policy therefore permits `unsafe-eval` for scripts while keeping scripts same-origin and blocking

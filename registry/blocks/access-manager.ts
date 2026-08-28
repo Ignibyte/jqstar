@@ -77,7 +77,14 @@ export function installAccessManager(): void {
   });
 
   $.star.action<AccessManagerState>("accessManager.save", async (context) => {
+    const root = managerRoot(context);
     await request(context, "post");
+    root.dispatchEvent(
+      new CustomEvent("jquery-star:access-manager:saved", {
+        bubbles: true,
+        detail: { member: context.state.accessManagerMember },
+      }),
+    );
   });
 
   $.star.action<AccessManagerState>("accessManager.reset", async (context) => {

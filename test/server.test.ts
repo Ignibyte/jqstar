@@ -146,6 +146,27 @@ describe("self-hosted proof API", () => {
     const reloadedBody = await reloaded.text();
     expect(reloadedBody).toContain("components:read");
     expect(reloadedBody).toContain('data-value="[&quot;components:read&quot;]"');
+
+    const auditSignals = encodeURIComponent(
+      JSON.stringify({ auditLogMember: "luis", auditLogPage: 1, auditLogQuery: "audit" }),
+    );
+    const audit = await fetch(`${origin}/api/demo/access/audit?datastar=${auditSignals}`);
+    const auditBody = await audit.text();
+    expect(audit.headers.get("content-type")).toContain("text/event-stream");
+    expect(auditBody).toContain("selector #audit-log-rows");
+    expect(auditBody).toContain("selector #audit-log-pagination");
+    expect(auditBody).toContain('data-row-id="access-audit-4"');
+    expect(auditBody).toContain("Removed Read audit log.");
+    expect(auditBody).toContain("Luis Ortiz");
+
+    const secondPageSignals = encodeURIComponent(
+      JSON.stringify({ auditLogMember: "all", auditLogPage: 2, auditLogQuery: "" }),
+    );
+    const secondPage = await fetch(`${origin}/api/demo/access/audit?datastar=${secondPageSignals}`);
+    const secondPageBody = await secondPage.text();
+    expect(secondPageBody).toContain('data-row-id="access-audit-1"');
+    expect(secondPageBody).toContain('data-page="2" data-page-count="2"');
+    expect(secondPageBody).toContain('data-page="2" href="?audit-page=2" aria-current="page"');
   });
 
   it("saves validated profile settings and rotates server-owned invite URLs", async () => {

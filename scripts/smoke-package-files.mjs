@@ -28,6 +28,8 @@ const required = [
   "registry/blocks/project-browser.ts",
   "registry/blocks/access-manager.html",
   "registry/blocks/access-manager.ts",
+  "registry/blocks/audit-log.html",
+  "registry/blocks/audit-log.ts",
   "registry/components/button.html",
   "registry/components/transfer-list.html",
   "registry/components/split-button.html",

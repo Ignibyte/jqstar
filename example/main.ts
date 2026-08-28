@@ -5,6 +5,8 @@ import projectBrowserHTML from "../registry/blocks/project-browser.html?raw";
 import "../registry/blocks/project-browser";
 import accessManagerHTML from "../registry/blocks/access-manager.html?raw";
 import "../registry/blocks/access-manager";
+import auditLogHTML from "../registry/blocks/audit-log.html?raw";
+import "../registry/blocks/audit-log";
 
 interface DemoState extends Record<string, unknown> {
   componentBackendError: string | null;
@@ -539,7 +541,7 @@ $.star.action<DemoState>("refreshMetrics", async (context) => {
       await wait(160);
       result = {
         labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-        message: "Static Pages fallback applied the same native-table update contract.",
+        message: "Static catalog fallback applied the same native-table update contract.",
         series: [
           [248, 326, 391, 438],
           [112, 218, 284, 347],
@@ -655,7 +657,7 @@ $.star.action<DemoState>("refreshOperations", async (context) => {
         timestamp: new Date().toISOString(),
       };
       context.state.operationsMessage =
-        "Static Pages fallback applied the same operations response contract.";
+        "Static catalog fallback applied the same operations response contract.";
     } else {
       const response = await fetch("/api/demo/operations");
       result = (await response.json()) as OperationsResponse;
@@ -786,7 +788,7 @@ $.star.action<DemoState>("serverIncrement", async (context) => {
   await wait(160);
   context.state.serverCount += 10;
   context.state.serverMessage =
-    "Static Pages preview simulated the JSON signal patch. The same action uses the backend locally.";
+    "Static catalog preview simulated the JSON signal patch. The same action uses the backend locally.";
   context.state.serverLoading = false;
 });
 
@@ -803,7 +805,7 @@ $.star.action<DemoState>("serverStream", async (context) => {
   await wait(160);
   context.state.serverCount += 1;
   context.state.serverMessage =
-    "Static Pages preview simulated the SDK signal event; our future backend can emit it unchanged.";
+    "Static catalog preview simulated the SDK signal event; a backend can emit it unchanged.";
   await wait(180);
   $("#server-feed").append(
     "<li>Static SDK event preview <button data-on:click=\"$(el).closest('li').fadeOut()\">Fade it out</button></li>",
@@ -818,13 +820,16 @@ if (projectBrowserMount) projectBrowserMount.innerHTML = projectBrowserHTML;
 const accessManagerMount = document.querySelector<HTMLElement>("#access-manager-demo");
 if (accessManagerMount) accessManagerMount.innerHTML = accessManagerHTML;
 
+const auditLogMount = document.querySelector<HTMLElement>("#audit-log-demo");
+if (auditLogMount) auditLogMount.innerHTML = auditLogHTML;
+
 $("#app").star();
 
 if (__JQS_STATIC_DEMO__) {
   const state = $("#app").star<DemoState>("state");
   if (state) {
     state.serverMessage =
-      "Static GitHub Pages preview. Connect our backend later without changing component markup.";
+      "Static catalog preview. Connect a backend without changing component markup.";
   }
   document.documentElement.dataset.deployment = "static";
 }

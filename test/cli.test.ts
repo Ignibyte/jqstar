@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(108);
+    expect(items).toHaveLength(109);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -99,6 +99,7 @@ describe("jqstar CLI", () => {
         "transfer-list",
         "split-button",
         "access-manager",
+        "audit-log",
       ]),
     );
   });
@@ -116,6 +117,7 @@ describe("jqstar CLI", () => {
       "profile-settings",
       "project-browser",
       "access-manager",
+      "audit-log",
     ]);
     expect(JSON.parse(components.stdout)).toHaveLength(102);
   });

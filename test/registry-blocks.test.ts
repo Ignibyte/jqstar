@@ -113,4 +113,22 @@ describe("source registry blocks", () => {
     expect(actions).toContain('$.star.action<AccessManagerState>("accessManager.change"');
     expect(actions).toContain("$.star[method]<AccessManagerState>(endpoint(root)");
   });
+
+  it("ships Audit Log with filters, Pagination, and the Access Manager save boundary", async () => {
+    const manifest = await registry();
+    const item = manifest.items.find(({ name }) => name === "audit-log");
+    const html = await readFile(resolve("registry/blocks/audit-log.html"), "utf8");
+    const actions = await readFile(resolve("registry/blocks/audit-log.ts"), "utf8");
+
+    expect(item).toMatchObject({ type: "registry:block" });
+    expect(item?.files).toHaveLength(2);
+    expect(item?.registryDependencies).toEqual(
+      expect.arrayContaining(["search-field", "data-table", "pagination", "native-select"]),
+    );
+    expect(html).toContain('data-block="audit-log"');
+    expect(html).toContain('data-on:jquery-star:access-manager:saved__window="@auditLog.refresh"');
+    expect(html).toContain('data-on:jquery-star:pagination:change="@auditLog.page"');
+    expect(actions).toContain('$.star.action<AuditLogState>("auditLog.filter"');
+    expect(actions).toContain("$.star.get<AuditLogState>(endpoint(root)");
+  });
 });
