@@ -95,6 +95,34 @@ describe("self-hosted proof API", () => {
     expect(await response.json()).toMatchObject({ serverCount: 17 });
   });
 
+  it("saves validated profile settings and rotates server-owned invite URLs", async () => {
+    const saved = await fetch(`${origin}/api/demo/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ displayName: "Grace Hopper", email: "grace@example.com" }),
+    });
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toMatchObject({
+      displayName: "Grace Hopper",
+      email: "grace@example.com",
+      environment: "test",
+      revision: 1,
+    });
+
+    const invalid = await fetch(`${origin}/api/demo/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ displayName: "", email: "invalid" }),
+    });
+    expect(invalid.status).toBe(422);
+
+    const invite = await fetch(`${origin}/api/demo/profile/invite`, { method: "POST" });
+    expect(await invite.json()).toEqual({
+      inviteUrl: "https://jqstar.dev/invite/test-1",
+      revision: 1,
+    });
+  });
+
   it("streams Datastar SDK signal and element events", async () => {
     const signals = encodeURIComponent(JSON.stringify({ serverCount: 2 }));
     const response = await fetch(`${origin}/api/demo/stream?datastar=${signals}`);

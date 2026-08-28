@@ -994,6 +994,42 @@ test.describe("jQuery Star components", () => {
     );
   });
 
+  test("clipboard and editable preserve text, keyboard, and native form behavior", async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    const card = page.getByRole("region", { name: "Clipboard and Editable" });
+    const clipboard = card.locator("#catalog-clipboard");
+    const editable = card.locator("#catalog-editable");
+    const form = card.getByRole("form", { name: "Catalog display name" });
+
+    await card.getByRole("button", { name: "Copy command" }).click();
+    await expect(clipboard).toHaveAttribute("data-state", "copied");
+    await expect(clipboard.locator('[data-part="status"]')).toHaveText("Install command copied.");
+
+    await card.getByRole("button", { name: "Edit display name" }).click();
+    const control = card.getByRole("textbox", { name: "Catalog display name" });
+    await expect(control).toBeFocused();
+    await control.fill("Grace Hopper");
+    await control.press("Enter");
+    await expect(editable).toHaveAttribute("data-state", "display");
+    await expect(editable.locator('[data-part="preview"]')).toHaveText("Grace Hopper");
+    await expect
+      .poll(() =>
+        form.evaluate((element) =>
+          String(new FormData(element as HTMLFormElement).get("catalogDisplayName")),
+        ),
+      )
+      .toBe("Grace Hopper");
+
+    await card.getByRole("button", { name: "Edit display name" }).click();
+    await control.fill("Uncommitted");
+    await control.press("Escape");
+    await expect(editable.locator('[data-part="preview"]')).toHaveText("Grace Hopper");
+    await expect(card.getByRole("button", { name: "Edit display name" })).toBeFocused();
+  });
+
   test("reporting primitives share native data with the backend chart", async ({ page }) => {
     const card = page.getByRole("region", { name: "Backend reporting primitives" });
     const chart = card.locator("#release-metrics-chart");
@@ -1614,6 +1650,18 @@ test.describe("jQuery Star components", () => {
     await card.getByRole("button", { name: "Line", exact: true }).click();
     await card.getByRole("button", { name: "Refresh from backend" }).click();
     results = await new AxeBuilder({ page }).include(".reporting-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("clipboard and editable pass accessibility checks in display and edit states", async ({
+    page,
+  }) => {
+    const card = page.locator(".source-actions-card");
+    let results = await new AxeBuilder({ page }).include(".source-actions-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.getByRole("button", { name: "Edit display name" }).click();
+    results = await new AxeBuilder({ page }).include(".source-actions-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

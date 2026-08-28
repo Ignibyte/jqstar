@@ -1,0 +1,187 @@
+<section
+  data-jqs="card"
+  data-block="profile-settings"
+  data-save-url="/api/demo/profile"
+  data-invite-url="/api/demo/profile/invite"
+  data-signals="{ profileSettingsSaving: false, profileSettingsRotating: false, profileSettingsMessage: 'Profile settings are ready.' }"
+  aria-labelledby="profile-settings-title"
+>
+  <header data-part="header">
+    <div>
+      <h2 id="profile-settings-title" data-part="title">Profile settings</h2>
+      <p data-part="description">
+        Edit native form values inline, save them to the backend, and rotate a copyable invite URL.
+      </p>
+    </div>
+    <span data-jqs="badge" data-variant="secondary">
+      Revision <span data-profile-value="revision">0</span>
+    </span>
+  </header>
+
+  <form data-profile-part="form" data-on:submit__prevent="@profileSettings.save">
+    <div data-jqs="field">
+      <span data-jqs="label">Display name</span>
+      <div
+        data-jqs="editable"
+        data-profile-field="display-name"
+        data-placeholder="Add a display name"
+        data-success-message="Display name staged."
+      >
+        <div data-part="display">
+          <span data-part="preview">Ada Lovelace</span>
+          <button
+            data-jqs="button"
+            data-part="edit"
+            data-size="sm"
+            data-variant="ghost"
+            type="button"
+            data-on:click="@ui.editable.edit"
+          >
+            Edit
+          </button>
+        </div>
+        <div data-part="editor" hidden>
+          <label class="sr-only" for="profile-settings-name">Display name</label>
+          <input
+            id="profile-settings-name"
+            data-jqs="input"
+            data-part="control"
+            name="displayName"
+            value="Ada Lovelace"
+            required
+          />
+          <button
+            data-jqs="button"
+            data-size="sm"
+            type="button"
+            data-on:click="@ui.editable.commit"
+          >
+            Apply
+          </button>
+          <button
+            data-jqs="button"
+            data-size="sm"
+            data-variant="outline"
+            type="button"
+            data-on:click="@ui.editable.cancel"
+          >
+            Cancel
+          </button>
+        </div>
+        <span data-part="status"></span>
+      </div>
+    </div>
+
+    <div data-jqs="field">
+      <span data-jqs="label">Email address</span>
+      <div
+        data-jqs="editable"
+        data-profile-field="email"
+        data-placeholder="Add an email address"
+        data-success-message="Email address staged."
+      >
+        <div data-part="display">
+          <span data-part="preview">ada@example.com</span>
+          <button
+            data-jqs="button"
+            data-part="edit"
+            data-size="sm"
+            data-variant="ghost"
+            type="button"
+            data-on:click="@ui.editable.edit"
+          >
+            Edit
+          </button>
+        </div>
+        <div data-part="editor" hidden>
+          <label class="sr-only" for="profile-settings-email">Email address</label>
+          <input
+            id="profile-settings-email"
+            data-jqs="input"
+            data-part="control"
+            name="email"
+            type="email"
+            value="ada@example.com"
+            required
+          />
+          <button
+            data-jqs="button"
+            data-size="sm"
+            type="button"
+            data-on:click="@ui.editable.commit"
+          >
+            Apply
+          </button>
+          <button
+            data-jqs="button"
+            data-size="sm"
+            data-variant="outline"
+            type="button"
+            data-on:click="@ui.editable.cancel"
+          >
+            Cancel
+          </button>
+        </div>
+        <span data-part="status"></span>
+      </div>
+    </div>
+
+    <button
+      data-jqs="button"
+      type="submit"
+      data-prop:disabled="$profileSettingsSaving || $profileSettingsRotating"
+    >
+      <span data-show="!$profileSettingsSaving">Save profile</span>
+      <span data-show="$profileSettingsSaving">Saving…</span>
+    </button>
+  </form>
+
+  <section aria-labelledby="profile-settings-invite-title">
+    <h3 id="profile-settings-invite-title">Team invite</h3>
+    <p>Rotate the server-owned URL, then copy its current native input value.</p>
+    <div data-jqs="clipboard" data-profile-part="invite" data-success-message="Invite URL copied.">
+      <input
+        data-part="value"
+        aria-label="Team invite URL"
+        value="https://jqstar.dev/invite/example-0"
+        readonly
+      />
+      <button
+        data-jqs="button"
+        data-part="trigger"
+        data-size="sm"
+        data-variant="outline"
+        type="button"
+        data-on:click="@ui.clipboard.copy"
+      >
+        Copy
+      </button>
+      <span data-part="status"></span>
+    </div>
+    <button
+      data-jqs="button"
+      data-size="sm"
+      data-variant="ghost"
+      type="button"
+      data-on:click="@profileSettings.rotateInvite"
+      data-prop:disabled="$profileSettingsSaving || $profileSettingsRotating"
+    >
+      Rotate invite URL
+    </button>
+  </section>
+
+  <dl data-jqs="key-value" aria-label="Profile persistence details">
+    <div data-part="item">
+      <dt>Environment</dt>
+      <dd data-profile-value="environment">local</dd>
+    </div>
+    <div data-part="item">
+      <dt>Last updated</dt>
+      <dd><time data-profile-value="updated">Not saved yet</time></dd>
+    </div>
+  </dl>
+
+  <footer data-part="footer">
+    <p data-text="$profileSettingsMessage" aria-live="polite"></p>
+  </footer>
+</section>

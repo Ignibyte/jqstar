@@ -561,6 +561,26 @@ export interface StarCodeBlockStatic {
   text(target: CodeBlockTarget): string;
 }
 
+export type ClipboardTarget = string | HTMLElement;
+export type ClipboardState = "idle" | "copying" | "copied" | "error";
+
+export interface StarClipboardStatic {
+  copy(target: ClipboardTarget, text?: string): Promise<string>;
+  text(target: ClipboardTarget): string;
+  state(target: ClipboardTarget): ClipboardState;
+}
+
+export type EditableTarget = string | HTMLElement;
+
+export interface StarEditableStatic {
+  edit(target: EditableTarget): HTMLElement;
+  commit(target: EditableTarget): HTMLElement;
+  cancel(target: EditableTarget): HTMLElement;
+  set(target: EditableTarget, value: string): HTMLElement;
+  value(target: EditableTarget): string;
+  editing(target: EditableTarget): boolean;
+}
+
 export type LogViewerTarget = string | HTMLElement;
 export type LogLevel = "debug" | "info" | "warn" | "error";
 export type LogFilter = "all" | LogLevel;
@@ -733,6 +753,8 @@ export interface StarUIStatic {
   readonly questionnaire: StarQuestionnaireStatic;
   readonly chart: StarChartStatic;
   readonly codeBlock: StarCodeBlockStatic;
+  readonly clipboard: StarClipboardStatic;
+  readonly editable: StarEditableStatic;
   readonly logViewer: StarLogViewerStatic;
   readonly jsonViewer: StarJSONViewerStatic;
   readonly countdown: StarCountdownStatic;

@@ -34,6 +34,8 @@ import { createFeeds } from "./feed";
 import { createQuestionnaires } from "./questionnaire";
 import { createCharts } from "./chart";
 import { createCodeBlocks } from "./code-block";
+import { createClipboards } from "./clipboard";
+import { createEditables } from "./editable";
 import { createLogViewers } from "./log-viewer";
 import { createJSONViewers } from "./json-viewer";
 import { createCountdowns } from "./countdown";
@@ -269,6 +271,8 @@ const enhancementOwnerSelector = [
   "questionnaire",
   "chart",
   "code-block",
+  "clipboard",
+  "editable",
   "log-viewer",
   "json-viewer",
   "countdown",
@@ -430,6 +434,8 @@ export function createUI(): StarUIStatic {
   const questionnaires = createQuestionnaires();
   const charts = createCharts();
   const codeBlocks = createCodeBlocks();
+  const clipboards = createClipboards();
+  const editables = createEditables();
   const logViewers = createLogViewers();
   const jsonViewers = createJSONViewers();
   const countdowns = createCountdowns();
@@ -459,6 +465,8 @@ export function createUI(): StarUIStatic {
     questionnaires.enhance(root);
     charts.enhance(root);
     codeBlocks.enhance(root);
+    clipboards.enhance(root);
+    editables.enhance(root);
     logViewers.enhance(root);
     jsonViewers.enhance(root);
     countdowns.enhance(root);
@@ -514,6 +522,8 @@ export function createUI(): StarUIStatic {
     questionnaire: questionnaires.api,
     chart: charts.api,
     codeBlock: codeBlocks.api,
+    clipboard: clipboards.api,
+    editable: editables.api,
     logViewer: logViewers.api,
     jsonViewer: jsonViewers.api,
     countdown: countdowns.api,

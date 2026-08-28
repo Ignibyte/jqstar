@@ -1,0 +1,44 @@
+<div
+  id="display-name"
+  data-jqs="editable"
+  data-placeholder="Add a display name"
+  data-success-message="Display name updated."
+>
+  <div data-part="display">
+    <span data-part="preview">Ada Lovelace</span>
+    <button
+      data-jqs="button"
+      data-part="edit"
+      data-size="sm"
+      data-variant="ghost"
+      type="button"
+      data-on:click="@ui.editable.edit"
+    >
+      Edit
+    </button>
+  </div>
+  <div data-part="editor" hidden>
+    <label class="sr-only" for="display-name-control">Display name</label>
+    <input
+      id="display-name-control"
+      data-jqs="input"
+      data-part="control"
+      name="displayName"
+      value="Ada Lovelace"
+      required
+    />
+    <button data-jqs="button" data-size="sm" type="button" data-on:click="@ui.editable.commit">
+      Save
+    </button>
+    <button
+      data-jqs="button"
+      data-size="sm"
+      data-variant="outline"
+      type="button"
+      data-on:click="@ui.editable.cancel"
+    >
+      Cancel
+    </button>
+  </div>
+  <span data-part="status"></span>
+</div>

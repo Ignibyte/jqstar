@@ -44,7 +44,14 @@ async function readJson(path, label) {
 
 function parseArguments(argv) {
   const positionals = [];
-  const options = { cwd: process.cwd(), dryRun: false, force: false, json: false, type: "all" };
+  const options = {
+    cwd: process.cwd(),
+    dependencies: true,
+    dryRun: false,
+    force: false,
+    json: false,
+    type: "all",
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -59,6 +66,8 @@ function parseArguments(argv) {
       options.force = true;
     } else if (argument === "--json") {
       options.json = true;
+    } else if (argument === "--no-deps") {
+      options.dependencies = false;
     } else if (argument === "--type") {
       const value = argv[index + 1];
       if (!value) fail("--type needs one of: all, component, block.");
@@ -140,13 +149,13 @@ function help() {
 Usage:
   jqstar init [--cwd <directory>]
   jqstar list [--type <all|component|block>] [--json] [--cwd <directory>]
-  jqstar add <item...> [--dry-run] [--force] [--cwd <directory>]
+  jqstar add <item...> [--no-deps] [--dry-run] [--force] [--cwd <directory>]
   jqstar doctor [--json] [--cwd <directory>]
 
 Commands:
   init    Create jquery-star.json with project-local component and block directories.
   list    Show source items available in the configured registry.
-  add     Copy component recipes or blocks into the project. Existing files are preserved.
+  add     Copy items and their registry dependencies. Existing dependency files are preserved.
   doctor  Check configuration, dependencies, and installed recipes.
 `;
 }
@@ -203,6 +212,45 @@ function destinationPath(cwd, config, item, file, fileName) {
   return safeProjectPath(cwd, join(output, fileName));
 }
 
+function selectedItems(names, items, includeDependencies) {
+  const requested = new Set(names);
+  const selected = [];
+  const visited = new Set();
+  const visiting = [];
+
+  function visit(name, owner) {
+    if (visited.has(name)) return;
+    const cycleIndex = visiting.indexOf(name);
+    if (cycleIndex !== -1) {
+      fail(`Registry dependency cycle: ${[...visiting.slice(cycleIndex), name].join(" -> ")}`);
+    }
+    const item = items.get(name);
+    if (!item) {
+      if (owner) fail(`Unknown registry dependency: ${owner} -> ${name}.`);
+      fail(`Unknown component: ${name}. Run \`jqstar list\` to see available names.`);
+    }
+
+    visiting.push(name);
+    if (includeDependencies && item.registryDependencies !== undefined) {
+      if (!Array.isArray(item.registryDependencies)) {
+        fail(`Registry dependencies must be an array: ${name}`);
+      }
+      for (const dependency of item.registryDependencies) {
+        if (typeof dependency !== "string" || !dependency.trim()) {
+          fail(`Invalid registry dependency for ${name}.`);
+        }
+        visit(dependency, name);
+      }
+    }
+    visiting.pop();
+    visited.add(name);
+    selected.push({ dependency: !requested.has(name), item, name });
+  }
+
+  for (const name of requested) visit(name);
+  return selected;
+}
+
 async function add(names, options) {
   if (names.length === 0) fail("Add at least one component name.");
   const { value: config } = await readConfig(options.cwd, true);
@@ -211,9 +259,11 @@ async function add(names, options) {
   const items = itemMap(registry);
   const plans = [];
 
-  for (const name of [...new Set(names)]) {
-    const item = items.get(name);
-    if (!item) fail(`Unknown component: ${name}. Run \`jqstar list\` to see available names.`);
+  for (const { dependency, item, name } of selectedItems(
+    [...new Set(names)],
+    items,
+    options.dependencies,
+  )) {
     if (!Array.isArray(item.files) || item.files.length === 0) {
       fail(`Registry item has no files: ${name}`);
     }
@@ -228,13 +278,14 @@ async function add(names, options) {
       const fileName = file.path.split(/[\\/]/).at(-1);
       if (!fileName) fail(`Registry file has no file name: ${file.path}`);
       const destination = destinationPath(options.cwd, config, item, file, fileName);
-      plans.push({ component: name, destination, source });
+      plans.push({ component: name, dependency, destination, source });
     }
   }
 
   const conflicts = [];
   for (const plan of plans) {
-    if ((await exists(plan.destination)) && !options.force) conflicts.push(plan.destination);
+    plan.exists = await exists(plan.destination);
+    if (plan.exists && !options.force && !plan.dependency) conflicts.push(plan.destination);
   }
   if (conflicts.length > 0) {
     fail(
@@ -244,14 +295,21 @@ async function add(names, options) {
 
   if (!options.dryRun) {
     for (const plan of plans) {
+      if (plan.exists && plan.dependency && !options.force) continue;
       await mkdir(dirname(plan.destination), { recursive: true });
       await copyFile(plan.source, plan.destination);
     }
   }
 
   return plans.map((plan) => ({
-    action: options.dryRun ? "would-copy" : "copied",
+    action:
+      plan.exists && plan.dependency && !options.force
+        ? "skipped-existing"
+        : options.dryRun
+          ? "would-copy"
+          : "copied",
     component: plan.component,
+    dependency: plan.dependency,
     path: plan.destination,
   }));
 }

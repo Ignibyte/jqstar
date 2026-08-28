@@ -3032,6 +3032,90 @@ CACHE_TTL=60</code></pre>
         <p class="control-plane-message" data-text="$controlPlaneMessage" aria-live="polite"></p>
       </section>
 
+      <section class="card source-actions-card" aria-labelledby="source-actions-title">
+        <div>
+          <p class="label" id="source-actions-title">Clipboard and Editable</p>
+          <p class="hint">
+            Text-only clipboard output and inline edits around one native form value.
+          </p>
+        </div>
+
+        <div class="source-actions-grid">
+          <article aria-labelledby="catalog-clipboard-title">
+            <h2 id="catalog-clipboard-title">Install command</h2>
+            <p>Clipboard reads the current source value at action time.</p>
+            <div
+              id="catalog-clipboard"
+              data-jqs="clipboard"
+              data-reset-delay="5000"
+              data-success-message="Install command copied."
+            >
+              <code data-part="value">npm install jquery jquery-star</code>
+              <button
+                data-jqs="button"
+                data-part="trigger"
+                data-size="sm"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.clipboard.copy"
+              >
+                Copy command
+              </button>
+              <span data-part="status"></span>
+            </div>
+          </article>
+
+          <form aria-labelledby="catalog-editable-title">
+            <h2 id="catalog-editable-title">Catalog display name</h2>
+            <p>Enter commits a valid draft. Escape restores the committed value.</p>
+            <div id="catalog-editable" data-jqs="editable" data-select-on-edit>
+              <div data-part="display">
+                <span data-part="preview">Ada Lovelace</span>
+                <button
+                  data-jqs="button"
+                  data-part="edit"
+                  data-size="sm"
+                  data-variant="ghost"
+                  type="button"
+                  data-on:click="@ui.editable.edit"
+                >
+                  Edit display name
+                </button>
+              </div>
+              <div data-part="editor" hidden>
+                <label class="sr-only" for="catalog-editable-control">Catalog display name</label>
+                <input
+                  id="catalog-editable-control"
+                  data-jqs="input"
+                  data-part="control"
+                  name="catalogDisplayName"
+                  value="Ada Lovelace"
+                  required
+                />
+                <button
+                  data-jqs="button"
+                  data-size="sm"
+                  type="button"
+                  data-on:click="@ui.editable.commit"
+                >
+                  Apply
+                </button>
+                <button
+                  data-jqs="button"
+                  data-size="sm"
+                  data-variant="outline"
+                  type="button"
+                  data-on:click="@ui.editable.cancel"
+                >
+                  Cancel
+                </button>
+              </div>
+              <span data-part="status"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="card primitives-component-card" aria-labelledby="primitives-components-title">
         <div>
           <p class="label" id="primitives-components-title">Composition primitives</p>

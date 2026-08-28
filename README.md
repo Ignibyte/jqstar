@@ -58,6 +58,7 @@ npx jqstar list
 npx jqstar list --type block
 npx jqstar add button dialog command-palette
 npx jqstar add operations-dashboard
+npx jqstar add profile-settings
 npx jqstar doctor
 ```
 
@@ -76,7 +77,9 @@ planned destination without writing it. `--cwd` runs any command against another
 and `list` and `doctor` support `--json` for scripts. `list --type component` and
 `list --type block` filter the catalog. Explicit safe file targets in the registry take precedence
 over the fallback directories, so one block can install its markup and action module together.
-Configs created before `blocksOutput` was added continue to place untargeted blocks in `output`.
+Registry dependencies install before the requested item. Existing dependency files are preserved,
+cycles fail before any file is written, and `--no-deps` copies only the requested item. Configs
+created before `blocksOutput` was added continue to place untargeted blocks in `output`.
 
 The root `registry.json` follows the current shadcn source-registry vocabulary, including
 `registry:block`, explicit file targets, and composition metadata. `jqstar` is the supported
@@ -86,7 +89,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components and blocks
 
-The source catalog now includes 101 items: 98 component recipes and three composed blocks. They are
+The source catalog now includes 104 items: 100 component recipes and four composed blocks. They are
 Button, Button Group, Dialog, Alert Dialog, Sheet, Drawer, Field, Form, Label, Input, Input Group,
 File Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
 Collapsible, Accordion, Tabs, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar,
@@ -98,9 +101,10 @@ Stepper, Sortable List, File Upload, Multi Select, Time Picker, Color Picker, Ra
 Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, Bubble, Aspect Ratio, Chart,
 Direction, Marker, Table, Typography, Stat, Timeline, Status, Code Block, Browser Mockup, Diff, Log
 Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial Progress, Indicator, Dock, Swap,
-Key Value, and Operations Dashboard. The three blocks are Command Palette, Async Form, and
-Operations Dashboard. Import the precompiled theme for the default appearance. Tailwind is used to
-author this file but is not required in the consuming application.
+Key Value, Clipboard, Editable, Operations Dashboard, and Profile Settings. The four blocks are
+Command Palette, Async Form, Operations Dashboard, and Profile Settings. Import the precompiled
+theme for the default appearance. Tailwind is used to author this file but is not required in the
+consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -704,6 +708,43 @@ Use `$.star.ui.codeBlock.text("#payload")` to read it or
 Diff are zero-runtime presentation contracts. Diff uses a native range input, so pointer and
 keyboard comparison work without another widget implementation.
 
+Clipboard copies text from a live native control, a `data-part="value"` element, `data-copy-text`,
+or an explicit action argument:
+
+```html
+<div id="install" data-jqs="clipboard">
+  <code data-part="value">npm install jquery jquery-star</code>
+  <button data-part="trigger" data-on:click="@ui.clipboard.copy">Copy</button>
+  <span data-part="status"></span>
+</div>
+```
+
+`copy`, `text`, and `state` are available under `$.star.ui.clipboard`. Copying emits cancelable
+`jquery-star:clipboard:before-copy`, followed by `copy` or `error`. Values are sent to the Clipboard
+API as text and are never inserted as HTML.
+
+Editable keeps a native input, textarea, or select in the document while switching between preview
+and edit modes. Enter commits a single-line value, Escape cancels, and native constraint validation
+runs before a commit:
+
+```html
+<div id="name" data-jqs="editable">
+  <div data-part="display">
+    <span data-part="preview">Ada Lovelace</span>
+    <button data-part="edit" data-on:click="@ui.editable.edit">Edit</button>
+  </div>
+  <div data-part="editor" hidden>
+    <input data-part="control" name="displayName" value="Ada Lovelace" required />
+    <button data-on:click="@ui.editable.commit">Apply</button>
+    <button data-on:click="@ui.editable.cancel">Cancel</button>
+  </div>
+  <span data-part="status"></span>
+</div>
+```
+
+The public API provides `edit`, `commit`, `cancel`, `set`, `value`, and `editing`. Preview updates
+use `textContent`, and the native control remains available to `FormData` in display mode.
+
 Log Viewer accepts authored or server-appended list items and exposes bounded append, clear, pause,
 resume, minimum-level filtering, follow state, and inspection methods:
 
@@ -746,8 +787,10 @@ ARIA, text, and CSS-variable state without calling a component renderer.
 
 The production-shaped server uses the same API implementation as the local Vite demo. It serves the
 built site, `/health`, JSON and multipart routes, and the Datastar SDK SSE routes from one Node
-process. `/api/demo/runtime` returns the control-plane snapshot; `/api/demo/runtime/stream` uses the
-official SDK to append escaped log-entry HTML and patch the completion signal:
+process. `/api/demo/runtime` returns the control-plane snapshot. `/api/demo/runtime/stream` uses the
+official SDK to append escaped log-entry HTML and patch the completion signal. The Profile Settings
+block uses `/api/demo/profile` for validated JSON persistence and `/api/demo/profile/invite` for a
+server-owned invite URL:
 
 ```sh
 npm run build:self-hosted

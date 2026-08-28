@@ -59,4 +59,22 @@ describe("source registry blocks", () => {
     expect(actions).toContain('$.star.get<OperationsDashboardState>(endpoint(root, "streamUrl")');
     expect(actions).toContain("installOperationsDashboard();");
   });
+
+  it("ships Profile Settings as native form markup plus typed backend actions", async () => {
+    const manifest = await registry();
+    const item = manifest.items.find(({ name }) => name === "profile-settings");
+    const html = await readFile(resolve("registry/blocks/profile-settings.html"), "utf8");
+    const actions = await readFile(resolve("registry/blocks/profile-settings.ts"), "utf8");
+
+    expect(item).toMatchObject({ type: "registry:block" });
+    expect(item?.files).toHaveLength(2);
+    expect(item?.registryDependencies).toEqual(
+      expect.arrayContaining(["editable", "clipboard", "input", "button"]),
+    );
+    expect(html).toContain('data-on:submit__prevent="@profileSettings.save"');
+    expect(html.match(/data-jqs="editable"/g)).toHaveLength(2);
+    expect(html).toContain('data-jqs="clipboard"');
+    expect(actions).toContain('$.star.action<ProfileSettingsState>("profileSettings.save"');
+    expect(actions).toContain('$.star.action<ProfileSettingsState>("profileSettings.rotateInvite"');
+  });
 });

@@ -578,6 +578,7 @@ Implemented:
 - Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, and Bubble
 - Aspect Ratio, Chart, Direction, Marker, Table, and Typography
 - Stat, Timeline, Status, Code Block, Browser Mockup, and Diff
+- Clipboard and Editable
 - Log Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial Progress, Indicator, Dock,
   Swap, and Key Value
 - Select, Combobox, and server-backed Autocomplete
@@ -588,10 +589,26 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 - Operations Dashboard as a multi-file block with source-owned markup and typed actions
+- Profile Settings as a multi-file native form, persistence, and invite workflow
 
-This 101-item source catalog contains 98 component recipes and three composed blocks. It is
+This 104-item source catalog contains 100 component recipes and four composed blocks. It is
 registry-backed and source-owned. Domain-heavy additions can build on these contracts without
 changing the public anatomy.
+
+## Clipboard and Editable
+
+Clipboard resolves its source at copy time, so native input and textarea values do not become stale.
+The component sends plain text to `navigator.clipboard.writeText`, uses the legacy selection
+fallback only when the Clipboard API is absent, and announces copied or error state through an
+authored live status. A cancelable `before-copy` event lets an application enforce its own policy
+before browser clipboard access.
+
+Editable keeps the authored native control connected and named in both display and edit modes. Its
+preview is a text-only projection of the committed value. Enter commits single-line controls,
+Command+Enter or Control+Enter commits a textarea, and Escape restores the last committed value.
+Native `checkValidity()` and `reportValidity()` run before the cancelable change lifecycle.
+Component state updates are idempotent because `data-value` is observed by the shared enhancement
+pass.
 
 ## Runtime control-plane components
 

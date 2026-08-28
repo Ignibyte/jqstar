@@ -878,6 +878,36 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.source-actions-card {
+  grid-template-columns: 1fr;
+}
+
+.source-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.source-actions-grid > :is(article, form) {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+}
+
+.source-actions-grid h2,
+.source-actions-grid p {
+  margin: 0;
+}
+
+.source-actions-grid h2 {
+  font-size: 1rem;
+}
+
 .reporting-components-card {
   grid-template-columns: 1fr;
 }
@@ -1526,6 +1556,10 @@ pre {
   }
 
   .reporting-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .source-actions-grid {
     grid-template-columns: 1fr;
   }
 

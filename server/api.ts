@@ -203,6 +203,8 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   let operationsRevision = 0;
   let runtimeRevision = 0;
   let runtimeStreamRevision = 0;
+  let profileRevision = 0;
+  let inviteRevision = 0;
 
   async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
     const url = new URL(request.url ?? "/", "http://localhost");
@@ -356,6 +358,38 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       json(response, 200, {
         serverCount: current + 10,
         serverMessage: "The JSON response patched these signals.",
+      });
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/profile") {
+      if (!method(request, response, "POST")) return true;
+      const body = await requestBody(request, maximum);
+      const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
+      const email = typeof body.email === "string" ? body.email.trim() : "";
+      if (!displayName || !email || !email.includes("@")) {
+        json(response, 422, {
+          error: "Display name and a valid email address are required.",
+        });
+        return true;
+      }
+      profileRevision += 1;
+      json(response, 200, {
+        displayName,
+        email,
+        environment,
+        revision: profileRevision,
+        updatedAt: new Date().toISOString(),
+      });
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/profile/invite") {
+      if (!method(request, response, "POST")) return true;
+      inviteRevision += 1;
+      json(response, 200, {
+        inviteUrl: `https://jqstar.dev/invite/${environment}-${inviteRevision}`,
+        revision: inviteRevision,
       });
       return true;
     }

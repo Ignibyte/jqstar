@@ -30,7 +30,7 @@ describe("jqstar CLI", () => {
 
     expect(result.status).toBe(0);
     const items = JSON.parse(result.stdout) as Array<{ name: string }>;
-    expect(items).toHaveLength(101);
+    expect(items).toHaveLength(104);
     expect(items.map((item) => item.name)).toEqual(
       expect.arrayContaining([
         "button",
@@ -92,6 +92,9 @@ describe("jqstar CLI", () => {
         "swap",
         "key-value",
         "operations-dashboard",
+        "clipboard",
+        "editable",
+        "profile-settings",
       ]),
     );
   });
@@ -106,8 +109,9 @@ describe("jqstar CLI", () => {
       "command-palette",
       "async-form",
       "operations-dashboard",
+      "profile-settings",
     ]);
-    expect(JSON.parse(components.stdout)).toHaveLength(98);
+    expect(JSON.parse(components.stdout)).toHaveLength(100);
   });
 
   it("initializes a project and copies requested source recipes", async () => {
@@ -136,13 +140,36 @@ describe("jqstar CLI", () => {
     const added = run("add", "operations-dashboard", "--json", "--cwd", cwd);
 
     expect(added.status).toBe(0);
-    expect(JSON.parse(added.stdout)).toEqual([
+    const files = JSON.parse(added.stdout) as Array<{
+      component: string;
+      dependency: boolean;
+      path: string;
+    }>;
+    expect(files).toHaveLength(15);
+    expect(files.filter(({ dependency }) => dependency).map(({ component }) => component)).toEqual([
+      "button",
+      "card",
+      "status",
+      "stat",
+      "connection-status",
+      "radial-progress",
+      "indicator",
+      "badge",
+      "countdown",
+      "terminal",
+      "log-viewer",
+      "json-viewer",
+      "key-value",
+    ]);
+    expect(files.slice(-2)).toEqual([
       expect.objectContaining({
         component: "operations-dashboard",
+        dependency: false,
         path: join(cwd, "blocks/jquery-star/operations-dashboard.html"),
       }),
       expect.objectContaining({
         component: "operations-dashboard",
+        dependency: false,
         path: join(cwd, "blocks/jquery-star/operations-dashboard.ts"),
       }),
     ]);
@@ -152,6 +179,45 @@ describe("jqstar CLI", () => {
     expect(
       await readFile(join(cwd, "blocks/jquery-star/operations-dashboard.ts"), "utf8"),
     ).toContain("installOperationsDashboard");
+  });
+
+  it("can install only the requested block when dependencies are not wanted", async () => {
+    const cwd = await project();
+    run("init", "--cwd", cwd);
+
+    const added = run("add", "operations-dashboard", "--no-deps", "--json", "--cwd", cwd);
+
+    expect(added.status).toBe(0);
+    expect(JSON.parse(added.stdout)).toHaveLength(2);
+    await expect(
+      readFile(join(cwd, "components/jquery-star/button.html"), "utf8"),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("preserves an existing dependency while installing the rest of a block", async () => {
+    const cwd = await project();
+    run("init", "--cwd", cwd);
+    run("add", "button", "--cwd", cwd);
+    const button = join(cwd, "components/jquery-star/button.html");
+    await writeFile(button, "<!-- project-owned button -->\n", "utf8");
+
+    const added = run("add", "operations-dashboard", "--json", "--cwd", cwd);
+    const files = JSON.parse(added.stdout) as Array<{
+      action: string;
+      component: string;
+      dependency: boolean;
+    }>;
+
+    expect(added.status).toBe(0);
+    expect(files.find(({ component }) => component === "button")).toEqual(
+      expect.objectContaining({ action: "skipped-existing", dependency: true }),
+    );
+    expect(await readFile(button, "utf8")).toBe("<!-- project-owned button -->\n");
+    expect(
+      files
+        .filter(({ component }) => component === "operations-dashboard")
+        .every(({ action }) => action === "copied"),
+    ).toBe(true);
   });
 
   it("keeps old configs working when an external block has no explicit target", async () => {
@@ -182,6 +248,45 @@ describe("jqstar CLI", () => {
     expect(await readFile(join(cwd, "legacy-components/legacy-block.html"), "utf8")).toContain(
       "Legacy block",
     );
+  });
+
+  it("reports the exact registry dependency cycle without writing files", async () => {
+    const cwd = await project();
+    await writeFile(join(cwd, "a.html"), "A\n", "utf8");
+    await writeFile(join(cwd, "b.html"), "B\n", "utf8");
+    await writeFile(
+      join(cwd, "registry.json"),
+      JSON.stringify({
+        items: [
+          {
+            files: [{ path: "a.html" }],
+            name: "a",
+            registryDependencies: ["b"],
+            type: "registry:item",
+          },
+          {
+            files: [{ path: "b.html" }],
+            name: "b",
+            registryDependencies: ["a"],
+            type: "registry:item",
+          },
+        ],
+      }),
+      "utf8",
+    );
+    await writeFile(
+      join(cwd, "jquery-star.json"),
+      JSON.stringify({ output: "components", registry: "./registry.json" }),
+      "utf8",
+    );
+
+    const result = run("add", "a", "--cwd", cwd);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Registry dependency cycle: a -> b -> a");
+    await expect(readFile(join(cwd, "components/a.html"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT",
+    });
   });
 
   it("supports dry runs without creating project files", async () => {

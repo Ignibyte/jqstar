@@ -22,6 +22,8 @@ const required = [
   "registry.json",
   "registry/blocks/operations-dashboard.html",
   "registry/blocks/operations-dashboard.ts",
+  "registry/blocks/profile-settings.html",
+  "registry/blocks/profile-settings.ts",
   "registry/components/button.html",
   "registry/components/command-palette.html",
   "registry/components/form.html",
@@ -78,6 +80,8 @@ const required = [
   "registry/components/dock.html",
   "registry/components/swap.html",
   "registry/components/key-value.html",
+  "registry/components/clipboard.html",
+  "registry/components/editable.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

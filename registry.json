@@ -1366,6 +1366,63 @@
           "target": "~/blocks/jquery-star/operations-dashboard.ts"
         }
       ]
+    },
+    {
+      "name": "clipboard",
+      "type": "registry:item",
+      "title": "Clipboard",
+      "description": "Copy authored text, native control values, or explicit action text with accessible lifecycle status.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/clipboard.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/clipboard.html"
+        }
+      ]
+    },
+    {
+      "name": "editable",
+      "type": "registry:item",
+      "title": "Editable",
+      "description": "Inline preview and edit modes around a native form control with validation, keyboard commit, and cancellation.",
+      "registryDependencies": ["button", "input"],
+      "files": [
+        {
+          "path": "registry/components/editable.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/editable.html"
+        }
+      ]
+    },
+    {
+      "name": "profile-settings",
+      "type": "registry:block",
+      "title": "Profile Settings",
+      "description": "A multi-file profile form with inline native editing, backend persistence, and a rotatable Clipboard invite URL.",
+      "registryDependencies": [
+        "button",
+        "card",
+        "badge",
+        "field",
+        "label",
+        "input",
+        "editable",
+        "clipboard",
+        "key-value"
+      ],
+      "files": [
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/profile-settings.html"
+        },
+        {
+          "path": "registry/blocks/profile-settings.ts",
+          "type": "registry:file",
+          "target": "~/blocks/jquery-star/profile-settings.ts"
+        }
+      ]
     }
   ]
 }

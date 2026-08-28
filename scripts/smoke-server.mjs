@@ -61,6 +61,20 @@ try {
   ) {
     throw new Error("The self-hosted runtime snapshot contract failed.");
   }
+  const profileResponse = await fetch(`${origin}/api/demo/profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ displayName: "Grace Hopper", email: "grace@example.com" }),
+  });
+  const profile = await profileResponse.json();
+  if (!profileResponse.ok || profile.revision !== 1 || profile.displayName !== "Grace Hopper") {
+    throw new Error("The self-hosted profile persistence contract failed.");
+  }
+  const inviteResponse = await fetch(`${origin}/api/demo/profile/invite`, { method: "POST" });
+  const invite = await inviteResponse.json();
+  if (!inviteResponse.ok || !invite.inviteUrl?.endsWith("self-hosted-1")) {
+    throw new Error("The self-hosted invite rotation contract failed.");
+  }
   const signals = encodeURIComponent(JSON.stringify({ controlPlaneMessage: "Ready" }));
   const streamResponse = await fetch(`${origin}/api/demo/runtime/stream?datastar=${signals}`);
   const stream = await streamResponse.text();
@@ -111,7 +125,7 @@ try {
     await browser.close();
   }
   process.stdout.write(
-    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, datastar-log-stream=passed, browser-runtime=passed, security-headers=passed\n",
+    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, datastar-log-stream=passed, browser-runtime=passed, security-headers=passed\n",
   );
 } finally {
   child.kill("SIGTERM");
