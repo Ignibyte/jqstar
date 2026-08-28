@@ -760,6 +760,46 @@
           "target": "~/components/jquery-star/scroll-area.html"
         }
       ]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:item",
+      "title": "Context Menu",
+      "description": "A pointer-positioned menu with keyboard invocation, touch long-press, checked items, and named actions.",
+      "files": [
+        {
+          "path": "registry/components/context-menu.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/context-menu.html"
+        }
+      ]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:item",
+      "title": "Menubar",
+      "description": "A persistent application menu bar composed from the shared Dropdown Menu engine.",
+      "registryDependencies": ["dropdown-menu"],
+      "files": [
+        {
+          "path": "registry/components/menubar.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/menubar.html"
+        }
+      ]
+    },
+    {
+      "name": "tree",
+      "type": "registry:item",
+      "title": "Tree View",
+      "description": "A hierarchical single- or multi-select navigator with complete tree keyboard behavior.",
+      "files": [
+        {
+          "path": "registry/components/tree.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/tree.html"
+        }
+      ]
     }
   ]
 }

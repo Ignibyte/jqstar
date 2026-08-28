@@ -143,6 +143,13 @@ The first proof contains Button, Dialog, and the native form family:
   [native-scrolling boundary](https://www.radix-ui.com/primitives/docs/components/scroll-area):
   browser overflow remains responsible for wheel, touch, and keyboard scrolling; styling does not
   translate content through a parallel JavaScript scroll model.
+- Context Menu and Menubar follow the APG
+  [Menu and Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/): the same menu-item
+  engine supports popup and persistent menu contexts, Shift+F10 invokes contextual actions, and
+  top-level Arrow navigation does not add every command to the page tab sequence.
+- Tree View follows the APG [Tree View pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/):
+  focus and selection remain distinct, Right and Left Arrow expand, collapse, or traverse levels,
+  and multi-selection uses the recommended modifier-free navigation model.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

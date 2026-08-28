@@ -135,6 +135,30 @@ Dropdown Menu provides:
 The lifecycle and `select` events are cancelable. Menu uses the shared floating primitive for
 top-layer fallback and placement while owning its composite-widget focus model.
 
+Context Menu reuses the same item, checked-state, typeahead, dismissal, and focus-return engine
+while changing only its invocation and placement boundary:
+
+- Native `contextmenu`, Shift+F10, the Context Menu key, and touch long-press invocation
+- Pointer-coordinate placement with viewport collision clamping
+- `@ui.context-menu.open|close`, matching `$.star.ui.contextMenu` methods, and independently
+  namespaced cancelable lifecycle and selection events
+- Ordinary clicks on the context surface remain ordinary clicks
+
+Menubar composes direct `data-jqs="menu"` children instead of creating a second popup-menu system.
+It provides one top-level tab stop, horizontal or vertical roving focus, wrapping Arrow navigation,
+Home, End, character typeahead, menu switching while a popup is open, and
+`@ui.menubar.open|close|focus` with matching `$.star.ui.menubar` methods.
+
+Tree View provides:
+
+- Derived `tree`, `treeitem`, `group`, `aria-level`, `aria-posinset`, and `aria-setsize` semantics
+- Roving DOM focus with APG Arrow, Home, End, asterisk expansion, and character typeahead behavior
+- Independent single or multiple selection, including Space, optional Shift+Arrow extension, and
+  Control/Command+A over visible items
+- Cancelable selection and expansion boundaries, activation events, and stable server-patched
+  `data-value` / `data-expanded` state
+- `@ui.tree.select|expand|collapse|toggle|focus` and matching `$.star.ui.tree` methods
+
 Select provides:
 
 - A native single-value `<select data-part="control">` as the source for form submission,
@@ -382,7 +406,8 @@ Implemented:
   Group, Switch, Slider, Number Field, Password Field, Tags Input, and Input OTP
 - Toggle and Toggle Group
 - Collapsible, Accordion, and Tabs
-- Popover, Tooltip, Hover Card, and Dropdown Menu
+- Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
+- Tree View
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -391,7 +416,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 57-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 60-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

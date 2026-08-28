@@ -4,6 +4,8 @@ import { createForms } from "./form";
 import { createHoverCards } from "./hover-card";
 import { createInputOTPs } from "./input-otp";
 import { createMenus } from "./menu";
+import { createMenubars } from "./menubar";
+import { createTrees } from "./tree";
 import { createNumberFields } from "./number-field";
 import { createPasswordFields } from "./password-field";
 import { createPopovers } from "./popover";
@@ -245,7 +247,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       if (mutation.type === "attributes") {
         enhance(mutation.target as Element);
         const owner = (mutation.target as Element).closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="context-menu"], [data-jqs="menubar"], [data-jqs="tree"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner && owner !== mutation.target) enhance(owner);
         continue;
@@ -255,7 +257,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
         if (!(node instanceof Element)) continue;
         enhance(node);
         const owner = node.parentElement?.closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="hover-card"], [data-jqs="menu"], [data-jqs="context-menu"], [data-jqs="menubar"], [data-jqs="tree"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="number-field"], [data-jqs="password-field"], [data-jqs="tags-input"], [data-jqs="input-otp"], [data-jqs="resizable"], [data-jqs="calendar"], [data-jqs="range-calendar"], [data-jqs="date-picker"], [data-jqs="date-range-picker"], form[data-jqs="form"], dialog[data-jqs="dialog"]',
         );
         if (owner) enhance(owner);
       }
@@ -303,6 +305,8 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-pattern",
       "data-storage-key",
       "data-step",
+      "data-selection",
+      "data-expanded",
     ],
     childList: true,
     subtree: true,
@@ -317,6 +321,8 @@ export function createUI(): StarUIStatic {
   };
   const disclosures = createDisclosures();
   const menus = createMenus();
+  const menubars = createMenubars(menus.api);
+  const trees = createTrees();
   const tabs = createTabs();
   const selects = createSelects();
   const comboboxes = createComboboxes();
@@ -341,6 +347,8 @@ export function createUI(): StarUIStatic {
     hoverCards.enhance(root);
     tooltips.enhance(root);
     menus.enhance(root);
+    menubars.enhance(root);
+    trees.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -363,6 +371,9 @@ export function createUI(): StarUIStatic {
     tooltip: tooltips.api,
     hoverCard: hoverCards.api,
     menu: menus.api,
+    contextMenu: menus.contextApi,
+    menubar: menubars.api,
+    tree: trees.api,
     toast: toasts.api,
     select: selects.api,
     combobox: comboboxes.api,

@@ -30,6 +30,9 @@ const required = [
   "registry/components/input-otp.html",
   "registry/components/resizable.html",
   "registry/components/scroll-area.html",
+  "registry/components/context-menu.html",
+  "registry/components/menubar.html",
+  "registry/components/tree.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

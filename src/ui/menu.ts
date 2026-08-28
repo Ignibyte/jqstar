@@ -1,8 +1,15 @@
 import { registerAction } from "../registry";
-import type { MenuTarget, StarContext, StarMenuStatic } from "../types";
+import type {
+  ContextMenuTarget,
+  MenuTarget,
+  StarContext,
+  StarContextMenuStatic,
+  StarMenuStatic,
+} from "../types";
 import {
   hideFloating,
   positionFloating,
+  positionFloatingAtPoint,
   prepareFloating,
   showFloating,
   usesNativePopover,
@@ -10,11 +17,19 @@ import {
 
 type MenuItemPart = "item" | "checkbox-item" | "radio-item";
 type InitialFocus = "first" | "last";
+type MenuKind = "context-menu" | "menu";
+
+interface MenuPoint {
+  x: number;
+  y: number;
+}
 
 interface MenuRecord {
   cleanups: Array<() => void>;
   content: HTMLElement;
+  kind: MenuKind;
   open: boolean;
+  point: MenuPoint | undefined;
   root: HTMLElement;
   search: string;
   searchTimer: number | undefined;
@@ -31,6 +46,7 @@ interface MenuEventDetail {
 
 interface MenuCollection {
   api: StarMenuStatic;
+  contextApi: StarContextMenuStatic;
   enhance(root: ParentNode): void;
 }
 
@@ -39,8 +55,15 @@ const activeRecords = new Set<MenuRecord>();
 let menuId = 0;
 let globalListenersInstalled = false;
 
-function menuRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="menu"]') ? value : undefined;
+function menuRoot(value: Element | null, kind?: MenuKind): HTMLElement | undefined {
+  if (!(value instanceof HTMLElement)) return undefined;
+  const valueKind = value.dataset.jqs;
+  if (valueKind !== "menu" && valueKind !== "context-menu") return undefined;
+  return kind === undefined || valueKind === kind ? value : undefined;
+}
+
+function menuKind(root: HTMLElement): MenuKind {
+  return root.dataset.jqs === "context-menu" ? "context-menu" : "menu";
 }
 
 function directPart(root: HTMLElement, part: "trigger" | "content"): HTMLElement {
@@ -62,7 +85,7 @@ function menuItems(record: MenuRecord): HTMLElement[] {
     record.content.querySelectorAll<HTMLElement>(
       '[data-part="item"], [data-part="checkbox-item"], [data-part="radio-item"]',
     ),
-  ).filter((item) => item.closest('[data-jqs="menu"]') === record.root);
+  ).filter((item) => item.closest('[data-jqs="menu"], [data-jqs="context-menu"]') === record.root);
 }
 
 function isDisabled(item: HTMLElement): boolean {
@@ -94,7 +117,7 @@ function emit(
     ...(item ? { item, value: itemValue(item) } : {}),
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:menu:${name}`, {
+    new CustomEvent(`jquery-star:${record.kind}:${name}`, {
       bubbles: true,
       cancelable,
       detail,
@@ -122,7 +145,8 @@ function syncState(record: MenuRecord, open: boolean): void {
   }
   record.root.dataset.state = open ? "open" : "closed";
   record.content.dataset.state = open ? "open" : "closed";
-  record.trigger.setAttribute("aria-expanded", String(open));
+  if (record.kind === "menu") record.trigger.setAttribute("aria-expanded", String(open));
+  else record.trigger.removeAttribute("aria-expanded");
 }
 
 function focusItem(record: MenuRecord, which: InitialFocus): void {
@@ -131,17 +155,40 @@ function focusItem(record: MenuRecord, which: InitialFocus): void {
   (item ?? record.content).focus();
 }
 
-function openMenu(root: HTMLElement, initialFocus: InitialFocus = "first"): HTMLElement {
-  const record = records.get(root) ?? enhanceMenu(root);
-  if (record.open || !emit(record, "before-open", true)) return root;
-  record.root.dataset.state = "opening";
-  record.content.dataset.state = "opening";
-  showFloating(record.content);
-  syncState(record, true);
+function positionMenu(record: MenuRecord): void {
+  if (record.kind === "context-menu" && record.point) {
+    positionFloatingAtPoint(record.content, record.point.x, record.point.y);
+    return;
+  }
   positionFloating(record.root, record.trigger, record.content, {
     align: "start",
     side: "bottom",
   });
+}
+
+function triggerPoint(record: MenuRecord): MenuPoint {
+  const rect = record.trigger.getBoundingClientRect();
+  return { x: rect.left, y: rect.bottom };
+}
+
+function openMenu(
+  root: HTMLElement,
+  initialFocus: InitialFocus = "first",
+  point?: MenuPoint,
+): HTMLElement {
+  const record = records.get(root) ?? enhanceMenu(root);
+  if (record.kind === "context-menu") record.point = point ?? triggerPoint(record);
+  if (record.open) {
+    positionMenu(record);
+    focusItem(record, initialFocus);
+    return root;
+  }
+  if (!emit(record, "before-open", true)) return root;
+  record.root.dataset.state = "opening";
+  record.content.dataset.state = "opening";
+  showFloating(record.content);
+  syncState(record, true);
+  positionMenu(record);
   focusItem(record, initialFocus);
   emit(record, "open");
   return root;
@@ -155,6 +202,7 @@ function closeMenu(root: HTMLElement, restoreFocus = true): HTMLElement {
   hideFloating(record.content);
   syncState(record, false);
   if (restoreFocus && record.trigger.isConnected) record.trigger.focus();
+  record.point = undefined;
   emit(record, "close");
   return root;
 }
@@ -176,7 +224,7 @@ function updateCheckedItem(record: MenuRecord, item: HTMLElement): void {
   } else if (part === "radio-item") {
     const group = item.closest('[data-part="radio-group"]') ?? record.content;
     for (const candidate of group.querySelectorAll<HTMLElement>('[data-part="radio-item"]')) {
-      if (candidate.closest('[data-jqs="menu"]') === record.root) {
+      if (candidate.closest('[data-jqs="menu"], [data-jqs="context-menu"]') === record.root) {
         setChecked(candidate, candidate === item);
       }
     }
@@ -259,16 +307,62 @@ function wire(record: MenuRecord): void {
     toggleMenu(record.root);
   };
   const triggerKeydown = (event: KeyboardEvent): void => {
+    if (
+      record.trigger.closest<HTMLElement>('[data-jqs="menubar"]')?.dataset.orientation ===
+      "vertical"
+    ) {
+      return;
+    }
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     event.preventDefault();
     openMenu(record.root, event.key === "ArrowUp" ? "last" : "first");
   };
-  if (!hasClickAction(record.trigger)) {
-    record.trigger.addEventListener("click", triggerClick);
-    record.cleanups.push(() => record.trigger.removeEventListener("click", triggerClick));
+  if (record.kind === "context-menu") {
+    const contextmenu = (event: MouseEvent): void => {
+      event.preventDefault();
+      openMenu(record.root, "first", { x: event.clientX, y: event.clientY });
+    };
+    const contextKeydown = (event: KeyboardEvent): void => {
+      if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
+      event.preventDefault();
+      openMenu(record.root, "first", triggerPoint(record));
+    };
+    let longPressTimer: number | undefined;
+    const clearLongPress = (): void => {
+      if (longPressTimer !== undefined) window.clearTimeout(longPressTimer);
+      longPressTimer = undefined;
+    };
+    const pointerdown = (event: PointerEvent): void => {
+      if (event.pointerType !== "touch") return;
+      clearLongPress();
+      longPressTimer = window.setTimeout(() => {
+        longPressTimer = undefined;
+        openMenu(record.root, "first", { x: event.clientX, y: event.clientY });
+      }, 550);
+    };
+    record.trigger.addEventListener("contextmenu", contextmenu);
+    record.trigger.addEventListener("keydown", contextKeydown);
+    record.trigger.addEventListener("pointerdown", pointerdown);
+    record.trigger.addEventListener("pointermove", clearLongPress);
+    record.trigger.addEventListener("pointerup", clearLongPress);
+    record.trigger.addEventListener("pointercancel", clearLongPress);
+    record.cleanups.push(
+      () => record.trigger.removeEventListener("contextmenu", contextmenu),
+      () => record.trigger.removeEventListener("keydown", contextKeydown),
+      () => record.trigger.removeEventListener("pointerdown", pointerdown),
+      () => record.trigger.removeEventListener("pointermove", clearLongPress),
+      () => record.trigger.removeEventListener("pointerup", clearLongPress),
+      () => record.trigger.removeEventListener("pointercancel", clearLongPress),
+      clearLongPress,
+    );
+  } else {
+    if (!hasClickAction(record.trigger)) {
+      record.trigger.addEventListener("click", triggerClick);
+      record.cleanups.push(() => record.trigger.removeEventListener("click", triggerClick));
+    }
+    record.trigger.addEventListener("keydown", triggerKeydown);
+    record.cleanups.push(() => record.trigger.removeEventListener("keydown", triggerKeydown));
   }
-  record.trigger.addEventListener("keydown", triggerKeydown);
-  record.cleanups.push(() => record.trigger.removeEventListener("keydown", triggerKeydown));
 
   const keydown = (event: KeyboardEvent): void => contentKeydown(record, event);
   record.content.addEventListener("keydown", keydown);
@@ -304,10 +398,7 @@ function installGlobalListeners(): void {
   const reposition = (): void => {
     for (const record of [...activeRecords]) {
       if (record.root.isConnected) {
-        positionFloating(record.root, record.trigger, record.content, {
-          align: "start",
-          side: "bottom",
-        });
+        positionMenu(record);
       } else {
         activeRecords.delete(record);
       }
@@ -348,7 +439,8 @@ function prepareItems(record: MenuRecord): void {
 }
 
 function enhanceMenu(root: HTMLElement): MenuRecord {
-  root.id ||= `jqs-menu-${++menuId}`;
+  const kind = menuKind(root);
+  root.id ||= `jqs-${kind}-${++menuId}`;
   const trigger = directPart(root, "trigger");
   const content = directPart(root, "content");
   trigger.id ||= `${root.id}-trigger`;
@@ -367,7 +459,9 @@ function enhanceMenu(root: HTMLElement): MenuRecord {
     record = {
       cleanups: [],
       content,
+      kind,
       open: false,
+      point: undefined,
       root,
       search: "",
       searchTimer: undefined,
@@ -380,6 +474,7 @@ function enhanceMenu(root: HTMLElement): MenuRecord {
     if (contentChanged && record.open) hideFloating(record.content);
     for (const cleanup of record.cleanups) cleanup();
     record.cleanups = [];
+    record.kind = kind;
     record.trigger = trigger;
     record.content = content;
     if (!usesNativePopover(content)) content.hidden = !record.open;
@@ -391,10 +486,7 @@ function enhanceMenu(root: HTMLElement): MenuRecord {
   wire(record);
   installGlobalListeners();
   if (record.open) {
-    positionFloating(record.root, record.trigger, record.content, {
-      align: "start",
-      side: "bottom",
-    });
+    positionMenu(record);
     if (!record.content.contains(document.activeElement)) focusItem(record, "first");
   }
   return record;
@@ -402,18 +494,28 @@ function enhanceMenu(root: HTMLElement): MenuRecord {
 
 function enhanceTree(root: ParentNode): void {
   const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="menu"]')));
+  elements.push(
+    ...Array.from(root.querySelectorAll('[data-jqs="menu"], [data-jqs="context-menu"]')),
+  );
   for (const element of elements) {
     const menu = menuRoot(element);
     if (menu) enhanceMenu(menu);
   }
 }
 
-function resolveRoot(target: MenuTarget, root: ParentNode = document): HTMLElement {
+function resolveRoot(
+  target: MenuTarget | ContextMenuTarget,
+  root: ParentNode = document,
+  kind: MenuKind = "menu",
+): HTMLElement {
   const resolved =
-    typeof target === "string" ? menuRoot(root.querySelector(target)) : menuRoot(target);
+    typeof target === "string"
+      ? menuRoot(root.querySelector(target), kind)
+      : menuRoot(target, kind);
   if (resolved) return resolved;
-  throw new Error(`Menu target did not match a data-jqs="menu" element: ${String(target)}`);
+  throw new Error(
+    `${kind === "menu" ? "Menu" : "Context Menu"} target did not match a data-jqs="${kind}" element: ${String(target)}`,
+  );
 }
 
 function controlledMenu(context: StarContext, target?: unknown): HTMLElement {
@@ -437,12 +539,52 @@ function registerActions(api: StarMenuStatic): void {
   }
 }
 
+function controlledContextMenu(context: StarContext, target?: unknown): HTMLElement {
+  if (target instanceof HTMLElement && target.matches('[data-jqs="context-menu"]')) {
+    return target;
+  }
+  if (typeof target === "string") {
+    const local = context.root.querySelector(target);
+    return resolveRoot(local instanceof HTMLElement ? local : target, document, "context-menu");
+  }
+  const root = context.element?.closest('[data-jqs="context-menu"]') ?? null;
+  const resolved = menuRoot(root, "context-menu");
+  if (resolved) return resolved;
+  throw new Error(
+    'Context Menu action needs a root selector or an element inside data-jqs="context-menu".',
+  );
+}
+
+function registerContextActions(api: StarContextMenuStatic): void {
+  registerAction("ui.context-menu.open", (context) => {
+    const first = context.args?.[0];
+    const explicit = typeof first === "string" && first.startsWith("#");
+    const target = controlledContextMenu(context, explicit ? first : undefined);
+    const x = Number(explicit ? context.args?.[1] : first);
+    const y = Number(explicit ? context.args?.[2] : context.args?.[1]);
+    return Number.isFinite(x) && Number.isFinite(y) ? api.open(target, x, y) : api.open(target);
+  });
+  registerAction("ui.context-menu.close", (context) =>
+    api.close(controlledContextMenu(context, context.args?.[0])),
+  );
+}
+
 export function createMenus(): MenuCollection {
   const api: StarMenuStatic = {
     open: (target) => openMenu(resolveRoot(target)),
     close: (target) => closeMenu(resolveRoot(target)),
     toggle: (target) => toggleMenu(resolveRoot(target)),
   };
+  const contextApi: StarContextMenuStatic = {
+    open: (target, x, y) =>
+      openMenu(
+        resolveRoot(target, document, "context-menu"),
+        "first",
+        x === undefined || y === undefined ? undefined : { x, y },
+      ),
+    close: (target) => closeMenu(resolveRoot(target, document, "context-menu")),
+  };
   registerActions(api);
-  return { api, enhance: enhanceTree };
+  registerContextActions(contextApi);
+  return { api, contextApi, enhance: enhanceTree };
 }

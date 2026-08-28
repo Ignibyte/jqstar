@@ -132,6 +132,48 @@ test.describe("jQuery Star components", () => {
     await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   });
 
+  test("context menu, menubar, and tree retain application keyboard behavior", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Application interaction" });
+    const status = card.locator(".application-status");
+
+    const file = card.getByRole("menuitem", { name: "File", exact: true });
+    const edit = card.getByRole("menuitem", { name: "Edit", exact: true });
+    await file.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(edit).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    const undo = card.getByRole("menuitem", { name: /Undo/ });
+    await expect(undo).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    const sidebar = card.getByRole("menuitemcheckbox", { name: "Sidebar" });
+    await expect(sidebar).toBeFocused();
+    await sidebar.click();
+    await expect(status).toHaveText("Toggled the sidebar");
+    await expect(sidebar).toHaveAttribute("aria-checked", "false");
+    await page.keyboard.press("Escape");
+
+    const surface = card.locator('[data-jqs="context-menu"] > [data-part="trigger"]');
+    await surface.click({ button: "right", position: { x: 80, y: 60 } });
+    await expect(card.getByRole("menuitem", { name: "Open", exact: true })).toBeFocused();
+    const duplicate = card.getByRole("menuitem", { name: /Duplicate/ });
+    await duplicate.click();
+    await expect(status).toHaveText("Duplicated jqstar");
+    await surface.focus();
+    await page.keyboard.press("Shift+F10");
+    await expect(card.getByRole("menuitem", { name: "Open", exact: true })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(surface).toBeFocused();
+
+    const source = card.getByRole("treeitem", { name: "src" });
+    const index = card.getByRole("treeitem", { name: "index.ts" });
+    await source.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(index).toBeFocused();
+    await page.keyboard.press("Space");
+    await expect(index).toHaveAttribute("aria-selected", "true");
+    await expect(status).toHaveText("Tree selection: src, index");
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -681,7 +723,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "57",
+      "60",
     );
   });
 
@@ -731,6 +773,36 @@ test.describe("jQuery Star components", () => {
     await splitter.focus();
     await page.keyboard.press("ArrowRight");
     const results = await new AxeBuilder({ page }).include(".layout-primitives-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("application interaction components pass accessibility checks in open states", async ({
+    page,
+  }) => {
+    const card = page.locator(".application-components-card");
+    let results = await new AxeBuilder({ page }).include(".application-components-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.locator('[data-jqs="context-menu"] > [data-part="trigger"]').click({
+      button: "right",
+      position: { x: 60, y: 40 },
+    });
+    await card.evaluate(async (element) => {
+      await Promise.allSettled(
+        element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+      );
+    });
+    results = await new AxeBuilder({ page }).include(".application-components-card").analyze();
+    expect(results.violations).toEqual([]);
+    await page.keyboard.press("Escape");
+
+    await card.getByRole("menuitem", { name: "File", exact: true }).press("ArrowDown");
+    await card.evaluate(async (element) => {
+      await Promise.allSettled(
+        element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+      );
+    });
+    results = await new AxeBuilder({ page }).include(".application-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

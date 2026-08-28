@@ -114,3 +114,20 @@ export function positionFloating(
   content.dataset.side = actual;
   content.dataset.align = currentAlignment;
 }
+
+export function positionFloatingAtPoint(
+  content: HTMLElement,
+  x: number,
+  y: number,
+  edge = 8,
+): void {
+  const contentRect = content.getBoundingClientRect();
+  const width = content.offsetWidth || contentRect.width;
+  const height = content.offsetHeight || contentRect.height;
+  const left = clamp(x, edge, window.innerWidth - width - edge);
+  const top = clamp(y, edge, window.innerHeight - height - edge);
+  content.style.left = `${left}px`;
+  content.style.top = `${top}px`;
+  content.dataset.side = top < y ? "top" : "bottom";
+  content.dataset.align = left < x ? "end" : "start";
+}

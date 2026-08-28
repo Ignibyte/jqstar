@@ -79,15 +79,15 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 57 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 60 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
-Tooltip, Hover Card, Dropdown Menu, Select, Combobox, Calendar, Range Calendar, Date Picker, Date
-Range Picker, Number Field, Password Field, Tags Input, Input OTP, Resizable Panels, Scroll Area,
-Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty
-State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form.
-Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
-not required in the consuming application.
+Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
+Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Tags Input, Input OTP,
+Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
+Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
+Command Palette, and Async Form. Import the precompiled theme for the default appearance. Tailwind
+is used to author this file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -342,6 +342,19 @@ radio items, focusable `data-disabled` items, and focus return. Add `data-close-
 to keep an item open after selection. APIs and named actions are available under `$.star.ui.menu`
 and `@ui.menu.*`.
 
+Context Menu uses that same menu engine but opens at the pointer, Shift+F10 invocation point, or a
+touch long-press. Its lifecycle is namespaced under `jquery-star:context-menu:*`, with APIs and
+named actions at `$.star.ui.contextMenu` and `@ui.context-menu.*`. Menubar composes multiple
+Dropdown Menu roots into one horizontal or vertical roving-focus application menu. Arrow keys switch
+top-level menus while an open popup stays active; use `$.star.ui.menubar.open|close|focus|value()`
+or `@ui.menubar.*`.
+
+Tree View uses nested `item`, `row`, `label`, and `group` parts while deriving tree, treeitem,
+level, position, expansion, and selection semantics. It keeps focus independent from selection,
+supports the complete Arrow/Home/End/asterisk/typeahead model, and adds Space, Shift+Arrow, and
+Control+A for multi-select trees. Use `$.star.ui.tree.select|expand|collapse|toggle|focus|value()`
+or `@ui.tree.*`; `data-value` remains the server-patch boundary.
+
 Select keeps a native form control as its value and submission source:
 
 ```html
@@ -532,7 +545,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="57" max="57">57 of 57</progress>
+    <progress data-jqs="progress" value="60" max="60">60 of 60</progress>
   </div>
 </article>
 

@@ -479,6 +479,69 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<div id="package-context-menu" data-jqs="context-menu">
+     <div data-part="trigger" tabindex="0">Package card</div>
+     <div data-part="content" aria-label="Package context actions">
+       <button data-part="item" data-value="open">Open</button>
+     </div>
+   </div>
+   <div id="package-menubar" data-jqs="menubar" aria-label="Package commands">
+     <div data-part="menu" data-jqs="menu" data-value="file">
+       <button data-part="trigger">File</button>
+       <div data-part="content"><button data-part="item" data-value="new">New</button></div>
+     </div>
+     <div data-part="menu" data-jqs="menu" data-value="edit">
+       <button data-part="trigger">Edit</button>
+       <div data-part="content"><button data-part="item" data-value="undo">Undo</button></div>
+     </div>
+   </div>
+   <ul id="package-tree" data-jqs="tree" data-selection="multiple" data-value='["src"]' aria-label="Package files">
+     <li data-part="item" data-value="src" data-expanded="false">
+       <div data-part="row"><span data-part="toggle"></span><span data-part="label">src</span></div>
+       <ul data-part="group">
+         <li data-part="item" data-value="index"><div data-part="row"><span data-part="spacer"></span><span data-part="label">index.ts</span></div></li>
+       </ul>
+     </li>
+   </ul>`,
+);
+const packageContextMenu = document.querySelector("#package-context-menu");
+const packageMenubar = document.querySelector("#package-menubar");
+const packageTree = document.querySelector("#package-tree");
+$.star.ui.enhance(packageContextMenu);
+$.star.ui.enhance(packageMenubar);
+$.star.ui.enhance(packageTree);
+$.star.ui.contextMenu.open(packageContextMenu, 20, 30);
+const packageContextContent = packageContextMenu.querySelector('[data-part="content"]');
+if (
+  packageContextMenu.dataset.state !== "open" ||
+  packageContextContent.role !== "menu" ||
+  packageContextContent.style.left !== "20px"
+) {
+  throw new Error("The ESM bundle failed the Context Menu component smoke test.");
+}
+$.star.ui.contextMenu.close(packageContextMenu);
+$.star.ui.menubar.open(packageMenubar, "edit");
+if (
+  $.star.ui.menubar.value(packageMenubar) !== "edit" ||
+  packageMenubar.role !== "menubar" ||
+  packageMenubar.querySelector('[data-value="edit"] > [data-part="trigger"]').role !== "menuitem"
+) {
+  throw new Error("The ESM bundle failed the Menubar component smoke test.");
+}
+$.star.ui.menubar.close(packageMenubar);
+$.star.ui.tree.expand(packageTree, "src");
+$.star.ui.tree.select(packageTree, "index", true);
+if (
+  JSON.stringify($.star.ui.tree.value(packageTree)) !== JSON.stringify(["src", "index"]) ||
+  packageTree.role !== "tree" ||
+  packageTree.querySelector('[data-value="src"]').ariaExpanded !== "true" ||
+  packageTree.querySelector('[data-value="index"]').ariaSelected !== "true"
+) {
+  throw new Error("The ESM bundle failed the Tree View component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -541,6 +604,9 @@ const componentSelectors = [
   "[data-jqs=input-otp]",
   "[data-jqs=resizable]",
   "[data-jqs=scroll-area]",
+  "[data-jqs=context-menu]",
+  "[data-jqs=menubar]",
+  "[data-jqs=tree]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -584,6 +650,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

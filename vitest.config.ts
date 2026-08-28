@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     exclude: ["e2e/**", "node_modules/**", "dist/**"],
+    maxWorkers: Number(process.env.JQS_TEST_WORKERS ?? 2),
+    minWorkers: 1,
     coverage: {
       include: ["src/**/*.ts"],
       exclude: ["src/types.ts"],

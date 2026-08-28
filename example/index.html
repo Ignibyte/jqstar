@@ -416,6 +416,182 @@
         </div>
       </section>
 
+      <section
+        class="card application-components-card"
+        aria-labelledby="application-components-title"
+        data-signals="{ interactionStatus: 'Ready for a command' }"
+      >
+        <div>
+          <p class="label" id="application-components-title">Application interaction</p>
+          <p class="hint">
+            Desktop-grade Context Menu, Menubar, and Tree View behavior on source-owned HTML.
+          </p>
+        </div>
+
+        <div data-jqs="menubar" aria-label="Workspace commands">
+          <div data-part="menu" data-jqs="menu" data-value="file">
+            <button data-part="trigger" type="button">File</button>
+            <div data-part="content">
+              <button
+                data-part="item"
+                data-value="new"
+                type="button"
+                data-on:click="$interactionStatus = 'Created a new file'"
+              >
+                New file <span data-part="shortcut">⌘N</span>
+              </button>
+              <button
+                data-part="item"
+                data-value="open"
+                type="button"
+                data-on:click="$interactionStatus = 'Opened the file picker'"
+              >
+                Open… <span data-part="shortcut">⌘O</span>
+              </button>
+            </div>
+          </div>
+          <div data-part="menu" data-jqs="menu" data-value="edit">
+            <button data-part="trigger" type="button">Edit</button>
+            <div data-part="content">
+              <button
+                data-part="item"
+                data-value="undo"
+                type="button"
+                data-on:click="$interactionStatus = 'Undid the last change'"
+              >
+                Undo <span data-part="shortcut">⌘Z</span>
+              </button>
+              <button
+                data-part="item"
+                data-value="redo"
+                type="button"
+                data-on:click="$interactionStatus = 'Redid the last change'"
+              >
+                Redo
+              </button>
+            </div>
+          </div>
+          <div data-part="menu" data-jqs="menu" data-value="view">
+            <button data-part="trigger" type="button">View</button>
+            <div data-part="content">
+              <button
+                data-part="checkbox-item"
+                data-value="sidebar"
+                data-checked="true"
+                data-close-on-select="false"
+                type="button"
+                data-on:click="$interactionStatus = 'Toggled the sidebar'"
+              >
+                Sidebar
+              </button>
+              <button
+                data-part="checkbox-item"
+                data-value="status"
+                data-checked="true"
+                data-close-on-select="false"
+                type="button"
+                data-on:click="$interactionStatus = 'Toggled the status bar'"
+              >
+                Status bar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="application-components-grid">
+          <div data-jqs="context-menu">
+            <div data-part="trigger" data-surface tabindex="0">
+              <strong>Project card</strong>
+              <span>Right-click · Shift+F10 · long-press</span>
+            </div>
+            <div data-part="content" aria-label="Project actions">
+              <button
+                data-part="item"
+                data-value="open"
+                type="button"
+                data-on:click="$interactionStatus = 'Opened jqstar'"
+              >
+                Open
+              </button>
+              <button
+                data-part="item"
+                data-value="duplicate"
+                type="button"
+                data-on:click="$interactionStatus = 'Duplicated jqstar'"
+              >
+                Duplicate <span data-part="shortcut">⌘D</span>
+              </button>
+              <button
+                data-part="checkbox-item"
+                data-value="favorite"
+                type="button"
+                data-on:click="$interactionStatus = 'Toggled favorite'"
+              >
+                Favorite
+              </button>
+              <div data-part="separator"></div>
+              <button
+                data-part="item"
+                data-value="archive"
+                type="button"
+                data-on:click="$interactionStatus = 'Archived jqstar'"
+              >
+                Archive
+              </button>
+            </div>
+          </div>
+
+          <ul
+            id="component-tree"
+            data-jqs="tree"
+            data-selection="multiple"
+            data-value='["src"]'
+            aria-label="Project files"
+            data-on:jquery-star:tree:select="$interactionStatus = 'Tree selection: ' + evt.detail.values.join(', ')"
+          >
+            <li data-part="item" data-value="src" data-expanded="true">
+              <div data-part="row">
+                <span data-part="toggle"></span>
+                <span data-part="label">src</span>
+                <span data-part="meta">2</span>
+              </div>
+              <ul data-part="group">
+                <li data-part="item" data-value="index">
+                  <div data-part="row">
+                    <span data-part="spacer"></span><span data-part="label">index.ts</span>
+                  </div>
+                </li>
+                <li data-part="item" data-value="ui" data-expanded="false">
+                  <div data-part="row">
+                    <span data-part="toggle"></span>
+                    <span data-part="label">ui</span>
+                    <span data-part="meta">1</span>
+                  </div>
+                  <ul data-part="group">
+                    <li data-part="item" data-value="tree">
+                      <div data-part="row">
+                        <span data-part="spacer"></span><span data-part="label">tree.ts</span>
+                      </div>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li data-part="item" data-value="readme">
+              <div data-part="row">
+                <span data-part="spacer"></span><span data-part="label">README.md</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <output
+          class="application-status"
+          data-text="$interactionStatus"
+          aria-live="polite"
+        ></output>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -1016,7 +1192,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="57">57 components</td>
+                  <td data-key="coverage" data-value="60">60 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -1446,11 +1622,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="57"
-            max="57"
+            value="60"
+            max="60"
             aria-labelledby="progress-proof-label"
           >
-            57 of 57
+            60 of 60
           </progress>
         </div>
 

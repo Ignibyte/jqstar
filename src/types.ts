@@ -230,6 +230,33 @@ export interface StarMenuStatic {
   toggle(target: MenuTarget): HTMLElement;
 }
 
+export type ContextMenuTarget = string | HTMLElement;
+
+export interface StarContextMenuStatic {
+  open(target: ContextMenuTarget, x?: number, y?: number): HTMLElement;
+  close(target: ContextMenuTarget): HTMLElement;
+}
+
+export type MenubarTarget = string | HTMLElement;
+
+export interface StarMenubarStatic {
+  open(target: MenubarTarget, value?: string): HTMLElement;
+  close(target: MenubarTarget): HTMLElement;
+  focus(target: MenubarTarget, value?: string): HTMLElement;
+  value(target: MenubarTarget): string | undefined;
+}
+
+export type TreeTarget = string | HTMLElement;
+
+export interface StarTreeStatic {
+  select(target: TreeTarget, value: string, selected?: boolean): HTMLElement;
+  expand(target: TreeTarget, value: string): HTMLElement;
+  collapse(target: TreeTarget, value: string): HTMLElement;
+  toggle(target: TreeTarget, value: string): HTMLElement;
+  focus(target: TreeTarget, value: string): HTMLElement;
+  value(target: TreeTarget): string | string[] | undefined;
+}
+
 export type ToastTarget = string | HTMLElement;
 export type ToastPriority = "polite" | "assertive";
 export type ToastVariant = "default" | "success" | "warning" | "danger";
@@ -428,6 +455,9 @@ export interface StarUIStatic {
   readonly tooltip: StarTooltipStatic;
   readonly hoverCard: StarHoverCardStatic;
   readonly menu: StarMenuStatic;
+  readonly contextMenu: StarContextMenuStatic;
+  readonly menubar: StarMenubarStatic;
+  readonly tree: StarTreeStatic;
   readonly toast: StarToastStatic;
   readonly select: StarSelectStatic;
   readonly combobox: StarComboboxStatic;
