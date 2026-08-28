@@ -4,7 +4,7 @@
   "description": "Datastar-style reactive attributes with real jQuery expressions",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://github.com/Ignibyte/jqstar",
+  "homepage": "https://ignibyte.github.io/jqstar/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ignibyte/jqstar.git"
@@ -54,6 +54,7 @@
     "build": "npm run clean && npm run build:js && npm run build:css",
     "build:css": "tailwindcss -i ./src/ui/theme.css -o ./dist/jquery-star-ui.css --minify",
     "build:demo": "vite build --config vite.demo.config.ts",
+    "build:pages": "JQS_SITE_BASE=/jqstar/ JQS_STATIC_DEMO=true npm run build:demo",
     "build:js": "vite build && tsc -p tsconfig.build.json",
     "build:self-hosted": "npm run build && npm run build:demo && npm run build:server",
     "build:server": "vite build --config vite.server.config.ts",
@@ -64,6 +65,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint src server test example e2e bin scripts *.config.ts",
     "registry:list": "node ./bin/jqstar.mjs list",
+    "publish:pages": "npm run check && npm run test:package && npm run build:pages && gh-pages -d demo-dist -m \"Publish jqstar catalog\"",
     "test": "npm run test:unit",
     "test:e2e": "playwright test",
     "test:package": "npm run build && node scripts/smoke-built.mjs && node scripts/smoke-package-files.mjs",
@@ -87,6 +89,7 @@
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
+    "gh-pages": "^6.3.0",
     "globals": "^17.11.0",
     "jquery": "^4.0.0",
     "jsdom": "^26.1.0",

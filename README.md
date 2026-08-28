@@ -878,15 +878,25 @@ non-timed alternative.
 See [component research](docs/COMPONENT_RESEARCH.md) and
 [component architecture](docs/COMPONENT_ARCHITECTURE.md) for the decisions and verification rules.
 
-## Local verification
+## Local verification and manual publishing
 
-GitHub Actions and Pages deployment are intentionally not configured. Run the complete proof suite
-locally before pushing:
+GitHub Actions are intentionally not configured. Run the complete proof suite locally before
+pushing:
 
 ```bash
 npm run check
 npm run test:package
 ```
+
+The public catalog is hosted at [ignibyte.github.io/jqstar](https://ignibyte.github.io/jqstar/) from
+the `gh-pages` branch. Publishing is explicit and does not run from a GitHub workflow:
+
+```bash
+npm run publish:pages
+```
+
+That command runs both local proof suites, builds the catalog with `/jqstar/` asset paths and static
+backend fallbacks, then publishes `demo-dist` to `gh-pages`.
 
 For visual review, start the catalog with `npm run demo -- --host 127.0.0.1 --port 5174`. Local
 development runs the real JSON and SSE routes, including streams generated with the official

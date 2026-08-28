@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "jquery-star",
-  "homepage": "https://github.com/Ignibyte/jqstar",
+  "homepage": "https://ignibyte.github.io/jqstar/",
   "items": [
     {
       "name": "button",
