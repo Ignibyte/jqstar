@@ -881,6 +881,45 @@
           "target": "~/components/jquery-star/file-upload.html"
         }
       ]
+    },
+    {
+      "name": "multi-select",
+      "type": "registry:item",
+      "title": "Multi Select",
+      "description": "A multi-selection listbox backed by a native multiple select with tags, typeahead, limits, and server-patchable state.",
+      "files": [
+        {
+          "path": "registry/components/multi-select.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/multi-select.html"
+        }
+      ]
+    },
+    {
+      "name": "time-picker",
+      "type": "registry:item",
+      "title": "Time Picker",
+      "description": "A native time input with constrained stepping, presets, ordinary form events, and named actions.",
+      "files": [
+        {
+          "path": "registry/components/time-picker.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/time-picker.html"
+        }
+      ]
+    },
+    {
+      "name": "color-picker",
+      "type": "registry:item",
+      "title": "Color Picker",
+      "description": "A native color input with an editable value, suggested swatches, cancelable changes, and direct FormData support.",
+      "files": [
+        {
+          "path": "registry/components/color-picker.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/color-picker.html"
+        }
+      ]
     }
   ]
 }

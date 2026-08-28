@@ -429,6 +429,34 @@ export interface StarFileUploadStatic {
   files(target: FileUploadTarget): File[];
 }
 
+export type MultiSelectTarget = string | HTMLElement;
+
+export interface StarMultiSelectStatic {
+  open(target: MultiSelectTarget): HTMLElement;
+  close(target: MultiSelectTarget): HTMLElement;
+  toggle(target: MultiSelectTarget): HTMLElement;
+  set(target: MultiSelectTarget, values: readonly string[]): HTMLElement;
+  select(target: MultiSelectTarget, value: string, selected?: boolean): HTMLElement;
+  clear(target: MultiSelectTarget): HTMLElement;
+  value(target: MultiSelectTarget): string[];
+}
+
+export type TimePickerTarget = string | HTMLElement;
+
+export interface StarTimePickerStatic {
+  increment(target: TimePickerTarget, amount?: number): HTMLElement;
+  decrement(target: TimePickerTarget, amount?: number): HTMLElement;
+  set(target: TimePickerTarget, value: string): HTMLElement;
+  value(target: TimePickerTarget): string;
+}
+
+export type ColorPickerTarget = string | HTMLElement;
+
+export interface StarColorPickerStatic {
+  set(target: ColorPickerTarget, value: string): HTMLElement;
+  value(target: ColorPickerTarget): string;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -531,6 +559,9 @@ export interface StarUIStatic {
   readonly stepper: StarStepperStatic;
   readonly sortable: StarSortableStatic;
   readonly fileUpload: StarFileUploadStatic;
+  readonly multiSelect: StarMultiSelectStatic;
+  readonly timePicker: StarTimePickerStatic;
+  readonly colorPicker: StarColorPickerStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

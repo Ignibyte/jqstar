@@ -630,6 +630,42 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-preferences">
+     <div id="package-multi-select" data-jqs="multi-select">
+       <select data-part="control" name="teams" multiple><option value="design" selected>Design</option><option value="api">API</option></select>
+     </div>
+     <div id="package-time-picker" data-jqs="time-picker">
+       <button data-part="decrement">Earlier</button><input data-part="control" type="time" name="review_time" step="900" value="09:00"><button data-part="increment">Later</button>
+     </div>
+     <div id="package-color-picker" data-jqs="color-picker">
+       <input data-part="control" type="color" name="accent" value="#0f766e"><input data-part="value"><button data-part="swatch" data-value="#2563eb">Blue</button>
+     </div>
+   </form>`,
+);
+const packagePreferences = document.querySelector("#package-preferences");
+const packageMultiSelect = document.querySelector("#package-multi-select");
+const packageTimePicker = document.querySelector("#package-time-picker");
+const packageColorPicker = document.querySelector("#package-color-picker");
+$.star.ui.enhance(packagePreferences);
+$.star.ui.multiSelect.set(packageMultiSelect, ["design", "api"]);
+$.star.ui.timePicker.set(packageTimePicker, "13:30");
+$.star.ui.colorPicker.set(packageColorPicker, "#2563eb");
+const packagePreferenceData = new FormData(packagePreferences);
+if (
+  packagePreferenceData.getAll("teams").join(",") !== "design,api" ||
+  packagePreferenceData.get("review_time") !== "13:30" ||
+  packagePreferenceData.get("accent") !== "#2563eb" ||
+  $.star.ui.multiSelect.value(packageMultiSelect).join(",") !== "design,api" ||
+  $.star.ui.timePicker.value(packageTimePicker) !== "13:30" ||
+  $.star.ui.colorPicker.value(packageColorPicker) !== "#2563eb"
+) {
+  throw new Error(
+    "The ESM bundle failed the Multi Select, Time Picker, and Color Picker smoke test.",
+  );
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -701,6 +737,9 @@ const componentSelectors = [
   "[data-jqs=stepper]",
   "[data-jqs=sortable]",
   "[data-jqs=file-upload]",
+  "[data-jqs=multi-select]",
+  "[data-jqs=time-picker]",
+  "[data-jqs=color-picker]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -744,6 +783,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

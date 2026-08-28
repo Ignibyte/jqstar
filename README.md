@@ -79,16 +79,16 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 66 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 69 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
 Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Tags Input, Input OTP,
 Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
-Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload.
-Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
-not required in the consuming application.
+Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
+Select, Time Picker, and Color Picker. Import the precompiled theme for the default appearance.
+Tailwind is used to author this file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -388,6 +388,21 @@ browser `FileList` directly. It adds drop handling, removable file rows, `accept
 and `data-max-size` validation. Use `$.star.ui.fileUpload.clear|remove|files()` or
 `@ui.fileUpload.*`.
 
+Multi Select generates a multi-select listbox and removable tags from a direct native
+`<select multiple>`. Arrow keys, Home, End, and typeahead move listbox focus without changing the
+selection. Space toggles the focused option, and Control/Command+A selects up to `data-max`. The
+native selected options remain the values in FormData. Use
+`$.star.ui.multiSelect.open|close|toggle|set|select|clear|value()` or `@ui.multi-select.*`.
+
+Time Picker wraps `<input type="time">` without replacing its locale-specific picker, required
+state, `min`, `max`, or second-based `step`. Earlier and Later buttons call the native stepping
+model, and preset buttons use the same validation path. Use
+`$.star.ui.timePicker.increment|decrement|set|value()` or `@ui.time-picker.*`.
+
+Color Picker keeps `<input type="color">` as the submitted value. An optional text control mirrors
+the browser-normalized value, and swatches provide shortcuts through the same cancelable change
+boundary. Use `$.star.ui.colorPicker.set|value()` or `@ui.color-picker.set`.
+
 Select keeps a native form control as its value and submission source:
 
 ```html
@@ -578,7 +593,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="66" max="66">66 of 66</progress>
+    <progress data-jqs="progress" value="69" max="69">69 of 69</progress>
   </div>
 </article>
 

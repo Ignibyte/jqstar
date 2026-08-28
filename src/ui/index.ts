@@ -24,6 +24,9 @@ import { createToolbars } from "./toolbar";
 import { createSteppers } from "./stepper";
 import { createSortables } from "./sortable";
 import { createFileUploads } from "./file-upload";
+import { createMultiSelects } from "./multi-select";
+import { createTimePickers } from "./time-picker";
+import { createColorPickers } from "./color-picker";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -246,6 +249,9 @@ const enhancementOwnerSelector = [
   "stepper",
   "sortable",
   "file-upload",
+  "multi-select",
+  "time-picker",
+  "color-picker",
   "toast",
   "toast-viewport",
   "select",
@@ -393,6 +399,9 @@ export function createUI(): StarUIStatic {
   const steppers = createSteppers();
   const sortables = createSortables();
   const fileUploads = createFileUploads();
+  const multiSelects = createMultiSelects();
+  const timePickers = createTimePickers();
+  const colorPickers = createColorPickers();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -409,6 +418,9 @@ export function createUI(): StarUIStatic {
     steppers.enhance(root);
     sortables.enhance(root);
     fileUploads.enhance(root);
+    multiSelects.enhance(root);
+    timePickers.enhance(root);
+    colorPickers.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -451,6 +463,9 @@ export function createUI(): StarUIStatic {
     stepper: steppers.api,
     sortable: sortables.api,
     fileUpload: fileUploads.api,
+    multiSelect: multiSelects.api,
+    timePicker: timePickers.api,
+    colorPicker: colorPickers.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

@@ -1,0 +1,22 @@
+<label for="meeting-time">Meeting time</label>
+<div data-jqs="time-picker">
+  <button data-part="decrement" type="button" aria-label="Earlier time">−</button>
+  <input
+    id="meeting-time"
+    data-part="control"
+    type="time"
+    name="meeting_time"
+    min="08:00"
+    max="18:00"
+    step="900"
+    value="09:00"
+    required
+  />
+  <button data-part="increment" type="button" aria-label="Later time">+</button>
+  <div data-part="presets">
+    <button data-part="preset" data-value="09:00" type="button">Morning</button>
+    <button data-part="preset" data-value="13:30" type="button">Afternoon</button>
+    <button data-part="preset" data-value="17:00" type="button">End of day</button>
+  </div>
+  <p data-part="status"></p>
+</div>

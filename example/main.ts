@@ -12,6 +12,8 @@ interface DemoState extends Record<string, unknown> {
   componentResultCount: number;
   projectMessage: string;
   projectSaving: boolean;
+  preferencesMessage: string;
+  preferencesSaving: boolean;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
@@ -150,6 +152,35 @@ $.star.action<DemoState>("submitProject", async (context) => {
     context.state.projectMessage = error instanceof Error ? error.message : String(error);
   } finally {
     context.state.projectSaving = false;
+  }
+});
+
+$.star.action<DemoState>("submitPreferences", async (context) => {
+  const form = context.element?.closest("form");
+  if (!(form instanceof HTMLFormElement)) throw new Error("Preferences action needs its form.");
+  if (!$.star.ui.form.validate(form)) return;
+  const body = new FormData(form);
+  context.state.preferencesSaving = true;
+
+  try {
+    if (__JQS_STATIC_DEMO__) {
+      await wait(160);
+      const teams = body.getAll("teams").length;
+      context.state.preferencesMessage = `Static preview received ${teams} teams, ${String(body.get("review_time"))}, and ${String(body.get("accent"))} from native controls.`;
+      return;
+    }
+    const response = await fetch("/api/demo/preferences", {
+      method: "POST",
+      body,
+      headers: { "Datastar-Request": "true" },
+    });
+    const result = (await response.json()) as { message?: string };
+    if (!response.ok) throw new Error(result.message ?? `Request failed with ${response.status}.`);
+    context.state.preferencesMessage = result.message ?? "Preferences received.";
+  } catch (error) {
+    context.state.preferencesMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.preferencesSaving = false;
   }
 });
 

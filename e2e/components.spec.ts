@@ -265,6 +265,44 @@ test.describe("jQuery Star components", () => {
     await expect(card.locator(".workflow-result")).toContainText("local backend received");
   });
 
+  test("multi select, time picker, and color picker submit native preference values", async ({
+    page,
+  }) => {
+    const card = page.getByRole("region", { name: "Native project preferences" });
+    const form = card.locator("#preferences-form");
+    const trigger = card.getByRole("button", { name: "Review teams" });
+    await trigger.click();
+    const listbox = card.getByRole("listbox", { name: "Review teams" });
+    await expect(listbox).toBeFocused();
+    const [triggerLeft, listboxLeft] = await Promise.all([
+      trigger.evaluate((element) => element.getBoundingClientRect().left),
+      listbox.evaluate((element) => element.getBoundingClientRect().left),
+    ]);
+    expect(Math.abs(triggerLeft - listboxLeft)).toBeLessThan(2);
+    await listbox.getByRole("option", { name: "Quality assurance" }).click();
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+    await expect(
+      form.evaluate((element) => new FormData(element as HTMLFormElement).getAll("teams")),
+    ).resolves.toEqual(["design", "backend", "qa"]);
+
+    await card.getByRole("button", { name: "Afternoon" }).click();
+    await expect(card.getByLabel("Daily review")).toHaveValue("13:30");
+    await card.getByRole("button", { name: "Use color #9333ea" }).click();
+    await expect(card.getByLabel("Accent color value")).toHaveValue("#9333ea");
+    await expect(
+      form.evaluate((element) => {
+        const body = new FormData(element as HTMLFormElement);
+        return { accent: body.get("accent"), time: body.get("review_time") };
+      }),
+    ).resolves.toEqual({ accent: "#9333ea", time: "13:30" });
+
+    await card.getByRole("button", { name: "Save preferences" }).click();
+    await expect(card.locator(".preferences-submit output")).toContainText(
+      "local backend received",
+    );
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -814,7 +852,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "66",
+      "69",
     );
   });
 
@@ -930,6 +968,17 @@ test.describe("jQuery Star components", () => {
       buffer: Buffer.from("accessible proof"),
     });
     results = await new AxeBuilder({ page }).include(".workflow-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("native project preferences pass accessibility checks with the listbox open", async ({
+    page,
+  }) => {
+    const card = page.locator(".preferences-components-card");
+    let results = await new AxeBuilder({ page }).include(".preferences-components-card").analyze();
+    expect(results.violations).toEqual([]);
+    await card.getByRole("button", { name: "Review teams" }).click();
+    results = await new AxeBuilder({ page }).include(".preferences-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 

@@ -20,6 +20,7 @@ function supportsPopover(content: HTMLElement): boolean {
 
 export function prepareFloating(content: HTMLElement): void {
   content.setAttribute("popover", "manual");
+  content.style.margin = "0";
 }
 
 export function showFloating(content: HTMLElement): void {

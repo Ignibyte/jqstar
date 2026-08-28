@@ -172,6 +172,18 @@ The first proof contains Button, Dialog, and the native form family:
   [file drag-and-drop model](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop).
   The selected `FileList` stays on the native input, which keeps multipart FormData compatible with
   any backend.
+- Multi Select follows the APG [Listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/).
+  The listbox exposes `aria-multiselectable`, keeps focus separate from selection, uses Space to
+  toggle, and supports the recommended modifier-free Arrow navigation. A native multiple select
+  remains the form source.
+- Time Picker retains the browser's
+  [`input type="time"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/time)
+  contract. Its value is always `HH:mm` or `HH:mm:ss`, while `min`, `max`, and `step` remain native
+  validity rules.
+- Color Picker retains the browser's
+  [`input type="color"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/color)
+  and its platform UI. Text entry and swatches are shortcuts that must normalize through that input
+  instead of creating a second color value.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

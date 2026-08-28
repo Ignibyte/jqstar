@@ -213,6 +213,30 @@ File Upload provides:
 - Removable generated file rows, form-reset synchronization, and ordinary input/change events
 - `@ui.fileUpload.clear|remove` and matching `$.star.ui.fileUpload` methods
 
+Multi Select provides:
+
+- A direct `<select multiple>` as the source for FormData, constraint validation, reset, disabled
+  options, and server-patched option lists
+- A labelled `listbox` with `aria-multiselectable`, distinct active and selected states, Space
+  toggling, Arrow/Home/End focus movement, typeahead, and Control/Command+A
+- Removable selected tags, optional `data-max`, cancelable changes, and JSON root `data-value`
+- `@ui.multi-select.open|close|toggle|set|select|clear` and matching `$.star.ui.multiSelect` methods
+
+Time Picker provides:
+
+- A direct `<input type="time">` as the locale UI, validity source, and submitted `HH:mm[:ss]` value
+- Earlier/Later controls that respect the native second-based `step`, `min`, `max`, disabled, and
+  readonly state
+- Preset buttons, invalid/change events, server-patched `data-value`,
+  `@ui.time-picker.increment|decrement|set`, and matching `$.star.ui.timePicker` methods
+
+Color Picker provides:
+
+- A direct `<input type="color">` as the platform picker and submitted value
+- An optional editable value and suggested swatches that use one normalization and cancelation path
+- A preview, live status, server-patched `data-value`, `@ui.color-picker.set`, and matching
+  `$.star.ui.colorPicker` methods
+
 Select provides:
 
 - A native single-value `<select data-part="control">` as the source for form submission,
@@ -462,6 +486,7 @@ Implemented:
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
 - Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
+- Multi Select, Time Picker, and Color Picker
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -470,7 +495,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 66-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 69-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

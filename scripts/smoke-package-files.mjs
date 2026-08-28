@@ -39,6 +39,9 @@ const required = [
   "registry/components/stepper.html",
   "registry/components/sortable.html",
   "registry/components/file-upload.html",
+  "registry/components/multi-select.html",
+  "registry/components/time-picker.html",
+  "registry/components/color-picker.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

@@ -1,0 +1,21 @@
+<label for="team-select">Project teams</label>
+<div data-jqs="multi-select" data-placeholder="Choose teams" data-max="3">
+  <select id="team-select" data-part="control" name="teams" multiple required>
+    <optgroup label="Product">
+      <option value="design">Design</option>
+      <option value="research">Research</option>
+    </optgroup>
+    <optgroup label="Engineering">
+      <option value="frontend">Frontend</option>
+      <option value="backend">Backend</option>
+      <option value="qa">Quality assurance</option>
+    </optgroup>
+  </select>
+  <button data-part="trigger" type="button">
+    <span data-part="value">Choose teams</span>
+    <span data-part="indicator" aria-hidden="true">⌄</span>
+  </button>
+  <div data-part="tags"></div>
+  <div data-part="content"></div>
+  <p data-part="status"></p>
+</div>
