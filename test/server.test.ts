@@ -28,7 +28,7 @@ describe("self-hosted proof API", () => {
     const response = await fetch(`${origin}/health`);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      components: 90,
+      components: 100,
       environment: "test",
       service: "jqstar",
       status: "healthy",
@@ -41,7 +41,41 @@ describe("self-hosted proof API", () => {
     expect(first.revision).toBe(1);
     expect(second.revision).toBe(2);
     expect(second.requests).toBeGreaterThan(first.requests);
-    expect(second.release).toBe("v0.5.0-test");
+    expect(second.release).toBe("v0.6.0-test");
+  });
+
+  it("returns a structured runtime snapshot for the control plane", async () => {
+    const response = await fetch(`${origin}/api/demo/runtime`);
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      components: 100,
+      connection: "connected",
+      environment: "test",
+      region: "us-central",
+      revision: 1,
+      runtime: {
+        process: "node-http",
+        registry: "source-owned",
+        transport: "datastar-sse",
+      },
+      service: "jqstar",
+    });
+    expect(body.logs).toHaveLength(3);
+    expect(new Date(body.nextCheck).valueOf()).toBeGreaterThan(new Date(body.timestamp).valueOf());
+  });
+
+  it("streams escaped log elements and completion signals through the Datastar SDK", async () => {
+    const signals = encodeURIComponent(JSON.stringify({ controlPlaneMessage: "Ready" }));
+    const response = await fetch(`${origin}/api/demo/runtime/stream?datastar=${signals}`);
+    const body = await response.text();
+    expect(response.headers.get("content-type")).toContain("text/event-stream");
+    expect(body.match(/event: datastar-patch-elements/g)).toHaveLength(3);
+    expect(body).toContain("selector #runtime-log-entries");
+    expect(body).toContain('data-level="warn"');
+    expect(body).toContain("jQuery Star enhanced the server-appended entry.");
+    expect(body).toContain("event: datastar-patch-signals");
+    expect(body).toContain("appended 3 log entries");
   });
 
   it("filters and paginates the shared feed contract", async () => {

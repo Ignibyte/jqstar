@@ -1203,6 +1203,136 @@
           "target": "~/components/jquery-star/diff.html"
         }
       ]
+    },
+    {
+      "name": "log-viewer",
+      "type": "registry:item",
+      "title": "Log Viewer",
+      "description": "A bounded, filterable live log with pause, follow, safe append, and server-patch support.",
+      "files": [
+        {
+          "path": "registry/components/log-viewer.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/log-viewer.html"
+        }
+      ]
+    },
+    {
+      "name": "json-viewer",
+      "type": "registry:item",
+      "title": "JSON Viewer",
+      "description": "A safe expandable JSON document viewer sourced from application/json markup or a public API.",
+      "files": [
+        {
+          "path": "registry/components/json-viewer.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/json-viewer.html"
+        }
+      ]
+    },
+    {
+      "name": "countdown",
+      "type": "registry:item",
+      "title": "Countdown",
+      "description": "A deadline or duration countdown driven by one shared clock with pause, resume, reset, and completion events.",
+      "files": [
+        {
+          "path": "registry/components/countdown.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/countdown.html"
+        }
+      ]
+    },
+    {
+      "name": "connection-status",
+      "type": "registry:item",
+      "title": "Connection Status",
+      "description": "A server-patchable connection summary with state, detail, and last-updated metadata.",
+      "files": [
+        {
+          "path": "registry/components/connection-status.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/connection-status.html"
+        }
+      ]
+    },
+    {
+      "name": "terminal",
+      "type": "registry:item",
+      "title": "Terminal",
+      "description": "A zero-runtime terminal frame for commands, build output, and live log compositions.",
+      "files": [
+        {
+          "path": "registry/components/terminal.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/terminal.html"
+        }
+      ]
+    },
+    {
+      "name": "radial-progress",
+      "type": "registry:item",
+      "title": "Radial Progress",
+      "description": "A CSS-driven circular progress indicator with an explicit accessible value contract.",
+      "files": [
+        {
+          "path": "registry/components/radial-progress.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/radial-progress.html"
+        }
+      ]
+    },
+    {
+      "name": "indicator",
+      "type": "registry:item",
+      "title": "Indicator",
+      "description": "A zero-runtime anchor for positioning badges or statuses around any control or surface.",
+      "files": [
+        {
+          "path": "registry/components/indicator.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/indicator.html"
+        }
+      ]
+    },
+    {
+      "name": "dock",
+      "type": "registry:item",
+      "title": "Dock",
+      "description": "A compact responsive navigation surface built from ordinary links and aria-current.",
+      "files": [
+        {
+          "path": "registry/components/dock.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/dock.html"
+        }
+      ]
+    },
+    {
+      "name": "swap",
+      "type": "registry:item",
+      "title": "Swap",
+      "description": "A native-checkbox toggle that swaps two visual labels without component JavaScript.",
+      "files": [
+        {
+          "path": "registry/components/swap.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/swap.html"
+        }
+      ]
+    },
+    {
+      "name": "key-value",
+      "type": "registry:item",
+      "title": "Key Value",
+      "description": "A semantic definition-list layout for runtime metadata, configuration, and record details.",
+      "files": [
+        {
+          "path": "registry/components/key-value.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/key-value.html"
+        }
+      ]
     }
   ]
 }

@@ -34,18 +34,43 @@ const origin = await new Promise((resolve, reject) => {
 try {
   const page = await fetch(`${origin}/`);
   const html = await page.text();
-  if (!page.ok || !html.includes("Self-hosting operations console")) {
+  if (
+    !page.ok ||
+    !html.includes("Self-hosting operations console") ||
+    !html.includes("Backend control plane")
+  ) {
     throw new Error("The self-hosted server did not serve the production demo.");
   }
   const healthResponse = await fetch(`${origin}/health`);
   const health = await healthResponse.json();
-  if (!healthResponse.ok || health.status !== "healthy" || health.components !== 90) {
+  if (!healthResponse.ok || health.status !== "healthy" || health.components !== 100) {
     throw new Error("The self-hosted health contract failed.");
   }
   const operationsResponse = await fetch(`${origin}/api/demo/operations`);
   const operations = await operationsResponse.json();
-  if (!operationsResponse.ok || operations.revision !== 1 || operations.components !== 90) {
+  if (!operationsResponse.ok || operations.revision !== 1 || operations.components !== 100) {
     throw new Error("The self-hosted operations contract failed.");
+  }
+  const runtimeResponse = await fetch(`${origin}/api/demo/runtime`);
+  const runtime = await runtimeResponse.json();
+  if (
+    !runtimeResponse.ok ||
+    runtime.revision !== 1 ||
+    runtime.components !== 100 ||
+    runtime.logs?.length !== 3
+  ) {
+    throw new Error("The self-hosted runtime snapshot contract failed.");
+  }
+  const signals = encodeURIComponent(JSON.stringify({ controlPlaneMessage: "Ready" }));
+  const streamResponse = await fetch(`${origin}/api/demo/runtime/stream?datastar=${signals}`);
+  const stream = await streamResponse.text();
+  if (
+    !streamResponse.ok ||
+    !stream.includes("event: datastar-patch-elements") ||
+    !stream.includes("selector #runtime-log-entries") ||
+    !stream.includes("appended 3 log entries")
+  ) {
+    throw new Error("The self-hosted Datastar log stream contract failed.");
   }
   const policy = page.headers.get("content-security-policy");
   if (
@@ -64,6 +89,8 @@ try {
     await browserPage.goto(`${origin}/`);
     await browserPage.getByRole("button", { name: "Increment and disappear" }).click();
     await browserPage.getByRole("button", { name: "Refresh operations" }).click();
+    await browserPage.getByRole("button", { name: "Refresh snapshot" }).click();
+    await browserPage.getByRole("button", { name: "Stream 3 logs" }).click();
     if (
       (await browserPage.getByRole("status", { name: "Current count: 1" }).textContent()) !== "1"
     ) {
@@ -73,11 +100,18 @@ try {
       .locator(".operations-message")
       .filter({ hasText: "revision 2" })
       .waitFor({ state: "visible" });
+    await browserPage
+      .locator(".control-plane-message")
+      .filter({ hasText: "Datastar stream 2 appended 3 log entries" })
+      .waitFor({ state: "visible" });
+    if ((await browserPage.locator("#runtime-log-viewer [data-part='entry']").count()) !== 6) {
+      throw new Error("The self-hosted browser did not apply the Datastar log stream.");
+    }
   } finally {
     await browser.close();
   }
   process.stdout.write(
-    "self-hosted proof: page=passed, health=passed, operations=passed, browser-runtime=passed, security-headers=passed\n",
+    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, datastar-log-stream=passed, browser-runtime=passed, security-headers=passed\n",
   );
 } finally {
   child.kill("SIGTERM");

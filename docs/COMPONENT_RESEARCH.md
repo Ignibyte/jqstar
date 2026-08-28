@@ -51,7 +51,23 @@ adapter can map the same behavior to daisyUI classes. The root shadcn-compatible
 distributes framework-neutral HTML recipes and can later include CSS, TypeScript, tests, and backend
 examples.
 
-The first proof contains Button, Dialog, and the native form family:
+The resulting system applies these decisions:
+
+- The current shadcn [component catalog](https://ui.shadcn.com/docs/components) is now fully covered
+  by jQuery Star recipes or direct platform equivalents. Further work therefore prioritizes
+  framework-neutral server operations and application compositions instead of creating React-shaped
+  aliases for components already present.
+- daisyUI's current [Countdown](https://daisyui.com/components/countdown/),
+  [Radial Progress](https://daisyui.com/components/radial-progress/),
+  [Indicator](https://daisyui.com/components/indicator/),
+  [Dock](https://daisyui.com/components/dock/), and [Swap](https://daisyui.com/components/swap/)
+  demonstrate useful lightweight visual contracts. jQuery Star retains those component categories
+  while replacing mandatory class anatomy with source-owned `data-jqs` markup; Countdown adds a
+  shared-clock public runtime, while the other four stay CSS/native-HTML driven.
+- Log Viewer follows W3C's
+  [`role="log"` technique](https://www.w3.org/WAI/WCAG21/Techniques/aria/ARIA23) on a generic
+  scrolling region while preserving the ordered list inside it. JSON Viewer uses native
+  `<details>/<summary>` disclosure rather than inventing an application-tree keyboard model.
 
 - Button proves variants, sizes, focus indication, disabled state, and a zero-JavaScript component.
 - Dialog proves named actions, native modality, initial focus, focus return, Escape handling,

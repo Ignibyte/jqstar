@@ -1,0 +1,35 @@
+<section id="runtime-payload" data-jqs="json-viewer" aria-labelledby="runtime-payload-title">
+  <header data-part="header">
+    <h2 id="runtime-payload-title">Runtime payload</h2>
+    <button
+      data-jqs="button"
+      data-size="sm"
+      data-variant="ghost"
+      type="button"
+      data-on:click="@ui.json-viewer.expand-all"
+    >
+      Expand all
+    </button>
+    <button
+      data-jqs="button"
+      data-size="sm"
+      data-variant="ghost"
+      type="button"
+      data-on:click="@ui.json-viewer.collapse-all"
+    >
+      Collapse all
+    </button>
+  </header>
+  <script type="application/json" data-part="source">
+    {
+      "service": "jqstar",
+      "status": "healthy",
+      "runtime": {
+        "components": 100,
+        "transport": "datastar-sse"
+      }
+    }
+  </script>
+  <div data-part="tree"></div>
+  <p data-part="status"></p>
+</section>

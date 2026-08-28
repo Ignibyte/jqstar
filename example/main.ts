@@ -24,6 +24,10 @@ interface DemoState extends Record<string, unknown> {
   metricsMessage: string;
   operationsLoading: boolean;
   operationsMessage: string;
+  controlPlaneCompact: boolean;
+  controlPlaneLoading: boolean;
+  controlPlaneMessage: string;
+  controlPlaneStreaming: boolean;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
@@ -43,6 +47,32 @@ interface OperationsResponse {
   requests: number;
   revision: number;
   status: "healthy" | "warning" | "danger";
+  timestamp: string;
+}
+
+interface RuntimeLog {
+  id: string;
+  level: "debug" | "info" | "warn" | "error";
+  message: string;
+  source: string;
+  timestamp: string;
+}
+
+interface RuntimeResponse {
+  capacity: number;
+  components: number;
+  connection: "connected" | "connecting" | "disconnected";
+  environment: string;
+  logs: RuntimeLog[];
+  nextCheck: string;
+  region: string;
+  revision: number;
+  runtime: {
+    process: string;
+    registry: string;
+    transport: string;
+  };
+  service: string;
   timestamp: string;
 }
 
@@ -556,6 +586,55 @@ function applyOperations(result: OperationsResponse): void {
   }
 }
 
+function applyRuntime(result: RuntimeResponse): void {
+  const connection = document.querySelector<HTMLElement>("#runtime-connection")!;
+  connection.dataset.state = result.connection;
+  $(connection)
+    .find('[data-part="indicator"]')
+    .attr(
+      "data-variant",
+      result.connection === "connected"
+        ? "success"
+        : result.connection === "connecting"
+          ? "warning"
+          : "danger",
+    );
+  $(connection)
+    .find('[data-part="title"]')
+    .text(result.connection === "connected" ? "Connected" : result.connection);
+  $(connection)
+    .find('[data-part="description"]')
+    .text(`${result.runtime.transport} · ${result.environment} environment`);
+  $(connection)
+    .find('[data-part="updated"]')
+    .attr("datetime", result.timestamp)
+    .text(`Revision ${result.revision}`);
+
+  const radial = document.querySelector<HTMLElement>("#runtime-capacity")!;
+  radial.style.setProperty("--jqs-value", String(result.capacity));
+  radial.setAttribute("aria-valuenow", String(result.capacity));
+  $(radial).find('[data-part="value"]').text(`${result.capacity}%`);
+
+  $("#runtime-region").text(result.region);
+  $("#runtime-environment").text(result.environment);
+  $("#runtime-transport").text(result.runtime.transport);
+  $("#runtime-process").text(result.runtime.process);
+
+  $.star.ui.countdown.until("#runtime-countdown", result.nextCheck);
+  $.star.ui.jsonViewer.set("#runtime-json", {
+    capacity: result.capacity,
+    components: result.components,
+    connection: result.connection,
+    environment: result.environment,
+    region: result.region,
+    revision: result.revision,
+    runtime: result.runtime,
+    service: result.service,
+  });
+  $.star.ui.logViewer.clear("#runtime-log-viewer");
+  result.logs.forEach((entry) => $.star.ui.logViewer.append("#runtime-log-viewer", entry));
+}
+
 $.star.action<DemoState>("refreshOperations", async (context) => {
   context.state.operationsLoading = true;
   try {
@@ -563,9 +642,9 @@ $.star.action<DemoState>("refreshOperations", async (context) => {
     if (__JQS_STATIC_DEMO__) {
       await wait(160);
       result = {
-        components: 90,
+        components: 100,
         latency: 76,
-        release: "v0.5.0-static",
+        release: "v0.6.0-static",
         requests: 13_428,
         revision: 2,
         status: "healthy",
@@ -585,6 +664,109 @@ $.star.action<DemoState>("refreshOperations", async (context) => {
   } finally {
     context.state.operationsLoading = false;
   }
+});
+
+$.star.action<DemoState>("refreshControlPlane", async (context) => {
+  context.state.controlPlaneLoading = true;
+  try {
+    let result: RuntimeResponse;
+    if (__JQS_STATIC_DEMO__) {
+      await wait(160);
+      const timestamp = new Date();
+      result = {
+        capacity: 70,
+        components: 100,
+        connection: "connected",
+        environment: "static",
+        logs: [
+          {
+            id: "static-1",
+            level: "info",
+            message: "Static runtime snapshot loaded.",
+            source: "pages",
+            timestamp: timestamp.toISOString(),
+          },
+          {
+            id: "static-2",
+            level: "debug",
+            message: "The local server exposes the same response contract.",
+            source: "api",
+            timestamp: new Date(timestamp.valueOf() + 1_000).toISOString(),
+          },
+          {
+            id: "static-3",
+            level: "warn",
+            message: "Live endpoints require the self-hosted build.",
+            source: "deploy",
+            timestamp: new Date(timestamp.valueOf() + 2_000).toISOString(),
+          },
+        ],
+        nextCheck: new Date(timestamp.valueOf() + 30_000).toISOString(),
+        region: "github-pages",
+        revision: 2,
+        runtime: {
+          process: "static-fallback",
+          registry: "source-owned",
+          transport: "datastar-sse",
+        },
+        service: "jqstar",
+        timestamp: timestamp.toISOString(),
+      };
+      context.state.controlPlaneMessage =
+        "Static fallback applied the production runtime response contract.";
+    } else {
+      const response = await fetch("/api/demo/runtime");
+      result = (await response.json()) as RuntimeResponse;
+      if (!response.ok) throw new Error(`Request failed with ${response.status}.`);
+      context.state.controlPlaneMessage = `Runtime snapshot revision ${result.revision} applied.`;
+    }
+    applyRuntime(result);
+  } catch (error) {
+    context.state.controlPlaneMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.controlPlaneLoading = false;
+  }
+});
+
+$.star.action<DemoState>("streamControlPlane", async (context) => {
+  if (!__JQS_STATIC_DEMO__) {
+    context.state.controlPlaneMessage = "Opening the Datastar log stream…";
+    return $.star.get<DemoState>("/api/demo/runtime/stream", {
+      pending: "controlPlaneStreaming",
+      retry: "never",
+    })(context);
+  }
+
+  context.state.controlPlaneStreaming = true;
+  const logs: RuntimeLog[] = [
+    {
+      id: "static-stream-1",
+      level: "info",
+      message: "Static Datastar stream preview opened.",
+      source: "sse",
+      timestamp: new Date().toISOString(),
+    },
+    {
+      id: "static-stream-2",
+      level: "debug",
+      message: "jQuery Star enhanced the appended entry.",
+      source: "ui",
+      timestamp: new Date(Date.now() + 1_000).toISOString(),
+    },
+    {
+      id: "static-stream-3",
+      level: "warn",
+      message: "The production stream runs from the self-hosted server.",
+      source: "deploy",
+      timestamp: new Date(Date.now() + 2_000).toISOString(),
+    },
+  ];
+  for (const entry of logs) {
+    await wait(90);
+    $.star.ui.logViewer.append("#runtime-log-viewer", entry);
+  }
+  context.state.controlPlaneMessage = "Static stream preview appended 3 log entries.";
+  context.state.controlPlaneStreaming = false;
 });
 
 $.star.action<DemoState>("serverIncrement", async (context) => {

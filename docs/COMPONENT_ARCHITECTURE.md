@@ -578,6 +578,8 @@ Implemented:
 - Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, and Bubble
 - Aspect Ratio, Chart, Direction, Marker, Table, and Typography
 - Stat, Timeline, Status, Code Block, Browser Mockup, and Diff
+- Log Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial Progress, Indicator, Dock,
+  Swap, and Key Value
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -586,16 +588,43 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 90-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
-these contracts without changing the public anatomy.
+This 100-component inventory is registry-backed and source-owned. Domain-heavy additions can build
+on these contracts without changing the public anatomy.
+
+## Runtime control-plane components
+
+Log Viewer keeps authored `<ol>/<li>` semantics while placing `role="log"` and live-region state on
+the scrolling viewport. Its API appends text-only structured entries, trims to `data-max`, filters
+by minimum severity, and separates pause from data receipt: pausing disables announcements and
+follow scrolling but does not discard incoming server entries. Datastar can append the same
+source-owned `data-part="entry"` markup directly. The shared enhancement observer notices the new
+element and resynchronizes the owning viewer; there is no Log Viewer observer.
+
+JSON Viewer treats one `application/json` script as its source signature. A changed signature is
+parsed once into nested native `<details>` branches and text-only leaf nodes. Its own render
+mutations do not retrigger rendering because the source signature is unchanged. `set()` serializes
+API values back through the same source boundary; circular values fail before the existing document
+changes.
+
+Countdown instances register with one module-level interval. The shared tick removes disconnected or
+completed records and clears itself when no running instances remain. Pause stores remaining time
+without another timer; resume derives a new absolute deadline. The visible values are ordinary
+authored parts, and only the completion status uses a polite announcement so screen readers are not
+interrupted every second.
+
+Connection Status, Terminal, Radial Progress, Indicator, Dock, Swap, and Key Value have no component
+runtime. Their public state is semantic HTML, data attributes, ARIA values, and CSS variables. The
+control-plane demo composes all ten components around `/api/demo/runtime` and the SDK-generated
+`/api/demo/runtime/stream` route, proving the same application under Vite and the self-hosted Node
+server.
 
 ## Self-hosted proof backend
 
 `server/api.ts` owns the demo API routes used by both the Vite middleware and the production-shaped
 Node server. `server/index.ts` adds safe static-file resolution, cache policy, security headers,
 health checks, and graceful shutdown. `npm run test:self-hosted` builds the library, site, and
-server, starts the bundled process on an ephemeral port, and verifies the rendered application plus
-backend contracts.
+server, starts the bundled process on an ephemeral port, and verifies the rendered application,
+runtime snapshot, Datastar log stream, and browser-applied backend contracts.
 
 The expression runtime currently uses dynamic function compilation. The self-hosted Content Security
 Policy therefore permits `unsafe-eval` for scripts while keeping scripts same-origin and blocking

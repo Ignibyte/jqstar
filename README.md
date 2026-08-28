@@ -79,7 +79,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 90 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 100 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
@@ -89,8 +89,10 @@ Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Nav
 Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
 Select, Time Picker, Color Picker, Rating, Message, Message Scroller, Search Field, Item, Feed,
 Questionnaire, Attachment, Bubble, Aspect Ratio, Chart, Direction, Marker, Table, Typography, Stat,
-Timeline, Status, Code Block, Browser Mockup, and Diff. Import the precompiled theme for the default
-appearance. Tailwind is used to author this file but is not required in the consuming application.
+Timeline, Status, Code Block, Browser Mockup, Diff, Log Viewer, JSON Viewer, Countdown, Connection
+Status, Terminal, Radial Progress, Indicator, Dock, Swap, and Key Value. Import the precompiled
+theme for the default appearance. Tailwind is used to author this file but is not required in the
+consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -630,7 +632,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="90" max="90">90 of 90</progress>
+    <progress data-jqs="progress" value="100" max="100">100 of 100</progress>
   </div>
 </article>
 
@@ -694,11 +696,50 @@ Use `$.star.ui.codeBlock.text("#payload")` to read it or
 Diff are zero-runtime presentation contracts. Diff uses a native range input, so pointer and
 keyboard comparison work without another widget implementation.
 
+Log Viewer accepts authored or server-appended list items and exposes bounded append, clear, pause,
+resume, minimum-level filtering, follow state, and inspection methods:
+
+```html
+<section id="logs" data-jqs="log-viewer" data-level="all" data-max="200">
+  <select data-part="filter" aria-label="Minimum log level">
+    <option value="all">All levels</option>
+    <option value="warn">Warning</option>
+    <option value="error">Error</option>
+  </select>
+  <button data-part="pause" data-on:click="@ui.log-viewer.toggle">Pause logs</button>
+  <div data-part="viewport"><ol data-part="entries"></ol></div>
+  <p data-part="status"></p>
+</section>
+```
+
+`$.star.ui.logViewer.append("#logs", entry)` builds every field with `textContent`; strings are not
+interpreted as HTML. `filter`, `clear`, `pause`, `resume`, `toggle`, `follow`, and `state` share the
+same contract as the `@ui.log-viewer.*` actions. Server patches can append ordinary
+`data-part="entry"` list items. The existing document-level enhancement pass updates capacity,
+filtering, status, and follow behavior without adding a component Mutation Observer.
+
+JSON Viewer reads one non-executable `script[type="application/json"][data-part="source"]` and
+renders nested native disclosures. Use `set`, `value`, `expandAll`, and `collapseAll` under
+`$.star.ui.jsonViewer`, or the matching named actions for disclosure changes. Values are rendered as
+text, a depth limit prevents unbounded recursion, and rerendering occurs only when the source
+signature changes.
+
+Countdown accepts `data-duration` in seconds or an absolute `data-until` deadline. Public `start`,
+`until`, `pause`, `resume`, `reset`, `remaining`, and `state` methods are mirrored by named actions
+where state changes. All connected countdowns share one clock, and that clock stops when no running
+countdown remains. Completion is announced once through the authored status part.
+
+Connection Status, Terminal, Radial Progress, Indicator, Dock, Swap, and Key Value are lightweight
+composition contracts. Swap retains one native checkbox, Dock retains ordinary links and
+`aria-current`, and Key Value retains a definition list. A backend can update their public data,
+ARIA, text, and CSS-variable state without calling a component renderer.
+
 ## Self-hosted demo backend
 
 The production-shaped server uses the same API implementation as the local Vite demo. It serves the
 built site, `/health`, JSON and multipart routes, and the Datastar SDK SSE routes from one Node
-process:
+process. `/api/demo/runtime` returns the control-plane snapshot; `/api/demo/runtime/stream` uses the
+official SDK to append escaped log-entry HTML and patch the completion signal:
 
 ```sh
 npm run build:self-hosted

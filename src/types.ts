@@ -561,6 +561,66 @@ export interface StarCodeBlockStatic {
   text(target: CodeBlockTarget): string;
 }
 
+export type LogViewerTarget = string | HTMLElement;
+export type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogFilter = "all" | LogLevel;
+
+export interface LogEntryInput {
+  id?: string;
+  level?: LogLevel;
+  message: string;
+  source?: string;
+  timestamp?: string | Date;
+}
+
+export interface LogViewerState {
+  count: number;
+  filter: LogFilter;
+  following: boolean;
+  paused: boolean;
+  visible: number;
+}
+
+export interface StarLogViewerStatic {
+  append(target: LogViewerTarget, entry: LogEntryInput): HTMLElement;
+  clear(target: LogViewerTarget): HTMLElement;
+  pause(target: LogViewerTarget): HTMLElement;
+  resume(target: LogViewerTarget): HTMLElement;
+  toggle(target: LogViewerTarget): HTMLElement;
+  filter(target: LogViewerTarget, filter: LogFilter): HTMLElement;
+  follow(target: LogViewerTarget, following?: boolean): HTMLElement;
+  state(target: LogViewerTarget): LogViewerState;
+}
+
+export type JSONViewerTarget = string | HTMLElement;
+
+export interface StarJSONViewerStatic {
+  set(target: JSONViewerTarget, value: unknown): HTMLElement;
+  value(target: JSONViewerTarget): unknown;
+  expandAll(target: JSONViewerTarget): HTMLElement;
+  collapseAll(target: JSONViewerTarget): HTMLElement;
+}
+
+export type CountdownTarget = string | HTMLElement;
+export type CountdownUntil = string | number | Date;
+
+export interface CountdownState {
+  complete: boolean;
+  paused: boolean;
+  remaining: number;
+  until?: string;
+}
+
+export interface StarCountdownStatic {
+  start(target: CountdownTarget, durationSeconds?: number): HTMLElement;
+  until(target: CountdownTarget, value: CountdownUntil): HTMLElement;
+  pause(target: CountdownTarget): HTMLElement;
+  resume(target: CountdownTarget): HTMLElement;
+  reset(target: CountdownTarget): HTMLElement;
+  remaining(target: CountdownTarget): number;
+  state(target: CountdownTarget): CountdownState;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -673,6 +733,9 @@ export interface StarUIStatic {
   readonly questionnaire: StarQuestionnaireStatic;
   readonly chart: StarChartStatic;
   readonly codeBlock: StarCodeBlockStatic;
+  readonly logViewer: StarLogViewerStatic;
+  readonly jsonViewer: StarJSONViewerStatic;
+  readonly countdown: StarCountdownStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

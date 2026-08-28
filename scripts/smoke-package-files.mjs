@@ -63,6 +63,16 @@ const required = [
   "registry/components/code-block.html",
   "registry/components/browser-mockup.html",
   "registry/components/diff.html",
+  "registry/components/log-viewer.html",
+  "registry/components/json-viewer.html",
+  "registry/components/countdown.html",
+  "registry/components/connection-status.html",
+  "registry/components/terminal.html",
+  "registry/components/radial-progress.html",
+  "registry/components/indicator.html",
+  "registry/components/dock.html",
+  "registry/components/swap.html",
+  "registry/components/key-value.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

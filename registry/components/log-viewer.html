@@ -1,0 +1,51 @@
+<section
+  id="service-logs"
+  data-jqs="log-viewer"
+  data-level="all"
+  data-max="200"
+  aria-labelledby="service-logs-title"
+>
+  <header data-part="header">
+    <h2 id="service-logs-title">Service logs</h2>
+    <label>
+      <span>Minimum level</span>
+      <select data-part="filter">
+        <option value="all">All levels</option>
+        <option value="debug">Debug</option>
+        <option value="info">Info</option>
+        <option value="warn">Warning</option>
+        <option value="error">Error</option>
+      </select>
+    </label>
+    <button
+      data-jqs="button"
+      data-part="pause"
+      data-size="sm"
+      data-variant="ghost"
+      type="button"
+      data-on:click="@ui.log-viewer.toggle"
+    >
+      Pause logs
+    </button>
+    <button
+      data-jqs="button"
+      data-size="sm"
+      data-variant="ghost"
+      type="button"
+      data-on:click="@ui.log-viewer.clear"
+    >
+      Clear
+    </button>
+  </header>
+  <div data-part="viewport">
+    <ol data-part="entries">
+      <li data-part="entry" data-level="info">
+        <time data-part="timestamp" datetime="2026-08-28T18:30:00Z">18:30:00</time>
+        <span data-part="level">INFO</span>
+        <span data-part="source">api</span>
+        <span data-part="message">Self-hosted service is accepting requests.</span>
+      </li>
+    </ol>
+  </div>
+  <p data-part="status"></p>
+</section>

@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.', operationsLoading: false, operationsMessage: 'Ready to query the local operations endpoint.' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.', operationsLoading: false, operationsMessage: 'Ready to query the local operations endpoint.', controlPlaneCompact: false, controlPlaneLoading: false, controlPlaneStreaming: false, controlPlaneMessage: 'Ready to load a runtime snapshot or open the Datastar log stream.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -2076,7 +2076,7 @@ Everything stayed native from browser to backend.</textarea>
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="90">90 components</td>
+                  <td data-key="coverage" data-value="100">100 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -2572,7 +2572,7 @@ Everything stayed native from browser to backend.</textarea>
 
           <div data-jqs="aspect-ratio" data-ratio="video" class="release-aspect-proof">
             <div data-part="media" role="img" aria-label="Abstract component release landscape">
-              <span>90</span>
+              <span>100</span>
               <strong>source-owned components</strong>
               <small>One compiled theme · real HTML</small>
             </div>
@@ -2668,7 +2668,7 @@ Everything stayed native from browser to backend.</textarea>
           </article>
           <article data-jqs="stat" aria-labelledby="operations-release-title">
             <p id="operations-release-title" data-part="title">Release</p>
-            <strong id="operations-release" data-part="value">v0.5.0</strong>
+            <strong id="operations-release" data-part="value">v0.6.0</strong>
             <p data-part="description">
               <span
                 id="operations-status-dot"
@@ -2728,8 +2728,8 @@ Everything stayed native from browser to backend.</textarea>
             </header>
             <pre><code data-part="code">{
   "status": "healthy",
-  "release": "v0.5.0",
-  "components": 90
+  "release": "v0.6.0",
+  "components": 100
 }</code></pre>
             <p data-part="status"></p>
           </div>
@@ -2786,6 +2786,252 @@ CACHE_TTL=60</code></pre>
         ></output>
       </section>
 
+      <section
+        class="card control-plane-card"
+        data-class:compact="$controlPlaneCompact"
+        aria-labelledby="control-plane-title"
+      >
+        <div class="control-plane-heading">
+          <div>
+            <p class="label" id="control-plane-title">Backend control plane</p>
+            <p class="hint">
+              A runtime snapshot plus SDK-streamed logs, composed from ten source-owned components.
+            </p>
+          </div>
+          <div class="control-plane-actions">
+            <button
+              data-jqs="button"
+              data-variant="outline"
+              type="button"
+              data-on:click="@refreshControlPlane"
+              data-prop:disabled="$controlPlaneLoading || $controlPlaneStreaming"
+            >
+              Refresh snapshot
+            </button>
+            <button
+              data-jqs="button"
+              type="button"
+              data-on:click="@streamControlPlane"
+              data-prop:disabled="$controlPlaneLoading || $controlPlaneStreaming"
+            >
+              Stream 3 logs
+            </button>
+          </div>
+        </div>
+
+        <div id="runtime-overview" class="runtime-overview">
+          <div
+            id="runtime-connection"
+            data-jqs="connection-status"
+            data-state="connected"
+            role="status"
+            aria-live="polite"
+          >
+            <span
+              data-part="indicator"
+              data-jqs="status"
+              data-variant="success"
+              data-live
+              aria-hidden="true"
+            ></span>
+            <span data-part="content">
+              <strong data-part="title">Connected</strong>
+              <span data-part="description">datastar-sse · local environment</span>
+            </span>
+            <time data-part="updated" datetime="2026-08-28T18:30:00Z">Revision 0</time>
+          </div>
+
+          <div class="runtime-capacity-card">
+            <span data-jqs="indicator" data-position="top-end">
+              <div
+                id="runtime-capacity"
+                data-jqs="radial-progress"
+                role="progressbar"
+                aria-label="Worker capacity"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="64"
+                style="--jqs-value: 64; --jqs-radial-size: 7rem"
+              >
+                <strong data-part="value">64%</strong>
+                <span data-part="label">Worker capacity</span>
+              </div>
+              <span data-part="indicator" data-jqs="badge" data-variant="success">live</span>
+            </span>
+          </div>
+
+          <div class="runtime-check-card">
+            <span>Next health check</span>
+            <div id="runtime-countdown" data-jqs="countdown" data-duration="30">
+              <span data-part="minutes">00</span>
+              <span aria-hidden="true">:</span>
+              <span data-part="seconds">30</span>
+              <output data-part="status"></output>
+            </div>
+            <label data-jqs="swap">
+              <input
+                type="checkbox"
+                aria-label="Use compact control-plane view"
+                data-bind:control-plane-compact
+              />
+              <span data-part="off" aria-hidden="true">Expanded view</span>
+              <span data-part="on" aria-hidden="true">Compact view</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-plane-grid">
+          <section
+            id="runtime-terminal"
+            data-jqs="terminal"
+            aria-labelledby="runtime-terminal-title"
+          >
+            <header data-part="header">
+              <span data-part="controls" aria-hidden="true"><i></i><i></i><i></i></span>
+              <h2 id="runtime-terminal-title" data-part="title">jqstar · live server log</h2>
+            </header>
+            <div data-part="content">
+              <section
+                id="runtime-log-viewer"
+                data-jqs="log-viewer"
+                data-level="all"
+                data-max="40"
+                aria-labelledby="runtime-log-title"
+              >
+                <header data-part="header">
+                  <h3 id="runtime-log-title">Event stream</h3>
+                  <label>
+                    <span>Level</span>
+                    <select data-part="filter">
+                      <option value="all">All levels</option>
+                      <option value="debug">Debug</option>
+                      <option value="info">Info</option>
+                      <option value="warn">Warning</option>
+                      <option value="error">Error</option>
+                    </select>
+                  </label>
+                  <button
+                    data-jqs="button"
+                    data-part="pause"
+                    data-size="sm"
+                    data-variant="ghost"
+                    type="button"
+                    data-on:click="@ui.log-viewer.toggle"
+                  >
+                    Pause logs
+                  </button>
+                  <button
+                    data-jqs="button"
+                    data-size="sm"
+                    data-variant="ghost"
+                    type="button"
+                    data-on:click="@ui.log-viewer.clear"
+                  >
+                    Clear
+                  </button>
+                </header>
+                <div data-part="viewport">
+                  <ol id="runtime-log-entries" data-part="entries">
+                    <li data-part="entry" data-level="info" data-value="initial-1">
+                      <time data-part="timestamp" datetime="2026-08-28T18:30:00Z">18:30:00</time>
+                      <span data-part="level">INFO</span>
+                      <span data-part="source">http</span>
+                      <span data-part="message">Self-hosted service is accepting requests.</span>
+                    </li>
+                    <li data-part="entry" data-level="debug" data-value="initial-2">
+                      <time data-part="timestamp" datetime="2026-08-28T18:30:01Z">18:30:01</time>
+                      <span data-part="level">DEBUG</span>
+                      <span data-part="source">registry</span>
+                      <span data-part="message">Registry manifest contains 100 components.</span>
+                    </li>
+                    <li data-part="entry" data-level="warn" data-value="initial-3">
+                      <time data-part="timestamp" datetime="2026-08-28T18:30:02Z">18:30:02</time>
+                      <span data-part="level">WARN</span>
+                      <span data-part="source">deploy</span>
+                      <span data-part="message">Public hosting is waiting on its target.</span>
+                    </li>
+                  </ol>
+                </div>
+                <p data-part="status"></p>
+              </section>
+            </div>
+          </section>
+
+          <section id="runtime-json" data-jqs="json-viewer" aria-labelledby="runtime-json-title">
+            <header data-part="header">
+              <h2 id="runtime-json-title">Runtime payload</h2>
+              <button
+                data-jqs="button"
+                data-size="sm"
+                data-variant="ghost"
+                type="button"
+                data-on:click="@ui.json-viewer.expand-all"
+              >
+                Expand all
+              </button>
+              <button
+                data-jqs="button"
+                data-size="sm"
+                data-variant="ghost"
+                type="button"
+                data-on:click="@ui.json-viewer.collapse-all"
+              >
+                Collapse all
+              </button>
+            </header>
+            <script type="application/json" data-part="source">
+              {
+                "service": "jqstar",
+                "connection": "connected",
+                "components": 100,
+                "runtime": {
+                  "process": "node-http",
+                  "transport": "datastar-sse"
+                }
+              }
+            </script>
+            <div data-part="tree"></div>
+            <p data-part="status"></p>
+          </section>
+        </div>
+
+        <dl data-jqs="key-value" aria-label="Runtime details">
+          <div data-part="item">
+            <dt>Region</dt>
+            <dd id="runtime-region">us-central</dd>
+          </div>
+          <div data-part="item">
+            <dt>Environment</dt>
+            <dd id="runtime-environment">local</dd>
+          </div>
+          <div data-part="item">
+            <dt>Transport</dt>
+            <dd id="runtime-transport"><code>datastar-sse</code></dd>
+          </div>
+          <div data-part="item">
+            <dt>Process</dt>
+            <dd id="runtime-process"><code>node-http</code></dd>
+          </div>
+        </dl>
+
+        <nav data-jqs="dock" aria-label="Control-plane sections">
+          <a data-part="item" href="#runtime-overview" data-active aria-current="page">
+            <span data-part="icon" aria-hidden="true">⌂</span>
+            <span data-part="label">Overview</span>
+          </a>
+          <a data-part="item" href="#runtime-log-viewer">
+            <span data-part="icon" aria-hidden="true">≡</span>
+            <span data-part="label">Logs</span>
+          </a>
+          <a data-part="item" href="#runtime-json">
+            <span data-part="icon" aria-hidden="true">{ }</span>
+            <span data-part="label">Payload</span>
+          </a>
+        </nav>
+
+        <p class="control-plane-message" data-text="$controlPlaneMessage" aria-live="polite"></p>
+      </section>
+
       <section class="card primitives-component-card" aria-labelledby="primitives-components-title">
         <div>
           <p class="label" id="primitives-components-title">Composition primitives</p>
@@ -2830,11 +3076,11 @@ CACHE_TTL=60</code></pre>
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="90"
-            max="90"
+            value="100"
+            max="100"
             aria-labelledby="progress-proof-label"
           >
-            90 of 90
+            100 of 100
           </progress>
         </div>
 

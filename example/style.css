@@ -941,6 +941,124 @@ h1 {
   font-weight: 700;
 }
 
+.control-plane-card {
+  grid-template-columns: 1fr;
+}
+
+.control-plane-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.control-plane-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.runtime-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) auto minmax(12rem, 0.7fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+#runtime-connection {
+  align-self: stretch;
+}
+
+.runtime-capacity-card,
+.runtime-check-card {
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+}
+
+.runtime-check-card > :first-child {
+  color: #655e55;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.control-plane-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+#runtime-terminal > [data-part="content"] {
+  display: grid;
+  min-height: 0;
+  padding: 0;
+}
+
+#runtime-terminal [data-jqs="log-viewer"] {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#runtime-log-viewer > [data-part="viewport"] {
+  --jqs-log-viewer-height: 19rem;
+}
+
+#runtime-json > [data-part="tree"] {
+  --jqs-json-viewer-height: 19rem;
+}
+
+.control-plane-card > [data-jqs="key-value"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.control-plane-card > [data-jqs="key-value"] > [data-part="item"] {
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+}
+
+.control-plane-card > [data-jqs="key-value"] > [data-part="item"] + [data-part="item"] {
+  border-block-start: 0;
+  border-inline-start: 1px solid var(--color-jqs-border);
+}
+
+.control-plane-card > [data-jqs="key-value"] dd {
+  text-align: start;
+}
+
+.control-plane-card > [data-jqs="dock"] {
+  justify-self: center;
+}
+
+.control-plane-message {
+  min-height: 1.2rem;
+  margin: 0;
+  color: #06704f;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.control-plane-card.compact #runtime-log-viewer > [data-part="viewport"],
+.control-plane-card.compact #runtime-json > [data-part="tree"] {
+  max-height: 10rem;
+}
+
+.control-plane-card.compact [data-jqs="connection-status"] [data-part="description"],
+.control-plane-card.compact [data-jqs="connection-status"] [data-part="updated"] {
+  display: none;
+}
+
 .reporting-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(17rem, 0.7fr);
@@ -1418,6 +1536,34 @@ pre {
 
   .operations-grid {
     grid-template-columns: 1fr;
+  }
+
+  .control-plane-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .control-plane-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .runtime-overview,
+  .control-plane-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .runtime-capacity-card {
+    min-height: 10rem;
+  }
+
+  .control-plane-card > [data-jqs="key-value"] {
+    grid-template-columns: 1fr;
+  }
+
+  .control-plane-card > [data-jqs="key-value"] > [data-part="item"] + [data-part="item"] {
+    border-block-start: 1px solid var(--color-jqs-border);
+    border-inline-start: 0;
   }
 
   [data-jqs="stat"] + [data-jqs="stat"] {

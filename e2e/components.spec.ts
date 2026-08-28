@@ -990,7 +990,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "90",
+      "100",
     );
   });
 
@@ -1046,7 +1046,7 @@ test.describe("jQuery Star components", () => {
     await expect(payload.locator('[data-part="status"]')).toHaveText("Copied to clipboard.");
     await expect
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
-      .toContain('"components": 90');
+      .toContain('"components": 100');
 
     await control.focus();
     await page.keyboard.press("ArrowRight");
@@ -1054,6 +1054,49 @@ test.describe("jQuery Star components", () => {
     await expect
       .poll(() => diff.evaluate((element) => element.style.getPropertyValue("--jqs-diff-position")))
       .toBe("51%");
+  });
+
+  test("control plane applies runtime snapshots and SDK-streamed logs", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Backend control plane" });
+    const logViewer = card.locator("#runtime-log-viewer");
+    const jsonViewer = card.locator("#runtime-json");
+    const countdown = card.locator("#runtime-countdown");
+    const capacity = card.getByRole("progressbar", { name: "Worker capacity" });
+    const logEntries = logViewer.locator('[data-part="entry"]');
+
+    await expect(logViewer).toHaveAttribute("data-state", "live");
+    await expect(logEntries).toHaveCount(3);
+    await expect(jsonViewer).toHaveAttribute("data-state", "ready");
+    await expect(jsonViewer.locator('details[data-part="branch"]')).not.toHaveCount(0);
+    await expect(countdown).toHaveAttribute("data-state", "running");
+
+    await card.getByRole("button", { name: "Refresh snapshot" }).click();
+    await expect(card.locator(".control-plane-message")).toContainText(
+      "Runtime snapshot revision 1 applied",
+    );
+    await expect(capacity).toHaveAttribute("aria-valuenow", "67");
+    await expect(card.locator("#runtime-environment")).toHaveText("local");
+    await expect(jsonViewer).toContainText("revision");
+    await expect(jsonViewer).toContainText("100");
+    await expect(logEntries).toHaveCount(3);
+
+    await card.getByRole("button", { name: "Stream 3 logs" }).click();
+    await expect(card.locator(".control-plane-message")).toContainText(
+      "Datastar stream 1 appended 3 log entries",
+    );
+    await expect(logEntries).toHaveCount(6);
+    await expect(logViewer).toContainText("jQuery Star enhanced the server-appended entry.");
+
+    await logViewer.getByRole("combobox", { name: "Level" }).selectOption("warn");
+    await expect(logViewer.locator('[data-part="status"]')).toHaveText("2 of 6 entries · Live");
+    await logViewer.getByRole("button", { name: "Pause logs" }).click();
+    await expect(logViewer).toHaveAttribute("data-state", "paused");
+    await expect(logViewer.locator('[data-part="viewport"]')).toHaveAttribute("aria-live", "off");
+
+    await card.getByRole("checkbox", { name: "Use compact control-plane view" }).check();
+    await expect(card).toHaveClass(/compact/);
+    await jsonViewer.getByRole("button", { name: "Collapse all" }).click();
+    await expect(jsonViewer.locator('details[data-part="branch"][open]')).toHaveCount(0);
   });
 
   test("button and open dialog pass automated accessibility checks", async ({ page }) => {
@@ -1585,6 +1628,24 @@ test.describe("jQuery Star components", () => {
     await card.getByRole("slider", { name: "Compare configuration before and after" }).focus();
     await page.keyboard.press("ArrowRight");
     results = await new AxeBuilder({ page }).include(".operations-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("control-plane components pass accessibility checks before and after server updates", async ({
+    page,
+  }) => {
+    const card = page.locator(".control-plane-card");
+    let results = await new AxeBuilder({ page }).include(".control-plane-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.getByRole("button", { name: "Refresh snapshot" }).click();
+    await card.getByRole("button", { name: "Stream 3 logs" }).click();
+    await card.getByRole("checkbox", { name: "Use compact control-plane view" }).check();
+    await card
+      .locator("#runtime-log-viewer")
+      .getByRole("combobox", { name: "Level" })
+      .selectOption("warn");
+    results = await new AxeBuilder({ page }).include(".control-plane-card").analyze();
     expect(results.violations).toEqual([]);
   });
 });

@@ -836,6 +836,60 @@ if (
   throw new Error("The ESM bundle failed the Code Block component smoke test.");
 }
 
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<section id="package-log-viewer" data-jqs="log-viewer" data-level="all" data-max="2">
+     <header data-part="header"><select data-part="filter"><option value="all">All</option><option value="warn">Warning</option></select><button data-part="pause">Pause</button></header>
+     <div data-part="viewport"><ol data-part="entries"><li data-part="entry" data-level="info">Ready</li></ol></div><p data-part="status"></p>
+   </section>`,
+);
+const packageLogViewer = document.querySelector("#package-log-viewer");
+$.star.ui.enhance(packageLogViewer);
+$.star.ui.logViewer.append(packageLogViewer, {
+  level: "warn",
+  message: "Built log append",
+  source: "package",
+});
+$.star.ui.logViewer.filter(packageLogViewer, "warn");
+if (
+  $.star.ui.logViewer.state(packageLogViewer).count !== 2 ||
+  $.star.ui.logViewer.state(packageLogViewer).visible !== 1 ||
+  packageLogViewer.querySelector('[data-part="viewport"]').getAttribute("role") !== "log"
+) {
+  throw new Error("The ESM bundle failed the Log Viewer component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<section id="package-json-viewer" data-jqs="json-viewer"><script type="application/json" data-part="source">{"ready":true}</script><div data-part="tree"></div><p data-part="status"></p></section>`,
+);
+const packageJSONViewer = document.querySelector("#package-json-viewer");
+$.star.ui.enhance(packageJSONViewer);
+$.star.ui.jsonViewer.set(packageJSONViewer, { nested: { count: 100 } });
+$.star.ui.jsonViewer.expandAll(packageJSONViewer);
+if (
+  $.star.ui.jsonViewer.value(packageJSONViewer).nested.count !== 100 ||
+  packageJSONViewer.querySelectorAll('details[data-part="branch"][open]').length !== 2
+) {
+  throw new Error("The ESM bundle failed the JSON Viewer component smoke test.");
+}
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<div id="package-countdown" data-jqs="countdown" data-duration="10"><span data-part="seconds"></span><output data-part="status"></output></div>`,
+);
+const packageCountdown = document.querySelector("#package-countdown");
+$.star.ui.enhance(packageCountdown);
+$.star.ui.countdown.start(packageCountdown, 12);
+$.star.ui.countdown.pause(packageCountdown);
+if (
+  $.star.ui.countdown.remaining(packageCountdown) !== 12 ||
+  $.star.ui.countdown.state(packageCountdown).paused !== true ||
+  packageCountdown.querySelector('[data-part="seconds"]').textContent !== "12"
+) {
+  throw new Error("The ESM bundle failed the Countdown component smoke test.");
+}
+
 const theme = await readFile(new URL("../dist/jquery-star-ui.css", import.meta.url), "utf8");
 const componentSelectors = [
   "[data-jqs=button]",
@@ -907,6 +961,16 @@ const componentSelectors = [
   "[data-jqs=code-block]",
   "[data-jqs=browser-mockup]",
   "[data-jqs=diff]",
+  "[data-jqs=log-viewer]",
+  "[data-jqs=json-viewer]",
+  "[data-jqs=countdown]",
+  "[data-jqs=connection-status]",
+  "[data-jqs=terminal]",
+  "[data-jqs=radial-progress]",
+  "[data-jqs=indicator]",
+  "[data-jqs=dock]",
+  "[data-jqs=swap]",
+  "[data-jqs=key-value]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -950,6 +1014,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM log-viewer=passed, ESM json-viewer=passed, ESM countdown=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

@@ -34,6 +34,9 @@ import { createFeeds } from "./feed";
 import { createQuestionnaires } from "./questionnaire";
 import { createCharts } from "./chart";
 import { createCodeBlocks } from "./code-block";
+import { createLogViewers } from "./log-viewer";
+import { createJSONViewers } from "./json-viewer";
+import { createCountdowns } from "./countdown";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -266,6 +269,9 @@ const enhancementOwnerSelector = [
   "questionnaire",
   "chart",
   "code-block",
+  "log-viewer",
+  "json-viewer",
+  "countdown",
   "toast",
   "toast-viewport",
   "select",
@@ -424,6 +430,9 @@ export function createUI(): StarUIStatic {
   const questionnaires = createQuestionnaires();
   const charts = createCharts();
   const codeBlocks = createCodeBlocks();
+  const logViewers = createLogViewers();
+  const jsonViewers = createJSONViewers();
+  const countdowns = createCountdowns();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -450,6 +459,9 @@ export function createUI(): StarUIStatic {
     questionnaires.enhance(root);
     charts.enhance(root);
     codeBlocks.enhance(root);
+    logViewers.enhance(root);
+    jsonViewers.enhance(root);
+    countdowns.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -502,6 +514,9 @@ export function createUI(): StarUIStatic {
     questionnaire: questionnaires.api,
     chart: charts.api,
     codeBlock: codeBlocks.api,
+    logViewer: logViewers.api,
+    jsonViewer: jsonViewers.api,
+    countdown: countdowns.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

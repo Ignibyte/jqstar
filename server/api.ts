@@ -95,6 +95,16 @@ const feedItems = [
   },
 ] as const;
 
+const runtimeLogs = [
+  { level: "info", message: "HTTP listener accepted a health probe.", source: "http" },
+  { level: "debug", message: "Registry manifest contains 100 components.", source: "registry" },
+  {
+    level: "warn",
+    message: "Public deployment is waiting on its hosting target.",
+    source: "deploy",
+  },
+] as const;
+
 class BodyLimitError extends Error {}
 
 function escapeHtml(value: string): string {
@@ -103,6 +113,23 @@ function escapeHtml(value: string): string {
     (character) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!,
   );
+}
+
+function logEntryHtml(entry: {
+  id: string;
+  level: "debug" | "info" | "warn" | "error";
+  message: string;
+  source: string;
+  timestamp: string;
+}): string {
+  const time = new Date(entry.timestamp).toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "UTC",
+  });
+  return `<li data-part="entry" data-level="${entry.level}" data-value="${escapeHtml(entry.id)}"><time data-part="timestamp" datetime="${escapeHtml(entry.timestamp)}">${escapeHtml(time)}</time><span data-part="level">${entry.level.toLocaleUpperCase()}</span><span data-part="source">${escapeHtml(entry.source)}</span><span data-part="message">${escapeHtml(entry.message)}</span></li>`;
 }
 
 function json(response: ServerResponse, status: number, value: unknown): void {
@@ -174,13 +201,15 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   const maximum = options.maxBodyBytes ?? 10 * 1024 * 1024;
   let metricsRevision = 0;
   let operationsRevision = 0;
+  let runtimeRevision = 0;
+  let runtimeStreamRevision = 0;
 
   async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
     const url = new URL(request.url ?? "/", "http://localhost");
 
     if (url.pathname === "/health") {
       if (!method(request, response, "GET")) return true;
-      json(response, 200, { components: 90, environment, service: "jqstar", status: "healthy" });
+      json(response, 200, { components: 100, environment, service: "jqstar", status: "healthy" });
       return true;
     }
 
@@ -188,14 +217,99 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       if (!method(request, response, "GET")) return true;
       operationsRevision += 1;
       json(response, 200, {
-        components: 90,
+        components: 100,
         latency: Math.max(48, 82 - operationsRevision * 3),
-        release: `v0.5.0-${environment}`,
+        release: `v0.6.0-${environment}`,
         requests: 12_840 + operationsRevision * 294,
         revision: operationsRevision,
         status: "healthy",
         timestamp: new Date().toISOString(),
       });
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/runtime") {
+      if (!method(request, response, "GET")) return true;
+      runtimeRevision += 1;
+      const timestamp = new Date();
+      const logs = runtimeLogs.map((entry, index) => ({
+        ...entry,
+        id: `snapshot-${runtimeRevision}-${index + 1}`,
+        timestamp: new Date(
+          timestamp.valueOf() - (runtimeLogs.length - index) * 1_000,
+        ).toISOString(),
+      }));
+      json(response, 200, {
+        capacity: Math.min(88, 64 + runtimeRevision * 3),
+        components: 100,
+        connection: "connected",
+        environment,
+        logs,
+        nextCheck: new Date(timestamp.valueOf() + 30_000).toISOString(),
+        region: "us-central",
+        revision: runtimeRevision,
+        runtime: {
+          process: "node-http",
+          registry: "source-owned",
+          transport: "datastar-sse",
+        },
+        service: "jqstar",
+        timestamp: timestamp.toISOString(),
+      });
+      return true;
+    }
+
+    if (url.pathname === "/api/demo/runtime/stream") {
+      if (!method(request, response, "GET")) return true;
+      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+      if (!read.success) {
+        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+        response.end(read.error);
+        return true;
+      }
+      runtimeStreamRevision += 1;
+      const revision = runtimeStreamRevision;
+      const timestamp = Date.now();
+      const logs = [
+        {
+          id: `stream-${revision}-1`,
+          level: "info" as const,
+          message: `Datastar stream ${revision} opened.`,
+          source: "sse",
+          timestamp: new Date(timestamp).toISOString(),
+        },
+        {
+          id: `stream-${revision}-2`,
+          level: "debug" as const,
+          message: "jQuery Star enhanced the server-appended entry.",
+          source: "ui",
+          timestamp: new Date(timestamp + 1_000).toISOString(),
+        },
+        {
+          id: `stream-${revision}-3`,
+          level: "warn" as const,
+          message: "Hosting remains local until a public target is available.",
+          source: "deploy",
+          timestamp: new Date(timestamp + 2_000).toISOString(),
+        },
+      ];
+      const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
+        for (const entry of logs) {
+          await new Promise<void>((resolve) => setTimeout(resolve, 90));
+          stream.patchElements(logEntryHtml(entry), {
+            selector: "#runtime-log-entries",
+            mode: "append",
+            eventId: entry.id,
+          });
+        }
+        stream.patchSignals(
+          JSON.stringify({
+            controlPlaneMessage: `Datastar stream ${revision} appended ${logs.length} log entries.`,
+          }),
+          { eventId: `stream-${revision}-complete` },
+        );
+      });
+      await sendWebResponse(sdkResponse, response);
       return true;
     }
 
