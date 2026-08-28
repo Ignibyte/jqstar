@@ -184,6 +184,15 @@ The first proof contains Button, Dialog, and the native form family:
   [`input type="color"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/color)
   and its platform UI. Text entry and swatches are shortcuts that must normalize through that input
   instead of creating a second color value.
+- Rating uses a native radio fieldset rather than recreating the APG
+  [Rating Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/examples/radio-rating/).
+  Native labels, radios, and checked state keep browser keyboard behavior, validation, and form
+  submission while the visible stars remain presentation.
+- Message Scroller follows W3C's
+  [`role="log"` technique](https://www.w3.org/WAI/WCAG21/Techniques/aria/ARIA23) for sequential chat
+  additions. It determines whether the reader is near the latest message from `scrollHeight`,
+  `clientHeight`, and `scrollTop`, using a threshold because those values can have different
+  rounding behavior.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

@@ -920,6 +920,46 @@
           "target": "~/components/jquery-star/color-picker.html"
         }
       ]
+    },
+    {
+      "name": "rating",
+      "type": "registry:item",
+      "title": "Rating",
+      "description": "A native radio rating field with form validation, server-patchable value, lifecycle events, and named actions.",
+      "files": [
+        {
+          "path": "registry/components/rating.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/rating.html"
+        }
+      ]
+    },
+    {
+      "name": "message",
+      "type": "registry:item",
+      "title": "Message",
+      "description": "Source-owned conversation markup with sender, timestamp, content, attachment, action, and sent-side styling.",
+      "files": [
+        {
+          "path": "registry/components/message.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/message.html"
+        }
+      ]
+    },
+    {
+      "name": "message-scroller",
+      "type": "registry:item",
+      "title": "Message Scroller",
+      "description": "An accessible message log that follows appended content, preserves the reader's scroll position, and counts unread additions.",
+      "registryDependencies": ["message"],
+      "files": [
+        {
+          "path": "registry/components/message-scroller.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/message-scroller.html"
+        }
+      ]
     }
   ]
 }

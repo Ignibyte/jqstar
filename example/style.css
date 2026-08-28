@@ -534,6 +534,89 @@ h1 {
   flex: 0 0 auto;
 }
 
+.conversation-components-card {
+  grid-template-columns: 1fr;
+}
+
+.conversation-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(17rem, 0.75fr);
+  gap: 20px;
+  align-items: start;
+}
+
+#support-thread {
+  --jqs-message-scroller-height: 30rem;
+}
+
+#feedback-form,
+.feedback-copy {
+  display: grid;
+  gap: 12px;
+}
+
+#feedback-form {
+  padding: 18px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: #f8faf9;
+}
+
+.feedback-copy {
+  gap: 4px;
+}
+
+.feedback-copy h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.feedback-copy p {
+  margin: 0;
+  color: #655e55;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+#feedback-form textarea {
+  width: 100%;
+  min-height: 7rem;
+  resize: vertical;
+}
+
+#support-rating > [data-part="status"] {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.8125rem;
+}
+
+.feedback-submit {
+  display: grid;
+  gap: 10px;
+}
+
+.feedback-submit output {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  color: #06704f;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.feedback-submit [data-jqs="button"] {
+  width: 100%;
+}
+
 .layout-primitives-grid {
   display: grid;
   grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.6fr);
@@ -1009,7 +1092,8 @@ pre {
 
   #project-stepper > [data-part="panel"][data-value="details"],
   .workflow-assets-grid,
-  .preferences-grid {
+  .preferences-grid,
+  .conversation-grid {
     grid-template-columns: 1fr;
   }
 

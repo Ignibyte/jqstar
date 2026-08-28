@@ -303,6 +303,52 @@ test.describe("jQuery Star components", () => {
     );
   });
 
+  test("rating, messages, and message scroller preserve native feedback and reading position", async ({
+    page,
+  }) => {
+    const card = page.getByRole("region", { name: "Backend-ready conversation" });
+    const scroller = card.locator("#support-thread");
+    const viewport = scroller.getByRole("log", { name: "Support" });
+    const messages = viewport.locator('[data-jqs="message"]');
+    await viewport.evaluate((element) => {
+      element.style.maxHeight = "10rem";
+      element.scrollTop = 0;
+      element.dispatchEvent(new Event("scroll"));
+    });
+    await expect(scroller).toHaveAttribute("data-state", "paused");
+    await viewport.locator(':scope > [data-part="content"]').evaluate((element) => {
+      element.insertAdjacentHTML(
+        "beforeend",
+        '<article data-jqs="message" aria-label="Message from Server"><div data-part="content"><p>Server appended update.</p></div></article>',
+      );
+    });
+    const latest = scroller.getByRole("button", { name: /Scroll to latest message, 1 unread/ });
+    await expect(latest).toBeVisible();
+    await expect(latest).toContainText("Latest (1)");
+    await expect(viewport.evaluate((element) => element.scrollTop)).resolves.toBe(0);
+    await latest.click();
+    await expect(scroller).toHaveAttribute("data-state", "following");
+
+    const form = card.locator("#feedback-form");
+    const fourStars = card.getByRole("radio", { name: "4 stars" });
+    await card.locator('#support-rating [data-part="item"]').nth(3).click();
+    await expect(fourStars).toBeChecked();
+    await expect(
+      form.evaluate((element) => {
+        const body = new FormData(element as HTMLFormElement);
+        return { rating: body.get("rating"), reply: body.get("reply") };
+      }),
+    ).resolves.toEqual({
+      rating: "4",
+      reply: "Everything stayed native from browser to backend.",
+    });
+    const before = await messages.count();
+    await card.getByRole("button", { name: "Send feedback" }).click();
+    await expect(card.locator(".feedback-submit output")).toContainText("local backend received");
+    await expect(messages).toHaveCount(before + 1);
+    await expect(messages.last()).toContainText("4 stars · Delivered");
+  });
+
   test("choice controls, toggles, and sheet keep native and composite behavior", async ({
     page,
   }) => {
@@ -852,7 +898,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "69",
+      "72",
     );
   });
 
@@ -979,6 +1025,29 @@ test.describe("jQuery Star components", () => {
     expect(results.violations).toEqual([]);
     await card.getByRole("button", { name: "Review teams" }).click();
     results = await new AxeBuilder({ page }).include(".preferences-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("conversation and native rating pass accessibility checks with unread messages", async ({
+    page,
+  }) => {
+    const card = page.locator(".conversation-components-card");
+    const viewport = card.getByRole("log", { name: "Support" });
+    await viewport.evaluate((element) => {
+      element.style.maxHeight = "10rem";
+      element.scrollTop = 0;
+      element.dispatchEvent(new Event("scroll"));
+    });
+    await viewport.locator(':scope > [data-part="content"]').evaluate((element) => {
+      element.insertAdjacentHTML(
+        "beforeend",
+        '<article data-jqs="message" aria-label="Message from Server"><div data-part="content"><p>Server appended update.</p></div></article>',
+      );
+    });
+    await expect(card.getByRole("button", { name: /1 unread/ })).toBeVisible();
+    const results = await new AxeBuilder({ page })
+      .include(".conversation-components-card")
+      .analyze();
     expect(results.violations).toEqual([]);
   });
 

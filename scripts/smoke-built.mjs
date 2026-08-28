@@ -666,6 +666,48 @@ if (
 
 document.body.insertAdjacentHTML(
   "beforeend",
+  `<form id="package-feedback">
+     <fieldset id="package-rating" data-jqs="rating" data-value="3">
+       <div data-part="items">
+         <label data-part="item"><input data-part="control" type="radio" name="rating" value="1"><span data-part="icon">*</span></label>
+         <label data-part="item"><input data-part="control" type="radio" name="rating" value="2"><span data-part="icon">*</span></label>
+         <label data-part="item"><input data-part="control" type="radio" name="rating" value="3"><span data-part="icon">*</span></label>
+         <label data-part="item"><input data-part="control" type="radio" name="rating" value="4"><span data-part="icon">*</span></label>
+         <label data-part="item"><input data-part="control" type="radio" name="rating" value="5"><span data-part="icon">*</span></label>
+       </div>
+       <button data-part="clear">Clear</button><output data-part="status"></output>
+     </fieldset>
+     <section id="package-message-scroller" data-jqs="message-scroller">
+       <div data-part="viewport" aria-label="Package conversation"><div data-part="content"><article data-jqs="message"><div data-part="content">First</div></article></div></div>
+       <button data-part="latest"><span data-part="latest-label">Latest</span></button><p data-part="status"></p>
+     </section>
+   </form>`,
+);
+const packageFeedback = document.querySelector("#package-feedback");
+const packageRating = document.querySelector("#package-rating");
+const packageMessageScroller = document.querySelector("#package-message-scroller");
+$.star.ui.enhance(packageFeedback);
+$.star.ui.rating.set(packageRating, "4");
+$.star.ui.messageScroller.follow(packageMessageScroller, false);
+packageMessageScroller
+  .querySelector('[data-part="viewport"] > [data-part="content"]')
+  .insertAdjacentHTML(
+    "beforeend",
+    '<article data-jqs="message"><div data-part="content">Second</div></article>',
+  );
+await new Promise((resolve) => window.setTimeout(resolve, 0));
+if (
+  new FormData(packageFeedback).get("rating") !== "4" ||
+  $.star.ui.rating.value(packageRating) !== "4" ||
+  $.star.ui.messageScroller.unread(packageMessageScroller) !== 1 ||
+  packageMessageScroller.querySelector('[data-part="viewport"]').getAttribute("role") !== "log"
+) {
+  throw new Error("The ESM bundle failed the Rating, Message, and Message Scroller smoke test.");
+}
+$.star.ui.messageScroller.latest(packageMessageScroller);
+
+document.body.insertAdjacentHTML(
+  "beforeend",
   `<div id="package-hover-card" data-jqs="hover-card">
      <a data-part="trigger" href="#package-profile">Package maintainer</a>
      <div data-part="content">
@@ -740,6 +782,9 @@ const componentSelectors = [
   "[data-jqs=multi-select]",
   "[data-jqs=time-picker]",
   "[data-jqs=color-picker]",
+  "[data-jqs=rating]",
+  "[data-jqs=message]",
+  "[data-jqs=message-scroller]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -783,6 +828,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

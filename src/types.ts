@@ -457,6 +457,27 @@ export interface StarColorPickerStatic {
   value(target: ColorPickerTarget): string;
 }
 
+export type RatingTarget = string | HTMLElement;
+
+export interface StarRatingStatic {
+  set(target: RatingTarget, value: string): HTMLElement;
+  clear(target: RatingTarget): HTMLElement;
+  value(target: RatingTarget): string | undefined;
+}
+
+export type MessageScrollerTarget = string | HTMLElement;
+
+export interface MessageScrollerLatestOptions {
+  behavior?: ScrollBehavior;
+}
+
+export interface StarMessageScrollerStatic {
+  latest(target: MessageScrollerTarget, options?: MessageScrollerLatestOptions): HTMLElement;
+  follow(target: MessageScrollerTarget, following?: boolean): HTMLElement;
+  isFollowing(target: MessageScrollerTarget): boolean;
+  unread(target: MessageScrollerTarget): number;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -562,6 +583,8 @@ export interface StarUIStatic {
   readonly multiSelect: StarMultiSelectStatic;
   readonly timePicker: StarTimePickerStatic;
   readonly colorPicker: StarColorPickerStatic;
+  readonly rating: StarRatingStatic;
+  readonly messageScroller: StarMessageScrollerStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

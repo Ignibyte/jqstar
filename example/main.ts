@@ -14,6 +14,8 @@ interface DemoState extends Record<string, unknown> {
   projectSaving: boolean;
   preferencesMessage: string;
   preferencesSaving: boolean;
+  feedbackMessage: string;
+  feedbackSaving: boolean;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
@@ -181,6 +183,56 @@ $.star.action<DemoState>("submitPreferences", async (context) => {
     context.state.preferencesMessage = error instanceof Error ? error.message : String(error);
   } finally {
     context.state.preferencesSaving = false;
+  }
+});
+
+function appendFeedbackMessage(body: FormData): void {
+  const reply = String(body.get("reply") ?? "").trim();
+  const rating = String(body.get("rating") ?? "");
+  const $message = $("<article>", {
+    "aria-label": "Message from You",
+    "data-jqs": "message",
+    "data-side": "sent",
+  });
+  const $header = $("<header>", { "data-part": "header" }).append(
+    $("<strong>", { "data-part": "author" }).text("You"),
+    $("<time>", { datetime: new Date().toISOString() }).text("Now"),
+  );
+  const $content = $("<div>", { "data-part": "content" }).append($("<p>").text(reply));
+  const $footer = $("<footer>", { "data-part": "footer" }).text(
+    `${rating} star${rating === "1" ? "" : "s"} · Delivered`,
+  );
+  $message.append($header, $content, $footer);
+  $("#support-thread > [data-part='viewport'] > [data-part='content']").append($message);
+}
+
+$.star.action<DemoState>("submitFeedback", async (context) => {
+  const form = context.element?.closest("form");
+  if (!(form instanceof HTMLFormElement)) throw new Error("Feedback action needs its form.");
+  if (!$.star.ui.form.validate(form)) return;
+  const body = new FormData(form);
+  context.state.feedbackSaving = true;
+
+  try {
+    if (__JQS_STATIC_DEMO__) {
+      await wait(160);
+      context.state.feedbackMessage = `Static preview received rating ${String(body.get("rating"))} and a ${String(body.get("reply")).length} character reply.`;
+    } else {
+      const response = await fetch("/api/demo/feedback", {
+        method: "POST",
+        body,
+        headers: { "Datastar-Request": "true" },
+      });
+      const result = (await response.json()) as { message?: string };
+      if (!response.ok)
+        throw new Error(result.message ?? `Request failed with ${response.status}.`);
+      context.state.feedbackMessage = result.message ?? "Feedback received.";
+    }
+    appendFeedbackMessage(body);
+  } catch (error) {
+    context.state.feedbackMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.feedbackSaving = false;
   }
 });
 

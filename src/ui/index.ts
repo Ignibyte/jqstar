@@ -27,6 +27,8 @@ import { createFileUploads } from "./file-upload";
 import { createMultiSelects } from "./multi-select";
 import { createTimePickers } from "./time-picker";
 import { createColorPickers } from "./color-picker";
+import { createRatings } from "./rating";
+import { createMessageScrollers } from "./message-scroller";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -252,6 +254,8 @@ const enhancementOwnerSelector = [
   "multi-select",
   "time-picker",
   "color-picker",
+  "rating",
+  "message-scroller",
   "toast",
   "toast-viewport",
   "select",
@@ -402,6 +406,8 @@ export function createUI(): StarUIStatic {
   const multiSelects = createMultiSelects();
   const timePickers = createTimePickers();
   const colorPickers = createColorPickers();
+  const ratings = createRatings();
+  const messageScrollers = createMessageScrollers();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -421,6 +427,8 @@ export function createUI(): StarUIStatic {
     multiSelects.enhance(root);
     timePickers.enhance(root);
     colorPickers.enhance(root);
+    ratings.enhance(root);
+    messageScrollers.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -466,6 +474,8 @@ export function createUI(): StarUIStatic {
     multiSelect: multiSelects.api,
     timePicker: timePickers.api,
     colorPicker: colorPickers.api,
+    rating: ratings.api,
+    messageScroller: messageScrollers.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

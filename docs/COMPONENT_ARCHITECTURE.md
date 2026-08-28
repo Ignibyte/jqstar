@@ -431,6 +431,24 @@ Toast provides:
 `before-dismiss` is cancelable. Important tasks must not depend on an expiring toast; action toasts
 remain open by default and alternative instructions must identify a non-timed route.
 
+Conversation and feedback components provide:
+
+- Rating backed by one native radio group, including required validation, reset, FormData, and the
+  browser's keyboard behavior
+- `set`, `clear`, and `value` under `$.star.ui.rating`, with equivalent named actions and cancelable
+  lifecycle events
+- Source-owned Message articles whose sender, time, content, attachment, action, and sent-side parts
+  remain editable application markup
+- Message Scroller with a named, focusable `role="log"`, appended-message observation, follow and
+  pause state, unread count, and a visible route back to the latest message
+- `latest`, `follow`, `isFollowing`, and `unread` under `$.star.ui.messageScroller`, with equivalent
+  named actions for state-changing operations
+
+Message Scroller only moves after appended messages while it is already following the end. Once a
+reader scrolls beyond `data-threshold`, it preserves that position and exposes the unread count.
+Server patches append Message articles to the source-owned content instead of calling an imperative
+rendering API.
+
 ## Styling boundary
 
 Tailwind is an authoring and compilation dependency. It is not a browser dependency. The published
@@ -486,7 +504,8 @@ Implemented:
 - Collapsible, Accordion, and Tabs
 - Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, and Menubar
 - Tree View, Sidebar, Carousel, Toolbar, Stepper, Sortable List, and File Upload
-- Multi Select, Time Picker, and Color Picker
+- Multi Select, Time Picker, Color Picker, and Rating
+- Message and Message Scroller
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -495,7 +514,7 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 69-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 72-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer

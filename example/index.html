@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -1026,6 +1026,173 @@
         </form>
       </section>
 
+      <section class="card conversation-components-card" aria-labelledby="conversation-title">
+        <div>
+          <p class="label" id="conversation-title">Backend-ready conversation</p>
+          <p class="hint">
+            Message Scroller follows server-appended messages until the reader scrolls up. Rating
+            remains one native radio value in the feedback form.
+          </p>
+        </div>
+
+        <div class="conversation-grid">
+          <section id="support-thread" data-jqs="message-scroller" data-threshold="40">
+            <div data-part="viewport" aria-labelledby="support-thread-title">
+              <div data-part="content">
+                <article data-jqs="message" aria-label="Message from Support">
+                  <header data-part="header">
+                    <strong id="support-thread-title" data-part="author">Support</strong>
+                    <time datetime="2026-08-28T09:30:00-05:00">9:30 AM</time>
+                  </header>
+                  <div data-part="content">
+                    <p>The multipart project submission arrived with its ordered priorities.</p>
+                  </div>
+                </article>
+
+                <article data-jqs="message" data-side="sent" aria-label="Message from You">
+                  <header data-part="header">
+                    <strong data-part="author">You</strong>
+                    <time datetime="2026-08-28T09:34:00-05:00">9:34 AM</time>
+                  </header>
+                  <div data-part="content">
+                    <p>Did the native file input survive the request?</p>
+                  </div>
+                  <footer data-part="footer">Delivered</footer>
+                </article>
+
+                <article data-jqs="message" aria-label="Message from Support">
+                  <header data-part="header">
+                    <strong data-part="author">Support</strong>
+                    <time datetime="2026-08-28T09:36:00-05:00">9:36 AM</time>
+                  </header>
+                  <div data-part="content">
+                    <p>Yes. The endpoint received the original File and repeated form values.</p>
+                  </div>
+                  <footer data-part="actions">
+                    <button data-jqs="button" data-size="sm" data-variant="ghost" type="button">
+                      View receipt
+                    </button>
+                  </footer>
+                </article>
+
+                <article data-jqs="message" data-side="sent" aria-label="Message from You">
+                  <header data-part="header">
+                    <strong data-part="author">You</strong>
+                    <time datetime="2026-08-28T09:38:00-05:00">9:38 AM</time>
+                  </header>
+                  <div data-part="content"><p>Perfect. I’ll send a rating and final note.</p></div>
+                </article>
+              </div>
+            </div>
+            <button data-part="latest" type="button" hidden>
+              <span data-part="latest-label">Latest</span>
+            </button>
+            <p data-part="status">New messages are announced without moving keyboard focus.</p>
+          </section>
+
+          <form
+            id="feedback-form"
+            data-jqs="form"
+            enctype="multipart/form-data"
+            data-on:submit__prevent="@submitFeedback"
+          >
+            <div class="feedback-copy">
+              <span class="workspace-kicker">Native feedback</span>
+              <h2>Close the support loop</h2>
+              <p>The selected radio and reply are sent through one FormData payload.</p>
+            </div>
+
+            <fieldset id="support-rating" data-jqs="rating" data-value="5">
+              <legend>Support rating</legend>
+              <div data-part="items">
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="1"
+                    data-label="1 star"
+                    required
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">1 star</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="2"
+                    data-label="2 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">2 stars</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="3"
+                    data-label="3 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">3 stars</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="4"
+                    data-label="4 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">4 stars</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="5"
+                    data-label="5 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">5 stars</span>
+                </label>
+              </div>
+              <button data-part="clear" type="button">Clear rating</button>
+              <output data-part="status"></output>
+            </fieldset>
+
+            <label for="support-reply">Reply</label>
+            <textarea
+              id="support-reply"
+              data-jqs="textarea"
+              name="reply"
+              rows="4"
+              required
+              placeholder="Add a final note"
+            >
+Everything stayed native from browser to backend.</textarea>
+
+            <div class="feedback-submit">
+              <output data-text="$feedbackMessage" aria-live="polite"></output>
+              <button
+                id="feedback-submit"
+                data-jqs="button"
+                type="submit"
+                data-prop:disabled="$feedbackSaving"
+              >
+                <span data-show="!$feedbackSaving">Send feedback</span>
+                <span data-show="$feedbackSaving">Sending…</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
         <div>
           <p class="label" id="calendar-components-title">Calendar and date forms</p>
@@ -1626,7 +1793,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="69">69 components</td>
+                  <td data-key="coverage" data-value="72">72 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -2056,11 +2223,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="69"
-            max="69"
+            value="72"
+            max="72"
             aria-labelledby="progress-proof-label"
           >
-            69 of 69
+            72 of 72
           </progress>
         </div>
 

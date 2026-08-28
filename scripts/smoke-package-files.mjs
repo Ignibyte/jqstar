@@ -42,6 +42,9 @@ const required = [
   "registry/components/multi-select.html",
   "registry/components/time-picker.html",
   "registry/components/color-picker.html",
+  "registry/components/rating.html",
+  "registry/components/message.html",
+  "registry/components/message-scroller.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

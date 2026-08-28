@@ -79,7 +79,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 69 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 72 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
@@ -87,8 +87,9 @@ Range Calendar, Date Picker, Date Range Picker, Number Field, Password Field, Ta
 Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
 Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
-Select, Time Picker, and Color Picker. Import the precompiled theme for the default appearance.
-Tailwind is used to author this file but is not required in the consuming application.
+Select, Time Picker, Color Picker, Rating, Message, and Message Scroller. Import the precompiled
+theme for the default appearance. Tailwind is used to author this file but is not required in the
+consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -403,6 +404,17 @@ Color Picker keeps `<input type="color">` as the submitted value. An optional te
 the browser-normalized value, and swatches provide shortcuts through the same cancelable change
 boundary. Use `$.star.ui.colorPicker.set|value()` or `@ui.color-picker.set`.
 
+Rating styles a native radio fieldset, so Arrow keys, required validation, reset, and FormData stay
+with the browser. `data-value` accepts server patches, while `set` and `clear` use the same
+cancelable change boundary as a native selection. Use `$.star.ui.rating.set|clear|value()` or
+`@ui.rating.*`.
+
+Message is source-owned conversation markup with sender, timestamp, content, attachment, action, and
+sent-side parts. Message Scroller wraps those articles in a named `role="log"`. It follows messages
+appended at the end until the reader scrolls away, then preserves the reading position and counts
+unread additions. Use `$.star.ui.messageScroller.latest|follow|isFollowing|unread()` or
+`@ui.message-scroller.*`.
+
 Select keeps a native form control as its value and submission source:
 
 ```html
@@ -593,7 +605,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="69" max="69">69 of 69</progress>
+    <progress data-jqs="progress" value="72" max="72">72 of 72</progress>
   </div>
 </article>
 
