@@ -33,6 +33,7 @@ import { createSearchFields } from "./search-field";
 import { createFeeds } from "./feed";
 import { createQuestionnaires } from "./questionnaire";
 import { createCharts } from "./chart";
+import { createCodeBlocks } from "./code-block";
 import { createTagsInputs } from "./tags-input";
 import type {
   DialogOpenOptions,
@@ -264,6 +265,7 @@ const enhancementOwnerSelector = [
   "feed",
   "questionnaire",
   "chart",
+  "code-block",
   "toast",
   "toast-viewport",
   "select",
@@ -421,6 +423,7 @@ export function createUI(): StarUIStatic {
   const feeds = createFeeds();
   const questionnaires = createQuestionnaires();
   const charts = createCharts();
+  const codeBlocks = createCodeBlocks();
   const enhance = (root: ParentNode = document): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
@@ -446,6 +449,7 @@ export function createUI(): StarUIStatic {
     feeds.enhance(root);
     questionnaires.enhance(root);
     charts.enhance(root);
+    codeBlocks.enhance(root);
     toasts.enhance(root);
     selects.enhance(root);
     comboboxes.enhance(root);
@@ -497,6 +501,7 @@ export function createUI(): StarUIStatic {
     feed: feeds.api,
     questionnaire: questionnaires.api,
     chart: charts.api,
+    codeBlock: codeBlocks.api,
     calendar: calendars.calendar,
     rangeCalendar: calendars.rangeCalendar,
     datePicker: calendars.datePicker,

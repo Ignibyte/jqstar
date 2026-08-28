@@ -57,6 +57,12 @@ const required = [
   "registry/components/marker.html",
   "registry/components/table.html",
   "registry/components/typography.html",
+  "registry/components/stat.html",
+  "registry/components/timeline.html",
+  "registry/components/status.html",
+  "registry/components/code-block.html",
+  "registry/components/browser-mockup.html",
+  "registry/components/diff.html",
   "schema/jquery-star.schema.json",
 ];
 const missing = required.filter((path) => !files.has(path));

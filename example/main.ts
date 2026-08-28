@@ -22,6 +22,8 @@ interface DemoState extends Record<string, unknown> {
   feedQuery: string;
   metricsLoading: boolean;
   metricsMessage: string;
+  operationsLoading: boolean;
+  operationsMessage: string;
   serverCount: number;
   serverError: string | null;
   serverLoading: boolean;
@@ -32,6 +34,16 @@ interface MetricsResponse {
   labels: string[];
   message: string;
   series: [number[], number[]];
+}
+
+interface OperationsResponse {
+  components: number;
+  latency: number;
+  release: string;
+  requests: number;
+  revision: number;
+  status: "healthy" | "warning" | "danger";
+  timestamp: string;
 }
 
 interface FeedResult {
@@ -510,6 +522,68 @@ $.star.action<DemoState>("refreshMetrics", async (context) => {
     context.state.metricsMessage = error instanceof Error ? error.message : String(error);
   } finally {
     context.state.metricsLoading = false;
+  }
+});
+
+function applyOperations(result: OperationsResponse): void {
+  $("#operations-requests").text(result.requests.toLocaleString());
+  $("#operations-latency").text(`${result.latency} ms`);
+  $("#operations-release").text(result.release);
+  $("#operations-status-dot").attr("data-variant", result.status);
+  $("#operations-status-label").text(
+    result.status === "healthy" ? "Healthy" : result.status === "warning" ? "Degraded" : "Down",
+  );
+
+  const payload = JSON.stringify(result, null, 2);
+  $("#operations-payload [data-part='code']").text(payload);
+  $("#operations-health-response").text(
+    JSON.stringify(
+      { service: "jqstar", status: result.status, revision: result.revision },
+      null,
+      2,
+    ),
+  );
+
+  const current = document.querySelector<HTMLElement>(
+    "#operations-timeline [data-state='current'] [data-part='content']",
+  );
+  if (current) {
+    $(current).find("time").attr("datetime", result.timestamp).text("Now");
+    $(current).find("strong").text(`Operations revision ${result.revision}`);
+    $(current)
+      .find("p")
+      .text(`${result.requests.toLocaleString()} requests at ${result.latency} ms P95.`);
+  }
+}
+
+$.star.action<DemoState>("refreshOperations", async (context) => {
+  context.state.operationsLoading = true;
+  try {
+    let result: OperationsResponse;
+    if (__JQS_STATIC_DEMO__) {
+      await wait(160);
+      result = {
+        components: 90,
+        latency: 76,
+        release: "v0.5.0-static",
+        requests: 13_428,
+        revision: 2,
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+      };
+      context.state.operationsMessage =
+        "Static Pages fallback applied the same operations response contract.";
+    } else {
+      const response = await fetch("/api/demo/operations");
+      result = (await response.json()) as OperationsResponse;
+      if (!response.ok) throw new Error(`Request failed with ${response.status}.`);
+      context.state.operationsMessage = `Local backend operations revision ${result.revision} applied.`;
+    }
+    applyOperations(result);
+  } catch (error) {
+    context.state.operationsMessage = error instanceof Error ? error.message : String(error);
+  } finally {
+    context.state.operationsLoading = false;
   }
 });
 

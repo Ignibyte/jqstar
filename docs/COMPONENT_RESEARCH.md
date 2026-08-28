@@ -228,6 +228,17 @@ The first proof contains Button, Dialog, and the native form family:
   responsive plot, legend, tooltip, and configurable series model. jQuery Star uses the same
   source-owned composition principle but renders from a native table instead of requiring Recharts
   or a browser framework.
+- The current daisyUI [component catalog](https://daisyui.com/components/) identifies Stat,
+  Timeline, Status, Diff, Code Mockup, and Browser Mockup as distinct data-display or mockup
+  contracts. jQuery Star maps them to `data-jqs` anatomy instead of adopting daisyUI classes.
+- daisyUI's [Stat](https://daisyui.com/components/stat/) and
+  [Timeline](https://daisyui.com/components/timeline/) anatomy informed the title/value/description
+  and ordered-event parts. Both remain zero-runtime because the application or backend owns their
+  data.
+- daisyUI's [Code Mockup](https://daisyui.com/components/mockup-code/) and
+  [Browser Mockup](https://daisyui.com/components/mockup-browser/) informed the presentation, while
+  jQuery Star adds an explicit clipboard contract to Code Block. Diff uses a native range input
+  rather than a pointer-only comparison layer.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

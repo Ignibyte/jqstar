@@ -1123,6 +1123,86 @@
           "target": "~/components/jquery-star/typography.html"
         }
       ]
+    },
+    {
+      "name": "stat",
+      "type": "registry:item",
+      "title": "Stat",
+      "description": "Zero-runtime metric cards with title, value, trend, figure, and action anatomy.",
+      "registryDependencies": ["status"],
+      "files": [
+        {
+          "path": "registry/components/stat.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/stat.html"
+        }
+      ]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:item",
+      "title": "Timeline",
+      "description": "A semantic ordered history with complete, current, and pending event presentation.",
+      "files": [
+        {
+          "path": "registry/components/timeline.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/timeline.html"
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "type": "registry:item",
+      "title": "Status",
+      "description": "A compact decorative or labelled service-state indicator with optional live animation.",
+      "files": [
+        {
+          "path": "registry/components/status.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/status.html"
+        }
+      ]
+    },
+    {
+      "name": "code-block",
+      "type": "registry:item",
+      "title": "Code Block",
+      "description": "A source-owned code surface with exact text access, clipboard action, and announced outcomes.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/code-block.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/code-block.html"
+        }
+      ]
+    },
+    {
+      "name": "browser-mockup",
+      "type": "registry:item",
+      "title": "Browser Mockup",
+      "description": "A zero-runtime browser frame for URLs, previews, screenshots, or API responses.",
+      "files": [
+        {
+          "path": "registry/components/browser-mockup.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/browser-mockup.html"
+        }
+      ]
+    },
+    {
+      "name": "diff",
+      "type": "registry:item",
+      "title": "Diff",
+      "description": "A keyboard-operable before-and-after comparison controlled by a native range input.",
+      "files": [
+        {
+          "path": "registry/components/diff.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/diff.html"
+        }
+      ]
     }
   ]
 }

@@ -554,6 +554,13 @@ export interface StarChartStatic {
   data(target: ChartTarget): ChartData;
 }
 
+export type CodeBlockTarget = string | HTMLElement;
+
+export interface StarCodeBlockStatic {
+  copy(target: CodeBlockTarget): Promise<string>;
+  text(target: CodeBlockTarget): string;
+}
+
 export type CalendarTarget = string | HTMLElement;
 export type CalendarDate = string | Date;
 
@@ -665,6 +672,7 @@ export interface StarUIStatic {
   readonly feed: StarFeedStatic;
   readonly questionnaire: StarQuestionnaireStatic;
   readonly chart: StarChartStatic;
+  readonly codeBlock: StarCodeBlockStatic;
   readonly calendar: StarCalendarStatic;
   readonly rangeCalendar: StarRangeCalendarStatic;
   readonly datePicker: StarDatePickerStatic;

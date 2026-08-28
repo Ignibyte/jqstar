@@ -819,6 +819,23 @@ if (
   throw new Error("The ESM bundle failed the Chart component smoke test.");
 }
 
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<div id="package-code-block" data-jqs="code-block">
+     <button data-part="copy">Copy</button>
+     <pre><code data-part="code">{ "status": "healthy" }</code></pre>
+     <p data-part="status"></p>
+   </div>`,
+);
+const packageCodeBlock = document.querySelector("#package-code-block");
+$.star.ui.enhance(packageCodeBlock);
+if (
+  $.star.ui.codeBlock.text(packageCodeBlock) !== '{ "status": "healthy" }' ||
+  !packageCodeBlock.querySelector('[data-part="copy"]').getAttribute("aria-describedby")
+) {
+  throw new Error("The ESM bundle failed the Code Block component smoke test.");
+}
+
 const theme = await readFile(new URL("../dist/jquery-star-ui.css", import.meta.url), "utf8");
 const componentSelectors = [
   "[data-jqs=button]",
@@ -884,6 +901,12 @@ const componentSelectors = [
   "[data-jqs=marker]",
   "[data-jqs=table]",
   "[data-jqs=typography]",
+  "[data-jqs=stat]",
+  "[data-jqs=timeline]",
+  "[data-jqs=status]",
+  "[data-jqs=code-block]",
+  "[data-jqs=browser-mockup]",
+  "[data-jqs=diff]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -927,6 +950,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM hover-card=passed, ESM menu=passed, ESM context-menu=passed, ESM menubar=passed, ESM tree=passed, ESM sidebar=passed, ESM carousel=passed, ESM toolbar=passed, ESM stepper=passed, ESM sortable=passed, ESM file-upload=passed, ESM multi-select=passed, ESM time-picker=passed, ESM color-picker=passed, ESM rating=passed, ESM message-scroller=passed, ESM search-field=passed, ESM feed=passed, ESM questionnaire=passed, ESM chart=passed, ESM code-block=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, ESM range-calendar=passed, ESM date-range-picker=passed, ESM form=passed, ESM capable-fields=passed, ESM input-otp=passed, ESM resizable=passed, CSS scroll-area=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

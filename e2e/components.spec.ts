@@ -990,7 +990,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "84",
+      "90",
     );
   });
 
@@ -1017,6 +1017,43 @@ test.describe("jQuery Star components", () => {
     await expect(card.locator('[data-jqs="direction"]')).toHaveCSS("direction", "rtl");
     await expect(card.getByRole("table", { name: "Release proof" })).toBeVisible();
     await expect(card.locator('[data-jqs="aspect-ratio"]')).toHaveCSS("aspect-ratio", "16 / 9");
+  });
+
+  test("operations components update from the shared backend and copy exact JSON", async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    const card = page.getByRole("region", { name: "Self-hosting operations console" });
+    const payload = card.locator("#operations-payload");
+    const diff = card.locator("#operations-diff");
+    const control = diff.getByRole("slider", { name: "Compare configuration before and after" });
+
+    await expect(card.locator('[data-jqs="stat"]')).toHaveCount(3);
+    await expect(card.locator('#operations-timeline [data-part="item"]')).toHaveCount(3);
+    await expect(card.getByText("200 Healthy")).toBeVisible();
+
+    await card.getByRole("button", { name: "Refresh operations" }).click();
+    await expect(card.locator(".operations-message")).toContainText(
+      "Local backend operations revision",
+    );
+    await expect(payload.locator('[data-part="code"]')).toContainText('"revision": 1');
+    await expect(card.locator("#operations-timeline [data-state='current'] strong")).toHaveText(
+      "Operations revision 1",
+    );
+
+    await payload.getByRole("button", { name: "Copy JSON" }).click();
+    await expect(payload.locator('[data-part="status"]')).toHaveText("Copied to clipboard.");
+    await expect
+      .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+      .toContain('"components": 90');
+
+    await control.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(control).toHaveValue("51");
+    await expect
+      .poll(() => diff.evaluate((element) => element.style.getPropertyValue("--jqs-diff-position")))
+      .toBe("51%");
   });
 
   test("button and open dialog pass automated accessibility checks", async ({ page }) => {
@@ -1534,6 +1571,20 @@ test.describe("jQuery Star components", () => {
     await card.getByRole("button", { name: "Line", exact: true }).click();
     await card.getByRole("button", { name: "Refresh from backend" }).click();
     results = await new AxeBuilder({ page }).include(".reporting-components-card").analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test("operations components pass accessibility checks before and after backend updates", async ({
+    page,
+  }) => {
+    const card = page.locator(".operations-components-card");
+    let results = await new AxeBuilder({ page }).include(".operations-components-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await card.getByRole("button", { name: "Refresh operations" }).click();
+    await card.getByRole("slider", { name: "Compare configuration before and after" }).focus();
+    await page.keyboard.press("ArrowRight");
+    results = await new AxeBuilder({ page }).include(".operations-components-card").analyze();
     expect(results.violations).toEqual([]);
   });
 });

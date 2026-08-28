@@ -53,19 +53,23 @@
     "build:css": "tailwindcss -i ./src/ui/theme.css -o ./dist/jquery-star-ui.css --minify",
     "build:demo": "vite build --config vite.demo.config.ts",
     "build:js": "vite build && tsc -p tsconfig.build.json",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run build && npm run test:e2e",
-    "clean": "rimraf dist demo-dist coverage playwright-report registry-dist test-results",
+    "build:self-hosted": "npm run build && npm run build:demo && npm run build:server",
+    "build:server": "vite build --config vite.server.config.ts",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run test:self-hosted && npm run test:e2e",
+    "clean": "rimraf dist demo-dist server-dist coverage playwright-report registry-dist test-results",
     "demo": "vite --config vite.demo.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint src test example e2e bin scripts *.config.ts",
+    "lint": "eslint src server test example e2e bin scripts *.config.ts",
     "registry:list": "node ./bin/jqstar.mjs list",
     "test": "npm run test:unit",
     "test:e2e": "playwright test",
     "test:package": "npm run build && node scripts/smoke-built.mjs && node scripts/smoke-package-files.mjs",
+    "test:self-hosted": "npm run build:self-hosted && node scripts/smoke-server.mjs",
     "test:unit": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "serve:self-hosted": "node server-dist/index.mjs"
   },
   "peerDependencies": {
     "jquery": ">=4.0.0 <5"
@@ -74,7 +78,6 @@
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
-    "@starfederation/datastar-sdk": "^1.0.0",
     "@tailwindcss/cli": "^4.3.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/jquery": "^3.5.32",
@@ -94,6 +97,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@starfederation/datastar-sdk": "^1.0.0",
     "idiomorph": "^0.7.4",
     "json5": "^2.2.3"
   }

@@ -1,0 +1,23 @@
+<figure data-jqs="diff" style="--jqs-diff-position: 50%">
+  <div data-part="before">
+    <pre><code>LOG_LEVEL=info
+CACHE_TTL=300</code></pre>
+  </div>
+  <div data-part="after" aria-hidden="true">
+    <pre><code>LOG_LEVEL=debug
+CACHE_TTL=60</code></pre>
+  </div>
+  <span data-part="handle" aria-hidden="true"></span>
+  <label>
+    <span>Compare configuration before and after</span>
+    <input
+      data-part="control"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+      data-on:input="$(el).closest('[data-jqs=diff]').css('--jqs-diff-position', el.value + '%')"
+    />
+  </label>
+  <figcaption>Configuration before and after deployment</figcaption>
+</figure>

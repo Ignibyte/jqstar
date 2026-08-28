@@ -502,6 +502,23 @@ Reporting and document components provide:
   Direction delegates inheritance to native `dir`; Table preserves native table semantics; and
   Typography styles ordinary document markup.
 
+Operations and inspection components provide:
+
+- Stat as zero-runtime title, value, description, figure, and action anatomy, with an optional
+  responsive Stat Group.
+- Timeline as a semantic ordered list with complete, current, and pending presentation.
+- Status as a decorative or explicitly labelled state dot. Its optional pulse is CSS-only and
+  reduced-motion aware.
+- Browser Mockup and Diff as zero-runtime presentation. Diff keeps one native range input as the
+  pointer and keyboard control; the authored jQuery expression updates only a CSS variable.
+- Code Block as authored `pre` and `code` content with `text` and async `copy` methods under
+  `$.star.ui.codeBlock`, an equivalent named action, cancelable before-copy, and success or failure
+  events.
+
+Code Block installs no click listener or observer. The recipe calls its named action explicitly.
+Clipboard outcomes are written to an authored polite status element, so server-patched code remains
+the same source read by both `text()` and `copy()`.
+
 ## Styling boundary
 
 Tailwind is an authoring and compilation dependency. It is not a browser dependency. The published
@@ -560,6 +577,7 @@ Implemented:
 - Multi Select, Time Picker, Color Picker, and Rating
 - Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment, and Bubble
 - Aspect Ratio, Chart, Direction, Marker, Table, and Typography
+- Stat, Timeline, Status, Code Block, Browser Mockup, and Diff
 - Select, Combobox, and server-backed Autocomplete
 - Calendar, Range Calendar, Date Picker, and Date Range Picker
 - Data Table and Toast
@@ -568,8 +586,21 @@ Implemented:
   Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, Command Palette, and Async Form
 
-This 84-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+This 90-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
 these contracts without changing the public anatomy.
+
+## Self-hosted proof backend
+
+`server/api.ts` owns the demo API routes used by both the Vite middleware and the production-shaped
+Node server. `server/index.ts` adds safe static-file resolution, cache policy, security headers,
+health checks, and graceful shutdown. `npm run test:self-hosted` builds the library, site, and
+server, starts the bundled process on an ephemeral port, and verifies the rendered application plus
+backend contracts.
+
+The expression runtime currently uses dynamic function compilation. The self-hosted Content Security
+Policy therefore permits `unsafe-eval` for scripts while keeping scripts same-origin and blocking
+objects, framing, and foreign base URLs. A stricter policy requires a precompiled or replaced
+expression compiler; named actions alone are compatible with that future boundary.
 
 Shared mechanics stay below the public contracts: components reuse floating placement and top-layer
 fallback, while each interaction model keeps its own focus, dismissal, state, and event semantics.

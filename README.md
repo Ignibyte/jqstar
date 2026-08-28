@@ -79,7 +79,7 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 84 recipes: Button, Button Group, Dialog, Alert Dialog,
+The component-system proof now includes 90 recipes: Button, Button Group, Dialog, Alert Dialog,
 Sheet, Drawer, Field, Form, Label, Input, Input Group, File Input, Textarea, Native Select,
 Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
 Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Tree View, Select, Combobox, Calendar,
@@ -88,9 +88,9 @@ Resizable Panels, Scroll Area, Data Table, Toast, Card, Badge, Alert, Separator,
 Spinner, Progress, Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu,
 Command Palette, Async Form, Sidebar, Carousel, Toolbar, Stepper, Sortable List, File Upload, Multi
 Select, Time Picker, Color Picker, Rating, Message, Message Scroller, Search Field, Item, Feed,
-Questionnaire, Attachment, Bubble, Aspect Ratio, Chart, Direction, Marker, Table, and Typography.
-Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
-not required in the consuming application.
+Questionnaire, Attachment, Bubble, Aspect Ratio, Chart, Direction, Marker, Table, Typography, Stat,
+Timeline, Status, Code Block, Browser Mockup, and Diff. Import the precompiled theme for the default
+appearance. Tailwind is used to author this file but is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -630,7 +630,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="84" max="84">84 of 84</progress>
+    <progress data-jqs="progress" value="90" max="90">90 of 90</progress>
   </div>
 </article>
 
@@ -678,6 +678,40 @@ renders a responsive SVG without adding a charting framework:
 After a backend response changes the table, call `$.star.ui.chart.refresh("#visitors")` or the named
 `@ui.chart.refresh('#visitors')` action. Use `@ui.chart.type('line')` from inside the chart to
 switch presentation without changing its data.
+
+Code Block preserves the exact authored text and exposes an announced clipboard action:
+
+```html
+<div id="payload" data-jqs="code-block">
+  <button data-part="copy" data-on:click="@ui.code-block.copy">Copy JSON</button>
+  <pre><code data-part="code">{ "status": "healthy" }</code></pre>
+  <p data-part="status"></p>
+</div>
+```
+
+Use `$.star.ui.codeBlock.text("#payload")` to read it or
+`await $.star.ui.codeBlock.copy("#payload")` to copy it. Stat, Timeline, Status, Browser Mockup, and
+Diff are zero-runtime presentation contracts. Diff uses a native range input, so pointer and
+keyboard comparison work without another widget implementation.
+
+## Self-hosted demo backend
+
+The production-shaped server uses the same API implementation as the local Vite demo. It serves the
+built site, `/health`, JSON and multipart routes, and the Datastar SDK SSE routes from one Node
+process:
+
+```sh
+npm run build:self-hosted
+JQS_HOST=0.0.0.0 JQS_PORT=4173 npm run serve:self-hosted
+```
+
+`JQS_STATIC_DIR` can point at a different built site directory. The default request-body limit is 10
+MiB. The server rejects path traversal, applies long-lived caching only to fingerprinted assets,
+sets frame and content-type protections, and shuts down on `SIGINT` or `SIGTERM`.
+
+The Content Security Policy includes `script-src 'unsafe-eval'` because authored jQuery Star
+expressions are compiled at runtime. Applications that require a stricter policy can register named
+actions and precompile or replace the expression compiler before removing that directive.
 
 Badge and Alert accept `default`, `secondary`, `outline`, `success`, and `danger` variants where
 applicable; Alert also accepts `warning`. Avatar accepts `sm`, `md`, and `lg` sizes. Skeleton is

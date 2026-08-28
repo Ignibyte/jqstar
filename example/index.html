@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.' }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.', operationsLoading: false, operationsMessage: 'Ready to query the local operations endpoint.' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -2076,7 +2076,7 @@ Everything stayed native from browser to backend.</textarea>
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="84">84 components</td>
+                  <td data-key="coverage" data-value="90">90 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -2572,7 +2572,7 @@ Everything stayed native from browser to backend.</textarea>
 
           <div data-jqs="aspect-ratio" data-ratio="video" class="release-aspect-proof">
             <div data-part="media" role="img" aria-label="Abstract component release landscape">
-              <span>84</span>
+              <span>90</span>
               <strong>source-owned components</strong>
               <small>One compiled theme · real HTML</small>
             </div>
@@ -2631,6 +2631,161 @@ Everything stayed native from browser to backend.</textarea>
         </div>
       </section>
 
+      <section
+        class="card operations-components-card"
+        aria-labelledby="operations-components-title"
+      >
+        <div class="operations-heading">
+          <div>
+            <p class="label" id="operations-components-title">Self-hosting operations console</p>
+            <p class="hint">
+              Backend health, deployment history, response payloads, and configuration comparison.
+            </p>
+          </div>
+          <button
+            id="refresh-operations"
+            data-jqs="button"
+            data-variant="outline"
+            type="button"
+            data-on:click="@refreshOperations"
+            data-prop:disabled="$operationsLoading"
+          >
+            Refresh operations
+          </button>
+        </div>
+
+        <div data-jqs="stat-group" aria-label="Service metrics">
+          <article data-jqs="stat" aria-labelledby="operations-requests-title">
+            <span data-part="figure" aria-hidden="true">↗</span>
+            <p id="operations-requests-title" data-part="title">Requests</p>
+            <strong id="operations-requests" data-part="value">12,840</strong>
+            <p data-part="description">Across the active release</p>
+          </article>
+          <article data-jqs="stat" aria-labelledby="operations-latency-title">
+            <p id="operations-latency-title" data-part="title">P95 latency</p>
+            <strong id="operations-latency" data-part="value">84 ms</strong>
+            <p data-part="description">120 ms service budget</p>
+          </article>
+          <article data-jqs="stat" aria-labelledby="operations-release-title">
+            <p id="operations-release-title" data-part="title">Release</p>
+            <strong id="operations-release" data-part="value">v0.5.0</strong>
+            <p data-part="description">
+              <span
+                id="operations-status-dot"
+                data-jqs="status"
+                data-variant="success"
+                data-live
+                aria-hidden="true"
+              ></span>
+              <span id="operations-status-label">Healthy</span>
+            </p>
+          </article>
+        </div>
+
+        <div class="operations-grid">
+          <section class="operations-timeline" aria-labelledby="operations-timeline-title">
+            <h2 id="operations-timeline-title">Deployment history</h2>
+            <ol id="operations-timeline" data-jqs="timeline">
+              <li data-part="item" data-state="complete">
+                <div data-part="marker" aria-hidden="true">✓</div>
+                <div data-part="content">
+                  <time datetime="2026-08-28T18:10:00Z">18:10</time>
+                  <strong>Build verified</strong>
+                  <p>All bounded checks passed.</p>
+                </div>
+              </li>
+              <li data-part="item" data-state="current" aria-current="step">
+                <div data-part="marker" aria-hidden="true"></div>
+                <div data-part="content">
+                  <time datetime="2026-08-28T18:12:00Z">18:12</time>
+                  <strong>Service healthy</strong>
+                  <p>The local backend is accepting requests.</p>
+                </div>
+              </li>
+              <li data-part="item">
+                <div data-part="marker" aria-hidden="true"></div>
+                <div data-part="content">
+                  <strong>Public deployment</strong>
+                  <p>Waiting for a hosting target.</p>
+                </div>
+              </li>
+            </ol>
+          </section>
+
+          <div id="operations-payload" data-jqs="code-block">
+            <header data-part="header">
+              <span data-part="language">GET /api/demo/operations</span>
+              <button
+                data-jqs="button"
+                data-part="copy"
+                data-size="sm"
+                data-variant="ghost"
+                type="button"
+                data-on:click="@ui.code-block.copy"
+              >
+                Copy JSON
+              </button>
+            </header>
+            <pre><code data-part="code">{
+  "status": "healthy",
+  "release": "v0.5.0",
+  "components": 90
+}</code></pre>
+            <p data-part="status"></p>
+          </div>
+
+          <figure data-jqs="browser-mockup" class="operations-browser">
+            <div data-part="toolbar">
+              <span data-part="controls" aria-hidden="true"><i></i><i></i><i></i></span>
+              <code data-part="address">http://localhost:4173/health</code>
+            </div>
+            <div data-part="content">
+              <p class="health-response">
+                <span data-jqs="status" data-variant="success" data-live aria-hidden="true"></span>
+                <strong>200 Healthy</strong>
+              </p>
+              <pre><code id="operations-health-response">{
+  "status": "healthy",
+  "service": "jqstar"
+}</code></pre>
+            </div>
+            <figcaption>Self-hosted health response</figcaption>
+          </figure>
+
+          <figure id="operations-diff" data-jqs="diff" style="--jqs-diff-position: 50%">
+            <div data-part="before">
+              <pre><code>BEFORE
+LOG_LEVEL=info
+CACHE_TTL=300</code></pre>
+            </div>
+            <div data-part="after" aria-hidden="true">
+              <pre><code>AFTER
+LOG_LEVEL=debug
+CACHE_TTL=60</code></pre>
+            </div>
+            <span data-part="handle" aria-hidden="true"></span>
+            <label>
+              <span>Compare configuration before and after</span>
+              <input
+                data-part="control"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+                data-on:input="$(el).closest('[data-jqs=diff]').css('--jqs-diff-position', el.value + '%')"
+              />
+            </label>
+            <figcaption>Configuration before and after deployment</figcaption>
+          </figure>
+        </div>
+
+        <output
+          class="operations-message"
+          data-text="$operationsMessage"
+          aria-live="polite"
+        ></output>
+      </section>
+
       <section class="card primitives-component-card" aria-labelledby="primitives-components-title">
         <div>
           <p class="label" id="primitives-components-title">Composition primitives</p>
@@ -2675,11 +2830,11 @@ Everything stayed native from browser to backend.</textarea>
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="84"
-            max="84"
+            value="90"
+            max="90"
             aria-labelledby="progress-proof-label"
           >
-            84 of 84
+            90 of 90
           </progress>
         </div>
 

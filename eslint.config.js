@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["coverage/**", "demo-dist/**", "dist/**", "node_modules/**"],
+    ignores: ["coverage/**", "demo-dist/**", "dist/**", "server-dist/**", "node_modules/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
