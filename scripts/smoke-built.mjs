@@ -295,6 +295,41 @@ if (
   throw new Error("The ESM bundle failed the Data Table component smoke test.");
 }
 
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<label for="package-date-control">Package date</label>
+   <div id="package-date-picker" data-jqs="date-picker">
+     <input id="package-date-control" data-part="control" name="date" value="2026-08-28">
+     <div id="package-date-popover" data-jqs="popover" data-part="popover">
+       <button data-part="trigger"><span data-part="value"></span></button>
+       <div data-part="content">
+         <div id="package-calendar" data-jqs="calendar" data-month="2026-08">
+           <div data-part="header">
+             <button data-part="previous">Previous</button>
+             <h2 data-part="heading"></h2>
+             <button data-part="next">Next</button>
+           </div>
+           <div data-part="grid"></div>
+         </div>
+       </div>
+     </div>
+   </div>`,
+);
+const datePicker = document.querySelector("#package-date-picker");
+const packageCalendar = document.querySelector("#package-calendar");
+$.star.ui.enhance(datePicker);
+$.star.ui.datePicker.open(datePicker);
+$.star.ui.datePicker.select(datePicker, "2026-08-31");
+if (
+  $.star.ui.datePicker.value(datePicker) !== "2026-08-31" ||
+  $.star.ui.calendar.value(packageCalendar) !== "2026-08-31" ||
+  packageCalendar.querySelector('[data-part="grid"]').role !== "grid" ||
+  packageCalendar.querySelectorAll('[data-part="day"]').length !== 42 ||
+  document.querySelector("#package-date-popover").dataset.state !== "closed"
+) {
+  throw new Error("The ESM bundle failed the Calendar and Date Picker component smoke test.");
+}
+
 const theme = await readFile(new URL("../dist/jquery-star-ui.css", import.meta.url), "utf8");
 const componentSelectors = [
   "[data-jqs=button]",
@@ -302,6 +337,10 @@ const componentSelectors = [
   "[data-jqs=field]",
   "[data-jqs=input]",
   "[data-jqs=textarea]",
+  "[data-jqs=label]",
+  "[data-jqs=native-select]",
+  "[data-jqs=button-group]",
+  "meter[data-jqs=meter]",
   "[data-jqs=checkbox]",
   "[data-jqs=switch]",
   "[data-jqs=collapsible]",
@@ -315,6 +354,8 @@ const componentSelectors = [
   "[data-jqs=select]",
   "[data-jqs=combobox]",
   "[data-jqs=data-table]",
+  "[data-jqs=calendar]",
+  "[data-jqs=date-picker]",
   "[data-jqs=card]",
   "[data-jqs=badge]",
   "[data-jqs=alert]",
@@ -358,6 +399,6 @@ if ($("#umd output").text() !== "true") {
 }
 
 console.log(
-  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
+  "built package proof: ESM expression=passed, ESM backend=passed, ESM dialog=passed, ESM collapsible=passed, ESM tabs=passed, ESM popover=passed, ESM tooltip=passed, ESM menu=passed, ESM toast=passed, ESM select=passed, ESM combobox=passed, ESM data-table=passed, ESM calendar=passed, ESM date-picker=passed, CSS runtime components=passed, CSS composition and navigation=passed, UMD action=passed",
 );
 dom.window.close();

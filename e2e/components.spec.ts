@@ -291,6 +291,41 @@ test.describe("jQuery Star components", () => {
     await expect(preview).toHaveText("Selected value: jquery-star");
   });
 
+  test("calendar and date forms compose keyboard behavior with native values", async ({ page }) => {
+    const card = page.getByRole("region", { name: "Calendar and date forms" });
+    const calendar = page.locator("#release-calendar");
+    const selected = calendar.getByRole("button", { name: "Friday, August 28, 2026" });
+
+    await expect(calendar.getByRole("grid", { name: "August 2026" })).toBeVisible();
+    await expect(selected).toHaveAttribute("data-state", "selected");
+    await selected.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(calendar.getByRole("button", { name: "Saturday, August 29, 2026" })).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(calendar.getByRole("button", { name: "Monday, August 31, 2026" })).toBeFocused();
+
+    const picker = page.locator("#component-date-picker");
+    const control = picker.getByRole("textbox", { name: "Delivery date" });
+    const trigger = picker.locator(':scope > [data-part="popover"] > [data-part="trigger"]');
+    await expect(trigger).toHaveAttribute("aria-label", /Friday, August 28, 2026/);
+    await trigger.click();
+    const dialog = page.getByRole("dialog", { name: "Delivery date calendar" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Friday, August 28, 2026" })).toBeFocused();
+    await dialog.getByRole("button", { name: "Monday, August 31, 2026" }).click();
+    await expect(control).toHaveValue("2026-08-31");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(page.locator(".date-form-preview")).toContainText("Delivery 2026-08-31");
+
+    const meter = card.getByRole("meter", { name: /Storage used/ });
+    await expect(meter).toHaveAttribute("value", "68");
+    await card.getByRole("button", { name: "Add" }).click();
+    await expect(meter).toHaveAttribute("value", "78");
+    await card.getByRole("combobox", { name: "Timezone" }).selectOption("europe-london");
+    await expect(page.locator(".date-form-preview")).toContainText("europe-london");
+  });
+
   test("combobox keeps query and committed value separate across SDK result patches", async ({
     page,
   }) => {
@@ -470,7 +505,7 @@ test.describe("jQuery Star components", () => {
     await expect(showcase.locator('[data-jqs="skeleton"]')).toHaveCount(2);
     await expect(page.getByRole("progressbar", { name: "Component coverage" })).toHaveAttribute(
       "value",
-      "36",
+      "42",
     );
   });
 
@@ -675,6 +710,30 @@ test.describe("jQuery Star components", () => {
   test("composition primitives pass accessibility checks", async ({ page }) => {
     const results = await new AxeBuilder({ page }).include(".primitives-component-card").analyze();
     expect(results.violations).toEqual([]);
+  });
+
+  test("calendar and date forms pass accessibility checks when closed and open", async ({
+    page,
+  }) => {
+    const card = page.locator(".calendar-component-card");
+    const waitForAnimations = async (): Promise<void> => {
+      await card.evaluate(async (element) => {
+        await Promise.allSettled(
+          element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+        );
+      });
+    };
+    await waitForAnimations();
+    let results = await new AxeBuilder({ page }).include(".calendar-component-card").analyze();
+    expect(results.violations).toEqual([]);
+
+    await page.locator('#component-date-picker [data-part="trigger"]').click();
+    await expect(page.getByRole("dialog", { name: "Delivery date calendar" })).toBeVisible();
+    await waitForAnimations();
+    results = await new AxeBuilder({ page }).include(".calendar-component-card").analyze();
+    expect(results.violations).toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(card.getByRole("textbox", { name: "Delivery date" })).toBeVisible();
   });
 
   test("navigation components pass accessibility checks when closed and open", async ({ page }) => {

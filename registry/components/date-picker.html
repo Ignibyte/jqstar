@@ -1,0 +1,22 @@
+<div data-jqs="field">
+  <label data-jqs="label" for="due-date">Due date</label>
+  <div id="due-date-picker" data-jqs="date-picker">
+    <input id="due-date" data-part="control" name="dueDate" autocomplete="off" />
+    <div data-jqs="popover" data-part="popover" data-side="bottom" data-align="end">
+      <button data-part="trigger" type="button">
+        <span aria-hidden="true">▦</span>
+        <span data-part="value" hidden>Choose date</span>
+      </button>
+      <div data-part="content" aria-label="Due date calendar">
+        <div data-jqs="calendar">
+          <div data-part="header">
+            <button data-part="previous" type="button" aria-label="Previous month">←</button>
+            <h2 data-part="heading"></h2>
+            <button data-part="next" type="button" aria-label="Next month">→</button>
+          </div>
+          <div data-part="grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

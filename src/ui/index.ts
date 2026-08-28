@@ -4,6 +4,7 @@ import { createMenus } from "./menu";
 import { createPopovers } from "./popover";
 import { createSelects } from "./select";
 import { createComboboxes } from "./combobox";
+import { createCalendars } from "./calendar";
 import { createDataTables } from "./data-table";
 import { createTabs } from "./tabs";
 import { createToasts } from "./toast";
@@ -237,7 +238,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       if (mutation.type === "attributes") {
         enhance(mutation.target as Element);
         const owner = (mutation.target as Element).closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], dialog[data-jqs="dialog"]',
         );
         if (owner && owner !== mutation.target) enhance(owner);
         continue;
@@ -247,7 +248,7 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
         if (!(node instanceof Element)) continue;
         enhance(node);
         const owner = node.parentElement?.closest<HTMLElement>(
-          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], dialog[data-jqs="dialog"]',
+          '[data-jqs="accordion"], [data-jqs="collapsible"], [data-jqs="tabs"], [data-jqs="popover"], [data-jqs="tooltip"], [data-jqs="menu"], [data-jqs="toast"], [data-jqs="toast-viewport"], [data-jqs="select"], [data-jqs="combobox"], [data-jqs="data-table"], [data-jqs="toggle"], [data-jqs="toggle-group"], [data-jqs="calendar"], [data-jqs="date-picker"], dialog[data-jqs="dialog"]',
         );
         if (owner) enhance(owner);
       }
@@ -277,6 +278,12 @@ function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
       "data-type",
       "data-name",
       "data-required",
+      "data-month",
+      "data-min",
+      "data-max",
+      "data-disabled-dates",
+      "data-week-start",
+      "data-disable-weekends",
     ],
     childList: true,
     subtree: true,
@@ -296,6 +303,7 @@ export function createUI(): StarUIStatic {
   const comboboxes = createComboboxes();
   const dataTables = createDataTables();
   const popovers = createPopovers();
+  const calendars = createCalendars(popovers.api);
   const tooltips = createTooltips();
   const toasts = createToasts();
   const toggles = createToggles();
@@ -311,6 +319,7 @@ export function createUI(): StarUIStatic {
     comboboxes.enhance(root);
     dataTables.enhance(root);
     toggles.enhance(root);
+    calendars.enhance(root);
   };
   const ui: StarUIStatic = {
     dialog,
@@ -326,6 +335,8 @@ export function createUI(): StarUIStatic {
     dataTable: dataTables.api,
     toggle: toggles.toggle,
     toggleGroup: toggles.toggleGroup,
+    calendar: calendars.calendar,
+    datePicker: calendars.datePicker,
     enhance,
   };
   registerDialogActions(dialog);

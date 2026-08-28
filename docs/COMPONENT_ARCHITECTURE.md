@@ -166,8 +166,32 @@ Data Table provides:
 owns none of it. Mixing server pagination with client-only sorting or filtering would misrepresent
 the full result set.
 
-Static composition primitives provide:
+Calendar and Date Picker provide:
 
+- A generated seven-column `grid` with one roving tab stop and native day buttons
+- Arrow Left/Right by day, Arrow Up/Down by week, Home/End by week edge, Page Up/Down by month, and
+  Shift+Page Up/Down by year
+- ISO `data-value` and `data-month` state, plus min, max, disabled-date, disabled-weekend, and
+  Sunday/Monday week-start constraints
+- `@ui.calendar.select|next|previous` and `$.star.ui.calendar.select|month|next|previous|value`
+- `jquery-star:calendar:before-change|change|view-change`, with cancelable selection
+- A Date Picker composition that retains a labelled native input as the form value and uses Popover
+  for placement, Escape/outside dismissal, and focus return
+- `@ui.date-picker.open|close|select` and `$.star.ui.datePicker.open|close|select|value`
+
+The selected day, focused day, and viewed month are separate state. Keyboard exploration therefore
+does not submit a value, and a server patch can replace `data-value` or `data-month` without
+replacing the component API. Date Picker writes the native input only after Calendar selection and
+dispatches ordinary `input` and `change` events so `data-bind:*`, forms, and jQuery listeners stay
+in the same path. The keyboard model follows the WAI-ARIA APG
+[Grid Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/) and
+[Date Picker Dialog Example](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/).
+
+Static form and composition primitives provide:
+
+- Label and Native Select styling without replacing native label/control relationships
+- Button Group visual composition while each child remains a native Button
+- Native `<meter>` ranges with optimum, suboptimal, and low-value presentation
 - Card anatomy through semantic `header`, content, and `footer` elements with stable `data-part`
   hooks
 - Badge and Alert variants through `data-variant`, without inventing behavior or accessibility roles
@@ -175,9 +199,10 @@ Static composition primitives provide:
 - Native `<hr>` separators and `<progress>` indicators with theme styling
 - Decorative Skeleton placeholders whose shimmer respects `prefers-reduced-motion`
 
-Card, Badge, Alert, Separator, Avatar, Skeleton, and Progress have no component runtime. Authors
-keep control of the appropriate native element, label, live-region role, and document structure. The
-library contributes only stable selectors, tokens, variants, and responsive presentation.
+Label, Native Select, Button Group, Meter, Card, Badge, Alert, Separator, Avatar, Skeleton, and
+Progress have no component runtime. Authors keep control of the appropriate native element, label,
+live-region role, and document structure. The library contributes only stable selectors, tokens,
+variants, and responsive presentation.
 
 Navigation and command composition provides:
 
@@ -252,22 +277,21 @@ Automated checks are necessary but incomplete. Every interactive component must 
 
 Implemented:
 
-- Button and Dialog
-- Field, Input, Textarea, Checkbox, and Switch
-- Collapsible and Accordion
-- Tabs
-- Popover
-- Tooltip
-- Dropdown Menu
-- Toast
-- Select
-- Combobox and server-backed Autocomplete
-- Data Table
-- Card, Badge, Alert, Separator, Avatar, Skeleton, and Progress
+- Button and Button Group
+- Dialog and Sheet
+- Field, Label, Input, Textarea, Native Select, Checkbox, Radio Group, Switch, and Slider
+- Toggle and Toggle Group
+- Collapsible, Accordion, and Tabs
+- Popover, Tooltip, and Dropdown Menu
+- Select, Combobox, and server-backed Autocomplete
+- Calendar and Date Picker
+- Data Table and Toast
+- Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, and
+  Keyboard Key
 - Breadcrumb, Pagination, Navigation Menu, and Command Palette
 
-This 28-component foundation is the first registry-backed inventory. Calendar, Date Picker, and
-other domain-heavy additions can build on these contracts without changing the public anatomy.
+This 42-component inventory is registry-backed and source-owned. Domain-heavy additions can build on
+these contracts without changing the public anatomy.
 
 Reusable overlay, focus, collection navigation, and positioning helpers should be extracted only
 when a second component proves the shared contract.

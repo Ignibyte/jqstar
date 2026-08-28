@@ -461,6 +461,88 @@
       ]
     },
     {
+      "name": "calendar",
+      "type": "registry:item",
+      "title": "Calendar",
+      "description": "A single-date calendar grid with month navigation, constraints, lifecycle events, and full keyboard movement.",
+      "files": [
+        {
+          "path": "registry/components/calendar.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/calendar.html"
+        }
+      ]
+    },
+    {
+      "name": "date-picker",
+      "type": "registry:item",
+      "title": "Date Picker",
+      "description": "A form-ready date field composed from Calendar and Popover.",
+      "registryDependencies": ["calendar", "label", "popover"],
+      "files": [
+        {
+          "path": "registry/components/date-picker.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/date-picker.html"
+        }
+      ]
+    },
+    {
+      "name": "label",
+      "type": "registry:item",
+      "title": "Label",
+      "description": "A semantic native label with the shared form typography.",
+      "files": [
+        {
+          "path": "registry/components/label.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/label.html"
+        }
+      ]
+    },
+    {
+      "name": "native-select",
+      "type": "registry:item",
+      "title": "Native Select",
+      "description": "A themed native select for platform-owned forms and mobile pickers.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/native-select.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/native-select.html"
+        }
+      ]
+    },
+    {
+      "name": "meter",
+      "type": "registry:item",
+      "title": "Meter",
+      "description": "A themed native scalar measurement with optimum and warning ranges.",
+      "registryDependencies": ["field", "label"],
+      "files": [
+        {
+          "path": "registry/components/meter.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/meter.html"
+        }
+      ]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:item",
+      "title": "Button Group",
+      "description": "A labelled visual group composed from adjacent Button variants.",
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/components/button-group.html",
+          "type": "registry:file",
+          "target": "~/components/jquery-star/button-group.html"
+        }
+      ]
+    },
+    {
       "name": "command-palette",
       "type": "registry:block",
       "title": "Command Palette",

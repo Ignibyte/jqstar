@@ -88,6 +88,39 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.calendar-component-card {
+  grid-template-columns: 1fr;
+}
+
+.calendar-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(16rem, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.showcase-title {
+  margin: 0 0 10px;
+  color: #655e55;
+  font-size: 0.85rem;
+}
+
+.date-form-showcase {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid #ddd6ca;
+  border-radius: 14px;
+  background: white;
+}
+
+.date-form-preview {
+  margin: 0;
+  color: #06704f;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .controls-component-card {
   grid-template-columns: 1fr;
 }
@@ -477,6 +510,10 @@ pre {
   }
 
   .controls-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-showcase {
     grid-template-columns: 1fr;
   }
 }

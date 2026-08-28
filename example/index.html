@@ -28,7 +28,7 @@
   <body>
     <main
       id="app"
-      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60 }"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentCapacity: 68, componentTimezone: 'america-chicago' }"
       data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
     >
       <p class="eyebrow">jQuery Star · attribute proof</p>
@@ -252,6 +252,139 @@
         </div>
       </section>
 
+      <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
+        <div>
+          <p class="label" id="calendar-components-title">Calendar and date forms</p>
+          <p class="hint">
+            One roving grid tab stop, native form values, and Popover composition with no React
+            runtime.
+          </p>
+        </div>
+
+        <div class="calendar-showcase">
+          <div>
+            <h2 class="showcase-title">Release calendar</h2>
+            <div
+              id="release-calendar"
+              data-jqs="calendar"
+              data-month="2026-08"
+              data-value="2026-08-28"
+              data-min="2026-08-03"
+              data-disabled-dates="2026-08-30"
+              data-week-start="1"
+            >
+              <div data-part="header">
+                <button data-part="previous" type="button" aria-label="Previous month">←</button>
+                <h2 data-part="heading"></h2>
+                <button data-part="next" type="button" aria-label="Next month">→</button>
+              </div>
+              <div data-part="grid"></div>
+            </div>
+          </div>
+
+          <div class="date-form-showcase">
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-due-date">Delivery date</label>
+              <div id="component-date-picker" data-jqs="date-picker">
+                <input
+                  id="component-due-date"
+                  data-part="control"
+                  data-bind:component-due-date
+                  name="dueDate"
+                  value="2026-08-28"
+                  autocomplete="off"
+                />
+                <div
+                  id="component-date-popover"
+                  data-jqs="popover"
+                  data-part="popover"
+                  data-side="bottom"
+                  data-align="end"
+                >
+                  <button data-part="trigger" type="button">
+                    <span aria-hidden="true">▦</span>
+                    <span data-part="value" hidden>Choose date</span>
+                  </button>
+                  <div data-part="content">
+                    <div
+                      id="component-date-calendar"
+                      data-jqs="calendar"
+                      data-month="2026-08"
+                      data-min="2026-08-03"
+                    >
+                      <div data-part="header">
+                        <button data-part="previous" type="button" aria-label="Previous month">
+                          ←
+                        </button>
+                        <h2 data-part="heading"></h2>
+                        <button data-part="next" type="button" aria-label="Next month">→</button>
+                      </div>
+                      <div data-part="grid"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-timezone">Timezone</label>
+              <select
+                id="component-timezone"
+                data-jqs="native-select"
+                data-bind:component-timezone
+                name="timezone"
+              >
+                <option value="america-chicago">America/Chicago</option>
+                <option value="america-new-york">America/New_York</option>
+                <option value="europe-london">Europe/London</option>
+              </select>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="capacity-meter">
+                Storage used: <span data-text="$componentCapacity"></span>%
+              </label>
+              <meter
+                id="capacity-meter"
+                data-jqs="meter"
+                min="0"
+                max="100"
+                low="55"
+                high="80"
+                optimum="30"
+                data-attr:value="$componentCapacity"
+              >
+                68%
+              </meter>
+              <div data-jqs="button-group" role="group" aria-label="Storage allocation">
+                <button
+                  data-jqs="button"
+                  data-variant="outline"
+                  type="button"
+                  data-on:click="$componentCapacity = $componentCapacity <= 10 ? 0 : $componentCapacity - 10"
+                >
+                  Reduce
+                </button>
+                <button
+                  data-jqs="button"
+                  data-variant="outline"
+                  type="button"
+                  data-on:click="$componentCapacity = $componentCapacity >= 90 ? 100 : $componentCapacity + 10"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <p
+              class="date-form-preview"
+              data-text="'Delivery ' + $componentDueDate + ' · ' + $componentTimezone"
+              aria-live="polite"
+            ></p>
+          </div>
+        </div>
+      </section>
+
       <section class="card select-component-card" aria-labelledby="select-components-title">
         <div>
           <p class="label" id="select-components-title">Select component</p>
@@ -410,7 +543,7 @@
                   <th scope="row" data-key="name">jQuery Star</th>
                   <td data-key="kind">Behavior + theme</td>
                   <td data-key="runtime">jQuery</td>
-                  <td data-key="coverage" data-value="36">36 components</td>
+                  <td data-key="coverage" data-value="42">42 components</td>
                 </tr>
                 <tr data-row-id="datastar">
                   <td>
@@ -840,11 +973,11 @@
           <progress
             id="progress-proof"
             data-jqs="progress"
-            value="36"
-            max="36"
+            value="42"
+            max="42"
             aria-labelledby="progress-proof-label"
           >
-            36 of 36
+            42 of 42
           </progress>
         </div>
 

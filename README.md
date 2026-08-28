@@ -79,12 +79,13 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components
 
-The component-system proof now includes 36 recipes: Button, Dialog, Sheet, Field, Input, Textarea,
-Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group, Collapsible, Accordion, Tabs, Popover,
-Tooltip, Dropdown Menu, Select, Combobox, Data Table, Toast, Card, Badge, Alert, Separator, Avatar,
-Skeleton, Spinner, Progress, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, and
-Command Palette. Import the precompiled theme for the default appearance. Tailwind is used to author
-this file but is not required in the consuming application.
+The component-system proof now includes 42 recipes: Button, Button Group, Dialog, Sheet, Field,
+Label, Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
+Collapsible, Accordion, Tabs, Popover, Tooltip, Dropdown Menu, Select, Combobox, Calendar, Date
+Picker, Data Table, Toast, Card, Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress,
+Meter, Empty State, Keyboard Key, Breadcrumb, Pagination, Navigation Menu, and Command Palette.
+Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
+not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -340,6 +341,36 @@ The server can patch the inside of `data-part="content"` with new options. The l
 with the official Datastar SDK and verifies that the input node, focus, query, active option, and
 committed form value survive the patch.
 
+Calendar implements a single-select APG grid and keeps its public state in ISO data attributes:
+
+```html
+<div id="release-calendar" data-jqs="calendar" data-month="2026-08" data-value="2026-08-28">
+  <div data-part="header">
+    <button data-part="previous" aria-label="Previous month">←</button>
+    <h2 data-part="heading"></h2>
+    <button data-part="next" aria-label="Next month">→</button>
+  </div>
+  <div data-part="grid"></div>
+</div>
+
+<button data-on:click="@ui.calendar.select('#release-calendar', '2026-08-31')">
+  Select release date
+</button>
+```
+
+Arrow keys move by day or week, Home and End move to week edges, Page Up and Page Down move by
+month, and Shift modifies those keys to move by year. Only one enabled day is in the tab order.
+`data-min`, `data-max`, `data-disabled-dates`, `data-disable-weekends`, and `data-week-start="1"`
+constrain the grid. Use `$.star.ui.calendar.select|month|next|previous|value()` or the matching
+`@ui.calendar.*` actions. Selection emits cancelable `jquery-star:calendar:before-change`, followed
+by `jquery-star:calendar:change`; month navigation emits `jquery-star:calendar:view-change`.
+
+Date Picker composes a native read-only text input, Popover, and Calendar. The input remains the
+form value and works with `data-bind:*`; the popup receives a dialog name from the input's label,
+focus starts on the selected date, and selecting a day closes the popup and restores focus. Use the
+registry recipe for the complete anatomy, or call `$.star.ui.datePicker.open|close|select|value()`
+and `@ui.date-picker.*` from existing markup.
+
 Data Table enhances native table markup rather than turning it into an application grid:
 
 ```html
@@ -395,7 +426,7 @@ Composition primitives are semantic HTML plus stable styling hooks, so they add 
     <span data-jqs="avatar" role="img" aria-label="Chad Peppers">CP</span>
     <span data-jqs="badge" data-variant="success">Verified</span>
     <hr data-jqs="separator" />
-    <progress data-jqs="progress" value="36" max="36">36 of 36</progress>
+    <progress data-jqs="progress" value="42" max="42">42 of 42</progress>
   </div>
 </article>
 

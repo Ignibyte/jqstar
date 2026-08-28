@@ -292,6 +292,26 @@ export interface StarToggleGroupStatic {
   value(target: ToggleGroupTarget): string | string[] | undefined;
 }
 
+export type CalendarTarget = string | HTMLElement;
+export type CalendarDate = string | Date;
+
+export interface StarCalendarStatic {
+  select(target: CalendarTarget, date: CalendarDate): HTMLElement;
+  month(target: CalendarTarget, date: CalendarDate): HTMLElement;
+  next(target: CalendarTarget): HTMLElement;
+  previous(target: CalendarTarget): HTMLElement;
+  value(target: CalendarTarget): string | undefined;
+}
+
+export type DatePickerTarget = string | HTMLElement;
+
+export interface StarDatePickerStatic {
+  open(target: DatePickerTarget): HTMLElement;
+  close(target: DatePickerTarget): HTMLElement;
+  select(target: DatePickerTarget, date: CalendarDate): HTMLElement;
+  value(target: DatePickerTarget): string | undefined;
+}
+
 export interface StarUIStatic {
   readonly dialog: StarDialogStatic;
   readonly collapsible: StarDisclosureStatic;
@@ -306,6 +326,8 @@ export interface StarUIStatic {
   readonly dataTable: StarDataTableStatic;
   readonly toggle: StarToggleStatic;
   readonly toggleGroup: StarToggleGroupStatic;
+  readonly calendar: StarCalendarStatic;
+  readonly datePicker: StarDatePickerStatic;
   enhance(root?: ParentNode): void;
 }
 
