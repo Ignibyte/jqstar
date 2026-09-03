@@ -11,6 +11,13 @@ const architectureSabotage = [
   },
   { id: "no-unresolved", files: { "src/a.ts": "import './missing';\n" } },
   {
+    id: "no-unresolved-built-smoke",
+    files: {
+      "src/green.ts": "export {};\n",
+      "scripts/smoke-built.mjs": "import '../dist/unexpected.js';\n",
+    },
+  },
+  {
     id: "no-production-to-tests",
     files: { "src/a.ts": "import '../test/a';\n", "test/a.ts": "export {};\n" },
   },
@@ -45,7 +52,7 @@ async function writeFixture(root, files) {
     join(root, "tsconfig.json"),
     JSON.stringify({ compilerOptions: { moduleResolution: "bundler" } }),
   );
-  for (const directory of ["src", "server", "test", "example"]) {
+  for (const directory of ["src", "server", "test", "example", "scripts"]) {
     await mkdir(join(root, directory), { recursive: true });
   }
   for (const [path, source] of Object.entries(files)) {
@@ -68,7 +75,7 @@ async function selfTestArchitecture(root) {
     );
     const red = await run(
       resolve(repositoryRoot, "node_modules/.bin/depcruise"),
-      ["src", "server", "test", "example", "--config", config, "--output-type", "err"],
+      ["src", "server", "test", "example", "scripts", "--config", config, "--output-type", "err"],
       { capture: true, cwd: fixtureRoot },
     );
     assert.notEqual(red.code, 0, `${fixture.id} sabotage stayed green`);
@@ -79,10 +86,15 @@ async function selfTestArchitecture(root) {
   }
   const greenRoot = join(root, "architecture-green");
   await mkdir(greenRoot);
-  await writeFixture(greenRoot, { "src/a.ts": "import './b';\n", "src/b.ts": "export {};\n" });
+  await writeFixture(greenRoot, {
+    "src/a.ts": "import './b';\n",
+    "src/b.ts": "export {};\n",
+    "scripts/smoke-built.mjs":
+      "import '../dist/jquery-star.js';\nimport '../dist/jquery-star.umd.cjs';\n",
+  });
   const green = await run(
     resolve(repositoryRoot, "node_modules/.bin/depcruise"),
-    ["src", "--config", config, "--output-type", "err"],
+    ["src", "scripts", "--config", config, "--output-type", "err"],
     { capture: true, cwd: greenRoot },
   );
   assert.equal(green.code, 0, `architecture green fixture failed: ${green.stdout}${green.stderr}`);
@@ -153,20 +165,23 @@ async function selfTestSemgrep(root) {
 async function selfTestGitleaks(root) {
   const fixtureRoot = join(root, "gitleaks");
   await mkdir(fixtureRoot);
-  await writeFile(
-    join(fixtureRoot, "credentials.env"),
-    `STRIPE_SECRET_KEY=${"sk_live_" + "51H8ZKJ4P2Q7W9N6M3R5T8V1"}\n`,
-  );
+  const plantedSecret = "sk_live_" + "51H8ZKJ4P2Q7W9N6M3R5T8V1";
+  await writeFile(join(fixtureRoot, "credentials.env"), `STRIPE_SECRET_KEY=${plantedSecret}\n`);
   const args = [
     "dir",
     ".",
     "--config",
     resolve(repositoryRoot, ".gitleaks.toml"),
     "--no-banner",
+    "--no-color",
     "--redact",
+    "--verbose",
   ];
   const red = await run("gitleaks", args, { capture: true, cwd: fixtureRoot });
   assert.notEqual(red.code, 0, "gitleaks secret sabotage stayed green");
+  const diagnostic = `${red.stdout}\n${red.stderr}`;
+  assert(diagnostic.includes("REDACTED"), "gitleaks diagnostic did not redact the secret");
+  assert(!diagnostic.includes(plantedSecret), "gitleaks diagnostic exposed the planted secret");
   await rm(join(fixtureRoot, "credentials.env"));
   await writeFile(join(fixtureRoot, "green.txt"), "no credentials here\n");
   const green = await run("gitleaks", args, { capture: true, cwd: fixtureRoot });

@@ -12,8 +12,18 @@ module.exports = {
       name: "no-unresolved",
       severity: "error",
       comment: "Every static dependency must resolve.",
-      from: {},
+      from: { pathNot: "^scripts/smoke-built\\.mjs$" },
       to: { couldNotResolve: true },
+    },
+    {
+      name: "no-unresolved-built-smoke",
+      severity: "error",
+      comment: "The built-package smoke test may reference only its two generated bundle inputs.",
+      from: { path: "^scripts/smoke-built\\.mjs$" },
+      to: {
+        couldNotResolve: true,
+        pathNot: "^\\.\\./dist/(?:jquery-star\\.js|jquery-star\\.umd\\.cjs)$",
+      },
     },
     {
       name: "no-production-to-tests",
