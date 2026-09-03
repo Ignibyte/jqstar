@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { NumberFieldTarget, StarContext, StarNumberFieldStatic } from "../types";
 
 interface NumberFieldRecord {
@@ -239,7 +239,7 @@ function controlledNumberField(context: StarContext, target?: unknown): HTMLElem
   return resolveNumberField(closest instanceof HTMLElement ? closest : String(target));
 }
 
-function registerActions(api: StarNumberFieldStatic): void {
+function registerActions(api: StarNumberFieldStatic, registerAction: ActionRegistrar): void {
   for (const [name, direction] of [
     ["increment", 1],
     ["decrement", -1],
@@ -275,7 +275,7 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-export function createNumberFields(): NumberFieldCollection {
+export function createNumberFields(registerAction: ActionRegistrar): NumberFieldCollection {
   const api: StarNumberFieldStatic = {
     increment: (target, amount = 1) => requestStep(resolveNumberField(target), 1, amount),
     decrement: (target, amount = 1) => requestStep(resolveNumberField(target), -1, amount),
@@ -286,6 +286,6 @@ export function createNumberFields(): NumberFieldCollection {
       return numericValue(record.control.value);
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

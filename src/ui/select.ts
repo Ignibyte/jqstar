@@ -1,7 +1,11 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { SelectTarget, StarContext, StarSelectStatic } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
@@ -38,7 +42,6 @@ interface SelectCollection {
 const records = new WeakMap<HTMLElement, SelectRecord>();
 const activeRecords = new Set<SelectRecord>();
 let selectId = 0;
-let globalListenersInstalled = false;
 
 function selectRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="select"]') ? value : undefined;
@@ -553,7 +556,6 @@ function enhanceSelect(root: HTMLElement): SelectRecord {
   syncState(record, record.open);
   wire(record);
   if (notifyValueWrite) control.dispatchEvent(new Event("input", { bubbles: true }));
-  installGlobalListeners();
   if (record.open) {
     setActive(record, record.activeValue ?? initialActive(record));
     positionSelect(record);
@@ -569,13 +571,14 @@ function positionSelect(record: SelectRecord): void {
   });
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener(
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeSelect(record.root, false, false);
       }
@@ -583,7 +586,7 @@ function installGlobalListeners(): void {
     true,
   );
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) {
         positionSelect(record);
       } else {
@@ -591,9 +594,8 @@ function installGlobalListeners(): void {
       }
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own("service", "ui:select:active-records", documentRecordCleanup(activeRecords, document));
 }
 
 function enhanceTree(root: ParentNode): void {
@@ -624,7 +626,7 @@ function controlledSelect(context: StarContext, target?: unknown): HTMLElement {
   throw new Error('Select action needs a selector or an element inside data-jqs="select".');
 }
 
-function registerActions(api: StarSelectStatic): void {
+function registerActions(api: StarSelectStatic, registerAction: ActionRegistrar): void {
   for (const operation of ["open", "close", "toggle"] as const) {
     registerAction(`ui.select.${operation}`, (context) => {
       const root = controlledSelect(context, context.args?.[0]);
@@ -643,7 +645,11 @@ function registerActions(api: StarSelectStatic): void {
   });
 }
 
-export function createSelects(): SelectCollection {
+export function createSelects(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): SelectCollection {
+  installGlobalListeners(host);
   const api: StarSelectStatic = {
     select: (target, value) => {
       const root = resolveRoot(target);
@@ -659,6 +665,6 @@ export function createSelects(): SelectCollection {
       return (records.get(root) ?? enhanceSelect(root)).value;
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

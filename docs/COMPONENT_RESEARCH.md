@@ -4,7 +4,7 @@ Research snapshot: August 28, 2026.
 
 The useful systems fall into four groups. Full styled libraries prove component coverage. Headless
 libraries prove behavior and accessibility. Tailwind libraries prove theming and composition. Source
-registries prove distribution. jQuery Star needs one idea from each group instead of copying any one
+registries prove distribution. jQStar needs one idea from each group instead of copying any one
 library.
 
 ## Popularity snapshot
@@ -30,22 +30,22 @@ with monolithic packages.
 
 ## Patterns worth adopting
 
-| System                                                                             | Pattern to adopt                                                                                                          | Limit we should avoid                                |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| [Radix Primitives](https://www.radix-ui.com/primitives/docs/overview/introduction) | Stable component parts, explicit state attributes, focus management, keyboard contracts, controlled and uncontrolled APIs | React-only component implementation                  |
-| [shadcn/ui registry](https://ui.shadcn.com/docs/registry/getting-started)          | Copyable source, registry dependencies, blocks, and framework-neutral file distribution                                   | Treating copied React source as our runtime          |
-| [Bootstrap](https://getbootstrap.com/docs/5.3/getting-started/javascript/)         | HTML data APIs, namespaced lifecycle events, programmatic methods, instance cleanup, and a no-build path                  | A second JavaScript plugin system beside jQuery Star |
-| [Tailwind CSS](https://tailwindcss.com/docs/theme)                                 | CSS theme variables, static compilation, and user-owned customization                                                     | Utility class strings as the behavioral API          |
-| [daisyUI](https://daisyui.com/)                                                    | Semantic CSS classes and many swappable themes                                                                            | Making daisyUI class structure mandatory             |
-| [Headless UI](https://headlessui.com/)                                             | Behavior and accessibility independent from appearance                                                                    | Restricting the library to React or Vue              |
-| [Material UI](https://mui.com/material-ui/getting-started/)                        | Broad coverage, consistent variants and sizes, documentation depth                                                        | CSS-in-JS and React peer dependencies                |
-| [Ant Design](https://ant.design/docs/react/introduce/)                             | Data-heavy components, forms, internationalization, and enterprise states                                                 | Large all-or-nothing runtime assumptions             |
-| [Chakra UI](https://chakra-ui.com/docs/components/concepts/overview)               | Reusable compositions and complete form anatomy                                                                           | Styling through JavaScript props                     |
-| [WAI-ARIA APG](https://www.w3.org/WAI/ARIA/apg/patterns/)                          | The reference component behavior checklist for our tests                                                                  | Inventing keyboard behavior from visual examples     |
+| System                                                                             | Pattern to adopt                                                                                                          | Limit we should avoid                            |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [Radix Primitives](https://www.radix-ui.com/primitives/docs/overview/introduction) | Stable component parts, explicit state attributes, focus management, keyboard contracts, controlled and uncontrolled APIs | React-only component implementation              |
+| [shadcn/ui registry](https://ui.shadcn.com/docs/registry/getting-started)          | Copyable source, registry dependencies, blocks, and framework-neutral file distribution                                   | Treating copied React source as our runtime      |
+| [Bootstrap](https://getbootstrap.com/docs/5.3/getting-started/javascript/)         | HTML data APIs, namespaced lifecycle events, programmatic methods, instance cleanup, and a no-build path                  | A second JavaScript plugin system beside jQStar  |
+| [Tailwind CSS](https://tailwindcss.com/docs/theme)                                 | CSS theme variables, static compilation, and user-owned customization                                                     | Utility class strings as the behavioral API      |
+| [daisyUI](https://daisyui.com/)                                                    | Semantic CSS classes and many swappable themes                                                                            | Making daisyUI class structure mandatory         |
+| [Headless UI](https://headlessui.com/)                                             | Behavior and accessibility independent from appearance                                                                    | Restricting the library to React or Vue          |
+| [Material UI](https://mui.com/material-ui/getting-started/)                        | Broad coverage, consistent variants and sizes, documentation depth                                                        | CSS-in-JS and React peer dependencies            |
+| [Ant Design](https://ant.design/docs/react/introduce/)                             | Data-heavy components, forms, internationalization, and enterprise states                                                 | Large all-or-nothing runtime assumptions         |
+| [Chakra UI](https://chakra-ui.com/docs/components/concepts/overview)               | Reusable compositions and complete form anatomy                                                                           | Styling through JavaScript props                 |
+| [WAI-ARIA APG](https://www.w3.org/WAI/ARIA/apg/patterns/)                          | The reference component behavior checklist for our tests                                                                  | Inventing keyboard behavior from visual examples |
 
 ## Resulting direction
 
-jQuery Star owns behavior, component anatomy, state attributes, and events. Tailwind 4 compiles the
+jQStar owns behavior, component anatomy, state attributes, and events. Tailwind 4 compiles the
 official theme. Consumers can use the compiled CSS without installing Tailwind. A later daisyUI
 adapter can map the same behavior to daisyUI classes. The root shadcn-compatible source registry now
 distributes framework-neutral HTML recipes and can later include CSS, TypeScript, tests, and backend
@@ -54,15 +54,15 @@ examples.
 The resulting system applies these decisions:
 
 - The current shadcn [component catalog](https://ui.shadcn.com/docs/components) is now fully covered
-  by jQuery Star recipes or direct platform equivalents. Further work therefore prioritizes
+  by jQStar recipes or direct platform equivalents. Further work therefore prioritizes
   framework-neutral server operations and application compositions instead of creating React-shaped
   aliases for components already present.
 - daisyUI's current [Countdown](https://daisyui.com/components/countdown/),
   [Radial Progress](https://daisyui.com/components/radial-progress/),
   [Indicator](https://daisyui.com/components/indicator/),
   [Dock](https://daisyui.com/components/dock/), and [Swap](https://daisyui.com/components/swap/)
-  demonstrate useful lightweight visual contracts. jQuery Star retains those component categories
-  while replacing mandatory class anatomy with source-owned `data-jqs` markup; Countdown adds a
+  demonstrate useful lightweight visual contracts. jQStar retains those component categories while
+  replacing mandatory class anatomy with source-owned `data-jqs` markup; Countdown adds a
   shared-clock public runtime, while the other four stay CSS/native-HTML driven.
 - Log Viewer follows W3C's
   [`role="log"` technique](https://www.w3.org/WAI/WCAG21/Techniques/aria/ARIA23) on a generic
@@ -73,7 +73,7 @@ The resulting system applies these decisions:
 - Dialog proves named actions, native modality, initial focus, focus return, Escape handling,
   cancelable lifecycle events, state attributes, and accessible labelling.
 - Field, Input, Textarea, Checkbox, and Switch prove that semantic component anatomy and Tailwind
-  styling can sit directly on native controls while jQuery Star's existing `data-bind:*` directives
+  styling can sit directly on native controls while jQStar's existing `data-bind:*` directives
   remain the state layer.
 - Collapsible and Accordion follow the APG
   [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/) and
@@ -84,8 +84,8 @@ The resulting system applies these decisions:
   skipping while exposing values that survive server-rendered HTML patches.
 - Popover uses the HTML Standard's
   [Popover API](https://html.spec.whatwg.org/multipage/popover.html) for top-layer rendering when it
-  is available, while jQuery Star owns consistent dismissal, focus, lifecycle, placement, and
-  fallback behavior.
+  is available, while jQStar owns consistent dismissal, focus, lifecycle, placement, and fallback
+  behavior.
 - Tooltip follows the APG [Tooltip](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/) reference for
   focus and hover activation, Escape dismissal, persistent trigger focus, `role="tooltip"`, and the
   `aria-describedby` relationship. Because that APG pattern is still marked as work in progress, the
@@ -109,7 +109,7 @@ The resulting system applies these decisions:
 - Combobox uses the editable-combobox contract from the same
   [Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/): DOM focus remains in the
   input, `aria-activedescendant` identifies the suggested option, Enter accepts a suggestion, and
-  Escape closes without forcing a value. jQuery Star keeps the typed query separate from a hidden
+  Escape closes without forcing a value. jQStar keeps the typed query separate from a hidden
   submitted value, so Datastar can replace the result options without replacing the focused input.
 - Data Table follows W3C's
   [table header guidance](https://www.w3.org/WAI/tutorials/tables/one-header/) by retaining native
@@ -174,7 +174,7 @@ The resulting system applies these decisions:
   hover pause automatic changes, and each unnamed slide receives a position-based accessible name.
 - Sidebar adopts shadcn's
   [composable sidebar structure](https://ui.shadcn.com/docs/components/base/sidebar) and its icon,
-  off-canvas, and non-collapsible modes without importing React context. jQuery Star keeps the same
+  off-canvas, and non-collapsible modes without importing React context. jQStar keeps the same
   useful Cmd/Ctrl+B convention while storing state on source-owned HTML.
 - Stepper uses an ordered list and `aria-current="step"`, matching the platform-neutral semantics
   described by [WAI-ARIA](https://www.w3.org/TR/wai-aria-1.3/#aria-current). Linear forward
@@ -227,8 +227,8 @@ The resulting system applies these decisions:
   names, keyboard behavior, and submission instead of recreating them with generic containers.
 - The current shadcn
   [Questionnaire contract](https://ui.shadcn.com/docs/components/base/questionnaire) informed the
-  supported single, multiple, freeform, skippable, controlled, and keyboard cases. jQuery Star maps
-  those capabilities to native HTML and `FormData` instead of a React component state model.
+  supported single, multiple, freeform, skippable, controlled, and keyboard cases. jQStar maps those
+  capabilities to native HTML and `FormData` instead of a React component state model.
 - Attachment and Bubble follow the source-owned anatomy shown in shadcn's current
   [Attachment](https://ui.shadcn.com/docs/components/base/attachment) and
   [Bubble](https://ui.shadcn.com/docs/components/base/bubble) components. They need no runtime
@@ -239,22 +239,22 @@ The resulting system applies these decisions:
   [Marker](https://ui.shadcn.com/docs/components/radix/marker),
   [Table](https://ui.shadcn.com/docs/components/base/table), and
   [Typeset](https://ui.shadcn.com/docs/typeset) contracts map directly to native layout, direction,
-  inline content, table, and document semantics. jQuery Star keeps them zero-runtime.
+  inline content, table, and document semantics. jQStar keeps them zero-runtime.
 - The current shadcn [Chart](https://ui.shadcn.com/docs/components/base/chart) contract informed the
-  responsive plot, legend, tooltip, and configurable series model. jQuery Star uses the same
-  source-owned composition principle but renders from a native table instead of requiring Recharts
-  or a browser framework.
+  responsive plot, legend, tooltip, and configurable series model. jQStar uses the same source-owned
+  composition principle but renders from a native table instead of requiring Recharts or a browser
+  framework.
 - The current daisyUI [component catalog](https://daisyui.com/components/) identifies Stat,
   Timeline, Status, Diff, Code Mockup, and Browser Mockup as distinct data-display or mockup
-  contracts. jQuery Star maps them to `data-jqs` anatomy instead of adopting daisyUI classes.
+  contracts. jQStar maps them to `data-jqs` anatomy instead of adopting daisyUI classes.
 - daisyUI's [Stat](https://daisyui.com/components/stat/) and
   [Timeline](https://daisyui.com/components/timeline/) anatomy informed the title/value/description
   and ordered-event parts. Both remain zero-runtime because the application or backend owns their
   data.
 - daisyUI's [Code Mockup](https://daisyui.com/components/mockup-code/) and
   [Browser Mockup](https://daisyui.com/components/mockup-browser/) informed the presentation, while
-  jQuery Star adds an explicit clipboard contract to Code Block. Diff uses a native range input
-  rather than a pointer-only comparison layer.
+  jQStar adds an explicit clipboard contract to Code Block. Diff uses a native range input rather
+  than a pointer-only comparison layer.
 - Range Calendar retains the APG
   [Date Picker grid keyboard contract](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
   and represents the continuous selection through `aria-selected` grid cells. Endpoint text is

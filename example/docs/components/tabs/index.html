@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabs · jQStar Components</title>
+    <meta
+      name="description"
+      content="Build accessible jQStar tabs with automatic or manual activation and stable values."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Tabs</h1>
+      <p class="docs-lede">
+        A set of named panels with generated tab semantics, roving focus, automatic or manual
+        activation, horizontal or vertical orientation, and cancelable value changes.
+      </p>
+
+      <div class="component-preview" data-jqs="tabs" data-value="preview">
+        <div data-part="list" aria-label="Tabs example">
+          <button data-part="trigger" data-value="preview" type="button">Preview</button>
+          <button data-part="trigger" data-value="code" type="button">Code</button>
+        </div>
+        <section data-part="panel" data-value="preview">
+          <div class="preview-stage">
+            <div id="docs-settings-tabs" data-jqs="tabs" data-value="account">
+              <div data-part="list" aria-label="Settings">
+                <button data-part="trigger" data-value="account" type="button">Account</button>
+                <button data-part="trigger" data-value="security" type="button">Security</button>
+                <button data-part="trigger" data-value="notifications" type="button">
+                  Notifications
+                </button>
+              </div>
+              <section data-part="panel" data-value="account">
+                <h3>Account</h3>
+                <p>Update the public name and email attached to this workspace.</p>
+              </section>
+              <section data-part="panel" data-value="security">
+                <h3>Security</h3>
+                <p>Review active sessions and rotate project credentials.</p>
+              </section>
+              <section data-part="panel" data-value="notifications">
+                <h3>Notifications</h3>
+                <p>Choose which server events should send an alert.</p>
+              </section>
+            </div>
+          </div>
+        </section>
+        <section data-part="panel" data-value="code">
+          <div class="code-block">
+            <div class="code-heading">
+              <span>tabs.html</span
+              ><button type="button" data-on:click="@site.copyCode">Copy</button>
+            </div>
+            <pre><code>&lt;div id="settings-tabs" data-jqs="tabs" data-value="account"&gt;
+  &lt;div data-part="list" aria-label="Settings"&gt;
+    &lt;button data-part="trigger" data-value="account"&gt;Account&lt;/button&gt;
+    &lt;button data-part="trigger" data-value="security"&gt;Security&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;section data-part="panel" data-value="account"&gt;
+    Account settings
+  &lt;/section&gt;
+  &lt;section data-part="panel" data-value="security"&gt;
+    Security settings
+  &lt;/section&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+      </div>
+
+      <h2>API Reference</h2>
+      <div class="api-table-wrap" role="region" aria-label="Tabs anatomy" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Contract</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-jqs="tabs"</code></td>
+              <td>The component root; <code>data-value</code> stores the active stable value.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="list"</code></td>
+              <td>The labeled tab list and orientation owner.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="trigger"</code></td>
+              <td>A tab whose value matches one panel.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="panel"</code></td>
+              <td>The associated tab panel.</td>
+            </tr>
+            <tr>
+              <td><code>data-activation="manual"</code></td>
+              <td>Moves focus without changing panels until Enter or Space.</td>
+            </tr>
+            <tr>
+              <td><code>data-orientation="vertical"</code></td>
+              <td>Uses Up and Down instead of Left and Right movement.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Keyboard Interactions</h2>
+      <ul class="keyboard-list">
+        <li>
+          <kbd>Left / Right</kbd
+          ><span>Moves through horizontal tabs and activates on focus by default.</span>
+        </li>
+        <li><kbd>Up / Down</kbd><span>Moves through a vertical tab list.</span></li>
+        <li><kbd>Home / End</kbd><span>Moves to the first or last enabled tab.</span></li>
+        <li>
+          <kbd>Enter / Space</kbd
+          ><span>Activates the focused tab when manual activation is configured.</span>
+        </li>
+      </ul>
+      <p>
+        Changes emit cancelable <code>jquery-star:tabs:before-change</code> and final
+        <code>jquery-star:tabs:change</code> events. Call
+        <code>$.star.ui.tabs.activate('#settings-tabs', 'security')</code> or the equivalent
+        <code>@ui.tabs.activate</code> action for programmatic selection.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

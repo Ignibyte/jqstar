@@ -1,0 +1,3321 @@
+{
+  "schema": "jqstar-agent-index/1",
+  "corpusVersion": 3,
+  "package": {
+    "name": "jquery-star",
+    "version": "0.1.0",
+    "description": "HTML-first reactive framework for server-rendered applications, powered by jQuery"
+  },
+  "siteVersion": "0.1.0",
+  "canonicalBaseUrl": "https://ignibyte.github.io/jqstar/",
+  "webMcp": {
+    "draft": "2026-08-26",
+    "status": "optional-community-group-draft",
+    "interface": "document.modelContext"
+  },
+  "limits": {
+    "queryCharacters": 160,
+    "searchResults": 8,
+    "guideCharacters": 16000,
+    "exampleCharacters": 8000,
+    "fullTextBytes": 120000,
+    "indexBytes": 160000
+  },
+  "provenance": {
+    "manifest": "config/agent-content.json",
+    "package": "package.json",
+    "registry": "registry.json",
+    "sources": [
+      "config/agent-content.json",
+      "docs/BACKEND.md",
+      "docs/COMPONENT_ARCHITECTURE.md",
+      "docs/CSP_EXPRESSIONS.md",
+      "docs/INTEROPERABILITY.md",
+      "docs/JQUERY_ECOSYSTEM.md",
+      "docs/TESTING.md",
+      "example/components/lab/index.html",
+      "example/docs/api/index.html",
+      "example/docs/components/dialog/index.html",
+      "example/docs/components/dropdown/index.html",
+      "example/docs/components/index.html",
+      "example/docs/components/tabs/index.html",
+      "example/docs/components/toast/index.html",
+      "example/docs/csp/index.html",
+      "example/docs/datastar/index.html",
+      "example/docs/ecosystem/index.html",
+      "example/docs/index.html",
+      "example/docs/interoperability/index.html",
+      "example/docs/plugins/index.html",
+      "example/docs/testing/index.html",
+      "example/index.html",
+      "package.json",
+      "README.md",
+      "registry.json"
+    ]
+  },
+  "surfaces": [
+    {
+      "id": "agent-guide",
+      "title": "Agent guide",
+      "path": "docs/agents/",
+      "contentType": "text/html",
+      "summary": "Human-readable agent support, provenance, tools, limits, and reporting guidance.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/agents/"
+    },
+    {
+      "id": "llms-index",
+      "title": "LLM index",
+      "path": "llms.txt",
+      "contentType": "text/plain; charset=utf-8",
+      "summary": "A short map of the approved jQStar corpus and canonical public pages.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/llms.txt"
+    },
+    {
+      "id": "llms-full",
+      "title": "Bounded full-text corpus",
+      "path": "llms-full.txt",
+      "contentType": "text/plain; charset=utf-8",
+      "summary": "Reviewed guide text, component contracts, examples, and framework invariants.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/llms-full.txt"
+    },
+    {
+      "id": "agent-index",
+      "title": "Machine-readable agent index",
+      "path": "jqstar-agent-index.json",
+      "contentType": "application/json; charset=utf-8",
+      "summary": "The versioned corpus used by the website search and WebMCP tools.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/jqstar-agent-index.json"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "framework-identity",
+      "type": "invariant",
+      "title": "framework identity",
+      "summary": "jQStar is an HTML-first reactive framework for server-rendered applications. It uses the real jQuery instance and does not require a virtual DOM or client-side router.",
+      "content": "jQStar is an HTML-first reactive framework for server-rendered applications. It uses the real jQuery instance and does not require a virtual DOM or client-side router.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "provenance": {
+        "sources": ["example/docs/index.html", "example/index.html", "package.json"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "jquery-signal-boundary",
+      "type": "invariant",
+      "title": "jquery signal boundary",
+      "summary": "$ is real jQuery. A name such as $count is a reactive signal. These meanings are intentionally different.",
+      "content": "$ is real jQuery. A name such as $count is a reactive signal. These meanings are intentionally different.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "provenance": {
+        "sources": ["example/docs/index.html", "README.md"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "csp-security-boundary",
+      "type": "invariant",
+      "title": "csp security boundary",
+      "summary": "The explicit jquery-star/csp engine performs no dynamic code construction in its entry graph. It requires trusted markup and trusted installed extensions, is not a sandbox, and does not configure or replace the page policy for scripts, styles, network endpoints, jQuery plugins, or application code.",
+      "content": "The explicit jquery-star/csp engine performs no dynamic code construction in its entry graph. It requires trusted markup and trusted installed extensions, is not a sandbox, and does not configure or replace the page policy for scripts, styles, network endpoints, jQuery plugins, or application code.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/csp/",
+      "path": "docs/csp/",
+      "provenance": {
+        "sources": ["docs/CSP_EXPRESSIONS.md", "example/docs/csp/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "component-anatomy",
+      "type": "invariant",
+      "title": "component anatomy",
+      "summary": "A component root uses data-jqs. Stable internal slots use data-part. Reflected state uses data-state or a documented component-specific data attribute.",
+      "content": "A component root uses data-jqs. Stable internal slots use data-part. Reflected state uses data-state or a documented component-specific data attribute.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/",
+      "path": "docs/components/",
+      "provenance": {
+        "sources": ["docs/COMPONENT_ARCHITECTURE.md", "example/docs/components/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "registry-ownership",
+      "type": "invariant",
+      "title": "registry ownership",
+      "summary": "The application owns component markup and block code after jqstar add copies registry recipes into it. Generic behavior stays in the jquery-star package.",
+      "content": "The application owns component markup and block code after jqstar add copies registry recipes into it. Generic behavior stays in the jquery-star package.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "provenance": {
+        "sources": ["example/docs/index.html", "README.md", "registry.json"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "datastar-sdk",
+      "type": "invariant",
+      "title": "datastar sdk",
+      "summary": "Datastar SSE must be generated with @starfederation/datastar-sdk. Do not handwrite Datastar event strings.",
+      "content": "Datastar SSE must be generated with @starfederation/datastar-sdk. Do not handwrite Datastar event strings.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/datastar/",
+      "path": "docs/datastar/",
+      "provenance": {
+        "sources": ["docs/BACKEND.md", "example/docs/datastar/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "patch-lifecycle",
+      "type": "invariant",
+      "title": "patch lifecycle",
+      "summary": "Server-rendered HTML remains authoritative. Use data-jqs-preserve only for a live root that must survive a patch, and use whenEnhanced() to wait for a complete patch commit.",
+      "content": "Server-rendered HTML remains authoritative. Use data-jqs-preserve only for a live root that must survive a patch, and use whenEnhanced() to wait for a complete patch commit.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/datastar/",
+      "path": "docs/datastar/",
+      "provenance": {
+        "sources": ["example/docs/api/index.html", "example/docs/datastar/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "testing-ownership",
+      "type": "invariant",
+      "title": "testing ownership",
+      "summary": "The testing harness requires a caller-owned same-realm Window, Document, and jQuery instance. Its bounded flush covers jQStar-owned work, queued fixtures, and registered finite tasks, not arbitrary timers or real-network idleness.",
+      "content": "The testing harness requires a caller-owned same-realm Window, Document, and jQuery instance. Its bounded flush covers jQStar-owned work, queued fixtures, and registered finite tasks, not arbitrary timers or real-network idleness.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/testing/",
+      "path": "docs/testing/",
+      "provenance": {
+        "sources": ["docs/TESTING.md", "example/docs/testing/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "external-render-ownership",
+      "type": "invariant",
+      "title": "external render ownership",
+      "summary": "Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned.",
+      "content": "Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/interoperability/",
+      "path": "docs/interoperability/",
+      "provenance": {
+        "sources": ["docs/INTEROPERABILITY.md", "example/docs/interoperability/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "native-accessibility",
+      "type": "invariant",
+      "title": "native accessibility",
+      "summary": "jQStar components start with native HTML semantics and add only missing state and keyboard behavior. WebMCP does not replace semantic HTML, accessibility APIs, or JavaScript-disabled content.",
+      "content": "jQStar components start with native HTML semantics and add only missing state and keyboard behavior. WebMCP does not replace semantic HTML, accessibility APIs, or JavaScript-disabled content.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/",
+      "path": "docs/components/",
+      "provenance": {
+        "sources": ["docs/COMPONENT_ARCHITECTURE.md", "example/docs/components/index.html"],
+        "kind": "reviewed-contract"
+      }
+    },
+    {
+      "id": "migration-boundary",
+      "type": "invariant",
+      "title": "migration boundary",
+      "summary": "jQStar is independent. It provides migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile without claiming to be an official successor or bundling those archived UI runtimes.",
+      "content": "jQStar is independent. It provides migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile without claiming to be an official successor or bundling those archived UI runtimes.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/ecosystem/",
+      "path": "docs/ecosystem/",
+      "provenance": {
+        "sources": ["docs/JQUERY_ECOSYSTEM.md", "example/docs/ecosystem/index.html", "README.md"],
+        "kind": "reviewed-contract"
+      }
+    }
+  ],
+  "guides": [
+    {
+      "id": "framework-home",
+      "type": "guide",
+      "title": "jQStar framework",
+      "summary": "What jQStar is, what stays on the server, and the boundaries of the current framework.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/",
+      "path": "",
+      "keywords": ["datastar", "framework", "html", "identity", "jquery", "server rendered"],
+      "headings": [
+        "Polished UI behavior for\nDatastar applications.",
+        "Why jQStar",
+        "No Build Step Required",
+        "Built for Datastar",
+        "HTML is the API",
+        "A complete server-rendered development experience.",
+        "Keep the server in charge",
+        "What we are building for",
+        "This website is a jQStar application.",
+        "Component documentation",
+        "Component Lab"
+      ],
+      "content": "v0.1.0 is now available\nPolished UI behavior for\nDatastar applications.\nA jQuery-powered framework built for backend-first developers. Write HTML, add standard\nattributes, and get accessible, interactive UIs without a build step.\nGet Started →\nnpm install jquery-star jquery\nCopy\nWhy jQStar\n>_\nNo Build Step Required\nStart with a script tag or the package you already use. jQStar complements your\nexisting server-rendered application.\n⚡\nBuilt for Datastar\nComponents cooperate with DOM replacements and automatically enhance HTML delivered by\nDatastar.\n</>\nHTML is the API\nYour backend renders the markup. Standard attributes declare behavior while jQStar\nkeeps real jQuery available.\nThe framework promise\nA complete server-rendered development experience.\njQStar is for teams that want modern interaction without moving their entire application\ninto a client runtime.\nKeep the server in charge\n- Keep routes, validation, permissions, and data on the server.\n- Keep HTML readable and useful before JavaScript runs.\n- Add reactivity and rich components where they are needed.\n- Update regions through HTML, JSON, or Datastar streams.\n- Avoid JSX, hydration, virtual DOM ownership, and duplicated client routes.\n- Continue using existing backend templates and jQuery plugins.\n- Adopt it incrementally instead of rewriting the application.\nWhat we are building for\n- An excellent server-rendered development experience.\n- Predictable enhancement and cleanup after HTML replacement.\n- Examples for PHP, Rails, Django, Node, and similar stacks.\n- Strong no-build and modular-package support.\n- Accessible components that solve real application workflows.\n- Optional navigation and shared state without making them mandatory.\n- Migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.\n$ is real jQuery. $name is a reactive signal. Named actions move\nlonger behavior back into JavaScript.\nBuilt with itself\nThis website is a jQStar application.\nThe theme control, dialogs, responsive documentation, code previews, component examples,\nand Component Lab all run on the same public model documented here. React is not hiding\nbehind the page.\nComponent documentation\nLearn the native markup, actions, state attributes, and keyboard contract.\nRead the guides →\nComponent Lab\nExercise the exhaustive UI, forms, data, blocks, and backend integration proof.\nOpen the live system →",
+      "provenance": { "source": "example/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "getting-started",
+      "type": "guide",
+      "title": "Introduction",
+      "summary": "Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "keywords": ["$", "$name", "boot", "cli", "install", "npm", "registry", "signals"],
+      "headings": [
+        "Introduction",
+        "Install the package",
+        "Write reactive HTML",
+        "Boot a page-wide application",
+        "Add source-owned components"
+      ],
+      "content": "Introduction\njQStar adds reactive state, backend actions, and accessible UI behavior to ordinary\nserver-rendered HTML. It uses the real jQuery instance rather than replacing it with a\nlook-alike API.\nDesign philosophy: your backend generates HTML, jQStar enhances local\ninteraction, and Datastar can stream server changes. No virtual DOM or duplicated browser\nrouter is required.\nInstall the package\njQStar 0.1 supports jQuery 4 and Node 24 or newer for package consumers and tooling.\nTerminal\nCopy\n```\nnpm install jquery-star jquery\n```\nImport jQuery, install jQStar's root side effect, and include the optional default theme.\nmain.ts\nCopy\n```\nimport $ from \"jquery\";\nimport \"jquery-star\";\nimport \"jquery-star/ui.css\";\n$(\"#app\").star();\n```\nWrite reactive HTML\nA data-signals root owns local state. Directive expressions can read and write\nsignals and call the installed jQuery instance in the same expression.\ncounter.html\nCopy\n```\n<section id=\"counter\" data-signals=\"{ count: 0 }\">\n<button data-on:click=\"$count++; $(el).fadeOut()\">\nIncrement and disappear\n</button>\n<output data-text=\"$count\"></output>\n</section>\n```\n$ is real jQuery. $count is a reactive signal. They are\ndeliberately two different things.\nBoot a page-wide application\nUse $.star.boot() when the document element is the application root. Use\n$(selector).star() for an incrementally enhanced region.\nmain.ts\nCopy\n```\nimport $ from \"jquery\";\nimport \"jquery-star\";\n$.star.boot();\n```\nAdd source-owned components\nThe CLI copies editable native HTML into your application. The package supplies behavior and\nthe compiled theme; your project owns the resulting markup.\nTerminal\nCopy\n```\nnpx jqstar init\nnpx jqstar list\nnpx jqstar add button dialog tabs toast\nnpx jqstar doctor\n```\nContinue with Datastar integration , inspect the\n0.1 API , review the\nfinite CSP expression contract , verify an\nexternal plugin , use the\ntesting harness , or open the\ncomplete Component Lab .",
+      "provenance": { "source": "example/docs/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "datastar-integration",
+      "type": "guide",
+      "title": "Datastar integration",
+      "summary": "Call backend actions and consume JSON, HTML, or Datastar SSE generated by the official SDK.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/datastar/",
+      "path": "docs/datastar/",
+      "keywords": ["backend", "datastar", "html", "json", "sdk", "server patch", "sse"],
+      "headings": [
+        "Datastar Integration",
+        "Call the backend from HTML",
+        "Response behavior",
+        "Generate streams with the official SDK",
+        "Enhancement after a patch"
+      ],
+      "content": "Datastar Integration\njQStar keeps localized browser behavior beside the HTML while the server can update signals\nand page regions through JSON, HTML, or Datastar server-sent events.\nOne protocol boundary: jQStar consumes Datastar-compatible events. Your\nserver must generate SSE with @starfederation/datastar-sdk , never handwritten\nevent strings.\nCall the backend from HTML\nBuilt-in request actions serialize the current public signals and interpret the response by\nits content type.\napplication.html Copy\n```\n<button data-on:click=\"@get('/items')\">Refresh</button>\n<form data-on:submit__prevent=\"@post('/items', { contentType: 'form' })\">\n<input name=\"title\" required />\n<button>Save</button>\n</form>\n```\nGET places signals in a datastar query parameter. POST, PUT, PATCH, and DELETE\nuse the documented JSON or form contract. Every request includes\nDatastar-Request: true .\nResponse behavior\nResponse\njQStar result\napplication/json\nDeep-patch signals; a null value removes a signal.\ntext/html\nMorph elements by ID or the Datastar selector and mode headers.\ntext/event-stream\nApply Datastar signal and element patches as they arrive.\n204 No Content\nComplete the request without changing the application.\nGenerate streams with the official SDK\nTerminal Copy\n```\nnpm install @starfederation/datastar-sdk\n```\nserver.ts Copy\n```\nimport { ServerSentEventGenerator } from \"@starfederation/datastar-sdk/node\";\nconst read = await ServerSentEventGenerator.readSignals(request);\nif (!read.success) {\nresponse.writeHead(400).end(read.error);\nreturn;\n}\nawait ServerSentEventGenerator.stream(request, response, (stream) => {\nstream.patchSignals(JSON.stringify({\ncount: Number(read.signals.count ?? 0) + 1,\n}));\nstream.patchElements('<li data-text=\"$count\"></li>', {\nselector: \"#feed\",\nmode: \"append\",\n});\n});\n```\nEnhancement after a patch\nInserted HTML is scanned immediately. New directives, bindings, component roots, named\nactions, and cleanup hooks work without calling .star() again. Outer morphs\npreserve matching elements, focused controls, unsaved values, and existing jQuery handlers.\nUse data-ignore-morph for a general subtree the server must not change. Use\ndata-jqs-preserve when a live jQStar application root must survive the patch,\nand await $.star.whenEnhanced() before reading newly inserted directive or\ncomponent DOM.\nThe repository's Component Lab includes real JSON,\nHTML, multipart, and official-SDK stream endpoints when run through the local proof server.",
+      "provenance": { "source": "example/docs/datastar/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "core-api",
+      "type": "guide",
+      "title": "Core API",
+      "summary": "Applications, named actions, backend actions, UI methods, scheduling, version, and lifecycle.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/api/",
+      "path": "docs/api/",
+      "keywords": [
+        "action",
+        "api",
+        "application",
+        "destroy",
+        "lifecycle",
+        "nextUpdate",
+        "whenEnhanced"
+      ],
+      "headings": [
+        "Core API",
+        "Applications",
+        "Named actions",
+        "Backend actions",
+        "UI methods",
+        "Scheduling and version",
+        "Terminal disposal"
+      ],
+      "content": "Core API\njQStar is HTML-driven, but its installed jQuery surface exposes explicit application,\naction, request, lifecycle, and UI methods for code that needs programmatic control.\nThe root surface is the 0.1 compatibility contract. The core ,\nui , datastar , testing , and\ndatastar/testing package subpaths are published 0.4 previews.\nApplications\nAPI\nPurpose\n$(root).star()\nStart an attribute-driven application on the matched root.\n$(root).star(definition)\nStart an application from a typed behavior definition.\n$.star.boot(root?)\nBoot the document element or the supplied root.\n$(root).star(\"instance\")\nRead the installed application instance.\n$(root).star(\"state\")\nRead its reactive state object.\n$(root).star(\"refresh\")\nRefresh computed bindings and directives.\n$(root).star(\"destroy\")\nDestroy that application and its owned effects.\nNamed actions\nUse named actions for behavior that is too long for an attribute. The callback receives real\njQuery, reactive state, computed values, root and initiating elements, the event, authored\narguments, and the application instance.\nmain.ts Copy\n```\n$.star.action(\"removeItem\", ({ $element, state }) => {\n$element?.closest(\"li\").fadeOut(180, function () {\n$(this).remove();\n});\nstate.itemCount = Math.max(0, Number(state.itemCount) - 1);\n});\n```\nitems.html Copy\n```\n<button data-on:click=\"@removeItem\">Remove</button>\n```\nBackend actions\n$.star.get , post , put , patch , and\ndelete return ordinary named-action functions. The same methods are available\ndeclaratively as @get , @post , and their peers.\nmain.ts Copy\n```\nconst app = $(\"#items\").star(\"instance\");\nawait app?.run($.star.post(\"/items\", {\npayload: { title: \"Proof\" },\npending: \"saving\",\nerror: \"saveError\",\nretry: \"never\",\n}));\n```\nUI methods\n$.star.ui groups component-specific methods such as dialog.open ,\ntabs.activate , menu.close , and toast.show . Named\n@ui.* actions call the same behavior from HTML.\n$.star.ui.enhance(root) scans newly authored component markup when an explicit\napplication integration needs it; normal jQStar and Datastar patches enhance automatically.\nmain.ts Copy\n```\n$.star.ui.dialog.open(\"#account-dialog\", {\ninitialFocus: \"#account-dialog-cancel\",\n});\n$.star.ui.tabs.activate(\"#settings-tabs\", \"security\");\n$.star.ui.toast.show({\ntitle: \"Saved\",\ndescription: \"Your changes are live.\",\nvariant: \"success\",\n});\n```\nScheduling and version\n$.star.nextUpdate() resolves after the next reactive update flush.\n$.star.whenEnhanced() waits for pending render transactions, observer delivery,\ndirective and UI enhancement, and the resulting reactive work. Use it before reading DOM\ninserted by an HTML or Datastar patch. $.star.version reports the installed\nruntime version, and $.star.clearExpressionCache() clears the current\nexpression engine's cache.\nTerminal disposal\n$.star.dispose() permanently closes one document installation, attempts every\nowned cleanup, releases its document and expression-engine claims, and returns a frozen\nJSON-safe report. A cleanup failure throws StarDisposalError after the complete\nsweep and retains that report. Repeated disposal returns the same report or throws the same\nerror object.\nContinue with the CSP expression contract , the\ntesting harness , or the\nplugin contract and conformance guide .",
+      "provenance": { "source": "example/docs/api/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "csp-expressions",
+      "type": "guide",
+      "title": "CSP expressions",
+      "summary": "The shipped jquery-star/csp installer, finite expression grammar, capability boundary, deterministic limits, server policy, diagnostics, and compatibility migrations.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/csp/",
+      "path": "docs/csp/",
+      "keywords": [
+        "capabilities",
+        "csp",
+        "expression grammar",
+        "installStarCSP",
+        "jquery-star/csp",
+        "migration",
+        "no dynamic code construction",
+        "trusted markup"
+      ],
+      "headings": [
+        "CSP expressions",
+        "Two engine profiles",
+        "Install the CSP runtime",
+        "Server policy",
+        "Supported expression shape",
+        "Capability boundary",
+        "jQuery and trusted HTML",
+        "Deterministic limits",
+        "Migration from trusted JavaScript",
+        "Version and verification"
+      ],
+      "content": "CSP expressions\njqstar-csp-expression/1 is the shipped finite language contract for the\njquery-star/csp expression engine. The package provides an explicit installer,\nESM and CommonJS formats, matched declarations, and a strict-policy browser proof.\nCSP compatibility means no dynamic code construction in the CSP engine or\nits package entry graph. It requires trusted markup and trusted installed extensions. It\nis not a sandbox and does not make attacker-authored expressions safe.\nThe page policy—not jQStar—governs inline scripts, styles, network endpoints, third-party\njQuery plugins, and application code. Applications still own authorization, CSRF protection,\noutput encoding, HTML sanitization, Trusted Types, and server validation.\nTwo engine profiles\nProfile\nLanguage\nStatus\nTrusted JavaScript\nCurrent JavaScript expressions and statements, including real jQuery.\nShipped; requires unsafe-eval .\nCSP\nClosed finite grammar with capability-specific reads, writes, and calls.\nShipped as an explicit optional entry.\nCSP selection is explicit. It does not weaken or silently replace the trusted engine, and\nthe compatibility root never auto-selects it.\nInstall the CSP runtime\nImport the CSP entry directly and call installStarCSP() before installing\nplugins or booting applications. Do not import the compatibility root on the same jQuery\ninstance because that root retains the trusted JavaScript engine.\napp.ts\nCopy\n```\nimport $ from \"jquery\";\nimport { installStarCSP } from \"jquery-star/csp\";\nimport { datastarPlugin } from \"jquery-star/datastar\";\nimport { uiPlugin } from \"jquery-star/ui\";\nconst installed = installStarCSP($);\ninstalled.star.use([datastarPlugin, uiPlugin]);\ninstalled.star.boot(document);\n```\nRepeated CSP installation returns the same owner. A live incompatible engine is rejected.\nAdvanced hosts can pass createCSPExpressionEngine() through the explicit\njquery-star/core engine seam. Separate jQuery/kernel owners can select\ndifferent engines.\nServer policy\nImporting the entry does not add response headers. The installed-package proof starts from\nthis policy and serves scripts and styles as external same-origin assets:\nContent-Security-Policy\ndefault-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'\nAdapt allowed origins to the application. If a report names unsafe-eval , verify\nthat the page did not import the package root and that another script or jQuery plugin did\nnot construct code.\nSupported expression shape\nThe finite profile keeps the framework meanings stable: $ is real jQuery and a\nname such as $count is a reactive signal. It supports bounded literals, arrays,\nplain objects, reviewed operators, conditionals, state reads and writes, event and argument\ndata, named actions, committed helpers, and a closed jQuery method table.\nfinite-profile.html\nCopy\n```\n<section data-signals=\"{ count: 0, saved: false }\">\n<button data-on:click=\"$count += 1; return action('save', $count)\">\nSave\n</button>\n<output data-text=\"$saved ? 'Saved' : $count\"></output>\n</section>\n```\nFunctions, classes, declarations, loops, exceptions, modules, arbitrary calls, ambient\nglobals, callbacks, and automatic semicolon insertion are not part of the language.\nreturn and await are available only in the statement entry point.\nCapability boundary\nOrigin\nAllowed authority\n$name , state , signals\nRead safe paths; write only approved state paths.\ncomputed , args , evt\nRead reviewed data; event calls are limited to default and propagation control.\nel , root , $el , $root\nRead same-realm values and use the reviewed jQuery table within the application\nroot.\naction('name') , @name\nInvoke a source-literal registered action with bounded arguments.\nCommitted helper path\nInvoke only that exact installed helper leaf.\nThe evaluator rejects constructor , prototype ,\n__proto__ , call , apply , bind , reflective\nlookup, accessors, inherited properties, arbitrary thenables, and any function obtained as\ndata. Escaped, computed, concatenated, or result-derived spellings do not bypass the check.\njQuery and trusted HTML\nSelectors, HTML passed to html() , class names, attribute/property names, and\nCSS property names must be source string literals. Selectors are scoped to\nroot and collections are bounded. Callback-taking methods, event registration,\nqueue control, jQuery network helpers, script evaluation, and arbitrary plugin methods are\nexcluded.\nA CSP expression may deliberately select elements, mutate DOM and state, insert\napplication-trusted literal HTML, invoke an authorized action or helper, and initiate a\nrequest through that capability. HTML responses that can add expression-bearing attributes\nare therefore trusted markup. JSON signal patches, form values, events, and return data stay\ndata and are never reparsed as expressions.\nDeterministic limits\nResource\nMaximum\nSource length\n2,048 UTF-16 code units\nTokens / AST nodes / evaluation steps\n512 / 256 / 128\nNesting / path segments / call arguments\n16 / 8 / 8\nLiteral entries / collection size\n64 / 128\nApproved asynchronous chain\n8\nErrors carry a stable CSP_* code, compile or evaluate phase, grammar version,\nauthored attribute and source, zero-based UTF-16 offsets, and 1-based line and column spans.\nDiagnostics do not serialize state, DOM, credentials, response values, arguments, or\nrejection causes.\nMigration from trusted JavaScript\nMost current public expressions are exact finite-profile matches. Ambient JavaScript and\narbitrary jQuery extensions move behind registered, application-owned actions or helpers.\nTrusted expression\nCSP migration\nconsole.log($count)\nRegister and call an application diagnostic action or helper.\n$(el).datepicker()\nRegister an integration action that owns the plugin call.\nPromise.resolve($count)\nReturn an approved asynchronous result from an action or helper and await it.\nthis\nUse the explicit el binding.\nVersion and verification\nThe versioned contract combines the grammar, capabilities, limits, diagnostics, accepted and\ndenied source, adversarial payloads, executable-context recipes, shared-engine mapping, and\npublic-example inventory. Raising a limit or changing accepted source requires a new grammar\nversion and review. The repository command npm run test:csp-contract validates\nthe frozen inputs and prints their combined SHA-256 digest.\nPackage quality runs the exact ESM and CommonJS artifacts plus this public interaction shape\nin Chromium, Firefox, and WebKit. Continue with the\nCore API ,\nplugin boundary , or\ntesting harness .",
+      "provenance": { "source": "example/docs/csp/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "plugin-conformance",
+      "type": "guide",
+      "title": "Plugins",
+      "summary": "Build transactional public plugins and verify packed-package rollback, use, rendering, observation, and cleanup behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/plugins/",
+      "path": "docs/plugins/",
+      "keywords": ["cleanup", "conformance", "plugin", "registrar", "render adapter", "rollback"],
+      "headings": [
+        "Plugins",
+        "Register public capabilities",
+        "Run conformance against the packed package",
+        "External navigation",
+        "What conformance does not prove"
+      ],
+      "content": "Plugins\nA jQStar plugin is a synchronous, transactional extension. It declares a versioned manifest\nand stages public capabilities; jQStar publishes them together only after the complete\nplugin graph validates and installs.\nStructural boundary: install plugins before the first application starts.\nExternal plugins own one dot-qualified namespace and import documented package entries,\nnever source files or kernel internals.\nRegister public capabilities\nplugin.ts Copy\n```\nimport { STAR_PLUGIN_API_VERSION, type StarPlugin } from \"jquery-star/core\";\nexport const auditPlugin: StarPlugin = {\nname: \"acme.audit\",\nversion: \"1.0.0\",\napiVersion: `^${STAR_PLUGIN_API_VERSION}`,\ninstall(registrar) {\nregistrar.action(\"acme.audit.mark\", ({ state }) => {\nstate.audited = true;\n});\nregistrar.helper(\"acme.audit.label\", \"Audited\");\nregistrar.application(({ root }) => {\nroot.setAttribute(\"data-audited\", \"true\");\nreturn () => root.removeAttribute(\"data-audited\");\n});\nregistrar.cleanup(() => releasePluginResources());\nreturn Object.freeze({ ready: true });\n},\n};\n```\nThe same registrar can stage namespaced directives, request middleware, protocol profiles,\noperation observers, activation work, and document-host resources. Register cleanup as soon\nas a side effect exists. Failed installation and normal disposal run represented callbacks\nin reverse order and attempt every callback after an individual failure.\nRun conformance against the packed package\nPublish or pack the plugin as its own package, install it beside the packed jQStar tarball,\nand construct the harness only from jquery-star/testing . This catches private\nsource imports, undeclared dependencies, workspace aliases, incompatible declarations, and\ndifferences between repository and installed-package behavior.\nplugin-conformance.ts Copy\n```\nimport { runPluginConformance } from \"jquery-star/testing\";\nimport {\nauditPlugin,\ncleanupFailingPlugin,\ninstallFailingPlugin,\n} from \"acme-audit-plugin\";\nconst report = await runPluginConformance({\ncreateHarness,\nplugin: auditPlugin,\nfailingPlugin: installFailingPlugin,\ncleanupFailingPlugin,\nasync exercise(harness) {\nconst root = harness.document.createElement(\"section\");\nharness.document.body.append(root);\nconst app = harness.mountBehavior(root, { state: { audited: false } });\nawait app.instance.run(\"acme.audit.mark\");\nif (!app.state.audited) throw new Error(\"plugin action did not run\");\n},\n});\n```\nThe shared cases prove repeated installation returns one facade, public use succeeds, failed\ninstallation rolls back, disposal runs once, later cleanup still runs after a failure, and\nthe frozen public disposal report names the failed plugin owner. The functions contain no\nrunner imports or suite registration.\nExternal navigation\nNavigation and page-transition plugins replace DOM through\ncreateRenderAdapter() from jquery-star/core . The adapter destroys\noutgoing application roots deepest-first while they remain connected, retains explicit\ndata-jqs-preserve identities and control state, validates the committed roots,\nrestores focus, boots incoming data-jqs roots, and waits for enhancement. The\ncaller performs the actual DOM mutation.\nWrap each navigation in one public operation observation. Keep the same operation ID from\nstarted through exactly one completed or\nfailed terminal record, and do not expose markup, signal values, or live nodes\nin observation metadata.\nWhat conformance does not prove\nConformance checks jQStar's public registrar, application, request, rendering, observation,\nrollback, and disposal contracts. It does not certify the plugin's product logic, security,\naccessibility, arbitrary timers, network services, or memory use. Add focused tests for\nthose claims and use the runner adapter described in the\ntesting guide .",
+      "provenance": { "source": "example/docs/plugins/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "external-interoperability",
+      "type": "guide",
+      "title": "Turbo and htmx interoperability",
+      "summary": "Install the shipped Turbo lifecycle bridge and review tested version boundaries, preservation, focus ownership, and future htmx limits.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/interoperability/",
+      "path": "docs/interoperability/",
+      "keywords": [
+        "external navigation",
+        "htmx",
+        "interoperability",
+        "preservation",
+        "render adapter",
+        "turbo"
+      ],
+      "headings": [
+        "Turbo and htmx interoperability",
+        "Tested version boundaries",
+        "Install the Turbo bridge",
+        "Lifecycle",
+        "Host-specific differences",
+        "Preservation and focus",
+        "Proof and limits"
+      ],
+      "content": "Turbo and htmx interoperability\njQStar has a tested contract for wrapping external DOM renders without taking over the host\nlibrary. The jquery-star/turbo preview ships now. The htmx bridge remains\nplanned.\nOne ownership seam: the host sends requests and mutates the DOM. A bridge\nuses createRenderAdapter() only to release outgoing jQStar roots, preserve\nexact approved identities, enhance incoming roots, and await the barrier.\nTested version boundaries\nHost\nApproved evidence range\nTested packages\nTurbo\n>=8.0.21 <8.1.0\n8.0.21 and 8.0.23\nhtmx\n>=2.0.0 <2.1.0\n2.0.0 and 2.0.10\nMissing, prerelease, unknown, and out-of-range versions fail before the Turbo bridge\ninstalls listeners. jQStar does not auto-detect or load either host.\nInstall the Turbo bridge\nExplicit Turbo capability and version\n```\nimport * as Turbo from \"@hotwired/turbo\";\nimport $ from \"jquery\";\nimport { installStarCore } from \"jquery-star/core\";\nimport { createTurboBridge } from \"jquery-star/turbo\";\nconst { star } = installStarCore($);\nconst bridge = star.use(\ncreateTurboBridge({ $, Turbo, version: \"8.0.23\" }),\n);\nawait bridge.whenIdle();\n```\nUse the exact installed Turbo package version. Importing the bridge is inert. Installing it\nregisters document-scoped public event listeners but never calls Turbo start or navigation\nAPIs. bridge.dispose() removes those listeners without disposing Turbo or the\njQStar kernel.\nLifecycle\nExternal render state machine\n```\nprepared\n-> removing\n-> externally-mutated\n-> enhancing\n-> committed\nTerminal alternatives: canceled or failed\n```\nCancellable intent creates no render transaction. A real mutation starts at Turbo's pausable\ndocument or Frame render callback, or at the approved htmx swap and cleanup seam. Every\nopened transaction commits or fails once.\nHost-specific differences\nFlow\nObserved contract\nTurbo document or Frame\nWrap detail.render , then commit before host completion.\nTurbo form\nsubmit-end and before-visit can reverse across browsers.\nBoth precede render.\nhtmx replacement\nDeduplicate nested cleanup, commit after the host swap, and finish at settle.\nhtmx delete\nCleanup and afterRequest occur without afterSwap or\nafterSettle .\nhtmx no-swap\nafterSwap may fire even when no target mutation occurs.\nPreservation and focus\ndata-jqs-preserve remains the core marker. The Turbo bridge also passes an\nexact old data-turbo-permanent element when it is connected, inside the\noutgoing boundary, uniquely identified, matched once in the incoming content, and retained\nafter mutation. A future htmx bridge may do the same for hx-preserve .\nDuplicate, missing, disconnected, moved, or cross-document candidates are cleaned and\ndiagnosed.\nThe tested hosts retain DOM and control-value identity for valid permanent elements but can\nmove focus to the activated control. Focus remains host-owned. A bridge must not add a focus\ncorrection unless a later contract explicitly approves and tests one.\nProof and limits\nActual boundary packages run in Chromium, Firefox, and WebKit against native links and\nforms, document and region changes, history, cache, preservation, cancellation, no-content\nresponses, and failures. Semantic traces omit URLs, form values, headers, bodies, HTML, DOM\nobjects, signal values, and raw errors.\nTurbo Streams, morph refresh, custom Turbo renderers, custom htmx swap extensions, shadow or\ncross-document targets, and script execution guarantees are outside this contract. Read the\ncomplete\nrepository contract\nfor every stable mapping ID and update rule.",
+      "provenance": { "source": "example/docs/interoperability/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "jquery-ecosystem",
+      "type": "guide",
+      "title": "jQuery ecosystem",
+      "summary": "Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/ecosystem/",
+      "path": "docs/ecosystem/",
+      "keywords": ["jquery", "jquery mobile", "jquery ui", "migrate", "qunit", "sizzle"],
+      "headings": ["jQuery ecosystem"],
+      "content": "Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.",
+      "provenance": { "source": "example/docs/ecosystem/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "testing-harness",
+      "type": "guide",
+      "title": "Testing",
+      "summary": "Use an explicit DOM realm, deterministic response queue, bounded flush, disposal reports, and runner-neutral conformance.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/testing/",
+      "path": "docs/testing/",
+      "keywords": ["disposal", "dom realm", "flush", "harness", "response fixture", "testing"],
+      "headings": [
+        "Testing",
+        "Create an isolated harness",
+        "What flush waits for",
+        "Queue exact responses",
+        "Use any test runner",
+        "Teardown limits"
+      ],
+      "content": "Testing\nThe jquery-star/testing preview supplies a runner-neutral harness for public\njQStar behavior. You choose the DOM implementation and jQuery instance; the harness owns\nonly the installation, applications, response fixtures, and finite work created through it.\nExplicit ownership: importing the testing entry does not create a DOM,\ninstall jQStar, replace fetch , or register a test suite. The generic entry\ndoes not import a DOM package, test runner, or Datastar.\nCreate an isolated harness\nSupply one same-realm Window , its Document , and the jQuery\ninstance that selects elements from that realm. Use withStarDOMRealm() only\nwhen the DOM or jQuery package needs ambient browser globals; the lease is process-wide,\nrejects overlap, and restores the documented global property descriptors after success or\nfailure.\napplication.test.ts Copy\n```\nimport { JSDOM } from \"jsdom\";\nimport {\ncreateResponseController,\ncreateStarHarness,\nwithStarDOMRealm,\ntype StarDOMWindow,\n} from \"jquery-star/testing\";\nconst dom = new JSDOM('<section id=\"app\" data-signals=\"{ ready: false }\"></section>');\nconst window = dom.window as unknown as StarDOMWindow;\nawait withStarDOMRealm({ window }, async () => {\nconst { default: $ } = await import(\"jquery\");\nconst responses = createResponseController({ window });\nresponses.json({ url: \"https://example.test/state\" }, { ready: true });\nconst harness = createStarHarness({ window, jQuery: $, responses });\ntry {\nconst root = window.document.querySelector(\"#app\");\nif (!root) throw new Error(\"application root is missing\");\nconst app = harness.mountDeclarative(root);\nawait app.instance.run(harness.installed.star.get(\"https://example.test/state\"));\nawait harness.flush();\nif (harness.state(app).ready !== true) throw new Error(\"state did not settle\");\n} finally {\nharness.dispose();\n}\n});\n```\nWhat flush waits for\nflush() drains jQStar reactive and enhancement work, queued response delivery,\nand finite promises registered with harness.task() , including work those tasks\nregister transitively. It has round and time bounds. It does not wait for arbitrary timers,\nanimation loops, third-party promises, or real-network idleness.\nA bound breach throws StarFlushError . Its JSON-safe diagnostic contains elapsed\ntime, rounds, and only the outstanding operation, request, or task IDs and stable owners. It\nnever includes signal values, request bodies, callbacks, elements, or other live objects.\nQueue exact responses\ncreateResponseController() is a strict FIFO boundary. It records method, URL,\nnormalized headers, body, and abort signal; rejects unexpected or mismatched requests; and\nreports unused expectations during disposal. Use json() , html() ,\nempty() , httpError() , networkError() ,\ndelay() , retry() , and abort() . There is no network\npassthrough.\njquery-star/datastar/testing adds success, ordered multi-event, chunked, retry,\nmalformed, failure, and abort fixtures. Valid event bytes come from the official Datastar\nSDK. Keeping them in a separate entry prevents Datastar from entering generic test and core\ngraphs.\nUse any test runner\nrunCoreConformance(factory) runs the same named public cases under Vitest,\nQUnit, plain Node, or a browser adapter. It returns an immutable report or throws\nStarConformanceError ; the caller maps that result to its runner's assertions.\nSee Plugin conformance for the external-package path.\nTeardown limits\nHarness disposal is idempotent and restores every fetch property it replaced. It consumes\nthe public frozen disposal report, whose attempted, released, failed, and remaining entries\nidentify jQStar-owned categories and stable owners. This is not a heap-leak detector and\nmakes no claim about timers, listeners, or promises created outside jQStar capabilities.",
+      "provenance": { "source": "example/docs/testing/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "components-overview",
+      "type": "guide",
+      "title": "Components",
+      "summary": "Native component semantics, data-jqs roots, data-part slots, state attributes, and source-owned recipes.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/",
+      "path": "docs/components/",
+      "keywords": [
+        "accessibility",
+        "components",
+        "data-jqs",
+        "data-part",
+        "native html",
+        "registry"
+      ],
+      "headings": [
+        "Components",
+        "Dialog",
+        "Dropdown",
+        "Tabs",
+        "Toast",
+        "The component contract",
+        "Install recipes",
+        "Explore the complete system"
+      ],
+      "content": "Components\njQStar ships 102 source-owned component recipes and seven composed application blocks.\nNative semantics do the platform work; data-jqs roots and\ndata-part slots add consistent behavior, state, and styling hooks.\nDialog\nNative modality, focus containment and return, lifecycle events, and sheets.\nRead Dialog →\nDropdown\nRoving focus, typeahead, checkbox/radio items, positioning, and dismissal.\nRead Dropdown →\nTabs\nAutomatic or manual activation, stable values, orientation, and keyboard movement.\nRead Tabs →\nToast\nAccessible announcements, pausable timers, actions, keyboard focus, and swipe.\nRead Toast →\nThe component contract\n-\nNative elements first: buttons, forms, details, dialog, tables, links,\nprogress, and other platform semantics remain real.\n-\nStable anatomy: data-part identifies structural slots\nwithout coupling behavior to decorative classes.\n-\nVisible state: documented attributes such as data-state ,\ndata-value , and ARIA state remain inspectable.\n-\nKeyboard and focus: composite widgets implement their documented WAI-ARIA\ninteraction model and focus ownership.\n-\nServer replacement: newly patched roots enhance automatically and removed\nroots release owned behavior.\n-\nSource ownership: the CLI copies ordinary HTML that applications can\nedit; jQStar supplies the reusable runtime.\nInstall recipes\nTerminal Copy\n```\nnpx jqstar list --type component\nnpx jqstar add dialog dropdown-menu tabs toast\nnpx jqstar list --type block\n```\nExplore the complete system\nThe first hand-authored guides establish the documentation pattern. The\nComponent Lab remains the exhaustive live proof for\nall recipes, composed blocks, forms, data tables, backend requests, and Datastar streams.",
+      "provenance": { "source": "example/docs/components/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "component-dialog",
+      "type": "guide",
+      "title": "Dialog",
+      "summary": "Native modal dialog markup, focus containment and return, lifecycle events, and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/dialog/",
+      "path": "docs/components/dialog/",
+      "keywords": ["data-jqs", "data-part", "dialog", "focus", "keyboard", "modal"],
+      "headings": ["Dialog", "Edit profile", "API Reference", "Keyboard Interactions"],
+      "content": "Dialog\nA modal window that interrupts the user with important content and expects a response.\nPreview\nCode\nEdit Profile\nEdit profile\nReview the profile before saving your changes.\nDisplay name\nCancel\nSave changes\ndialog.html Copy\n```\n<button\ndata-jqs=\"button\"\naria-haspopup=\"dialog\"\ndata-on:click=\"@ui.dialog.open('#account-dialog', '#dialog-cancel')\"\n>\nEdit account\n</button>\n<dialog id=\"account-dialog\" data-jqs=\"dialog\" data-close-on-backdrop>\n<div data-part=\"content\">\n<header data-part=\"header\">\n<h2 data-part=\"title\">Edit account</h2>\n<p data-part=\"description\">Review changes before saving.</p>\n</header>\n<footer data-part=\"footer\">\n<button id=\"dialog-cancel\" data-on:click=\"@ui.dialog.close('cancelled')\">\nCancel\n</button>\n<button data-on:click=\"@ui.dialog.close('saved')\">Save</button>\n</footer>\n</div>\n</dialog>\n```\nAPI Reference\nAttribute\nElement\nDescription\n<dialog data-jqs=\"dialog\">\nDialog\nThe native modal owner and component root.\ndata-part=\"content\"\nContainer\nThe styled surface inside the browser top layer.\ntitle / description\nHeading and text\nParts used to establish accessible dialog relationships.\ndata-part=\"footer\"\nContainer\nOptional action layout.\ndata-close-on-backdrop\nDialog\nOpts into dismissal when the native backdrop is pressed.\ndata-variant=\"sheet\"\nDialog\nUses the same dialog behavior in a side-docked composition.\nKeyboard Interactions\n- Enter / Space Activates the ordinary trigger button.\n-\nTab / Shift+Tab Moves through focusable controls while native modality contains focus.\n-\nEscape Closes the dialog unless the cancel event is prevented, then restores trigger\nfocus.\nOpening emits cancelable jquery-star:dialog:before-open and final open events;\nclosing follows the same before/final pattern. JavaScript can call\n$.star.ui.dialog.open() and close() directly.",
+      "provenance": { "source": "example/docs/components/dialog/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "component-dropdown",
+      "type": "guide",
+      "title": "Dropdown",
+      "summary": "Menu-button markup with roving focus, typeahead, selection, and collision-aware positioning.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/dropdown/",
+      "path": "docs/components/dropdown/",
+      "keywords": ["data-jqs", "data-part", "dropdown", "keyboard", "menu", "typeahead"],
+      "headings": ["Dropdown", "API Reference", "Keyboard Interactions"],
+      "content": "Dropdown\nA popup action menu with managed positioning, roving focus, typeahead, selection, disabled\nitems, checkbox and radio state, dismissal, and trigger focus return.\nPreview\nCode\nProject actions\nEdit project\nShow preview\nArchive\nDelete permanently\ndropdown-menu.html Copy\n```\n<div data-jqs=\"menu\" data-align=\"end\">\n<button data-part=\"trigger\">Actions</button>\n<div data-part=\"content\" aria-label=\"Project actions\">\n<button data-part=\"item\" data-value=\"edit\">Edit</button>\n<button\ndata-part=\"checkbox-item\"\ndata-value=\"preview\"\ndata-checked=\"true\"\n>\nShow preview\n</button>\n<div data-part=\"separator\"></div>\n<button data-part=\"item\" data-value=\"delete\" data-disabled>\nDelete\n</button>\n</div>\n</div>\n```\nAPI Reference\nContract\nPurpose\ndata-jqs=\"menu\"\nThe positioned menu root.\ndata-part=\"trigger\"\nThe button that opens and receives focus after dismissal.\ndata-part=\"content\"\nThe generated menu surface and accessible menu owner.\nitem / checkbox-item / radio-item\nSelectable item types with stable data-value identities.\ndata-disabled\nKeeps an item focusable for discovery but prevents selection.\ndata-side / data-align\nPreferred floating placement; collision handling remains automatic.\nKeyboard Interactions\n- Enter / Space Opens the menu or selects the focused item.\n-\nArrow Up / Down Moves focus among items and wraps at either end.\n- Home / End Moves to the first or last menu item.\n-\nTypeahead Moves to an item whose label starts with the typed characters.\n- Escape Closes the menu and restores focus to its trigger.\nThe cancelable jquery-star:menu:select event can prevent a selection. Add\ndata-close-on-select=\"false\" when a menu should remain open. Programmatic and\nnamed actions are available under $.star.ui.menu and @ui.menu.* .",
+      "provenance": {
+        "source": "example/docs/components/dropdown/index.html",
+        "kind": "public-html"
+      }
+    },
+    {
+      "id": "component-tabs",
+      "type": "guide",
+      "title": "Tabs",
+      "summary": "Keyboard-accessible tabs with stable values and automatic or manual activation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/tabs/",
+      "path": "docs/components/tabs/",
+      "keywords": ["activation", "data-jqs", "data-part", "keyboard", "tabs"],
+      "headings": [
+        "Tabs",
+        "Account",
+        "Security",
+        "Notifications",
+        "API Reference",
+        "Keyboard Interactions"
+      ],
+      "content": "Tabs\nA set of named panels with generated tab semantics, roving focus, automatic or manual\nactivation, horizontal or vertical orientation, and cancelable value changes.\nPreview\nCode\nAccount\nSecurity\nNotifications\nAccount\nUpdate the public name and email attached to this workspace.\nSecurity\nReview active sessions and rotate project credentials.\nNotifications\nChoose which server events should send an alert.\ntabs.html Copy\n```\n<div id=\"settings-tabs\" data-jqs=\"tabs\" data-value=\"account\">\n<div data-part=\"list\" aria-label=\"Settings\">\n<button data-part=\"trigger\" data-value=\"account\">Account</button>\n<button data-part=\"trigger\" data-value=\"security\">Security</button>\n</div>\n<section data-part=\"panel\" data-value=\"account\">\nAccount settings\n</section>\n<section data-part=\"panel\" data-value=\"security\">\nSecurity settings\n</section>\n</div>\n```\nAPI Reference\nContract\nPurpose\ndata-jqs=\"tabs\"\nThe component root; data-value stores the active stable value.\ndata-part=\"list\"\nThe labeled tab list and orientation owner.\ndata-part=\"trigger\"\nA tab whose value matches one panel.\ndata-part=\"panel\"\nThe associated tab panel.\ndata-activation=\"manual\"\nMoves focus without changing panels until Enter or Space.\ndata-orientation=\"vertical\"\nUses Up and Down instead of Left and Right movement.\nKeyboard Interactions\n-\nLeft / Right Moves through horizontal tabs and activates on focus by default.\n- Up / Down Moves through a vertical tab list.\n- Home / End Moves to the first or last enabled tab.\n-\nEnter / Space Activates the focused tab when manual activation is configured.\nChanges emit cancelable jquery-star:tabs:before-change and final\njquery-star:tabs:change events. Call\n$.star.ui.tabs.activate('#settings-tabs', 'security') or the equivalent\n@ui.tabs.activate action for programmatic selection.",
+      "provenance": { "source": "example/docs/components/tabs/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "component-toast",
+      "type": "guide",
+      "title": "Toast",
+      "summary": "Accessible non-modal notifications with timers, actions, focus, and swipe dismissal.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/toast/",
+      "path": "docs/components/toast/",
+      "keywords": ["accessibility", "data-jqs", "notification", "timer", "toast"],
+      "headings": ["Toast", "API Reference", "Keyboard Interactions"],
+      "content": "Toast\nA temporary, non-modal notification with accessible announcements, optional actions,\npausable duration, keyboard access, and pointer swipe dismissal.\nPreview\nCode\nShow notification\ntoast.html Copy\n```\n<button\ndata-jqs=\"button\"\ndata-on:click=\"@ui.toast.show({\ntitle: 'Saved',\ndescription: 'Your changes are live.',\nvariant: 'success'\n})\"\n>\nSave changes\n</button>\n<div\ndata-jqs=\"toast-viewport\"\naria-label=\"Notifications (F8)\"\n></div>\n```\nAPI Reference\nOption\nPurpose\ntitle\nRequired concise notification heading.\ndescription\nOptional supporting detail.\nvariant\ndefault , success , warning , or\ndanger .\nduration\nDismissal delay in milliseconds. Passive toasts default to five seconds.\naction\nAn optional authored action; action toasts remain until dismissed unless duration is\nexplicit.\ndata-jqs=\"toast-viewport\"\nThe page-level notification and keyboard-focus owner.\nKeyboard Interactions\n- F8 Moves focus to the notification viewport.\n- Tab Moves among toast actions and close controls.\n- Escape Dismisses the currently focused toast.\n-\nHover / Focus Pauses the active timer; it also pauses on window blur and hidden tabs.\n$.star.ui.toast.show() returns the created toast. Use dismiss() or\nclear() to remove notifications programmatically. The equivalent named actions\nare @ui.toast.show , @ui.toast.dismiss , and\n@ui.toast.clear .",
+      "provenance": { "source": "example/docs/components/toast/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "component-lab",
+      "type": "guide",
+      "title": "Component Lab",
+      "summary": "The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "keywords": ["accessibility", "browser", "component lab", "datastar", "examples", "registry"],
+      "headings": ["Component Lab"],
+      "content": "The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.",
+      "provenance": { "source": "example/components/lab/index.html", "kind": "public-html" }
+    },
+    {
+      "id": "agent-support",
+      "type": "guide",
+      "title": "Agent support",
+      "summary": "Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/agents/",
+      "path": "docs/agents/",
+      "keywords": ["agent", "corpus", "llms.txt", "provenance", "tools", "webmcp"],
+      "headings": ["Agent support"],
+      "content": "Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.",
+      "provenance": { "source": "config/agent-content.json", "kind": "public-html" }
+    }
+  ],
+  "examples": [
+    {
+      "id": "install-package",
+      "type": "example",
+      "title": "Install jQStar",
+      "summary": "Install the runtime and its real jQuery peer.",
+      "language": "shell",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "keywords": ["install", "jquery", "npm", "package"],
+      "code": "npm install jquery-star jquery",
+      "provenance": { "source": "example/docs/index.html", "kind": "verified-example" }
+    },
+    {
+      "id": "reactive-counter",
+      "type": "example",
+      "title": "Reactive HTML with jQuery",
+      "summary": "Use a reactive signal and the real jQuery function in one authored expression.",
+      "language": "html",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "keywords": ["$", "$count", "data-on", "data-text", "jquery", "signals"],
+      "code": "<section id=\"counter\" data-signals=\"{ count: 0 }\">\n  <button data-on:click=\"$count++; $(el).fadeOut()\">\n    Increment and disappear\n  </button>\n\n  <output data-text=\"$count\"></output>\n</section>",
+      "provenance": { "source": "example/docs/index.html", "kind": "verified-example" }
+    },
+    {
+      "id": "copy-registry-recipes",
+      "type": "example",
+      "title": "Copy source-owned components",
+      "summary": "Initialize the CLI, inspect the registry, copy recipes, and diagnose the installation.",
+      "language": "shell",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/",
+      "path": "docs/",
+      "keywords": ["cli", "components", "jqstar add", "ownership", "registry"],
+      "code": "npx jqstar init\nnpx jqstar list\nnpx jqstar add button dialog tabs toast\nnpx jqstar doctor",
+      "provenance": { "source": "example/docs/index.html", "kind": "verified-example" }
+    },
+    {
+      "id": "dialog-markup",
+      "type": "example",
+      "title": "Native dialog component",
+      "summary": "A native dialog enhanced through documented data-jqs and data-part attributes.",
+      "language": "html",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/dialog/",
+      "path": "docs/components/dialog/",
+      "keywords": ["data-jqs", "data-part", "dialog", "focus", "native"],
+      "code": "<button\n  data-jqs=\"button\"\n  aria-haspopup=\"dialog\"\n  data-on:click=\"@ui.dialog.open('#account-dialog', '#dialog-cancel')\"\n>\n  Edit account\n</button>\n\n<dialog id=\"account-dialog\" data-jqs=\"dialog\" data-close-on-backdrop>\n  <div data-part=\"content\">\n    <header data-part=\"header\">\n      <h2 data-part=\"title\">Edit account</h2>\n      <p data-part=\"description\">Review changes before saving.</p>\n    </header>\n    <footer data-part=\"footer\">\n      <button id=\"dialog-cancel\" data-on:click=\"@ui.dialog.close('cancelled')\">\n        Cancel\n      </button>\n      <button data-on:click=\"@ui.dialog.close('saved')\">Save</button>\n    </footer>\n  </div>\n</dialog>",
+      "provenance": {
+        "source": "example/docs/components/dialog/index.html",
+        "kind": "verified-example"
+      }
+    },
+    {
+      "id": "datastar-sse",
+      "type": "example",
+      "title": "Generate Datastar SSE",
+      "summary": "Use the official Datastar SDK generator in a Node handler.",
+      "language": "typescript",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/datastar/",
+      "path": "docs/datastar/",
+      "keywords": ["datastar", "patch", "sdk", "server", "sse"],
+      "code": "import { ServerSentEventGenerator } from \"@starfederation/datastar-sdk/node\";\n\nconst read = await ServerSentEventGenerator.readSignals(request);\nif (!read.success) {\n  response.writeHead(400).end(read.error);\n  return;\n}\n\nawait ServerSentEventGenerator.stream(request, response, (stream) => {\n  stream.patchSignals(JSON.stringify({\n    count: Number(read.signals.count ?? 0) + 1,\n  }));\n\n  stream.patchElements('<li data-text=\"$count\"></li>', {\n    selector: \"#feed\",\n    mode: \"append\",\n  });\n});",
+      "provenance": { "source": "example/docs/datastar/index.html", "kind": "verified-example" }
+    }
+  ],
+  "components": [
+    {
+      "id": "component-access-manager",
+      "type": "component",
+      "name": "access-manager",
+      "registryType": "registry:block",
+      "title": "Access Manager",
+      "summary": "A server-persisted permission editor built from native selects, Transfer List, Split Button, jQuery actions, and Datastar SDK patches.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [
+        "badge",
+        "card",
+        "field",
+        "label",
+        "native-select",
+        "split-button",
+        "transfer-list"
+      ],
+      "jqueryDependencies": [],
+      "roots": [
+        "badge",
+        "button",
+        "card",
+        "field",
+        "label",
+        "menu",
+        "native-select",
+        "split-button",
+        "transfer-list"
+      ],
+      "parts": [
+        "add",
+        "add-all",
+        "available",
+        "content",
+        "controls",
+        "description",
+        "header",
+        "item",
+        "menu",
+        "move-down",
+        "move-up",
+        "order-controls",
+        "pane",
+        "primary",
+        "remove",
+        "remove-all",
+        "selected",
+        "status",
+        "title",
+        "trigger"
+      ],
+      "stateAttributes": [
+        "data-access-manager-part",
+        "data-access-url",
+        "data-block",
+        "data-name",
+        "data-show",
+        "data-value",
+        "data-variant"
+      ],
+      "files": [
+        {
+          "source": "registry/blocks/access-manager.html",
+          "target": "~/blocks/jquery-star/access-manager.html"
+        },
+        {
+          "source": "registry/blocks/access-manager.ts",
+          "target": "~/blocks/jquery-star/access-manager.ts"
+        }
+      ]
+    },
+    {
+      "id": "component-accordion",
+      "type": "component",
+      "name": "accordion",
+      "registryType": "registry:item",
+      "title": "Accordion",
+      "summary": "Single or multiple native disclosure groups.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["accordion"],
+      "parts": ["content", "item", "trigger"],
+      "stateAttributes": ["data-mode", "data-orientation"],
+      "files": [
+        {
+          "source": "registry/components/accordion.html",
+          "target": "~/components/jquery-star/accordion.html"
+        }
+      ]
+    },
+    {
+      "id": "component-alert",
+      "type": "component",
+      "name": "alert",
+      "registryType": "registry:item",
+      "title": "Alert",
+      "summary": "Semantic status and warning messages.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["alert"],
+      "parts": ["description", "title"],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/alert.html",
+          "target": "~/components/jquery-star/alert.html"
+        }
+      ]
+    },
+    {
+      "id": "component-alert-dialog",
+      "type": "component",
+      "name": "alert-dialog",
+      "registryType": "registry:item",
+      "title": "Alert Dialog",
+      "summary": "An interruptive confirmation dialog composed from the native Dialog behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "dialog"],
+      "jqueryDependencies": [],
+      "roots": ["button", "dialog"],
+      "parts": ["content", "description", "footer", "header", "title"],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/alert-dialog.html",
+          "target": "~/components/jquery-star/alert-dialog.html"
+        }
+      ]
+    },
+    {
+      "id": "component-aspect-ratio",
+      "type": "component",
+      "name": "aspect-ratio",
+      "registryType": "registry:item",
+      "title": "Aspect Ratio",
+      "summary": "A zero-runtime media frame using the browser's native aspect-ratio layout.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["aspect-ratio"],
+      "parts": [],
+      "stateAttributes": ["data-ratio"],
+      "files": [
+        {
+          "source": "registry/components/aspect-ratio.html",
+          "target": "~/components/jquery-star/aspect-ratio.html"
+        }
+      ]
+    },
+    {
+      "id": "component-async-form",
+      "type": "component",
+      "name": "async-form",
+      "registryType": "registry:block",
+      "title": "Async Form",
+      "summary": "A validated multipart form wired to backend actions, pending state, and server errors.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "field", "file-input", "form", "input", "label"],
+      "jqueryDependencies": [],
+      "roots": ["button", "field", "file-input", "form", "input", "label"],
+      "parts": ["actions", "description", "message", "server-message"],
+      "stateAttributes": ["data-show", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/async-form.html",
+          "target": "~/blocks/jquery-star/async-form.html"
+        }
+      ]
+    },
+    {
+      "id": "component-attachment",
+      "type": "component",
+      "name": "attachment",
+      "registryType": "registry:item",
+      "title": "Attachment",
+      "summary": "Source-owned file and image presentation with metadata, upload state, progress, and actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "progress"],
+      "jqueryDependencies": [],
+      "roots": ["attachment"],
+      "parts": ["actions", "content", "media", "meta", "name", "progress", "status"],
+      "stateAttributes": ["data-state"],
+      "files": [
+        {
+          "source": "registry/components/attachment.html",
+          "target": "~/components/jquery-star/attachment.html"
+        }
+      ]
+    },
+    {
+      "id": "component-audit-log",
+      "type": "component",
+      "name": "audit-log",
+      "registryType": "registry:block",
+      "title": "Audit Log",
+      "summary": "A server-owned access history with member and text filters, Pagination, automatic Access Manager refresh, typed jQuery actions, and Datastar SDK patches.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [
+        "badge",
+        "button",
+        "card",
+        "data-table",
+        "field",
+        "label",
+        "native-select",
+        "pagination",
+        "search-field"
+      ],
+      "jqueryDependencies": [],
+      "roots": [
+        "badge",
+        "button",
+        "card",
+        "data-table",
+        "field",
+        "label",
+        "native-select",
+        "pagination",
+        "search-field"
+      ],
+      "parts": [
+        "change-summary",
+        "clear",
+        "control",
+        "description",
+        "footer",
+        "header",
+        "icon",
+        "next",
+        "page",
+        "previous",
+        "status",
+        "submit",
+        "table",
+        "title",
+        "toolbar",
+        "viewport"
+      ],
+      "stateAttributes": [
+        "data-audit-log-part",
+        "data-audit-url",
+        "data-block",
+        "data-key",
+        "data-navigation",
+        "data-page",
+        "data-page-count",
+        "data-processing",
+        "data-row-id",
+        "data-show",
+        "data-value",
+        "data-variant"
+      ],
+      "files": [
+        {
+          "source": "registry/blocks/audit-log.html",
+          "target": "~/blocks/jquery-star/audit-log.html"
+        },
+        { "source": "registry/blocks/audit-log.ts", "target": "~/blocks/jquery-star/audit-log.ts" }
+      ]
+    },
+    {
+      "id": "component-avatar",
+      "type": "component",
+      "name": "avatar",
+      "registryType": "registry:item",
+      "title": "Avatar",
+      "summary": "Image and text-fallback avatar presentation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["avatar"],
+      "parts": [],
+      "stateAttributes": ["data-size"],
+      "files": [
+        {
+          "source": "registry/components/avatar.html",
+          "target": "~/components/jquery-star/avatar.html"
+        }
+      ]
+    },
+    {
+      "id": "component-badge",
+      "type": "component",
+      "name": "badge",
+      "registryType": "registry:item",
+      "title": "Badge",
+      "summary": "Compact status and category labels.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["badge"],
+      "parts": [],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/badge.html",
+          "target": "~/components/jquery-star/badge.html"
+        }
+      ]
+    },
+    {
+      "id": "component-breadcrumb",
+      "type": "component",
+      "name": "breadcrumb",
+      "registryType": "registry:item",
+      "title": "Breadcrumb",
+      "summary": "A labelled navigation trail with native links and current-page state.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["breadcrumb"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/breadcrumb.html",
+          "target": "~/components/jquery-star/breadcrumb.html"
+        }
+      ]
+    },
+    {
+      "id": "component-browser-mockup",
+      "type": "component",
+      "name": "browser-mockup",
+      "registryType": "registry:item",
+      "title": "Browser Mockup",
+      "summary": "A zero-runtime browser frame for URLs, previews, screenshots, or API responses.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["browser-mockup"],
+      "parts": ["address", "content", "controls", "toolbar"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/browser-mockup.html",
+          "target": "~/components/jquery-star/browser-mockup.html"
+        }
+      ]
+    },
+    {
+      "id": "component-bubble",
+      "type": "component",
+      "name": "bubble",
+      "registryType": "registry:item",
+      "title": "Bubble",
+      "summary": "Source-owned conversational content with incoming, accent, and reaction anatomy for composition inside messages.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["bubble"],
+      "parts": ["content", "reactions"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/bubble.html",
+          "target": "~/components/jquery-star/bubble.html"
+        }
+      ]
+    },
+    {
+      "id": "component-button",
+      "type": "component",
+      "name": "button",
+      "registryType": "registry:item",
+      "title": "Button",
+      "summary": "Button variants and sizes using native button semantics.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/button.html",
+          "target": "~/components/jquery-star/button.html"
+        }
+      ]
+    },
+    {
+      "id": "component-button-group",
+      "type": "component",
+      "name": "button-group",
+      "registryType": "registry:item",
+      "title": "Button Group",
+      "summary": "A labelled visual group composed from adjacent Button variants.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["button", "button-group"],
+      "parts": [],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/button-group.html",
+          "target": "~/components/jquery-star/button-group.html"
+        }
+      ]
+    },
+    {
+      "id": "component-calendar",
+      "type": "component",
+      "name": "calendar",
+      "registryType": "registry:item",
+      "title": "Calendar",
+      "summary": "A single-date calendar grid with month navigation, constraints, lifecycle events, and full keyboard movement.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["calendar"],
+      "parts": ["grid", "header", "heading", "next", "previous"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/calendar.html",
+          "target": "~/components/jquery-star/calendar.html"
+        }
+      ]
+    },
+    {
+      "id": "component-card",
+      "type": "component",
+      "name": "card",
+      "registryType": "registry:item",
+      "title": "Card",
+      "summary": "A zero-runtime content container with semantic parts.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "card"],
+      "parts": ["content", "description", "footer", "header", "title"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/card.html",
+          "target": "~/components/jquery-star/card.html"
+        }
+      ]
+    },
+    {
+      "id": "component-carousel",
+      "type": "component",
+      "name": "carousel",
+      "registryType": "registry:item",
+      "title": "Carousel",
+      "summary": "An accessible slide carousel with controls, indicators, swipe gestures, and user-controlled rotation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["carousel"],
+      "parts": [
+        "content",
+        "indicator",
+        "indicators",
+        "next",
+        "previous",
+        "rotation",
+        "slide",
+        "status"
+      ],
+      "stateAttributes": ["data-autoplay", "data-loop", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/carousel.html",
+          "target": "~/components/jquery-star/carousel.html"
+        }
+      ]
+    },
+    {
+      "id": "component-chart",
+      "type": "component",
+      "name": "chart",
+      "registryType": "registry:item",
+      "title": "Chart",
+      "summary": "A responsive bar or line chart rendered from one accessible, server-patchable native table.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "table"],
+      "jqueryDependencies": [],
+      "roots": ["button", "chart"],
+      "parts": ["data", "legend", "plot", "status", "toolbar"],
+      "stateAttributes": ["data-color", "data-series", "data-size", "data-type", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/chart.html",
+          "target": "~/components/jquery-star/chart.html"
+        }
+      ]
+    },
+    {
+      "id": "component-checkbox",
+      "type": "component",
+      "name": "checkbox",
+      "registryType": "registry:item",
+      "title": "Checkbox",
+      "summary": "A native checkbox with shared field styling.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["checkbox", "field"],
+      "parts": ["description", "label"],
+      "stateAttributes": ["data-orientation"],
+      "files": [
+        {
+          "source": "registry/components/checkbox.html",
+          "target": "~/components/jquery-star/checkbox.html"
+        }
+      ]
+    },
+    {
+      "id": "component-clipboard",
+      "type": "component",
+      "name": "clipboard",
+      "registryType": "registry:item",
+      "title": "Clipboard",
+      "summary": "Copy authored text, native control values, or explicit action text with accessible lifecycle status.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["button", "clipboard"],
+      "parts": ["status", "trigger", "value"],
+      "stateAttributes": ["data-size", "data-success-message", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/clipboard.html",
+          "target": "~/components/jquery-star/clipboard.html"
+        }
+      ]
+    },
+    {
+      "id": "component-code-block",
+      "type": "component",
+      "name": "code-block",
+      "registryType": "registry:item",
+      "title": "Code Block",
+      "summary": "A source-owned code surface with exact text access, clipboard action, and announced outcomes.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["button", "code-block"],
+      "parts": ["code", "copy", "header", "language", "status"],
+      "stateAttributes": ["data-size", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/code-block.html",
+          "target": "~/components/jquery-star/code-block.html"
+        }
+      ]
+    },
+    {
+      "id": "component-collapsible",
+      "type": "component",
+      "name": "collapsible",
+      "registryType": "registry:item",
+      "title": "Collapsible",
+      "summary": "A native details disclosure with component lifecycle events.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["collapsible"],
+      "parts": ["content", "trigger"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/collapsible.html",
+          "target": "~/components/jquery-star/collapsible.html"
+        }
+      ]
+    },
+    {
+      "id": "component-color-picker",
+      "type": "component",
+      "name": "color-picker",
+      "registryType": "registry:item",
+      "title": "Color Picker",
+      "summary": "A native color input with an editable value, suggested swatches, cancelable changes, and direct FormData support.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["color-picker"],
+      "parts": ["control", "preview", "status", "swatch", "swatches", "value"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/color-picker.html",
+          "target": "~/components/jquery-star/color-picker.html"
+        }
+      ]
+    },
+    {
+      "id": "component-combobox",
+      "type": "component",
+      "name": "combobox",
+      "registryType": "registry:item",
+      "title": "Combobox",
+      "summary": "Editable local or server-backed suggestions with a committed form value.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["combobox"],
+      "parts": ["content", "control", "label", "option", "status", "value"],
+      "stateAttributes": ["data-filter", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/combobox.html",
+          "target": "~/components/jquery-star/combobox.html"
+        }
+      ]
+    },
+    {
+      "id": "component-command-palette",
+      "type": "component",
+      "name": "command-palette",
+      "registryType": "registry:block",
+      "title": "Command Palette",
+      "summary": "A searchable command dialog composed from Dialog and inline Combobox.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "combobox", "command", "dialog"],
+      "parts": [
+        "content",
+        "control",
+        "description",
+        "empty",
+        "footer",
+        "header",
+        "option",
+        "status",
+        "title",
+        "value"
+      ],
+      "stateAttributes": [
+        "data-close-on-backdrop",
+        "data-component",
+        "data-filter",
+        "data-inline",
+        "data-size",
+        "data-value",
+        "data-variant"
+      ],
+      "files": [
+        {
+          "source": "registry/components/command-palette.html",
+          "target": "~/blocks/jquery-star/command-palette.html"
+        }
+      ]
+    },
+    {
+      "id": "component-connection-status",
+      "type": "component",
+      "name": "connection-status",
+      "registryType": "registry:item",
+      "title": "Connection Status",
+      "summary": "A server-patchable connection summary with state, detail, and last-updated metadata.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["connection-status", "status"],
+      "parts": ["content", "description", "indicator", "title", "updated"],
+      "stateAttributes": ["data-live", "data-state", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/connection-status.html",
+          "target": "~/components/jquery-star/connection-status.html"
+        }
+      ]
+    },
+    {
+      "id": "component-context-menu",
+      "type": "component",
+      "name": "context-menu",
+      "registryType": "registry:item",
+      "title": "Context Menu",
+      "summary": "A pointer-positioned menu with keyboard invocation, touch long-press, checked items, and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["context-menu"],
+      "parts": ["checkbox-item", "content", "item", "separator", "shortcut", "trigger"],
+      "stateAttributes": ["data-surface", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/context-menu.html",
+          "target": "~/components/jquery-star/context-menu.html"
+        }
+      ]
+    },
+    {
+      "id": "component-countdown",
+      "type": "component",
+      "name": "countdown",
+      "registryType": "registry:item",
+      "title": "Countdown",
+      "summary": "A deadline or duration countdown driven by one shared clock with pause, resume, reset, and completion events.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["countdown"],
+      "parts": ["minutes", "seconds", "status"],
+      "stateAttributes": ["data-duration"],
+      "files": [
+        {
+          "source": "registry/components/countdown.html",
+          "target": "~/components/jquery-star/countdown.html"
+        }
+      ]
+    },
+    {
+      "id": "component-data-table",
+      "type": "component",
+      "name": "data-table",
+      "registryType": "registry:item",
+      "title": "Data Table",
+      "summary": "Native ordered multi-sort, filtering, pagination, and stable selection.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["data-table"],
+      "parts": [
+        "filter",
+        "next",
+        "page-status",
+        "pagination",
+        "previous",
+        "row-select",
+        "select-all",
+        "selection-status",
+        "sort",
+        "table",
+        "toolbar",
+        "viewport"
+      ],
+      "stateAttributes": ["data-key", "data-page-size", "data-row-id", "data-type"],
+      "files": [
+        {
+          "source": "registry/components/data-table.html",
+          "target": "~/components/jquery-star/data-table.html"
+        }
+      ]
+    },
+    {
+      "id": "component-date-picker",
+      "type": "component",
+      "name": "date-picker",
+      "registryType": "registry:item",
+      "title": "Date Picker",
+      "summary": "A form-ready date field composed from Calendar and Popover.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["calendar", "label", "popover"],
+      "jqueryDependencies": [],
+      "roots": ["calendar", "date-picker", "field", "label", "popover"],
+      "parts": [
+        "content",
+        "control",
+        "grid",
+        "header",
+        "heading",
+        "next",
+        "popover",
+        "previous",
+        "trigger",
+        "value"
+      ],
+      "stateAttributes": ["data-align", "data-side"],
+      "files": [
+        {
+          "source": "registry/components/date-picker.html",
+          "target": "~/components/jquery-star/date-picker.html"
+        }
+      ]
+    },
+    {
+      "id": "component-date-range-picker",
+      "type": "component",
+      "name": "date-range-picker",
+      "registryType": "registry:item",
+      "title": "Date Range Picker",
+      "summary": "Two native form values composed from Popover and Range Calendar behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label", "popover", "range-calendar"],
+      "jqueryDependencies": [],
+      "roots": ["date-range-picker", "field", "label", "popover", "range-calendar"],
+      "parts": [
+        "content",
+        "end-control",
+        "grid",
+        "header",
+        "heading",
+        "next",
+        "popover",
+        "previous",
+        "start-control",
+        "status",
+        "trigger",
+        "value"
+      ],
+      "stateAttributes": ["data-align", "data-side"],
+      "files": [
+        {
+          "source": "registry/components/date-range-picker.html",
+          "target": "~/components/jquery-star/date-range-picker.html"
+        }
+      ]
+    },
+    {
+      "id": "component-dialog",
+      "type": "component",
+      "name": "dialog",
+      "registryType": "registry:item",
+      "title": "Dialog",
+      "summary": "A modal dialog with focus return and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/dialog/",
+      "path": "docs/components/dialog/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "dialog"],
+      "parts": ["content", "description", "footer", "title"],
+      "stateAttributes": ["data-close-on-backdrop", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/dialog.html",
+          "target": "~/components/jquery-star/dialog.html"
+        }
+      ]
+    },
+    {
+      "id": "component-diff",
+      "type": "component",
+      "name": "diff",
+      "registryType": "registry:item",
+      "title": "Diff",
+      "summary": "A keyboard-operable before-and-after comparison controlled by a native range input.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["diff"],
+      "parts": ["after", "before", "control", "handle"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/diff.html",
+          "target": "~/components/jquery-star/diff.html"
+        }
+      ]
+    },
+    {
+      "id": "component-direction",
+      "type": "component",
+      "name": "direction",
+      "registryType": "registry:item",
+      "title": "Direction",
+      "summary": "A source-owned region that uses native dir inheritance for left-to-right or right-to-left content.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "direction"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/direction.html",
+          "target": "~/components/jquery-star/direction.html"
+        }
+      ]
+    },
+    {
+      "id": "component-dock",
+      "type": "component",
+      "name": "dock",
+      "registryType": "registry:item",
+      "title": "Dock",
+      "summary": "A compact responsive navigation surface built from ordinary links and aria-current.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["dock"],
+      "parts": ["icon", "item", "label"],
+      "stateAttributes": ["data-active"],
+      "files": [
+        {
+          "source": "registry/components/dock.html",
+          "target": "~/components/jquery-star/dock.html"
+        }
+      ]
+    },
+    {
+      "id": "component-drawer",
+      "type": "component",
+      "name": "drawer",
+      "registryType": "registry:item",
+      "title": "Drawer",
+      "summary": "A bottom-docked modal surface composed from the native Dialog behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "dialog"],
+      "jqueryDependencies": [],
+      "roots": ["button", "dialog"],
+      "parts": ["content", "description", "footer", "header", "title"],
+      "stateAttributes": ["data-close-on-backdrop", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/drawer.html",
+          "target": "~/components/jquery-star/drawer.html"
+        }
+      ]
+    },
+    {
+      "id": "component-dropdown-menu",
+      "type": "component",
+      "name": "dropdown-menu",
+      "registryType": "registry:item",
+      "title": "Dropdown Menu",
+      "summary": "A menu button with keyboard navigation and selection.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/dropdown/",
+      "path": "docs/components/dropdown/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "menu"],
+      "parts": ["content", "item", "trigger"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/dropdown-menu.html",
+          "target": "~/components/jquery-star/dropdown-menu.html"
+        }
+      ]
+    },
+    {
+      "id": "component-editable",
+      "type": "component",
+      "name": "editable",
+      "registryType": "registry:item",
+      "title": "Editable",
+      "summary": "Inline preview and edit modes around a native form control with validation, keyboard commit, and cancellation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "input"],
+      "jqueryDependencies": [],
+      "roots": ["button", "editable", "input"],
+      "parts": ["control", "display", "edit", "editor", "preview", "status"],
+      "stateAttributes": ["data-placeholder", "data-size", "data-success-message", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/editable.html",
+          "target": "~/components/jquery-star/editable.html"
+        }
+      ]
+    },
+    {
+      "id": "component-empty",
+      "type": "component",
+      "name": "empty",
+      "registryType": "registry:item",
+      "title": "Empty State",
+      "summary": "A composed blank-slate state with title, description, and action slots.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["button", "empty"],
+      "parts": ["description", "title"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/empty.html",
+          "target": "~/components/jquery-star/empty.html"
+        }
+      ]
+    },
+    {
+      "id": "component-feed",
+      "type": "component",
+      "name": "feed",
+      "registryType": "registry:item",
+      "title": "Feed",
+      "summary": "A dynamic article feed with keyboard navigation, load state, a visible Load More fallback, and optional automatic loading.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["item"],
+      "jqueryDependencies": [],
+      "roots": ["feed", "item"],
+      "parts": ["content", "description", "item", "media", "more", "sentinel", "status", "title"],
+      "stateAttributes": ["data-auto", "data-cursor"],
+      "files": [
+        {
+          "source": "registry/components/feed.html",
+          "target": "~/components/jquery-star/feed.html"
+        }
+      ]
+    },
+    {
+      "id": "component-field",
+      "type": "component",
+      "name": "field",
+      "registryType": "registry:item",
+      "title": "Field",
+      "summary": "Label, description, validation message, and control anatomy.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["field", "input"],
+      "parts": ["description", "label"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/field.html",
+          "target": "~/components/jquery-star/field.html"
+        }
+      ]
+    },
+    {
+      "id": "component-file-input",
+      "type": "component",
+      "name": "file-input",
+      "registryType": "registry:item",
+      "title": "File Input",
+      "summary": "A themed native file control compatible with multipart backend actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "file-input", "label"],
+      "parts": ["description"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/file-input.html",
+          "target": "~/components/jquery-star/file-input.html"
+        }
+      ]
+    },
+    {
+      "id": "component-file-upload",
+      "type": "component",
+      "name": "file-upload",
+      "registryType": "registry:item",
+      "title": "File Upload",
+      "summary": "A native file input with drop handling, file validation, removable previews, and direct FormData compatibility.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["file-upload"],
+      "parts": ["control", "dropzone", "list", "status"],
+      "stateAttributes": ["data-max-files", "data-max-size"],
+      "files": [
+        {
+          "source": "registry/components/file-upload.html",
+          "target": "~/components/jquery-star/file-upload.html"
+        }
+      ]
+    },
+    {
+      "id": "component-form",
+      "type": "component",
+      "name": "form",
+      "registryType": "registry:item",
+      "title": "Form",
+      "summary": "Native constraint validation with accessible field errors, lifecycle events, and backend-ready submission.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "field", "input", "label"],
+      "jqueryDependencies": [],
+      "roots": ["button", "field", "form", "input", "label"],
+      "parts": ["actions", "description", "message", "server-message"],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/form.html",
+          "target": "~/components/jquery-star/form.html"
+        }
+      ]
+    },
+    {
+      "id": "component-hover-card",
+      "type": "component",
+      "name": "hover-card",
+      "registryType": "registry:item",
+      "title": "Hover Card",
+      "summary": "Hoverable, focusable, dismissible supplemental content with collision-aware placement.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["hover-card"],
+      "parts": ["content", "description", "title", "trigger"],
+      "stateAttributes": ["data-align", "data-side"],
+      "files": [
+        {
+          "source": "registry/components/hover-card.html",
+          "target": "~/components/jquery-star/hover-card.html"
+        }
+      ]
+    },
+    {
+      "id": "component-indicator",
+      "type": "component",
+      "name": "indicator",
+      "registryType": "registry:item",
+      "title": "Indicator",
+      "summary": "A zero-runtime anchor for positioning badges or statuses around any control or surface.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["badge", "button", "indicator"],
+      "parts": ["indicator"],
+      "stateAttributes": ["data-position", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/indicator.html",
+          "target": "~/components/jquery-star/indicator.html"
+        }
+      ]
+    },
+    {
+      "id": "component-input",
+      "type": "component",
+      "name": "input",
+      "registryType": "registry:item",
+      "title": "Input",
+      "summary": "A labelled native input with reactive binding.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["field", "input"],
+      "parts": ["label"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/input.html",
+          "target": "~/components/jquery-star/input.html"
+        }
+      ]
+    },
+    {
+      "id": "component-input-group",
+      "type": "component",
+      "name": "input-group",
+      "registryType": "registry:item",
+      "title": "Input Group",
+      "summary": "A native input composed with leading and trailing visual addons.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "input", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "input", "input-group", "label"],
+      "parts": ["addon"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/input-group.html",
+          "target": "~/components/jquery-star/input-group.html"
+        }
+      ]
+    },
+    {
+      "id": "component-input-otp",
+      "type": "component",
+      "name": "input-otp",
+      "registryType": "registry:item",
+      "title": "Input OTP",
+      "summary": "A single native one-time-code input with visual slots and completion events.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "input-otp", "label"],
+      "parts": ["control", "description", "slots", "status"],
+      "stateAttributes": ["data-length"],
+      "files": [
+        {
+          "source": "registry/components/input-otp.html",
+          "target": "~/components/jquery-star/input-otp.html"
+        }
+      ]
+    },
+    {
+      "id": "component-item",
+      "type": "component",
+      "name": "item",
+      "registryType": "registry:item",
+      "title": "Item",
+      "summary": "Source-owned content row anatomy with media, title, description, metadata, footer, and actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["button", "item"],
+      "parts": ["actions", "content", "description", "media", "meta", "title"],
+      "stateAttributes": ["data-size", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/item.html",
+          "target": "~/components/jquery-star/item.html"
+        }
+      ]
+    },
+    {
+      "id": "component-json-viewer",
+      "type": "component",
+      "name": "json-viewer",
+      "registryType": "registry:item",
+      "title": "JSON Viewer",
+      "summary": "A safe expandable JSON document viewer sourced from application/json markup or a public API.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "json-viewer"],
+      "parts": ["header", "source", "status", "tree"],
+      "stateAttributes": ["data-size", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/json-viewer.html",
+          "target": "~/components/jquery-star/json-viewer.html"
+        }
+      ]
+    },
+    {
+      "id": "component-kbd",
+      "type": "component",
+      "name": "kbd",
+      "registryType": "registry:item",
+      "title": "Keyboard Key",
+      "summary": "A compact visual treatment for keyboard shortcuts.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["kbd"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        { "source": "registry/components/kbd.html", "target": "~/components/jquery-star/kbd.html" }
+      ]
+    },
+    {
+      "id": "component-key-value",
+      "type": "component",
+      "name": "key-value",
+      "registryType": "registry:item",
+      "title": "Key Value",
+      "summary": "A semantic definition-list layout for runtime metadata, configuration, and record details.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["key-value"],
+      "parts": ["item"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/key-value.html",
+          "target": "~/components/jquery-star/key-value.html"
+        }
+      ]
+    },
+    {
+      "id": "component-label",
+      "type": "component",
+      "name": "label",
+      "registryType": "registry:item",
+      "title": "Label",
+      "summary": "A semantic native label with the shared form typography.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["label"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/label.html",
+          "target": "~/components/jquery-star/label.html"
+        }
+      ]
+    },
+    {
+      "id": "component-log-viewer",
+      "type": "component",
+      "name": "log-viewer",
+      "registryType": "registry:item",
+      "title": "Log Viewer",
+      "summary": "A bounded, filterable live log with pause, follow, safe append, and server-patch support.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "log-viewer"],
+      "parts": [
+        "entries",
+        "entry",
+        "filter",
+        "header",
+        "level",
+        "message",
+        "pause",
+        "source",
+        "status",
+        "timestamp",
+        "viewport"
+      ],
+      "stateAttributes": ["data-level", "data-max", "data-size", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/log-viewer.html",
+          "target": "~/components/jquery-star/log-viewer.html"
+        }
+      ]
+    },
+    {
+      "id": "component-marker",
+      "type": "component",
+      "name": "marker",
+      "registryType": "registry:item",
+      "title": "Marker",
+      "summary": "Inline highlights, separators, and status markers for conversational or document content.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["marker"],
+      "parts": ["icon"],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/marker.html",
+          "target": "~/components/jquery-star/marker.html"
+        }
+      ]
+    },
+    {
+      "id": "component-menubar",
+      "type": "component",
+      "name": "menubar",
+      "registryType": "registry:item",
+      "title": "Menubar",
+      "summary": "A persistent application menu bar composed from the shared Dropdown Menu engine.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["dropdown-menu"],
+      "jqueryDependencies": [],
+      "roots": ["menu", "menubar"],
+      "parts": ["checkbox-item", "content", "item", "menu", "shortcut", "trigger"],
+      "stateAttributes": ["data-checked", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/menubar.html",
+          "target": "~/components/jquery-star/menubar.html"
+        }
+      ]
+    },
+    {
+      "id": "component-message",
+      "type": "component",
+      "name": "message",
+      "registryType": "registry:item",
+      "title": "Message",
+      "summary": "Source-owned conversation markup with sender, timestamp, content, attachment, action, and sent-side styling.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["message"],
+      "parts": ["author", "content", "footer", "header"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/message.html",
+          "target": "~/components/jquery-star/message.html"
+        }
+      ]
+    },
+    {
+      "id": "component-message-scroller",
+      "type": "component",
+      "name": "message-scroller",
+      "registryType": "registry:item",
+      "title": "Message Scroller",
+      "summary": "An accessible message log that follows appended content, preserves the reader's scroll position, and counts unread additions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["message"],
+      "jqueryDependencies": [],
+      "roots": ["message", "message-scroller"],
+      "parts": ["author", "content", "header", "latest", "latest-label", "status", "viewport"],
+      "stateAttributes": ["data-side", "data-threshold"],
+      "files": [
+        {
+          "source": "registry/components/message-scroller.html",
+          "target": "~/components/jquery-star/message-scroller.html"
+        }
+      ]
+    },
+    {
+      "id": "component-meter",
+      "type": "component",
+      "name": "meter",
+      "registryType": "registry:item",
+      "title": "Meter",
+      "summary": "A themed native scalar measurement with optimum and warning ranges.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "label", "meter"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/meter.html",
+          "target": "~/components/jquery-star/meter.html"
+        }
+      ]
+    },
+    {
+      "id": "component-multi-select",
+      "type": "component",
+      "name": "multi-select",
+      "registryType": "registry:item",
+      "title": "Multi Select",
+      "summary": "A multi-selection listbox backed by a native multiple select with tags, typeahead, limits, and server-patchable state.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["multi-select"],
+      "parts": ["content", "control", "indicator", "status", "tags", "trigger", "value"],
+      "stateAttributes": ["data-max", "data-placeholder"],
+      "files": [
+        {
+          "source": "registry/components/multi-select.html",
+          "target": "~/components/jquery-star/multi-select.html"
+        }
+      ]
+    },
+    {
+      "id": "component-native-select",
+      "type": "component",
+      "name": "native-select",
+      "registryType": "registry:item",
+      "title": "Native Select",
+      "summary": "A themed native select for platform-owned forms and mobile pickers.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "label", "native-select"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/native-select.html",
+          "target": "~/components/jquery-star/native-select.html"
+        }
+      ]
+    },
+    {
+      "id": "component-navigation-menu",
+      "type": "component",
+      "name": "navigation-menu",
+      "registryType": "registry:item",
+      "title": "Navigation Menu",
+      "summary": "Site navigation links with a disclosure-style popover section.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["navigation-menu", "popover"],
+      "parts": ["content", "description", "link", "list", "trigger"],
+      "stateAttributes": ["data-align", "data-side"],
+      "files": [
+        {
+          "source": "registry/components/navigation-menu.html",
+          "target": "~/components/jquery-star/navigation-menu.html"
+        }
+      ]
+    },
+    {
+      "id": "component-number-field",
+      "type": "component",
+      "name": "number-field",
+      "registryType": "registry:item",
+      "title": "Number Field",
+      "summary": "A native number input with constrained increment and decrement actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "label", "number-field"],
+      "parts": ["control", "decrement", "description", "increment"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/number-field.html",
+          "target": "~/components/jquery-star/number-field.html"
+        }
+      ]
+    },
+    {
+      "id": "component-operations-dashboard",
+      "type": "component",
+      "name": "operations-dashboard",
+      "registryType": "registry:block",
+      "title": "Operations Dashboard",
+      "summary": "A multi-file runtime dashboard with JSON snapshots, jQuery actions, and Datastar SSE log patches.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [
+        "badge",
+        "button",
+        "card",
+        "connection-status",
+        "countdown",
+        "indicator",
+        "json-viewer",
+        "key-value",
+        "log-viewer",
+        "radial-progress",
+        "stat",
+        "status",
+        "terminal"
+      ],
+      "jqueryDependencies": [],
+      "roots": [
+        "badge",
+        "button",
+        "card",
+        "connection-status",
+        "countdown",
+        "indicator",
+        "json-viewer",
+        "key-value",
+        "log-viewer",
+        "radial-progress",
+        "stat",
+        "stat-group",
+        "status",
+        "terminal"
+      ],
+      "parts": [
+        "actions",
+        "content",
+        "controls",
+        "description",
+        "entries",
+        "entry",
+        "filter",
+        "footer",
+        "header",
+        "indicator",
+        "item",
+        "label",
+        "level",
+        "message",
+        "minutes",
+        "pause",
+        "seconds",
+        "source",
+        "status",
+        "timestamp",
+        "title",
+        "tree",
+        "updated",
+        "value",
+        "viewport"
+      ],
+      "stateAttributes": [
+        "data-block",
+        "data-dashboard-part",
+        "data-dashboard-value",
+        "data-duration",
+        "data-level",
+        "data-live",
+        "data-max",
+        "data-position",
+        "data-size",
+        "data-snapshot-url",
+        "data-state",
+        "data-stream-url",
+        "data-value",
+        "data-variant"
+      ],
+      "files": [
+        {
+          "source": "registry/blocks/operations-dashboard.html",
+          "target": "~/blocks/jquery-star/operations-dashboard.html"
+        },
+        {
+          "source": "registry/blocks/operations-dashboard.ts",
+          "target": "~/blocks/jquery-star/operations-dashboard.ts"
+        }
+      ]
+    },
+    {
+      "id": "component-pagination",
+      "type": "component",
+      "name": "pagination",
+      "registryType": "registry:item",
+      "title": "Pagination",
+      "summary": "Landmark-based page navigation with current and disabled states.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["pagination"],
+      "parts": ["next", "page", "previous", "status"],
+      "stateAttributes": ["data-page", "data-page-count"],
+      "files": [
+        {
+          "source": "registry/components/pagination.html",
+          "target": "~/components/jquery-star/pagination.html"
+        }
+      ]
+    },
+    {
+      "id": "component-password-field",
+      "type": "component",
+      "name": "password-field",
+      "registryType": "registry:item",
+      "title": "Password Field",
+      "summary": "A password-manager-friendly native input with an accessible visibility toggle.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "label", "password-field"],
+      "parts": ["control", "status", "toggle", "toggle-label"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/password-field.html",
+          "target": "~/components/jquery-star/password-field.html"
+        }
+      ]
+    },
+    {
+      "id": "component-popover",
+      "type": "component",
+      "name": "popover",
+      "registryType": "registry:item",
+      "title": "Popover",
+      "summary": "A collision-aware non-modal floating panel.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "popover"],
+      "parts": ["content", "trigger"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/popover.html",
+          "target": "~/components/jquery-star/popover.html"
+        }
+      ]
+    },
+    {
+      "id": "component-profile-settings",
+      "type": "component",
+      "name": "profile-settings",
+      "registryType": "registry:block",
+      "title": "Profile Settings",
+      "summary": "A multi-file profile form with inline native editing, backend persistence, and a rotatable Clipboard invite URL.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [
+        "badge",
+        "button",
+        "card",
+        "clipboard",
+        "editable",
+        "field",
+        "input",
+        "key-value",
+        "label"
+      ],
+      "jqueryDependencies": [],
+      "roots": [
+        "badge",
+        "button",
+        "card",
+        "clipboard",
+        "editable",
+        "field",
+        "input",
+        "key-value",
+        "label"
+      ],
+      "parts": [
+        "control",
+        "description",
+        "display",
+        "edit",
+        "editor",
+        "footer",
+        "header",
+        "item",
+        "preview",
+        "status",
+        "title",
+        "trigger",
+        "value"
+      ],
+      "stateAttributes": [
+        "data-block",
+        "data-invite-url",
+        "data-placeholder",
+        "data-profile-field",
+        "data-profile-part",
+        "data-profile-value",
+        "data-save-url",
+        "data-show",
+        "data-size",
+        "data-success-message",
+        "data-variant"
+      ],
+      "files": [
+        {
+          "source": "registry/blocks/profile-settings.html",
+          "target": "~/blocks/jquery-star/profile-settings.html"
+        },
+        {
+          "source": "registry/blocks/profile-settings.ts",
+          "target": "~/blocks/jquery-star/profile-settings.ts"
+        }
+      ]
+    },
+    {
+      "id": "component-progress",
+      "type": "component",
+      "name": "progress",
+      "registryType": "registry:item",
+      "title": "Progress",
+      "summary": "A themed native progress indicator.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["progress"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/progress.html",
+          "target": "~/components/jquery-star/progress.html"
+        }
+      ]
+    },
+    {
+      "id": "component-project-browser",
+      "type": "component",
+      "name": "project-browser",
+      "registryType": "registry:block",
+      "title": "Project Browser",
+      "summary": "A persistent server-driven data explorer with multi-sort, groups, inline conflict-safe editing, page and virtual windows, durable column layouts, stable selection, and Datastar SDK patches.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["badge", "button", "card", "data-table", "pagination", "search-field"],
+      "jqueryDependencies": [],
+      "roots": ["badge", "button", "card", "data-table", "pagination", "search-field"],
+      "parts": [
+        "clear",
+        "control",
+        "description",
+        "ellipsis",
+        "footer",
+        "header",
+        "icon",
+        "next",
+        "page",
+        "previous",
+        "row-select",
+        "select-all",
+        "selection-status",
+        "sort",
+        "status",
+        "submit",
+        "table",
+        "title",
+        "toolbar",
+        "viewport"
+      ],
+      "stateAttributes": [
+        "data-block",
+        "data-column",
+        "data-column-item",
+        "data-column-move",
+        "data-column-pin",
+        "data-column-toggle",
+        "data-direction",
+        "data-key",
+        "data-mode",
+        "data-navigation",
+        "data-page",
+        "data-page-count",
+        "data-processing",
+        "data-project-browser-control",
+        "data-project-browser-details",
+        "data-project-browser-edit",
+        "data-project-browser-expand",
+        "data-project-browser-group-toggle",
+        "data-project-browser-part",
+        "data-project-id",
+        "data-project-version",
+        "data-projects-url",
+        "data-row-id",
+        "data-show",
+        "data-sort",
+        "data-sorts",
+        "data-type",
+        "data-value",
+        "data-variant"
+      ],
+      "files": [
+        {
+          "source": "registry/blocks/project-browser.html",
+          "target": "~/blocks/jquery-star/project-browser.html"
+        },
+        {
+          "source": "registry/blocks/project-browser.ts",
+          "target": "~/blocks/jquery-star/project-browser.ts"
+        }
+      ]
+    },
+    {
+      "id": "component-questionnaire",
+      "type": "component",
+      "name": "questionnaire",
+      "registryType": "registry:item",
+      "title": "Questionnaire",
+      "summary": "An ordered native form flow with single, multiple, freeform, optional, conditional, shortcut, validation, resume, and server-patchable behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "progress"],
+      "jqueryDependencies": [],
+      "roots": ["questionnaire"],
+      "parts": [
+        "actions",
+        "choice",
+        "choice-copy",
+        "choices",
+        "control",
+        "description",
+        "error",
+        "freeform",
+        "header",
+        "input",
+        "item",
+        "next",
+        "previous",
+        "progress",
+        "progress-label",
+        "reset",
+        "skip",
+        "status",
+        "submit"
+      ],
+      "stateAttributes": [
+        "data-max",
+        "data-min",
+        "data-multiple",
+        "data-name",
+        "data-required",
+        "data-shortcut",
+        "data-skippable",
+        "data-value"
+      ],
+      "files": [
+        {
+          "source": "registry/components/questionnaire.html",
+          "target": "~/components/jquery-star/questionnaire.html"
+        }
+      ]
+    },
+    {
+      "id": "component-radial-progress",
+      "type": "component",
+      "name": "radial-progress",
+      "registryType": "registry:item",
+      "title": "Radial Progress",
+      "summary": "A CSS-driven circular progress indicator with an explicit accessible value contract.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["radial-progress"],
+      "parts": ["label", "value"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/radial-progress.html",
+          "target": "~/components/jquery-star/radial-progress.html"
+        }
+      ]
+    },
+    {
+      "id": "component-radio-group",
+      "type": "component",
+      "name": "radio-group",
+      "registryType": "registry:item",
+      "title": "Radio Group",
+      "summary": "A native, keyboard-accessible single-choice fieldset.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["radio-group"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/radio-group.html",
+          "target": "~/components/jquery-star/radio-group.html"
+        }
+      ]
+    },
+    {
+      "id": "component-range-calendar",
+      "type": "component",
+      "name": "range-calendar",
+      "registryType": "registry:item",
+      "title": "Range Calendar",
+      "summary": "An accessible calendar grid for continuous start and end date selection.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["range-calendar"],
+      "parts": ["grid", "header", "heading", "next", "previous", "status"],
+      "stateAttributes": ["data-end", "data-month", "data-start"],
+      "files": [
+        {
+          "source": "registry/components/range-calendar.html",
+          "target": "~/components/jquery-star/range-calendar.html"
+        }
+      ]
+    },
+    {
+      "id": "component-rating",
+      "type": "component",
+      "name": "rating",
+      "registryType": "registry:item",
+      "title": "Rating",
+      "summary": "A native radio rating field with form validation, server-patchable value, lifecycle events, and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["rating"],
+      "parts": ["clear", "control", "icon", "item", "items", "label", "status"],
+      "stateAttributes": ["data-label", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/rating.html",
+          "target": "~/components/jquery-star/rating.html"
+        }
+      ]
+    },
+    {
+      "id": "component-resizable",
+      "type": "component",
+      "name": "resizable",
+      "registryType": "registry:item",
+      "title": "Resizable Panels",
+      "summary": "Constrained panel layouts with pointer, touch, keyboard, lifecycle, and optional persistence.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["resizable"],
+      "parts": ["handle", "panel"],
+      "stateAttributes": ["data-max", "data-min", "data-step", "data-storage-key", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/resizable.html",
+          "target": "~/components/jquery-star/resizable.html"
+        }
+      ]
+    },
+    {
+      "id": "component-scroll-area",
+      "type": "component",
+      "name": "scroll-area",
+      "registryType": "registry:item",
+      "title": "Scroll Area",
+      "summary": "A styled native overflow viewport with keyboard scrolling and stable focus treatment.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["scroll-area"],
+      "parts": ["viewport"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/scroll-area.html",
+          "target": "~/components/jquery-star/scroll-area.html"
+        }
+      ]
+    },
+    {
+      "id": "component-search-field",
+      "type": "component",
+      "name": "search-field",
+      "registryType": "registry:item",
+      "title": "Search Field",
+      "summary": "A native search form control with clear, focus, submit, loading, server-patchable value, and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["search-field"],
+      "parts": ["clear", "control", "icon", "submit"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/search-field.html",
+          "target": "~/components/jquery-star/search-field.html"
+        }
+      ]
+    },
+    {
+      "id": "component-select",
+      "type": "component",
+      "name": "select",
+      "registryType": "registry:item",
+      "title": "Select",
+      "summary": "A custom listbox backed by a native select control.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["select"],
+      "parts": ["control", "label"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/select.html",
+          "target": "~/components/jquery-star/select.html"
+        }
+      ]
+    },
+    {
+      "id": "component-separator",
+      "type": "component",
+      "name": "separator",
+      "registryType": "registry:item",
+      "title": "Separator",
+      "summary": "Horizontal and vertical visual separators.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["separator"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/separator.html",
+          "target": "~/components/jquery-star/separator.html"
+        }
+      ]
+    },
+    {
+      "id": "component-sheet",
+      "type": "component",
+      "name": "sheet",
+      "registryType": "registry:item",
+      "title": "Sheet",
+      "summary": "A side panel composed from Dialog with native modality and focus return.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "dialog"],
+      "jqueryDependencies": [],
+      "roots": ["button", "dialog"],
+      "parts": ["content", "description", "footer", "header", "title"],
+      "stateAttributes": ["data-close-on-backdrop", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/sheet.html",
+          "target": "~/components/jquery-star/sheet.html"
+        }
+      ]
+    },
+    {
+      "id": "component-sidebar",
+      "type": "component",
+      "name": "sidebar",
+      "registryType": "registry:item",
+      "title": "Sidebar",
+      "summary": "A responsive application shell with icon, off-canvas, shortcut, persistence, and named-action behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["sidebar"],
+      "parts": [
+        "backdrop",
+        "content",
+        "footer",
+        "group",
+        "group-label",
+        "header",
+        "icon",
+        "label",
+        "menu",
+        "menu-item",
+        "panel",
+        "rail",
+        "trigger"
+      ],
+      "stateAttributes": ["data-collapsible", "data-storage-key"],
+      "files": [
+        {
+          "source": "registry/components/sidebar.html",
+          "target": "~/components/jquery-star/sidebar.html"
+        }
+      ]
+    },
+    {
+      "id": "component-skeleton",
+      "type": "component",
+      "name": "skeleton",
+      "registryType": "registry:item",
+      "title": "Skeleton",
+      "summary": "Reduced-motion-aware decorative loading placeholders.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["skeleton"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/skeleton.html",
+          "target": "~/components/jquery-star/skeleton.html"
+        }
+      ]
+    },
+    {
+      "id": "component-slider",
+      "type": "component",
+      "name": "slider",
+      "registryType": "registry:item",
+      "title": "Slider",
+      "summary": "A themed native range input that works with reactive binding.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["field", "slider"],
+      "parts": ["label"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/slider.html",
+          "target": "~/components/jquery-star/slider.html"
+        }
+      ]
+    },
+    {
+      "id": "component-sortable",
+      "type": "component",
+      "name": "sortable",
+      "registryType": "registry:item",
+      "title": "Sortable List",
+      "summary": "An ordered collection with drag, keyboard reordering, visible pointer alternatives, and repeated native form values.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["sortable"],
+      "parts": ["down", "handle", "item", "label", "list", "status", "up"],
+      "stateAttributes": ["data-label", "data-name", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/sortable.html",
+          "target": "~/components/jquery-star/sortable.html"
+        }
+      ]
+    },
+    {
+      "id": "component-spinner",
+      "type": "component",
+      "name": "spinner",
+      "registryType": "registry:item",
+      "title": "Spinner",
+      "summary": "A reduced-motion-aware loading indicator.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["spinner"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/spinner.html",
+          "target": "~/components/jquery-star/spinner.html"
+        }
+      ]
+    },
+    {
+      "id": "component-split-button",
+      "type": "component",
+      "name": "split-button",
+      "registryType": "registry:item",
+      "title": "Split Button",
+      "summary": "A primary native button paired with a keyboard-accessible Dropdown Menu for related actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "dropdown-menu"],
+      "jqueryDependencies": [],
+      "roots": ["button", "menu", "split-button"],
+      "parts": ["content", "item", "menu", "primary", "trigger"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/split-button.html",
+          "target": "~/components/jquery-star/split-button.html"
+        }
+      ]
+    },
+    {
+      "id": "component-stat",
+      "type": "component",
+      "name": "stat",
+      "registryType": "registry:item",
+      "title": "Stat",
+      "summary": "Zero-runtime metric cards with title, value, trend, figure, and action anatomy.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["status"],
+      "jqueryDependencies": [],
+      "roots": ["stat", "stat-group", "status"],
+      "parts": ["description", "figure", "title", "value"],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/stat.html",
+          "target": "~/components/jquery-star/stat.html"
+        }
+      ]
+    },
+    {
+      "id": "component-status",
+      "type": "component",
+      "name": "status",
+      "registryType": "registry:item",
+      "title": "Status",
+      "summary": "A compact decorative or labelled service-state indicator with optional live animation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["status"],
+      "parts": [],
+      "stateAttributes": ["data-live", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/status.html",
+          "target": "~/components/jquery-star/status.html"
+        }
+      ]
+    },
+    {
+      "id": "component-stepper",
+      "type": "component",
+      "name": "stepper",
+      "registryType": "registry:item",
+      "title": "Stepper",
+      "summary": "A linear or non-linear workflow with native validation, ordered-list semantics, and server-patchable state.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button", "field", "form"],
+      "jqueryDependencies": [],
+      "roots": ["button", "field", "form", "stepper"],
+      "parts": [
+        "actions",
+        "control",
+        "label",
+        "list",
+        "next",
+        "panel",
+        "previous",
+        "status",
+        "step",
+        "trigger"
+      ],
+      "stateAttributes": ["data-linear", "data-value", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/stepper.html",
+          "target": "~/components/jquery-star/stepper.html"
+        }
+      ]
+    },
+    {
+      "id": "component-swap",
+      "type": "component",
+      "name": "swap",
+      "registryType": "registry:item",
+      "title": "Swap",
+      "summary": "A native-checkbox toggle that swaps two visual labels without component JavaScript.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["swap"],
+      "parts": ["off", "on"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/swap.html",
+          "target": "~/components/jquery-star/swap.html"
+        }
+      ]
+    },
+    {
+      "id": "component-switch",
+      "type": "component",
+      "name": "switch",
+      "registryType": "registry:item",
+      "title": "Switch",
+      "summary": "A native checkbox presented as an on-off switch.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["field", "switch"],
+      "parts": ["description", "label"],
+      "stateAttributes": ["data-orientation"],
+      "files": [
+        {
+          "source": "registry/components/switch.html",
+          "target": "~/components/jquery-star/switch.html"
+        }
+      ]
+    },
+    {
+      "id": "component-table",
+      "type": "component",
+      "name": "table",
+      "registryType": "registry:item",
+      "title": "Table",
+      "summary": "A responsive presentation layer for semantic native tables without client-side behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["badge"],
+      "jqueryDependencies": [],
+      "roots": ["badge", "table"],
+      "parts": [],
+      "stateAttributes": ["data-align", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/table.html",
+          "target": "~/components/jquery-star/table.html"
+        }
+      ]
+    },
+    {
+      "id": "component-tabs",
+      "type": "component",
+      "name": "tabs",
+      "registryType": "registry:item",
+      "title": "Tabs",
+      "summary": "Keyboard-accessible tabs with automatic or manual activation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/tabs/",
+      "path": "docs/components/tabs/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["tabs"],
+      "parts": ["list", "panel", "trigger"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/tabs.html",
+          "target": "~/components/jquery-star/tabs.html"
+        }
+      ]
+    },
+    {
+      "id": "component-tags-input",
+      "type": "component",
+      "name": "tags-input",
+      "registryType": "registry:item",
+      "title": "Tags Input",
+      "summary": "A keyboard-friendly token field with repeated native form values.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["field", "label"],
+      "jqueryDependencies": [],
+      "roots": ["field", "label", "tags-input"],
+      "parts": ["control", "description", "list", "status"],
+      "stateAttributes": ["data-max", "data-name", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/tags-input.html",
+          "target": "~/components/jquery-star/tags-input.html"
+        }
+      ]
+    },
+    {
+      "id": "component-terminal",
+      "type": "component",
+      "name": "terminal",
+      "registryType": "registry:item",
+      "title": "Terminal",
+      "summary": "A zero-runtime terminal frame for commands, build output, and live log compositions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["terminal"],
+      "parts": ["content", "controls", "header", "output", "prompt", "title"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/terminal.html",
+          "target": "~/components/jquery-star/terminal.html"
+        }
+      ]
+    },
+    {
+      "id": "component-textarea",
+      "type": "component",
+      "name": "textarea",
+      "registryType": "registry:item",
+      "title": "Textarea",
+      "summary": "A labelled native textarea with reactive binding.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["field", "textarea"],
+      "parts": ["label"],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/textarea.html",
+          "target": "~/components/jquery-star/textarea.html"
+        }
+      ]
+    },
+    {
+      "id": "component-time-picker",
+      "type": "component",
+      "name": "time-picker",
+      "registryType": "registry:item",
+      "title": "Time Picker",
+      "summary": "A native time input with constrained stepping, presets, ordinary form events, and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["time-picker"],
+      "parts": ["control", "decrement", "increment", "preset", "presets", "status"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/time-picker.html",
+          "target": "~/components/jquery-star/time-picker.html"
+        }
+      ]
+    },
+    {
+      "id": "component-timeline",
+      "type": "component",
+      "name": "timeline",
+      "registryType": "registry:item",
+      "title": "Timeline",
+      "summary": "A semantic ordered history with complete, current, and pending event presentation.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["timeline"],
+      "parts": ["content", "item", "marker"],
+      "stateAttributes": ["data-state"],
+      "files": [
+        {
+          "source": "registry/components/timeline.html",
+          "target": "~/components/jquery-star/timeline.html"
+        }
+      ]
+    },
+    {
+      "id": "component-toast",
+      "type": "component",
+      "name": "toast",
+      "registryType": "registry:item",
+      "title": "Toast",
+      "summary": "Timed or actionable notifications with keyboard access.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/components/toast/",
+      "path": "docs/components/toast/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "toast-viewport"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/toast.html",
+          "target": "~/components/jquery-star/toast.html"
+        }
+      ]
+    },
+    {
+      "id": "component-toggle",
+      "type": "component",
+      "name": "toggle",
+      "registryType": "registry:item",
+      "title": "Toggle",
+      "summary": "A pressed-state button with lifecycle events and named actions.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["toggle"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/toggle.html",
+          "target": "~/components/jquery-star/toggle.html"
+        }
+      ]
+    },
+    {
+      "id": "component-toggle-group",
+      "type": "component",
+      "name": "toggle-group",
+      "registryType": "registry:item",
+      "title": "Toggle Group",
+      "summary": "Single or multiple pressed-state controls with roving keyboard focus and form values.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["toggle-group"],
+      "parts": ["item"],
+      "stateAttributes": ["data-name", "data-type", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/toggle-group.html",
+          "target": "~/components/jquery-star/toggle-group.html"
+        }
+      ]
+    },
+    {
+      "id": "component-toolbar",
+      "type": "component",
+      "name": "toolbar",
+      "registryType": "registry:item",
+      "title": "Toolbar",
+      "summary": "A compact control group with orientation-aware roving focus and native input escape hatches.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["toggle"],
+      "jqueryDependencies": [],
+      "roots": ["toggle", "toolbar"],
+      "parts": ["item", "separator"],
+      "stateAttributes": ["data-value"],
+      "files": [
+        {
+          "source": "registry/components/toolbar.html",
+          "target": "~/components/jquery-star/toolbar.html"
+        }
+      ]
+    },
+    {
+      "id": "component-tooltip",
+      "type": "component",
+      "name": "tooltip",
+      "registryType": "registry:item",
+      "title": "Tooltip",
+      "summary": "Hover and focus help text without focus movement.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["button", "tooltip"],
+      "parts": ["content", "trigger"],
+      "stateAttributes": ["data-variant"],
+      "files": [
+        {
+          "source": "registry/components/tooltip.html",
+          "target": "~/components/jquery-star/tooltip.html"
+        }
+      ]
+    },
+    {
+      "id": "component-transfer-list",
+      "type": "component",
+      "name": "transfer-list",
+      "registryType": "registry:item",
+      "title": "Transfer List",
+      "summary": "Two native multi-selects with assignment, ordering, repeated form values, lifecycle events, and server-patchable state.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": ["button"],
+      "jqueryDependencies": [],
+      "roots": ["button", "transfer-list"],
+      "parts": [
+        "add",
+        "add-all",
+        "available",
+        "controls",
+        "move-down",
+        "move-up",
+        "order-controls",
+        "pane",
+        "remove",
+        "remove-all",
+        "selected",
+        "status"
+      ],
+      "stateAttributes": ["data-name", "data-value", "data-variant"],
+      "files": [
+        {
+          "source": "registry/components/transfer-list.html",
+          "target": "~/components/jquery-star/transfer-list.html"
+        }
+      ]
+    },
+    {
+      "id": "component-tree",
+      "type": "component",
+      "name": "tree",
+      "registryType": "registry:item",
+      "title": "Tree View",
+      "summary": "A hierarchical single- or multi-select navigator with complete tree keyboard behavior.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["tree"],
+      "parts": ["group", "item", "label", "meta", "row", "spacer", "toggle"],
+      "stateAttributes": ["data-expanded", "data-selection", "data-value"],
+      "files": [
+        {
+          "source": "registry/components/tree.html",
+          "target": "~/components/jquery-star/tree.html"
+        }
+      ]
+    },
+    {
+      "id": "component-typography",
+      "type": "component",
+      "name": "typography",
+      "registryType": "registry:item",
+      "title": "Typography",
+      "summary": "Readable, zero-runtime defaults for plain HTML, rendered Markdown, documentation, and chat.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/components/lab/",
+      "path": "components/lab/",
+      "dependencies": [],
+      "jqueryDependencies": [],
+      "roots": ["typography"],
+      "parts": [],
+      "stateAttributes": [],
+      "files": [
+        {
+          "source": "registry/components/typography.html",
+          "target": "~/components/jquery-star/typography.html"
+        }
+      ]
+    }
+  ]
+}

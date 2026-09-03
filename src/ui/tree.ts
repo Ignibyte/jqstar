@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTreeStatic, TreeTarget } from "../types";
 
 type TreeSelection = "multiple" | "none" | "single";
@@ -484,7 +484,7 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-export function createTrees(): TreeCollection {
+export function createTrees(registerAction: ActionRegistrar): TreeCollection {
   const api: StarTreeStatic = {
     select: (target, value, selected) => {
       const root = resolveTree(target);

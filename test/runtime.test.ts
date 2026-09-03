@@ -1,10 +1,27 @@
 import $ from "jquery";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../src/index";
+import { isStarExpressionCallResult, starExpressionRuntimeFor } from "../src/expression-runtime";
+import { kernelForDocument } from "../src/kernel";
+import { installStar } from "../src/compatibility";
+import type { StarContext } from "../src/types";
 
 async function updated(): Promise<void> {
   await $.star.nextUpdate();
 }
+
+const expressionRuntimeAction = vi.fn(() => "global-result");
+const expressionRuntimeHelper = vi.fn((value: string) => value.toUpperCase());
+$.star.use({
+  name: "acme.expressionruntime",
+  version: "1.0.0",
+  apiVersion: "^0.1.0",
+  install(registrar) {
+    registrar.action("acme.expressionruntime.run", expressionRuntimeAction);
+    registrar.helper("acme.expressionruntime.upper", expressionRuntimeHelper);
+    return {};
+  },
+});
 
 describe("jQuery Star", () => {
   beforeEach(() => {
@@ -73,6 +90,49 @@ describe("jQuery Star", () => {
     await updated();
 
     expect($("output").text()).toBe("1");
+  });
+
+  it("binds local actions to the internal expression runtime until destruction", () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    let thenReads = 0;
+    const raw = Object.defineProperty({}, "then", {
+      get: () => {
+        thenReads += 1;
+        return vi.fn();
+      },
+    });
+    const action = vi.fn((_context: StarContext) => raw);
+    $("#app").star({ actions: { save: action } });
+    const instance = $("#app").star("instance")!;
+    const lookup = { instance } as Pick<StarContext, "instance">;
+    const runtime = starExpressionRuntimeFor(lookup)!;
+
+    const result = runtime.invokeAction("save", ["record-1"], lookup as StarContext);
+
+    expect(action).toHaveBeenCalledWith(expect.objectContaining({ args: ["record-1"] }));
+    expect(result.value).toBe(raw);
+    expect(isStarExpressionCallResult(result)).toBe(true);
+    expect(thenReads).toBe(0);
+    result.failed(new Error("CSP rejected the raw result"));
+    instance.destroy();
+    expect(starExpressionRuntimeFor(lookup)).toBeUndefined();
+  });
+
+  it("resolves installed actions and helpers through the behavior runtime", () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    $("#app").star({});
+    const instance = $("#app").star("instance")!;
+    const context = { instance } as StarContext;
+    const runtime = starExpressionRuntimeFor(context)!;
+
+    const actionResult = runtime.invokeAction("acme.expressionruntime.run", [], context);
+    expect(actionResult.value).toBe("global-result");
+    actionResult.completed();
+    const helperResult = runtime.invokeHelper("acme.expressionruntime.upper", ["ready"]);
+    expect(helperResult.value).toBe("READY");
+    helperResult.completed();
+
+    instance.destroy();
   });
 
   it("supports text, visibility, class, attribute, property, and style bindings", async () => {
@@ -250,6 +310,66 @@ describe("jQuery Star", () => {
     expect($("output").text()).toBe("after");
   });
 
+  it("tracks installed applications until they are destroyed", () => {
+    document.body.innerHTML = `<section id="app" data-signals="{ count: 0 }"></section>`;
+    const kernel = kernelForDocument(document)!;
+    const before = kernel.applicationCount();
+
+    $("#app").star();
+    expect(kernel.applicationCount()).toBe(before + 1);
+
+    $("#app").star("destroy");
+    expect(kernel.applicationCount()).toBe(before);
+  });
+
+  it("owns persistent UI document behavior in the installed kernel ledger", () => {
+    const resources = kernelForDocument(document)!.resourceSummary();
+    const services = resources
+      .filter(({ kind }) => kind === "service")
+      .map(({ owner }) => owner)
+      .sort();
+
+    expect(services).toEqual([
+      "ui:auto-enhancement",
+      "ui:combobox:active-records",
+      "ui:hover-card:active-records",
+      "ui:menu:active-records",
+      "ui:multi-select:active-records",
+      "ui:popover:active-records",
+      "ui:select:active-records",
+      "ui:toast:active-records",
+      "ui:tooltip:active-records",
+    ]);
+    expect(resources.some(({ kind }) => kind === "listener")).toBe(true);
+    expect(resources.filter(({ kind }) => kind === "observer")).toHaveLength(2);
+  });
+
+  it("records application observers with their exact owner and full subtree scope", async () => {
+    document.body.innerHTML = `<section id="app"><div class="nested"></div></section>`;
+    const mounted = vi.fn();
+    $("#app").star({
+      ui: { ".dynamic": { mount: mounted } },
+    });
+    const resources = kernelForDocument(document)!.resourceSummary();
+    const applicationObserver = resources.find(
+      ({ kind, owner }) => kind === "observer" && owner.startsWith("application:.jqueryStar"),
+    );
+
+    expect(applicationObserver?.owner).toMatch(/^application:\.jqueryStar\d+:mutation$/);
+    $(".nested").append('<i class="dynamic"></i>');
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect(mounted).toHaveBeenCalledOnce();
+  });
+
+  it("rejects installation without an ambient document", () => {
+    const isolated$ = (() => undefined) as unknown as JQueryStatic;
+    vi.stubGlobal("document", undefined);
+
+    expect(() => installStar(isolated$)).toThrow("jQuery Star needs an ambient Document.");
+    vi.unstubAllGlobals();
+  });
+
   it("models radio groups and multi-select values", async () => {
     document.body.innerHTML = `
       <form id="form">
@@ -283,19 +403,21 @@ describe("jQuery Star", () => {
     expect(state.colors).toEqual(["blue"]);
   });
 
-  it("mounts dynamic jQuery plugins once and cleans them up", async () => {
+  it("runs each owned mount cleanup and unmount hook exactly once", async () => {
     document.body.innerHTML = `<section id="app"><input class="widget"></section>`;
     const mounted = vi.fn();
+    const cleaned = vi.fn();
     const unmounted = vi.fn();
 
     $("#app").star({
       ui: {
         ".widget": {
           mount: ({ $element }) => {
-            mounted($element?.get(0));
-            return () => unmounted("cleanup");
+            const element = $element?.get(0);
+            mounted(element);
+            return () => cleaned(element);
           },
-          unmount: () => unmounted("unmount"),
+          unmount: ({ $element }) => unmounted($element?.get(0)),
         },
       },
     });
@@ -304,13 +426,25 @@ describe("jQuery Star", () => {
     $("#app").append('<input class="widget dynamic">');
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     expect(mounted).toHaveBeenCalledTimes(2);
+    const original = $(".widget").get(0);
+    const dynamic = $(".dynamic").get(0);
 
     $(".dynamic").remove();
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
-    expect(unmounted).toHaveBeenCalledTimes(2);
+    expect(cleaned).toHaveBeenCalledOnce();
+    expect(cleaned).toHaveBeenLastCalledWith(dynamic);
+    expect(unmounted).toHaveBeenCalledOnce();
+    expect(unmounted).toHaveBeenLastCalledWith(dynamic);
 
     $("#app").star("destroy");
-    expect(unmounted).toHaveBeenCalledTimes(4);
+    expect(cleaned).toHaveBeenCalledTimes(2);
+    expect(cleaned).toHaveBeenLastCalledWith(original);
+    expect(unmounted).toHaveBeenCalledTimes(2);
+    expect(unmounted).toHaveBeenLastCalledWith(original);
+
+    $("#app").star("destroy");
+    expect(cleaned).toHaveBeenCalledTimes(2);
+    expect(unmounted).toHaveBeenCalledTimes(2);
   });
 
   it("isolates state per root and stops reacting after destruction", async () => {
@@ -337,5 +471,415 @@ describe("jQuery Star", () => {
     firstState.count = 8;
     await updated();
     expect(first.find("output").text()).toBe("4");
+  });
+
+  it("rolls back every staged resource when a later mount fails", async () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <button class="action">Run</button>
+        <output></output>
+        <i class="first"></i>
+        <i class="broken"></i>
+      </section>
+    `;
+    const kernel = kernelForDocument(document)!;
+    const applicationCount = kernel.applicationCount();
+    const resourceCount = kernel.resourceSummary().length;
+    const action = vi.fn();
+    const firstCleanup = vi.fn();
+    const firstUnmount = vi.fn();
+    const brokenUnmount = vi.fn();
+    const bindingRuns = vi.fn();
+    let stagedState: { count: number } | undefined;
+
+    expect(() =>
+      $("#app").star({
+        state: { count: 0 },
+        actions: { run: action },
+        ui: {
+          output: {
+            text: ({ state }) => {
+              stagedState = state;
+              bindingRuns();
+              return state.count;
+            },
+          },
+          ".action": { on: { click: "run" } },
+          ".first": { mount: () => firstCleanup, unmount: firstUnmount },
+          ".broken": {
+            mount: () => {
+              throw new Error("mount failed");
+            },
+            unmount: brokenUnmount,
+          },
+        },
+      }),
+    ).toThrow("mount failed");
+
+    $(".action").trigger("click");
+    stagedState!.count = 1;
+    await $.star.nextUpdate();
+
+    expect(action).not.toHaveBeenCalled();
+    expect(bindingRuns).toHaveBeenCalledOnce();
+    expect(firstCleanup).toHaveBeenCalledOnce();
+    expect(firstUnmount).toHaveBeenCalledOnce();
+    expect(brokenUnmount).toHaveBeenCalledOnce();
+    expect($("#app").star("instance")).toBeUndefined();
+    expect(kernel.applicationCount()).toBe(applicationCount);
+    expect(kernel.resourceSummary()).toHaveLength(resourceCount);
+  });
+
+  it("marks a failed staged instance destroyed and identifies rollback cleanup failures", () => {
+    document.body.innerHTML = `<section id="app"><i class="first"></i><i class="broken"></i></section>`;
+    const setupFailure = new Error("setup failed");
+    const cleanupFailure = new Error("rollback cleanup failed");
+    let stagedInstance: { readonly destroyed: boolean } | undefined;
+    let failure: unknown;
+
+    try {
+      $("#app").star({
+        ui: {
+          ".first": {
+            mount: ({ instance }) => {
+              stagedInstance = instance;
+              return () => {
+                throw cleanupFailure;
+              };
+            },
+          },
+          ".broken": {
+            mount: () => {
+              throw setupFailure;
+            },
+          },
+        },
+      });
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeInstanceOf(AggregateError);
+    expect((failure as AggregateError).message).toBe(
+      "jQuery Star application setup rollback failed.",
+    );
+    expect((failure as AggregateError).errors).toEqual([setupFailure, cleanupFailure]);
+    expect(stagedInstance!.destroyed).toBe(true);
+  });
+
+  it("attempts every mount cleanup exactly once when destruction fails", () => {
+    document.body.innerHTML = `
+      <section id="app"><i class="first"></i><i class="second"></i></section>
+    `;
+    const firstFailure = new Error("first cleanup failed");
+    const secondFailure = new Error("second cleanup failed");
+    const firstCleanup = vi.fn(() => {
+      throw firstFailure;
+    });
+    const secondCleanup = vi.fn(() => {
+      throw secondFailure;
+    });
+    const unmount = vi.fn();
+
+    $("#app").star({
+      ui: {
+        ".first": { mount: () => firstCleanup, unmount },
+        ".second": { mount: () => secondCleanup, unmount },
+      },
+    });
+    const instance = $("#app").star("instance")!;
+    let failure: unknown;
+    try {
+      instance.destroy();
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeInstanceOf(AggregateError);
+    expect((failure as AggregateError).message).toBe("jQuery Star subtree cleanup failed.");
+    expect((failure as AggregateError).errors).toEqual([firstFailure, secondFailure]);
+    expect(firstCleanup).toHaveBeenCalledOnce();
+    expect(secondCleanup).toHaveBeenCalledOnce();
+    expect(unmount).toHaveBeenCalledTimes(2);
+    expect(instance.destroyed).toBe(true);
+    expect($("#app").star("instance")).toBeUndefined();
+    expect(() => instance.destroy()).not.toThrow();
+    expect(firstCleanup).toHaveBeenCalledOnce();
+    expect(secondCleanup).toHaveBeenCalledOnce();
+  });
+
+  it("identifies failures aggregated across application-owned resource groups", () => {
+    document.body.innerHTML = `<section id="app"><i></i></section>`;
+    const listenerFailure = new Error("listener release failed");
+    const mountFailure = new Error("mount release failed");
+    $("#app").star({
+      ui: {
+        i: {
+          mount: () => () => {
+            throw mountFailure;
+          },
+        },
+      },
+    });
+    const instance = $("#app").star("instance")!;
+    vi.spyOn(instance.$root, "off").mockImplementation(() => {
+      throw listenerFailure;
+    });
+
+    expect(() => instance.destroy()).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star application destruction failed.",
+        errors: [listenerFailure, mountFailure],
+      }),
+    );
+  });
+
+  it("aggregates explicit refresh failures without skipping later effects", () => {
+    document.body.innerHTML = `<section id="app"><i class="first"></i><i class="second"></i></section>`;
+    const firstFailure = new Error("first refresh failed");
+    const secondFailure = new Error("second refresh failed");
+    let fail = false;
+    $("#app").star({
+      ui: {
+        ".first": {
+          text: () => {
+            if (fail) throw firstFailure;
+            return "first";
+          },
+        },
+        ".second": {
+          text: () => {
+            if (fail) throw secondFailure;
+            return "second";
+          },
+        },
+      },
+    });
+    const instance = $("#app").star("instance")!;
+    fail = true;
+
+    expect(() => instance.refresh()).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star application refresh failed.",
+        errors: [firstFailure, secondFailure],
+      }),
+    );
+  });
+
+  it("removes subtree ownership before reporting every subtree cleanup failure", () => {
+    document.body.innerHTML = `<section id="app"><i class="widget"></i></section>`;
+    const cleanupFailure = new Error("subtree cleanup failed");
+    const unmountFailure = new Error("subtree unmount failed");
+    const mounted = vi.fn();
+    $("#app").star({
+      ui: {
+        ".widget": {
+          mount: () => {
+            mounted();
+            return () => {
+              throw cleanupFailure;
+            };
+          },
+          unmount: () => {
+            throw unmountFailure;
+          },
+        },
+      },
+    });
+    const instance = $("#app").star("instance")!;
+    const widget = document.querySelector(".widget")!;
+    const internals = instance as unknown as {
+      releaseTree(tree: Element): void;
+      mounted: Map<Element, unknown>;
+    };
+
+    expect(() => internals.releaseTree(widget)).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star subtree cleanup failed.",
+        errors: [cleanupFailure, unmountFailure],
+      }),
+    );
+    expect(internals.mounted.has(widget)).toBe(false);
+    expect(() => internals.releaseTree(widget)).not.toThrow();
+    expect(mounted).toHaveBeenCalledOnce();
+  });
+
+  it("contains an owned binding failure without skipping later bindings", async () => {
+    document.body.innerHTML = `
+      <section id="app"><output class="bad"></output><output class="good"></output></section>
+    `;
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, error) => errors.push(error));
+    $("#app").star({
+      state: { fail: false, count: 0 },
+      ui: {
+        ".bad": {
+          text: ({ state }) => {
+            if (state.fail) throw new Error("binding failed");
+            return "ready";
+          },
+        },
+        ".good": { text: ({ state }) => state.count },
+      },
+    });
+    const state = $("#app").star<{ fail: boolean; count: number }>("state")!;
+
+    state.fail = true;
+    state.count = 2;
+    await $.star.nextUpdate();
+
+    expect((errors[0] as Error).message).toBe("binding failed");
+    expect($(".good").text()).toBe("2");
+  });
+
+  it("cancels application-owned debounce timers during destruction", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `<section id="app"><button>Run</button></section>`;
+    const action = vi.fn();
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, error) => errors.push(error));
+    $("#app").star({
+      actions: { run: action },
+      ui: { button: { on: { click: { action: "run", debounce: 50 } } } },
+    });
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as { timers: Set<ReturnType<typeof setTimeout>> };
+
+    $("button").trigger("click");
+    expect(vi.getTimerCount()).toBe(1);
+    expect(internals.timers.size).toBe(1);
+    $("#app").star("destroy");
+    expect(vi.getTimerCount()).toBe(0);
+    expect(internals.timers.size).toBe(0);
+    await vi.advanceTimersByTimeAsync(50);
+
+    expect(action).not.toHaveBeenCalled();
+    expect(errors).toEqual([]);
+  });
+
+  it("replaces an application-owned debounce timer when an event repeats", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `<section id="app"><button>Run</button></section>`;
+    const action = vi.fn();
+    $("#app").star({
+      actions: { run: action },
+      ui: { button: { on: { click: { action: "run", debounce: 50 } } } },
+    });
+
+    $("button").trigger("click");
+    await vi.advanceTimersByTimeAsync(25);
+    $("button").trigger("click");
+    await vi.advanceTimersByTimeAsync(49);
+    expect(action).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it("refreshes inserted bindings and reports inserted mount failures", async () => {
+    document.body.innerHTML = `<section id="app"><div class="nested"></div></section>`;
+    const mountFailure = new Error("dynamic mount failed");
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, error) => errors.push(error));
+    $("#app").star({
+      ui: {
+        ".dynamic": { text: () => "enhanced" },
+        ".broken": {
+          mount: () => {
+            throw mountFailure;
+          },
+        },
+      },
+    });
+
+    $(".nested").append('<output class="dynamic"></output><i class="broken"></i>');
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect($(".dynamic").text()).toBe("enhanced");
+    expect(errors).toEqual([mountFailure]);
+  });
+
+  it("cancels subtree requests and remounts a released element", async () => {
+    document.body.innerHTML = `<section id="app"><i class="widget"></i></section>`;
+    const mounted = vi.fn();
+    let signal: AbortSignal | undefined;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      signal = init?.signal as AbortSignal;
+      return new Promise<Response>((_resolve, reject) => {
+        signal!.addEventListener("abort", () => reject(new Error("request aborted")), {
+          once: true,
+        });
+      });
+    });
+    $("#app").star({ ui: { ".widget": { mount: mounted } } });
+    const instance = $("#app").star("instance")!;
+    const widget = document.querySelector(".widget")!;
+    const request = instance.run(
+      $.star.get("/slow", { openWhenHidden: true, requestCancellation: "cleanup" }),
+      {
+        element: widget,
+        $element: $(widget),
+      },
+    );
+
+    widget.remove();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(signal?.aborted).toBe(true);
+    document.querySelector("#app")!.append(widget);
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect(mounted).toHaveBeenCalledTimes(2);
+    fetchMock.mockRestore();
+    await request;
+  });
+
+  it("cancels requests owned by the application root during destruction", async () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    let signal: AbortSignal | undefined;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      signal = init?.signal as AbortSignal;
+      return new Promise<Response>((_resolve, reject) => {
+        signal!.addEventListener("abort", () => reject(new Error("request aborted")), {
+          once: true,
+        });
+      });
+    });
+    $("#app").star({});
+    const instance = $("#app").star("instance")!;
+    const request = instance.run(
+      $.star.get("/slow", { openWhenHidden: true, requestCancellation: "cleanup" }),
+    );
+
+    instance.destroy();
+
+    expect(signal?.aborted).toBe(true);
+    fetchMock.mockRestore();
+    await request;
+  });
+
+  it("clears behavior listeners and owned effect records during destruction", async () => {
+    document.body.innerHTML = `<section id="app"><button>Run</button><output></output></section>`;
+    const action = vi.fn();
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, error) => errors.push(error));
+    $("#app").star({
+      state: { count: 0 },
+      actions: { run: action },
+      ui: {
+        button: { on: { click: "run" } },
+        output: { text: ({ state }) => state.count },
+      },
+    });
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as { effects: Set<unknown> };
+    expect(internals.effects.size).toBe(1);
+
+    instance.destroy();
+    $("button").trigger("click");
+    await $.star.nextUpdate();
+
+    expect(internals.effects.size).toBe(0);
+    expect(action).not.toHaveBeenCalled();
+    expect(errors).toEqual([]);
   });
 });

@@ -1,0 +1,3097 @@
+{
+  "$schema": "../../../schema/csp-expression-contract.schema.json",
+  "schema": "jqstar-csp-conformance-map/1",
+  "grammarVersion": "jqstar-csp-expression/1",
+  "ownerTicket": "0035",
+  "inventoryScope": {
+    "roots": ["README.md", "registry", "example", "e2e"],
+    "extensions": [".html", ".md", ".ts"],
+    "extractorVersion": "jqstar-public-expression-inventory/1"
+  },
+  "featureCases": [
+    {
+      "id": "signals",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-signal-state",
+      "reason": "Signal reads and writes use finite state capabilities."
+    },
+    {
+      "id": "events",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-event-context",
+      "reason": "Reviewed event members and two event methods are explicit capabilities."
+    },
+    {
+      "id": "actions",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-action-order",
+      "reason": "Literal named actions preserve argument and completion order."
+    },
+    {
+      "id": "helpers",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-helper-origin",
+      "reason": "Committed helper leaves are explicit call origins."
+    },
+    {
+      "id": "generic-requests",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-browser-generic-request",
+      "reason": "Registered backend actions retain generic protocol behavior."
+    },
+    {
+      "id": "datastar-requests",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-browser-datastar-request",
+      "reason": "Registered backend actions retain Datastar profile behavior."
+    },
+    {
+      "id": "patches",
+      "disposition": "csp-equivalent",
+      "downstreamCaseId": "csp-browser-datastar-patch",
+      "reason": "Patches are action/profile results, not grammar productions.",
+      "equivalent": "Invoke the registered request action and observe its owned patch result."
+    },
+    {
+      "id": "async-results",
+      "disposition": "csp-equivalent",
+      "downstreamCaseId": "csp-async-action",
+      "reason": "Only approved action/helper results cross the async boundary.",
+      "equivalent": "await action('load')"
+    },
+    {
+      "id": "short-circuit",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-short-circuit-order",
+      "reason": "Logical and conditional branches have fixed left-to-right selection."
+    },
+    {
+      "id": "jquery",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-jquery-table",
+      "reason": "The reviewed method subset preserves its documented public examples."
+    },
+    {
+      "id": "public-value",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-value-expression",
+      "reason": "Public literal, signal, path, and operator examples use the finite value grammar."
+    },
+    {
+      "id": "public-signal-write",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-signal-write",
+      "reason": "Public assignments and updates use approved signal l-values."
+    },
+    {
+      "id": "public-state-literal",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-state-literal",
+      "reason": "Public state initializers are bounded object literals."
+    },
+    {
+      "id": "public-action",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-named-action",
+      "reason": "Public action shorthands use literal registered names."
+    },
+    {
+      "id": "public-request",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-request-action",
+      "reason": "Public backend shorthands use registered request actions."
+    },
+    {
+      "id": "public-jquery",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-jquery-supported",
+      "reason": "Public jQuery examples stay inside the reviewed method table."
+    },
+    {
+      "id": "ambient-javascript",
+      "disposition": "intentionally-unsupported",
+      "downstreamCaseId": "csp-denied-ambient-javascript",
+      "reason": "Ambient JavaScript authority is outside the finite profile."
+    },
+    {
+      "id": "diagnostic-migration",
+      "disposition": "migration-required",
+      "downstreamCaseId": "migration-registered-diagnostic",
+      "reason": "Ambient diagnostics move behind a registered action/helper.",
+      "equivalent": "Register an application-owned diagnostic action or helper."
+    },
+    {
+      "id": "integration-migration",
+      "disposition": "migration-required",
+      "downstreamCaseId": "migration-registered-integration",
+      "reason": "Arbitrary jQuery plugins move behind a registered integration action.",
+      "equivalent": "Register an application-owned integration action."
+    }
+  ],
+  "sharedCases": [
+    {
+      "id": "values-and-statements",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-shared-values-statements",
+      "reason": "Finite values, signals, state aliases, and assignment are supported."
+    },
+    {
+      "id": "jquery-and-context",
+      "disposition": "csp-equivalent",
+      "downstreamCaseId": "csp-shared-jquery-context",
+      "reason": "All bindings except implicit this are explicit.",
+      "equivalent": "Use el where the trusted case uses this."
+    },
+    {
+      "id": "helpers-and-fixed-bindings",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-shared-helpers",
+      "reason": "Committed helpers and fixed-binding protection are part of the capability contract."
+    },
+    {
+      "id": "named-actions",
+      "disposition": "exact-parity",
+      "downstreamCaseId": "csp-shared-actions",
+      "reason": "Both action statement forms use literal names and bounded arguments."
+    },
+    {
+      "id": "asynchronous-results",
+      "disposition": "csp-equivalent",
+      "downstreamCaseId": "csp-shared-async",
+      "reason": "Ambient Promise is excluded.",
+      "equivalent": "Use an approved asynchronous registered action/helper result."
+    },
+    {
+      "id": "location-aware-errors",
+      "disposition": "csp-equivalent",
+      "downstreamCaseId": "csp-shared-errors",
+      "reason": "CSP diagnostics add stable codes and exact spans while retaining the public error shape.",
+      "equivalent": "Assert the frozen CSP diagnostic code, phase, source, attribute, and span."
+    }
+  ],
+  "publicExamples": [
+    {
+      "id": "public-101759c2a381",
+      "source": "\n    $count++;\n    $(el).addClass('used');\n    console.log($.fn.jquery, evt.type);\n  ",
+      "locations": [{ "path": "README.md", "line": 1149, "attribute": "data-on:click" }],
+      "disposition": "migration-required",
+      "caseId": "migration-registered-diagnostic",
+      "reason": "Ambient console access is outside the finite scope.",
+      "equivalent": "Move logging into a registered application action or helper."
+    },
+    {
+      "id": "public-adb96eca89dc",
+      "source": "!$componentBackendSaving",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1787, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-499c68d38f22",
+      "source": "!$feedbackSaving",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1241, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-86df2da1fa55",
+      "source": "!$preferencesSaving",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1075, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-5a3fb783fe33",
+      "source": "!$profileSettingsSaving",
+      "locations": [
+        { "path": "registry/blocks/profile-settings.html", "line": 135, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-3759adc5cd58",
+      "source": "!$projectSaving",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 926, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-d5d04206d7fd",
+      "source": "!$questionnaireSaving",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1499, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-ab99f43899b1",
+      "source": "!$saving",
+      "locations": [
+        { "path": "registry/components/async-form.html", "line": 25, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-cb5bb406516c",
+      "source": "!$valid",
+      "locations": [{ "path": "README.md", "line": 1673, "attribute": "data-prop:disabled" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-b7a907161936",
+      "source": "'Delivery ' + $componentDueDate + ' · ' + $componentTimezone",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1659, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-19f1d81d587f",
+      "source": "'Selected value: ' + $componentFramework",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2006, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-2f8c8366ffd2",
+      "source": "($componentEmail || 'No email') + ' · ' + ($componentTerms ? 'accepted' : 'not accepted') + ' · notifications ' + ($componentNotifications ? 'on' : 'off')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 292, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-d226ec89e8bc",
+      "source": "{ accessManagerMember: 'maya', accessManagerPermissions: ['components:read', 'components:write', 'releases:deploy'], accessManagerCount: 3, accessManagerLoading: false, accessManagerError: null, accessManagerMessage: 'Maya Chen has 3 assigned permissions.' }",
+      "locations": [
+        { "path": "registry/blocks/access-manager.html", "line": 5, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-84139d54de84",
+      "source": "{ active: $open }",
+      "locations": [{ "path": "README.md", "line": 1671, "attribute": "data-class" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-7c0dd3f00fc2",
+      "source": "{ auditLogQuery: '', auditLogMember: 'all', auditLogPage: 1, auditLogCount: 3, auditLogLoading: false, auditLogError: null, auditLogMessage: '3 access events. Page 1 of 1.' }",
+      "locations": [
+        { "path": "registry/blocks/audit-log.html", "line": 5, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-af1f90480820",
+      "source": "{ count: 0 }",
+      "locations": [
+        { "path": "README.md", "line": 33, "attribute": "data-signals" },
+        { "path": "example/docs/index.html", "line": 73, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-9fc750ddea45",
+      "source": "{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.', operationsLoading: false, operationsMessage: 'Ready to query the local operations endpoint.', controlPlaneCompact: false, controlPlaneLoading: false, controlPlaneStreaming: false, controlPlaneMessage: 'Ready to load a runtime snapshot or open the Datastar log stream.' }",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 35, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-ec1c99d6ca5c",
+      "source": "{ count: 0, saved: false }",
+      "locations": [
+        { "path": "example/docs/csp/index.html", "line": 128, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-c6f096897cd5",
+      "source": "{ count: 1, saved: false, serverMessage: 'ready', asyncMessage: 'waiting' }",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 24, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-1a9cabc8f02a",
+      "source": "{ count: 7 }",
+      "locations": [
+        { "path": "e2e/quality-contracts.spec.ts", "line": 389, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-337abf86f084",
+      "source": "{ interactionStatus: 'Ready for a command' }",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 470, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-f39d8b254321",
+      "source": "{ networkState: 'initial' }",
+      "locations": [
+        { "path": "e2e/quality-contracts.spec.ts", "line": 464, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-12d712a6735e",
+      "source": "{ operationsDashboardLoading: false, operationsDashboardStreaming: false, operationsDashboardMessage: 'Ready to query the runtime.' }",
+      "locations": [
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 6,
+          "attribute": "data-signals"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-a6d15ca6aca1",
+      "source": "{ profileSettingsSaving: false, profileSettingsRotating: false, profileSettingsMessage: 'Profile settings are ready.' }",
+      "locations": [
+        { "path": "registry/blocks/profile-settings.html", "line": 6, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-3328333e082a",
+      "source": "{ projectBrowserQuery: '', projectBrowserOwner: 'all', projectBrowserStatus: 'all', projectBrowserPage: 1, projectBrowserPageSize: 5, projectBrowserSort: 'updated', projectBrowserDirection: 'descending', projectBrowserSorts: [{ key: 'updated', direction: 'descending' }], projectBrowserGroupBy: 'none', projectBrowserMode: 'page', projectBrowserWindowStart: 0, projectBrowserWindowSize: 40, projectBrowserRequestId: 0, projectBrowserCount: 2500, projectBrowserRangeStart: 1, projectBrowserRangeEnd: 5, projectBrowserActiveFilters: 0, projectBrowserLoading: false, projectBrowserError: null, projectBrowserMessage: 'Showing 1–5 of 2500 projects.' }",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 5, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-13f6c34b1aa6",
+      "source": "{ ready: false }",
+      "locations": [
+        { "path": "example/docs/testing/index.html", "line": 52, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-4a16c91700e9",
+      "source": "{ ready: true }",
+      "locations": [
+        { "path": "e2e/quality-contracts.spec.ts", "line": 111, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-04dadc41794e",
+      "source": "{ saving: false, saveError: null }",
+      "locations": [
+        { "path": "registry/components/async-form.html", "line": 4, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-feabb41868b0",
+      "source": "{ siteSearch: '' }",
+      "locations": [
+        { "path": "example/docs/agents/index.html", "line": 21, "attribute": "data-signals" },
+        { "path": "example/docs/api/index.html", "line": 15, "attribute": "data-signals" },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 15,
+          "attribute": "data-signals"
+        },
+        {
+          "path": "example/docs/components/dropdown/index.html",
+          "line": 15,
+          "attribute": "data-signals"
+        },
+        { "path": "example/docs/components/index.html", "line": 15, "attribute": "data-signals" },
+        {
+          "path": "example/docs/components/tabs/index.html",
+          "line": 15,
+          "attribute": "data-signals"
+        },
+        {
+          "path": "example/docs/components/toast/index.html",
+          "line": 15,
+          "attribute": "data-signals"
+        },
+        { "path": "example/docs/csp/index.html", "line": 15, "attribute": "data-signals" },
+        { "path": "example/docs/datastar/index.html", "line": 15, "attribute": "data-signals" },
+        { "path": "example/docs/ecosystem/index.html", "line": 15, "attribute": "data-signals" },
+        { "path": "example/docs/index.html", "line": 21, "attribute": "data-signals" },
+        {
+          "path": "example/docs/interoperability/index.html",
+          "line": 15,
+          "attribute": "data-signals"
+        },
+        { "path": "example/docs/plugins/index.html", "line": 15, "attribute": "data-signals" },
+        { "path": "example/docs/testing/index.html", "line": 15, "attribute": "data-signals" },
+        { "path": "example/index.html", "line": 35, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-0e52ab67703d",
+      "source": "{ user: { firstName: 'Ada' }, count: 1 }",
+      "locations": [{ "path": "README.md", "line": 1647, "attribute": "data-signals" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-b8b75689e648",
+      "source": "{ workspaceStatus: 'Overview selected' }",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 646, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
+      "id": "public-3c5f5c2564e3",
+      "source": "@accessManager.load",
+      "locations": [
+        { "path": "registry/blocks/access-manager.html", "line": 25, "attribute": "data-on:change" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-33a287e28379",
+      "source": "@accessManager.reset",
+      "locations": [
+        { "path": "registry/blocks/access-manager.html", "line": 113, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-2e3e3b871a44",
+      "source": "@accessManager.save",
+      "locations": [
+        {
+          "path": "registry/blocks/access-manager.html",
+          "line": 18,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-dbca87d42c42",
+      "source": "@auditLog.filter",
+      "locations": [
+        {
+          "path": "registry/blocks/audit-log.html",
+          "line": 19,
+          "attribute": "data-on:submit__prevent"
+        },
+        { "path": "registry/blocks/audit-log.html", "line": 26, "attribute": "data-on:change" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-015403674ca0",
+      "source": "@auditLog.refresh",
+      "locations": [
+        { "path": "registry/blocks/audit-log.html", "line": 147, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e4ceeb0fd393",
+      "source": "@get('/autocomplete', {\n    pending: 'searching',\n    requestCancellation: 'auto'\n  })",
+      "locations": [
+        { "path": "README.md", "line": 685, "attribute": "data-on:input__debounce.180ms" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-c3a1bbf55b60",
+      "source": "@get('/items')",
+      "locations": [
+        { "path": "README.md", "line": 1430, "attribute": "data-on:click" },
+        { "path": "example/docs/datastar/index.html", "line": 40, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-ebee84e1e749",
+      "source": "@loadMoreResults",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1337, "attribute": "data-on:click" },
+        { "path": "registry/components/feed.html", "line": 20, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b110e3da9600",
+      "source": "@measure",
+      "locations": [
+        { "path": "README.md", "line": 1697, "attribute": "data-on:scroll__window__passive" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-c1c280a6feeb",
+      "source": "@operationsDashboard.refresh",
+      "locations": [
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 21,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-ed59aaed43cb",
+      "source": "@operationsDashboard.stream",
+      "locations": [
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 29,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-f79f91c8e082",
+      "source": "@post('/api/account', { contentType: 'form', pending: 'saving', error: 'saveError', retry: 'never' })",
+      "locations": [
+        {
+          "path": "registry/components/async-form.html",
+          "line": 5,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-8ea28db9e282",
+      "source": "@post('/items', {\n  payload: {title: $title},\n  params: {source: 'toolbar'},\n  pending: 'saving',\n  error: 'saveError',\n  retry: 'error',\n  retryMaxCount: 2,\n  requestCancellation: 'cleanup'\n})",
+      "locations": [{ "path": "README.md", "line": 1586, "attribute": "data-on:click" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-0af5d662b57b",
+      "source": "@post('/items', { contentType: 'form' })",
+      "locations": [
+        { "path": "README.md", "line": 1432, "attribute": "data-on:submit__prevent" },
+        {
+          "path": "example/docs/datastar/index.html",
+          "line": 42,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-0084272c6d29",
+      "source": "@post('/items')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3338, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-2b9d6d5936af",
+      "source": "@post('/profile', { contentType: 'form' })",
+      "locations": [
+        { "path": "README.md", "line": 356, "attribute": "data-on:submit__prevent" },
+        {
+          "path": "registry/components/form.html",
+          "line": 4,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-request-action",
+      "reason": "The source calls a registered backend action with finite arguments."
+    },
+    {
+      "id": "public-82eeeb5e80c2",
+      "source": "@profileSettings.rotateInvite",
+      "locations": [
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 168,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-61de36d6427a",
+      "source": "@profileSettings.save",
+      "locations": [
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 21,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-59b86c65f4ba",
+      "source": "@projectBrowser.clearFilters",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 81, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-72b361c30d9b",
+      "source": "@projectBrowser.columnDragOver",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 145,
+          "attribute": "data-on:dragover__prevent"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 179,
+          "attribute": "data-on:dragover__prevent"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 221,
+          "attribute": "data-on:dragover__prevent"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 263,
+          "attribute": "data-on:dragover__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-98909b269f55",
+      "source": "@projectBrowser.columnDragStart",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 144,
+          "attribute": "data-on:dragstart"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 178,
+          "attribute": "data-on:dragstart"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 220,
+          "attribute": "data-on:dragstart"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 262,
+          "attribute": "data-on:dragstart"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e7c1b1e2006a",
+      "source": "@projectBrowser.columnDrop",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 146,
+          "attribute": "data-on:drop__prevent"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 180,
+          "attribute": "data-on:drop__prevent"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 222,
+          "attribute": "data-on:drop__prevent"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 264,
+          "attribute": "data-on:drop__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-31e40f407816",
+      "source": "@projectBrowser.columnMove",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 152,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 160,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 194,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 202,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 236,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 244,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 278,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 286,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e53feb6762c8",
+      "source": "@projectBrowser.columnPin",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 168,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 210,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 252,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 294,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-00ba938b43b5",
+      "source": "@projectBrowser.columns",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 186,
+          "attribute": "data-on:change"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 228,
+          "attribute": "data-on:change"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 270,
+          "attribute": "data-on:change"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-15c050efc271",
+      "source": "@projectBrowser.expand",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 367,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 390,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 413,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 434,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 457,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-79b224dbb67e",
+      "source": "@projectBrowser.filter",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 48,
+          "attribute": "data-on:change"
+        },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 68,
+          "attribute": "data-on:change"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-256759c17721",
+      "source": "@projectBrowser.group",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 114,
+          "attribute": "data-on:change"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-729f838bc67b",
+      "source": "@projectBrowser.mode",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 127,
+          "attribute": "data-on:change"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-032514b04067",
+      "source": "@projectBrowser.pageSize",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 98,
+          "attribute": "data-on:change"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e9c102dc772f",
+      "source": "@projectBrowser.refresh",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 505,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-9982435568d3",
+      "source": "@projectBrowser.search",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 22,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-2807bf06c286",
+      "source": "@projectBrowser.virtualScroll",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 324,
+          "attribute": "data-on:scroll__passive"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-af85e13a4d4a",
+      "source": "@proof.csp.save($count)",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 35, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-cdaaa76547c8",
+      "source": "@refreshControlPlane",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2870, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-d34918dd1d7d",
+      "source": "@refreshMetrics",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2569, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e6161ba4a944",
+      "source": "@refreshOperations",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2714, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-f835169ea392",
+      "source": "@removeItem",
+      "locations": [
+        { "path": "README.md", "line": 1394, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 1765, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3265, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3271, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3275, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3279, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3334, "attribute": "data-on:click" },
+        { "path": "example/docs/api/index.html", "line": 93, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e57d011430b6",
+      "source": "@removeItem($itemId, 'archive')",
+      "locations": [{ "path": "README.md", "line": 1410, "attribute": "data-on:click" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-5adb08f7ad33",
+      "source": "@save",
+      "locations": [
+        { "path": "README.md", "line": 1691, "attribute": "data-on:submit__prevent__once" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-017bd1eab5c9",
+      "source": "@saveBuildBrief",
+      "locations": [
+        {
+          "path": "registry/components/questionnaire.html",
+          "line": 1,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-249b7be346a6",
+      "source": "@search($el.val())",
+      "locations": [
+        { "path": "README.md", "line": 1693, "attribute": "data-on:input__debounce.250ms" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-1a42c9e546da",
+      "source": "@searchComponents",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 2037,
+          "attribute": "data-on:input__debounce.180ms"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-d2e77c3217e8",
+      "source": "@searchResultFeed",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1258,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-582436d3ad7b",
+      "source": "@serverIncrement",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3308, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-41e4eae5bb65",
+      "source": "@serverStream",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3316, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-aab8158d01a7",
+      "source": "@site.copy('npm install jquery-star jquery')",
+      "locations": [{ "path": "example/index.html", "line": 68, "attribute": "data-on:click" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-24d943011e52",
+      "source": "@site.copyCode",
+      "locations": [
+        { "path": "example/docs/api/index.html", "line": 80, "attribute": "data-on:click" },
+        { "path": "example/docs/api/index.html", "line": 91, "attribute": "data-on:click" },
+        { "path": "example/docs/api/index.html", "line": 104, "attribute": "data-on:click" },
+        { "path": "example/docs/api/index.html", "line": 126, "attribute": "data-on:click" },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 69,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "example/docs/components/dropdown/index.html",
+          "line": 55,
+          "attribute": "data-on:click"
+        },
+        { "path": "example/docs/components/index.html", "line": 78, "attribute": "data-on:click" },
+        {
+          "path": "example/docs/components/tabs/index.html",
+          "line": 57,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "example/docs/components/toast/index.html",
+          "line": 44,
+          "attribute": "data-on:click"
+        },
+        { "path": "example/docs/csp/index.html", "line": 81, "attribute": "data-on:click" },
+        { "path": "example/docs/csp/index.html", "line": 126, "attribute": "data-on:click" },
+        { "path": "example/docs/datastar/index.html", "line": 38, "attribute": "data-on:click" },
+        { "path": "example/docs/datastar/index.html", "line": 86, "attribute": "data-on:click" },
+        { "path": "example/docs/datastar/index.html", "line": 92, "attribute": "data-on:click" },
+        { "path": "example/docs/index.html", "line": 43, "attribute": "data-on:click" },
+        { "path": "example/docs/index.html", "line": 54, "attribute": "data-on:click" },
+        { "path": "example/docs/index.html", "line": 71, "attribute": "data-on:click" },
+        { "path": "example/docs/index.html", "line": 94, "attribute": "data-on:click" },
+        { "path": "example/docs/index.html", "line": 110, "attribute": "data-on:click" },
+        { "path": "example/docs/plugins/index.html", "line": 34, "attribute": "data-on:click" },
+        { "path": "example/docs/plugins/index.html", "line": 73, "attribute": "data-on:click" },
+        { "path": "example/docs/testing/index.html", "line": 42, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-eca70f738ace",
+      "source": "@site.openMobileNav",
+      "locations": [
+        { "path": "example/docs-shell.html", "line": 10, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-2c612c18c1ab",
+      "source": "@site.openSearch",
+      "locations": [
+        { "path": "example/docs-shell.html", "line": 21, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-543ff58a0863",
+      "source": "@site.toggleTheme",
+      "locations": [
+        { "path": "example/docs-shell.html", "line": 40, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-f28c7442f062",
+      "source": "@streamControlPlane",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2878, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-dc7ec3eea448",
+      "source": "@submit",
+      "locations": [{ "path": "README.md", "line": 1699, "attribute": "data-on:keydown__enter" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-8c774db5874e",
+      "source": "@submitComponentAccount",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1751,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-9f2be11c1554",
+      "source": "@submitFeedback",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1150,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-070dea0f3150",
+      "source": "@submitPreferences",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 960,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-89b1be4dedd0",
+      "source": "@submitProject",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 810,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-0c645886da89",
+      "source": "@submitQuestionnaire",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1381,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-049f97e37827",
+      "source": "@ui.calendar.select('#release-calendar', '2026-08-31')",
+      "locations": [{ "path": "README.md", "line": 708, "attribute": "data-on:click" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-816f951f953b",
+      "source": "@ui.chart.type('bar')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2550, "attribute": "data-on:click" },
+        { "path": "registry/components/chart.html", "line": 4, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-e377df178b0c",
+      "source": "@ui.chart.type('line')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2559, "attribute": "data-on:click" },
+        { "path": "registry/components/chart.html", "line": 12, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-bb1fafc7ef4b",
+      "source": "@ui.clipboard.copy",
+      "locations": [
+        { "path": "README.md", "line": 915, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3124, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 157,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/clipboard.html", "line": 9, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-df646376db7f",
+      "source": "@ui.code-block.copy",
+      "locations": [
+        { "path": "README.md", "line": 898, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 2788, "attribute": "data-on:click" },
+        { "path": "registry/components/code-block.html", "line": 10, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-58f09aac9703",
+      "source": "@ui.combobox.clear('#technology-combobox')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2075, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b5a97f1cb753",
+      "source": "@ui.dialog.close('cancel')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1933, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 2499, "attribute": "data-on:click" },
+        {
+          "path": "registry/components/alert-dialog.html",
+          "line": 22,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/components/command-palette.html",
+          "line": 42,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/dialog.html", "line": 20, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-1c773c1f1b22",
+      "source": "@ui.dialog.close('cancelled')",
+      "locations": [
+        { "path": "README.md", "line": 314, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 125, "attribute": "data-on:click" },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 53,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 86,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-6eae44b9aa49",
+      "source": "@ui.dialog.close('close')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 229, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 1969, "attribute": "data-on:click" },
+        { "path": "registry/components/drawer.html", "line": 23, "attribute": "data-on:click" },
+        { "path": "registry/components/sheet.html", "line": 23, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-ceeb1b62f753",
+      "source": "@ui.dialog.close('confirm')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1941, "attribute": "data-on:click" },
+        {
+          "path": "registry/components/alert-dialog.html",
+          "line": 30,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-9bb05848ad7f",
+      "source": "@ui.dialog.close('confirmed')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 129, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-643fc66fa97f",
+      "source": "@ui.dialog.close('save')",
+      "locations": [
+        { "path": "registry/components/dialog.html", "line": 24, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-157178fafab4",
+      "source": "@ui.dialog.close('saved')",
+      "locations": [
+        { "path": "README.md", "line": 318, "attribute": "data-on:click" },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 57,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 89,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-42203f3a8f2f",
+      "source": "@ui.dialog.open('#account-dialog', '#dialog-cancel')",
+      "locations": [
+        { "path": "README.md", "line": 297, "attribute": "data-on:click" },
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 74,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-3eaa22d08ba4",
+      "source": "@ui.dialog.open('#command-palette-dialog', '#command-query')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2451, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b5bd783be3ae",
+      "source": "@ui.dialog.open('#command-palette', '#command-query')",
+      "locations": [
+        {
+          "path": "registry/components/command-palette.html",
+          "line": 6,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-88b84af366af",
+      "source": "@ui.dialog.open('#delete-alert-dialog', '#delete-alert-cancel')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1897, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-46282d6f5054",
+      "source": "@ui.dialog.open('#delete-alert', '#delete-alert-cancel')",
+      "locations": [
+        { "path": "registry/components/alert-dialog.html", "line": 5, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-c817554b4d25",
+      "source": "@ui.dialog.open('#docs-profile-dialog', '#docs-profile-cancel')",
+      "locations": [
+        {
+          "path": "example/docs/components/dialog/index.html",
+          "line": 33,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b5e7c77f25e1",
+      "source": "@ui.dialog.open('#example-dialog', '#example-dialog-cancel')",
+      "locations": [
+        { "path": "registry/components/dialog.html", "line": 5, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-28f7497c932d",
+      "source": "@ui.dialog.open('#proof-dialog', '#proof-dialog-cancel')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 103, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-6c7d5bba5e22",
+      "source": "@ui.dialog.open('#proof-drawer', '#proof-drawer-close')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1906, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-665327111a82",
+      "source": "@ui.dialog.open('#proof-sheet', '#proof-sheet-close')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 194, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b7974d2dbd41",
+      "source": "@ui.dialog.open('#settings-drawer', '#settings-drawer-close')",
+      "locations": [
+        { "path": "registry/components/drawer.html", "line": 5, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-c202901284e7",
+      "source": "@ui.dialog.open('#settings-sheet', '#settings-sheet-close')",
+      "locations": [
+        { "path": "registry/components/sheet.html", "line": 5, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-81111269db3c",
+      "source": "@ui.editable.cancel",
+      "locations": [
+        { "path": "README.md", "line": 937, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3173, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 67,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 121,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/editable.html", "line": 39, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-3989fb48a637",
+      "source": "@ui.editable.commit",
+      "locations": [
+        { "path": "README.md", "line": 936, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3164, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 58,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 112,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/editable.html", "line": 31, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-54f83fa26750",
+      "source": "@ui.editable.edit",
+      "locations": [
+        { "path": "README.md", "line": 932, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3144, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 38,
+          "attribute": "data-on:click"
+        },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 92,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/editable.html", "line": 15, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-6c2788b8b875",
+      "source": "@ui.input-otp.clear('#component-input-otp')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 408, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-05d11f0ac251",
+      "source": "@ui.json-viewer.collapse-all",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3041, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 179,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/json-viewer.html", "line": 18, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-6d33f3325014",
+      "source": "@ui.json-viewer.expand-all",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3032, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 170,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/json-viewer.html", "line": 9, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-5e3bf63726a9",
+      "source": "@ui.log-viewer.clear",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2992, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 142,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/log-viewer.html", "line": 35, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b2f17bb157ee",
+      "source": "@ui.log-viewer.toggle",
+      "locations": [
+        { "path": "README.md", "line": 956, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 2983, "attribute": "data-on:click" },
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 133,
+          "attribute": "data-on:click"
+        },
+        { "path": "registry/components/log-viewer.html", "line": 26, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-a9caa3dc9a92",
+      "source": "@ui.popover.close",
+      "locations": [
+        { "path": "README.md", "line": 473, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 2330, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-b2fb43b05b5c",
+      "source": "@ui.resizable.reset('#component-resizable')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 459, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-c4ecfdfe7922",
+      "source": "@ui.toast.show({\n    title: 'Saved',\n    description: 'Your changes are live.',\n    variant: 'success'\n  })",
+      "locations": [
+        {
+          "path": "example/docs/components/toast/index.html",
+          "line": 48,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-38cfb59008af",
+      "source": "@ui.toast.show({ title: 'Build verified', description: 'All component checks passed.', variant: 'success', duration: 1600 })",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2518, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-59b0542d3302",
+      "source": "@ui.toast.show({ title: 'Build verified', description: 'All component checks passed.', variant: 'success', duration: 5000 })",
+      "locations": [
+        {
+          "path": "example/docs/components/toast/index.html",
+          "line": 33,
+          "attribute": "data-on:click"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-9b61a5db9ef1",
+      "source": "@ui.toast.show({ title: 'Saved', description: 'Your changes are live.', variant: 'success' })",
+      "locations": [
+        { "path": "README.md", "line": 1054, "attribute": "data-on:click" },
+        { "path": "registry/components/toast.html", "line": 4, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-named-action",
+      "reason": "The source uses the named-action statement form."
+    },
+    {
+      "id": "public-4fb7fc048c9d",
+      "source": "$(el).closest('[data-jqs=diff]').css('--jqs-diff-position', el.value + '%')",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2839, "attribute": "data-on:input" },
+        { "path": "registry/components/diff.html", "line": 19, "attribute": "data-on:input" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-jquery-supported",
+      "reason": "Every jQuery call uses the reviewed constructor and method table."
+    },
+    {
+      "id": "public-85478bba5d89",
+      "source": "$(el).datepicker()",
+      "locations": [{ "path": "README.md", "line": 1677, "attribute": "data-init" }],
+      "disposition": "migration-required",
+      "caseId": "migration-registered-integration",
+      "reason": "Method datepicker is not an approved jQuery or string method.",
+      "equivalent": "Move the integration call into a registered application action."
+    },
+    {
+      "id": "public-ed6ea3949e59",
+      "source": "$(el).siblings('.disappear').fadeIn(180)",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3254, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-jquery-supported",
+      "reason": "Every jQuery call uses the reviewed constructor and method table."
+    },
+    {
+      "id": "public-ecf2071713c5",
+      "source": "$(el).text($count)",
+      "locations": [{ "path": "README.md", "line": 1676, "attribute": "data-effect" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-jquery-supported",
+      "reason": "Every jQuery call uses the reviewed constructor and method table."
+    },
+    {
+      "id": "public-fcd6dfe2a7f0",
+      "source": "$accessManagerCount",
+      "locations": [
+        { "path": "registry/blocks/access-manager.html", "line": 88, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-236ddf54e190",
+      "source": "$accessManagerError",
+      "locations": [
+        { "path": "registry/blocks/access-manager.html", "line": 86, "attribute": "data-show" },
+        { "path": "registry/blocks/access-manager.html", "line": 86, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-e3b7d0c53c85",
+      "source": "$accessManagerLoading",
+      "locations": [
+        {
+          "path": "registry/blocks/access-manager.html",
+          "line": 95,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-fabe9c5de033",
+      "source": "$accessManagerMessage",
+      "locations": [
+        { "path": "e2e/components.spec.ts", "line": 1116, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1121, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1141, "attribute": "data-text" },
+        { "path": "registry/blocks/access-manager.html", "line": 85, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-0a251cf03f52",
+      "source": "$asyncMessage",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 43, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-1a0ebbc39e77",
+      "source": "$auditLogCount + ' access events'",
+      "locations": [
+        { "path": "registry/blocks/audit-log.html", "line": 60, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-9e172933c082",
+      "source": "$auditLogError",
+      "locations": [
+        { "path": "registry/blocks/audit-log.html", "line": 142, "attribute": "data-show" },
+        { "path": "registry/blocks/audit-log.html", "line": 142, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-ebc156626a0e",
+      "source": "$auditLogLoading",
+      "locations": [
+        { "path": "registry/blocks/audit-log.html", "line": 148, "attribute": "data-prop:disabled" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-b441dec15529",
+      "source": "$auditLogMessage",
+      "locations": [
+        { "path": "registry/blocks/audit-log.html", "line": 141, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-863b76353b0d",
+      "source": "$color",
+      "locations": [{ "path": "README.md", "line": 1674, "attribute": "data-style:color" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-6d1a518880ca",
+      "source": "$componentBackendMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1793, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-023aa5772d0b",
+      "source": "$componentBackendMessage = 'Try taken@example.com to see structured server validation.'; $componentBackendError = null",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1752, "attribute": "data-on:reset" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-3791123f88ca",
+      "source": "$componentBackendSaving",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1785,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "example/components/lab/index.html", "line": 1788, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-3031892afe13",
+      "source": "$componentCapacity",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1623, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-97890f78773f",
+      "source": "$componentCapacity = $componentCapacity <= 10 ? 0 : $componentCapacity - 10",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1642, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-a211805696e0",
+      "source": "$componentCapacity = $componentCapacity >= 90 ? 100 : $componentCapacity + 10",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1650, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-8b034289c966",
+      "source": "$componentComboboxError",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2064, "attribute": "data-show" },
+        { "path": "example/components/lab/index.html", "line": 2064, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-017d29102b7f",
+      "source": "$componentComboboxLoading ? 'Searching…' : $componentResultCount + ' results'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2062, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-f01e87351cf7",
+      "source": "$componentFormSubmitted",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1871, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-60fc18da9b3f",
+      "source": "$componentFormSubmitted ? 'Profile is valid and ready to submit.' : ''",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1872, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-0bcb6f1cb7b3",
+      "source": "$componentFormSubmitted = false",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1816, "attribute": "data-on:reset" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-8c35d460e51b",
+      "source": "$componentFormSubmitted = true",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1815,
+          "attribute": "data-on:submit__prevent"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-56483d9e5427",
+      "source": "$componentSelection ? 'Committed value: ' + $componentSelection : 'No committed value'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2068, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-7bcc8db007fb",
+      "source": "$componentVolume",
+      "locations": [
+        { "path": "e2e/components.spec.ts", "line": 468, "attribute": "data-text" },
+        { "path": "example/components/lab/index.html", "line": 158, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-fcfc276fc101",
+      "source": "$controlPlaneCompact",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 2855,
+          "attribute": "data-class:compact"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-a1c3d138d46b",
+      "source": "$controlPlaneLoading || $controlPlaneStreaming",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 2871,
+          "attribute": "data-prop:disabled"
+        },
+        {
+          "path": "example/components/lab/index.html",
+          "line": 2879,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-458bc619a277",
+      "source": "$controlPlaneMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3096, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-18e7e7a72647",
+      "source": "$count",
+      "locations": [
+        { "path": "README.md", "line": 36, "attribute": "data-text" },
+        { "path": "README.md", "line": 1542, "attribute": "data-text" },
+        { "path": "README.md", "line": 1570, "attribute": "data-text" },
+        { "path": "README.md", "line": 1667, "attribute": "data-text" },
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 39, "attribute": "data-text" },
+        { "path": "e2e/quality-contracts.spec.ts", "line": 420, "attribute": "data-text" },
+        { "path": "example/components/lab/index.html", "line": 3258, "attribute": "data-text" },
+        { "path": "example/docs/datastar/index.html", "line": 107, "attribute": "data-text" },
+        { "path": "example/docs/index.html", "line": 78, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-099d90d974a0",
+      "source": "$count * 2",
+      "locations": [
+        { "path": "README.md", "line": 1647, "attribute": "data-computed:double" },
+        {
+          "path": "e2e/fixtures/csp-proof/index.html",
+          "line": 25,
+          "attribute": "data-computed:double"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-7c3c6c1f801d",
+      "source": "$count += 1; return action('save', $count)",
+      "locations": [
+        { "path": "example/docs/csp/index.html", "line": 129, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-679280f4e3b5",
+      "source": "$count++",
+      "locations": [{ "path": "README.md", "line": 1720, "attribute": "data-on:click" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-9f93c83c9783",
+      "source": "$count++; $(el).attr('data-fired', 'yes')",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 31, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-jquery-supported",
+      "reason": "Every jQuery call uses the reviewed constructor and method table."
+    },
+    {
+      "id": "public-9df607574536",
+      "source": "$count++; $(el).fadeOut()",
+      "locations": [
+        { "path": "README.md", "line": 34, "attribute": "data-on:click" },
+        { "path": "example/components/lab/index.html", "line": 3329, "attribute": "data-on:click" },
+        { "path": "example/docs/index.html", "line": 74, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-jquery-supported",
+      "reason": "Every jQuery call uses the reviewed constructor and method table."
+    },
+    {
+      "id": "public-f04438771ec2",
+      "source": "$count++; $(el).fadeOut(180)",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3248, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-jquery-supported",
+      "reason": "Every jQuery call uses the reviewed constructor and method table."
+    },
+    {
+      "id": "public-5e092bdc6c18",
+      "source": "$double",
+      "locations": [
+        { "path": "README.md", "line": 1649, "attribute": "data-text" },
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 40, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-f20f87e063fd",
+      "source": "$feedbackMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1234, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-25f019cb3546",
+      "source": "$feedbackSaving",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1239,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "example/components/lab/index.html", "line": 1242, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-b2aec5570137",
+      "source": "$feedMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1342, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-9c7a06b8518d",
+      "source": "$greeting",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3294, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-44e248c2da92",
+      "source": "$interactionStatus",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 638, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-d627af4cbf69",
+      "source": "$interactionStatus = 'Archived jqstar'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 585, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-6717ab50bb08",
+      "source": "$interactionStatus = 'Created a new file'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 487, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-2a0b0a3e1a0b",
+      "source": "$interactionStatus = 'Duplicated jqstar'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 568, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-2a1d600fcf1c",
+      "source": "$interactionStatus = 'Opened jqstar'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 560, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-1d7d17027333",
+      "source": "$interactionStatus = 'Opened the file picker'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 495, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-da58cabab33a",
+      "source": "$interactionStatus = 'Redid the last change'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 516, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-349aba570e71",
+      "source": "$interactionStatus = 'Toggled favorite'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 576, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-494bd9fe3b1e",
+      "source": "$interactionStatus = 'Toggled the sidebar'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 531, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-88e5fb95ca0f",
+      "source": "$interactionStatus = 'Toggled the status bar'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 541, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-6d450efd450e",
+      "source": "$interactionStatus = 'Undid the last change'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 508, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-822ea07895f2",
+      "source": "$itemCount + ' items remain'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3267, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-feac67172d22",
+      "source": "$itemCount === 0",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3282, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-68ddb2f3e7b4",
+      "source": "$metricsLoading",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 2570,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-6bd547709ea8",
+      "source": "$metricsMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2614, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-6303146547b2",
+      "source": "$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 36,
+          "attribute": "data-computed:greeting"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-a1a786ba8e39",
+      "source": "$open",
+      "locations": [
+        { "path": "README.md", "line": 1669, "attribute": "data-show" },
+        { "path": "README.md", "line": 1670, "attribute": "data-class:active" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-a9b98ef32849",
+      "source": "$open = false",
+      "locations": [{ "path": "README.md", "line": 1695, "attribute": "data-on:click__outside" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-c0ddea7d2dc8",
+      "source": "$open = true",
+      "locations": [{ "path": "README.md", "line": 1666, "attribute": "data-on:click" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-f079d71ec57e",
+      "source": "$operationsDashboardLoading || $operationsDashboardStreaming",
+      "locations": [
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 22,
+          "attribute": "data-prop:disabled"
+        },
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 30,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-297711b05e95",
+      "source": "$operationsDashboardMessage",
+      "locations": [
+        {
+          "path": "registry/blocks/operations-dashboard.html",
+          "line": 215,
+          "attribute": "data-text"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-36c864d56a64",
+      "source": "$operationsLoading",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 2715,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-1268b019815d",
+      "source": "$operationsMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 2848, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-8afb15c0c1be",
+      "source": "$ownershipCount++",
+      "locations": [
+        { "path": "e2e/quality-contracts.spec.ts", "line": 303, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-d838a230f201",
+      "source": "$preferencesMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1068, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-e3ef93abc11b",
+      "source": "$preferencesSaving",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1073,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "example/components/lab/index.html", "line": 1076, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-421d17a85354",
+      "source": "$profileSettingsMessage",
+      "locations": [
+        { "path": "registry/blocks/profile-settings.html", "line": 187, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-917eed12dae4",
+      "source": "$profileSettingsSaving",
+      "locations": [
+        { "path": "registry/blocks/profile-settings.html", "line": 136, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-aea851628af6",
+      "source": "$profileSettingsSaving || $profileSettingsRotating",
+      "locations": [
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 133,
+          "attribute": "data-prop:disabled"
+        },
+        {
+          "path": "registry/blocks/profile-settings.html",
+          "line": 169,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-1d1bedf59614",
+      "source": "$projectBrowserActiveFilters",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 87, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-8a62ae30b9ac",
+      "source": "$projectBrowserActiveFilters === 0",
+      "locations": [
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 82,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-e9667b14bf70",
+      "source": "$projectBrowserActiveFilters > 0",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 86, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-166e0facd87b",
+      "source": "$projectBrowserCount",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 318, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-8731e448c5a1",
+      "source": "$projectBrowserError",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 500, "attribute": "data-show" },
+        { "path": "registry/blocks/project-browser.html", "line": 500, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-85ec0b9e050e",
+      "source": "$projectBrowserLoading",
+      "locations": [
+        { "path": "registry/blocks/project-browser.html", "line": 319, "attribute": "data-show" },
+        {
+          "path": "registry/blocks/project-browser.html",
+          "line": 506,
+          "attribute": "data-prop:disabled"
+        }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-825071cc82e2",
+      "source": "$projectBrowserMessage",
+      "locations": [
+        { "path": "e2e/components.spec.ts", "line": 932, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1028, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1096, "attribute": "data-text" },
+        { "path": "registry/blocks/project-browser.html", "line": 499, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-c8117682bba2",
+      "source": "$projectMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 940, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-a82d0adaf9f1",
+      "source": "$projectSaving",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 924,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "example/components/lab/index.html", "line": 927, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-1649e499df15",
+      "source": "$questionnaireMessage",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 1509, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-b099179c2bb4",
+      "source": "$questionnaireSaving",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 1497,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "example/components/lab/index.html", "line": 1500, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-f37921ebc5ee",
+      "source": "$saved ? 'saved' : 'pending'",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 41, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-27430969cd91",
+      "source": "$saved ? 'Saved' : $count",
+      "locations": [
+        { "path": "example/docs/csp/index.html", "line": 132, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-43c7c628b077",
+      "source": "$saveError",
+      "locations": [
+        { "path": "registry/components/async-form.html", "line": 20, "attribute": "data-show" },
+        { "path": "registry/components/async-form.html", "line": 20, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-82ff250b5147",
+      "source": "$saving",
+      "locations": [
+        {
+          "path": "registry/components/async-form.html",
+          "line": 24,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "registry/components/async-form.html", "line": 26, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-ba3ce9a8d5b9",
+      "source": "$serverCount",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3304, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-fd98d07f5ec2",
+      "source": "$serverError",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 3324, "attribute": "data-show" },
+        { "path": "example/components/lab/index.html", "line": 3324, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-5d62acdb284a",
+      "source": "$serverLoading",
+      "locations": [
+        {
+          "path": "example/components/lab/index.html",
+          "line": 3309,
+          "attribute": "data-prop:disabled"
+        },
+        {
+          "path": "example/components/lab/index.html",
+          "line": 3317,
+          "attribute": "data-prop:disabled"
+        },
+        { "path": "example/components/lab/index.html", "line": 3321, "attribute": "data-show" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-e60adfda95e6",
+      "source": "$serverMessage",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 44, "attribute": "data-text" },
+        { "path": "example/components/lab/index.html", "line": 3323, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-b19c95b9e55d",
+      "source": "$trustedHtml",
+      "locations": [{ "path": "README.md", "line": 1668, "attribute": "data-html" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-238a716c8c88",
+      "source": "$user.firstName",
+      "locations": [{ "path": "README.md", "line": 1648, "attribute": "data-text" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-7a2e95b681f2",
+      "source": "$workspaceStatus",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 751, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-ee9efd3ab18b",
+      "source": "$workspaceStatus = 'Activity selected'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 691, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-78bf6a20298c",
+      "source": "$workspaceStatus = 'Components selected'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 683, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-ed6d73c3aff9",
+      "source": "$workspaceStatus = 'Focus mode toggled'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 730, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-cf28d4dc36bc",
+      "source": "$workspaceStatus = 'Grid view toggled'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 720, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-f2144e9c6a5d",
+      "source": "$workspaceStatus = 'Overview selected'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 675, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-07d3671b88ab",
+      "source": "$workspaceStatus = 'Share action ready'",
+      "locations": [
+        { "path": "example/components/lab/index.html", "line": 739, "attribute": "data-on:click" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-signal-write",
+      "reason": "The source writes only approved signal l-values."
+    },
+    {
+      "id": "public-06a61df042ad",
+      "source": "framework",
+      "locations": [
+        { "path": "registry/components/select.html", "line": 3, "attribute": "data-bind:value" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-82a3537ff0db",
+      "source": "name",
+      "locations": [
+        { "path": "registry/components/input.html", "line": 8, "attribute": "data-bind:value" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-ab5aa97074c4",
+      "source": "notes",
+      "locations": [
+        { "path": "registry/components/textarea.html", "line": 3, "attribute": "data-bind:value" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-8bb6922758ad",
+      "source": "notifications",
+      "locations": [
+        { "path": "registry/components/checkbox.html", "line": 6, "attribute": "data-bind:checked" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-106c8dd8e3f2",
+      "source": "proof.csp.upper($serverMessage)",
+      "locations": [
+        { "path": "e2e/fixtures/csp-proof/index.html", "line": 42, "attribute": "data-text" }
+      ],
+      "disposition": "migration-required",
+      "caseId": "migration-registered-integration",
+      "reason": "Method upper is not an approved jQuery or string method.",
+      "equivalent": "Move the integration call into a registered application action."
+    },
+    {
+      "id": "public-b04e5ea201bb",
+      "source": "published",
+      "locations": [
+        { "path": "registry/components/switch.html", "line": 2, "attribute": "data-bind:checked" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    }
+  ]
+}

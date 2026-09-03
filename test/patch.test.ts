@@ -1,5 +1,7 @@
 import $ from "jquery";
+import { Idiomorph } from "idiomorph";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import "../src/index";
 import { patchElements, patchSignals } from "../src/patch";
 
 describe("signal patches", () => {
@@ -161,5 +163,312 @@ describe("element patches", () => {
     expect(() => patchElements(root, `<p>Missing</p>`, { selector: "#missing" })).toThrow(
       /did not match a target/,
     );
+  });
+
+  it("deeply imports MathML content into the root document", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<math id="formula"></math>`;
+
+    patchElements(root, `<mrow id="row"><mi id="variable">x</mi></mrow>`, {
+      selector: "#formula",
+      mode: "append",
+      namespace: "mathml",
+    });
+
+    const variable = document.querySelector("#variable")!;
+    expect(variable.textContent).toBe("x");
+    expect(variable.namespaceURI).toBe("http://www.w3.org/1998/Math/MathML");
+    expect(variable.ownerDocument).toBe(document);
+  });
+
+  it("does not parse markup for selector-based removals", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<svg id="target"></svg>`;
+
+    expect(() =>
+      patchElements(root, `<broken>`, {
+        selector: "#target",
+        mode: "remove",
+        namespace: "svg",
+      }),
+    ).not.toThrow();
+    expect(document.querySelector("#target")).toBeNull();
+  });
+
+  it("filters selector-free patch nodes to non-empty element IDs", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<section id="target">Old</section>`;
+    const lookup = vi.spyOn(document, "getElementById");
+
+    patchElements(root, `text<div>no id</div><section id="target">New</section>`);
+
+    expect(document.querySelector("#target")?.textContent).toBe("New");
+    expect(lookup).toHaveBeenCalledTimes(2);
+    expect(lookup.mock.calls).toEqual([["target"], ["target"]]);
+  });
+
+  it("preserves marked roots during direct remove and replace modes", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `
+      <section id="remove" data-jqs-preserve>Keep remove</section>
+      <section id="replace"><i data-jqs-preserve>Keep replace</i></section>
+    `;
+
+    patchElements(root, "", { selector: "#remove", mode: "remove" });
+    patchElements(root, `<strong>Replacement</strong>`, {
+      selector: "#replace",
+      mode: "replace",
+    });
+
+    expect(document.querySelector("#remove")?.textContent).toBe("Keep remove");
+    expect(document.querySelector("#replace")?.textContent).toBe("Keep replace");
+    expect(document.querySelector("strong")).toBeNull();
+  });
+
+  it("retains ignored and preserved nodes when outer morphs would remove them", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `
+      <section id="panel">
+        <i id="ignored" data-ignore-morph>Ignored</i>
+        <i id="preserved" data-jqs-preserve>Preserved</i>
+      </section>
+    `;
+
+    patchElements(root, `<section id="panel"><span>New</span></section>`);
+
+    expect(document.querySelector("#ignored")?.textContent).toBe("Ignored");
+    expect(document.querySelector("#preserved")?.textContent).toBe("Preserved");
+    expect(document.querySelector("#panel span")?.textContent).toBe("New");
+  });
+
+  it("passes the complete morph contract for inner, selected outer, and ID outer patches", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<section id="target"><i>Old</i></section>`;
+    const morph = vi.spyOn(Idiomorph, "morph");
+
+    patchElements(root, `<b>Inner</b>`, { selector: "#target", mode: "inner" });
+    patchElements(root, `<article id="replacement">Selected</article>`, {
+      selector: "#target",
+    });
+    patchElements(root, `<article id="replacement">By ID</article>`);
+
+    expect(morph).toHaveBeenCalledTimes(3);
+    expect(morph.mock.calls.map((call) => call[2])).toEqual([
+      expect.objectContaining({
+        morphStyle: "innerHTML",
+        ignoreActiveValue: true,
+        restoreFocus: true,
+        callbacks: expect.any(Object),
+      }),
+      expect.objectContaining({
+        morphStyle: "outerHTML",
+        ignoreActiveValue: true,
+        restoreFocus: true,
+        callbacks: expect.any(Object),
+      }),
+      expect.objectContaining({
+        morphStyle: "outerHTML",
+        ignoreActiveValue: true,
+        restoreFocus: true,
+        callbacks: expect.any(Object),
+      }),
+    ]);
+    expect(document.querySelector("#replacement")?.textContent).toBe("By ID");
+  });
+
+  it("runs requested view transitions but does not opt in by default", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<section id="target"></section>`;
+    const transition = vi.fn((update: () => void) => update());
+    const previous = Object.getOwnPropertyDescriptor(document, "startViewTransition");
+    Object.defineProperty(document, "startViewTransition", {
+      configurable: true,
+      value: transition,
+    });
+
+    try {
+      patchElements(root, `<b>Default</b>`, { selector: "#target", mode: "inner" });
+      expect(transition).not.toHaveBeenCalled();
+      patchElements(root, `<b>Transition</b>`, {
+        selector: "#target",
+        mode: "inner",
+        useViewTransition: true,
+      });
+      expect(transition).toHaveBeenCalledOnce();
+      expect(root.querySelector("b")?.textContent).toBe("Transition");
+    } finally {
+      if (previous) Object.defineProperty(document, "startViewTransition", previous);
+      else Reflect.deleteProperty(document, "startViewTransition");
+    }
+  });
+
+  it("rolls back a transaction when applying a direct patch fails", async () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<section id="target"></section>`;
+    const target = root.querySelector("#target")!;
+    const failure = new Error("replace failed");
+    vi.spyOn(target, "replaceWith").mockImplementation(() => {
+      throw failure;
+    });
+
+    expect(() =>
+      patchElements(root, `<section id="replacement"></section>`, {
+        selector: "#target",
+        mode: "replace",
+      }),
+    ).toThrow(failure);
+    await expect($.star.whenEnhanced()).resolves.toBeUndefined();
+  });
+
+  it("settles a transaction when starting a view transition fails", async () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<section id="target"></section>`;
+    const failure = new Error("transition failed");
+    const transitionDocument = document as Document & {
+      startViewTransition?: (update: () => void) => unknown;
+    };
+    const previous = transitionDocument.startViewTransition;
+    transitionDocument.startViewTransition = () => {
+      throw failure;
+    };
+
+    try {
+      expect(() =>
+        patchElements(root, `<strong>new</strong>`, {
+          selector: "#target",
+          mode: "inner",
+          useViewTransition: true,
+        }),
+      ).toThrow(failure);
+      await expect($.star.whenEnhanced()).resolves.toBeUndefined();
+    } finally {
+      if (previous) transitionDocument.startViewTransition = previous;
+      else Reflect.deleteProperty(transitionDocument, "startViewTransition");
+    }
+  });
+
+  it("preserves apply errors when no document kernel owns the patch", () => {
+    const frame = document.createElement("iframe");
+    document.body.append(frame);
+    const root = frame.contentDocument!.createElement("main");
+    root.innerHTML = `<section id="target"></section>`;
+    frame.contentDocument!.body.append(root);
+    const target = root.querySelector("#target")!;
+    const failure = new Error("unowned patch failed");
+    vi.spyOn(target, "replaceWith").mockImplementation(() => {
+      throw failure;
+    });
+
+    try {
+      expect(() =>
+        patchElements(root, `<section id="replacement"></section>`, {
+          selector: "#target",
+          mode: "replace",
+        }),
+      ).toThrow(failure);
+    } finally {
+      frame.remove();
+    }
+  });
+
+  it("destroys nested application roots deepest-first before direct removal", () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `<section id="outer"><section id="inner"></section></section>`;
+    const outer = document.querySelector("#outer")!;
+    const inner = document.querySelector("#inner")!;
+    const cleanupOrder: string[] = [];
+
+    $(outer).star({
+      ui: {
+        "&": { mount: () => () => cleanupOrder.push(`outer:${outer.isConnected}`) },
+      },
+    });
+    $(inner).star({
+      ui: {
+        "&": { mount: () => () => cleanupOrder.push(`inner:${inner.isConnected}`) },
+      },
+    });
+    const outerInstance = $(outer).star("instance")!;
+    const innerInstance = $(inner).star("instance")!;
+
+    patchElements(root, "", { selector: "#outer", mode: "remove" });
+
+    expect(cleanupOrder).toEqual(["inner:true", "outer:true"]);
+    expect(innerInstance.destroyed).toBe(true);
+    expect(outerInstance.destroyed).toBe(true);
+    expect(document.querySelector("#outer")).toBeNull();
+  });
+
+  it("preserves an explicitly marked application root without remounting it", async () => {
+    const root = document.querySelector("#app")!;
+    root.innerHTML = `
+      <section id="panel">
+        <section id="preserved" data-jqs-preserve><strong>Client state</strong></section>
+        <span>Old</span>
+      </section>
+    `;
+    const preserved = document.querySelector("#preserved")!;
+    const mounted = vi.fn();
+    const cleaned = vi.fn();
+    $(preserved).star({
+      ui: {
+        "&": {
+          mount: () => {
+            mounted();
+            return cleaned;
+          },
+        },
+      },
+    });
+    const instance = $(preserved).star("instance")!;
+
+    patchElements(root, `<section id="panel"><span>New</span></section>`);
+    await $.star.whenEnhanced();
+
+    expect(document.querySelector("#preserved")).toBe(preserved);
+    expect(preserved.textContent).toBe("Client state");
+    expect(instance.destroyed).toBe(false);
+    expect(mounted).toHaveBeenCalledOnce();
+    expect(cleaned).not.toHaveBeenCalled();
+    instance.destroy();
+  });
+
+  it("resolves the enhancement barrier after directives and UI controllers initialize", async () => {
+    const root = document.querySelector("#app")!;
+    root.setAttribute("data-signals", "{ count: 3 }");
+    $(root).star();
+
+    patchElements(
+      root,
+      `<output data-text="$count"></output>
+       <dialog data-jqs="dialog"><h2 data-part="title">Rendered</h2></dialog>`,
+      { selector: "#app", mode: "append" },
+    );
+    await $.star.whenEnhanced();
+
+    expect(root.querySelector("output")?.textContent).toBe("3");
+    const dialog = root.querySelector("dialog")!;
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    expect(dialog.getAttribute("aria-labelledby")).toBe(
+      dialog.querySelector("[data-part='title']")?.id,
+    );
+    $(root).star("destroy");
+  });
+
+  it("resolves a pre-existing barrier after nested directive enhancement rounds", async () => {
+    const root = document.querySelector("#app")!;
+    root.setAttribute("data-signals", "{ count: 7 }");
+    $(root).star();
+    const enhanced = $.star.whenEnhanced();
+
+    patchElements(
+      root,
+      `<section data-html="\`<output data-text='$count'></output>\`"></section>`,
+      { selector: "#app", mode: "append" },
+    );
+    await enhanced;
+
+    expect(root.querySelector("output")?.textContent).toBe("7");
+    $(root).star("destroy");
   });
 });

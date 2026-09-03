@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "jqstar-static-metrics/1",
+  "sonarjs": {
+    "cognitiveComplexityMaximum": 149
+  },
+  "duplication": {
+    "maximumPercent": 2.99,
+    "minimumLines": 8,
+    "minimumTokens": 70
+  }
+}

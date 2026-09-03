@@ -1,28 +1,81 @@
 import type { ComputedRecord, StarContext, StateRecord } from "./types";
+import type {
+  StarExpressionEngine,
+  StarExpressionError,
+  StarExpressionLocation,
+  StarStatementEvaluator,
+  StarValueEvaluator,
+} from "./expression-types";
 
-type Context = StarContext<StateRecord, ComputedRecord>;
-type CompiledValue = (context: Context) => unknown;
-type CompiledStatement = (context: Context) => unknown;
+export type {
+  StarExpressionEngine,
+  StarExpressionError,
+  StarExpressionLocation,
+  StarStatementEvaluator,
+  StarValueEvaluator,
+} from "./expression-types";
 
-const values = new Map<string, CompiledValue>();
-const statements = new Map<string, CompiledStatement>();
+type ExpressionContext = StarContext<StateRecord, ComputedRecord>;
 
 const ACTION_EXPRESSION = /^@([A-Za-z_$][\w$.-]*)(?:\(([\s\S]*)\))?$/;
 
-function scopeFor(context: Context): object {
-  const variables: Record<PropertyKey, unknown> = {
-    $: context.$,
-    el: context.element,
-    evt: context.event,
-    state: context.state,
-    signals: context.state,
-    computed: context.computed,
-    root: context.root,
-    $root: context.$root,
-    $el: context.$element,
-    args: context.args ?? [],
-    action: (name: string, ...args: unknown[]) => context.instance.run(name, { ...context, args }),
-  };
+class ExpressionFailure extends Error implements StarExpressionError {
+  readonly location?: StarExpressionLocation;
+  readonly phase: "compile" | "evaluate";
+  readonly source: string;
+
+  constructor(
+    source: string,
+    phase: "compile" | "evaluate",
+    error: unknown,
+    location?: StarExpressionLocation,
+  ) {
+    const detail = error instanceof Error ? error.message : String(error);
+    const origin = location?.attribute ? ` at ${location.attribute}` : "";
+    super(`Could not evaluate jQuery Star expression “${source}”${origin}: ${detail}`, {
+      cause: error,
+    });
+    this.name = "StarExpressionError";
+    this.source = source;
+    this.phase = phase;
+    if (location) this.location = location;
+  }
+}
+
+function normalizedLocation(
+  location: StarExpressionLocation | undefined,
+): StarExpressionLocation | undefined {
+  return location ? Object.freeze({ ...location }) : undefined;
+}
+
+function cacheKey(source: string, location: StarExpressionLocation | undefined): string {
+  return JSON.stringify([
+    source,
+    location?.attribute ?? null,
+    location?.line ?? null,
+    location?.column ?? null,
+  ]);
+}
+
+function scopeFor(context: ExpressionContext): object {
+  const variables = Object.assign(
+    Object.create(null) as Record<PropertyKey, unknown>,
+    context.helpers ?? {},
+    {
+      $: context.$,
+      el: context.element,
+      evt: context.event,
+      state: context.state,
+      signals: context.state,
+      computed: context.computed,
+      root: context.root,
+      $root: context.$root,
+      $el: context.$element,
+      args: context.args ?? [],
+      action: (name: string, ...args: unknown[]) =>
+        context.instance.run(name, { ...context, args }),
+    },
+  );
 
   return new Proxy(variables, {
     has(target, key) {
@@ -50,84 +103,163 @@ function scopeFor(context: Context): object {
   });
 }
 
-export function compileValue(source: string): CompiledValue {
-  const cached = values.get(source);
-  if (cached) return cached;
-
-  let evaluator: (scope: object) => unknown;
-  try {
-    evaluator = new Function("scope", `with (scope) { return (${source}); }`) as (
-      scope: object,
-    ) => unknown;
-  } catch (error) {
-    throw expressionError(source, error);
-  }
-
-  const compiled = (context: Context): unknown => {
-    try {
-      return evaluator.call(context.element, scopeFor(context));
-    } catch (error) {
-      throw expressionError(source, error);
-    }
-  };
-  values.set(source, compiled);
-  return compiled;
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    ((typeof value === "object" && value !== null) || typeof value === "function") &&
+    "then" in value &&
+    typeof value.then === "function"
+  );
 }
 
-export function compileStatement(source: string): CompiledStatement {
-  const trimmed = source.trim();
-  const cached = statements.get(trimmed);
-  if (cached) return cached;
+function expressionError(
+  source: string,
+  phase: "compile" | "evaluate",
+  error: unknown,
+  location?: StarExpressionLocation,
+): StarExpressionError {
+  return error instanceof ExpressionFailure
+    ? error
+    : new ExpressionFailure(source, phase, error, location);
+}
 
-  const action = ACTION_EXPRESSION.exec(trimmed);
-  if (action) {
-    const name = action[1]!;
-    const args = action[2] === undefined ? undefined : compileValue(`[${action[2]}]`);
-    const compiled = (context: Context): unknown => {
-      const actionArgs = args?.(context);
-      return context.instance.run(name, {
-        ...context,
-        args: Array.isArray(actionArgs) ? actionArgs : [],
-      });
-    };
-    statements.set(trimmed, compiled);
-    return compiled;
-  }
+function wrapResult(
+  result: unknown,
+  source: string,
+  location: StarExpressionLocation | undefined,
+): unknown {
+  if (!isThenable(result)) return result;
+  return Promise.resolve(result).catch((error: unknown) => {
+    throw expressionError(source, "evaluate", error, location);
+  });
+}
 
-  let evaluator: (scope: object, element: Element) => unknown;
-  try {
-    evaluator = new Function(
-      "scope",
-      "element",
-      `with (scope) {
-        return (async function () {
-          ${source}
-        }).call(element);
-      }`,
-    ) as (scope: object, element: Element) => unknown;
-  } catch (error) {
-    throw expressionError(source, error);
-  }
+export function createTrustedExpressionEngine(): StarExpressionEngine {
+  const values = new Map<string, StarValueEvaluator>();
+  const statements = new Map<string, StarStatementEvaluator>();
+  let disposed = false;
 
-  const compiled = (context: Context): unknown => {
-    try {
-      return evaluator(scopeFor(context), context.element!);
-    } catch (error) {
-      throw expressionError(source, error);
-    }
+  const assertActive = (): void => {
+    if (disposed) throw new Error("This jQStar expression engine has been disposed.");
   };
-  statements.set(trimmed, compiled);
-  return compiled;
+
+  const compileValue = (
+    source: string,
+    inputLocation?: StarExpressionLocation,
+  ): StarValueEvaluator => {
+    assertActive();
+    const location = normalizedLocation(inputLocation);
+    const key = cacheKey(source, location);
+    const cached = values.get(key);
+    if (cached) return cached;
+
+    let evaluator: (scope: object) => unknown;
+    try {
+      evaluator = new Function("scope", `with (scope) { return (${source}); }`) as typeof evaluator;
+    } catch (error) {
+      throw expressionError(source, "compile", error, location);
+    }
+
+    const compiled = (context: ExpressionContext): unknown => {
+      assertActive();
+      try {
+        return wrapResult(evaluator.call(context.element, scopeFor(context)), source, location);
+      } catch (error) {
+        throw expressionError(source, "evaluate", error, location);
+      }
+    };
+    values.set(key, compiled);
+    return compiled;
+  };
+
+  const compileStatement = (
+    source: string,
+    inputLocation?: StarExpressionLocation,
+  ): StarStatementEvaluator => {
+    assertActive();
+    const trimmed = source.trim();
+    const location = normalizedLocation(inputLocation);
+    const key = cacheKey(trimmed, location);
+    const cached = statements.get(key);
+    if (cached) return cached;
+
+    const action = ACTION_EXPRESSION.exec(trimmed);
+    if (action) {
+      const name = action[1]!;
+      const args = action[2] === undefined ? undefined : compileValue(`[${action[2]}]`, location);
+      const compiled = (context: ExpressionContext): unknown => {
+        assertActive();
+        try {
+          const actionArgs = args?.(context);
+          return wrapResult(
+            context.instance.run(name, {
+              ...context,
+              args: Array.isArray(actionArgs) ? actionArgs : [],
+            }),
+            source,
+            location,
+          );
+        } catch (error) {
+          throw expressionError(source, "evaluate", error, location);
+        }
+      };
+      statements.set(key, compiled);
+      return compiled;
+    }
+
+    let evaluator: (scope: object, element: Element) => unknown;
+    try {
+      evaluator = new Function(
+        "scope",
+        "element",
+        `with (scope) {
+          return (async function () {
+            ${source}
+          }).call(element);
+        }`,
+      ) as (scope: object, element: Element) => unknown;
+    } catch (error) {
+      throw expressionError(source, "compile", error, location);
+    }
+
+    const compiled = (context: ExpressionContext): unknown => {
+      assertActive();
+      try {
+        return wrapResult(evaluator(scopeFor(context), context.element!), source, location);
+      } catch (error) {
+        throw expressionError(source, "evaluate", error, location);
+      }
+    };
+    statements.set(key, compiled);
+    return compiled;
+  };
+
+  return {
+    compileValue,
+    compileStatement,
+    clearCache() {
+      assertActive();
+      values.clear();
+      statements.clear();
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      values.clear();
+      statements.clear();
+    },
+  };
+}
+
+const compatibilityEngine = createTrustedExpressionEngine();
+
+export function compileValue(source: string): StarValueEvaluator {
+  return compatibilityEngine.compileValue(source);
+}
+
+export function compileStatement(source: string): StarStatementEvaluator {
+  return compatibilityEngine.compileStatement(source);
 }
 
 export function clearExpressionCache(): void {
-  values.clear();
-  statements.clear();
-}
-
-function expressionError(source: string, error: unknown): Error {
-  const detail = error instanceof Error ? error.message : String(error);
-  return new Error(`Could not evaluate jQuery Star expression “${source}”: ${detail}`, {
-    cause: error,
-  });
+  compatibilityEngine.clearCache();
 }

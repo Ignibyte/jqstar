@@ -1,7 +1,11 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { StarContext, StarTooltipStatic, TooltipTarget } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
@@ -35,7 +39,6 @@ interface TooltipCollection {
 const records = new WeakMap<HTMLElement, TooltipRecord>();
 const activeRecords = new Set<TooltipRecord>();
 let tooltipId = 0;
-let globalListenersInstalled = false;
 
 function tooltipRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="tooltip"]') ? value : undefined;
@@ -203,21 +206,22 @@ function wire(record: TooltipRecord): void {
   );
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener("keydown", (event) => {
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(document, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
-    const open = [...activeRecords];
+    const open = documentRecords(activeRecords, document);
     const record = open[open.length - 1];
     if (!record) return;
     event.preventDefault();
     closeTooltip(record.root);
   });
-  document.addEventListener(
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeTooltip(record.root);
       }
@@ -225,7 +229,7 @@ function installGlobalListeners(): void {
     true,
   );
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) {
         positionFloating(record.root, record.trigger, record.content, {
           align: "center",
@@ -237,9 +241,8 @@ function installGlobalListeners(): void {
       }
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own("service", "ui:tooltip:active-records", documentRecordCleanup(activeRecords, document));
 }
 
 function assertNonInteractive(content: HTMLElement): void {
@@ -295,7 +298,6 @@ function enhanceTooltip(root: HTMLElement): TooltipRecord {
   describedBy(record.trigger, record.describedById, true);
   syncState(record, record.open);
   if (record.cleanups.length === 0) wire(record);
-  installGlobalListeners();
   if (record.open) {
     positionFloating(record.root, record.trigger, record.content, {
       align: "center",
@@ -334,7 +336,7 @@ function controlledTooltip(context: StarContext, target?: unknown): HTMLElement 
   throw new Error('Tooltip action needs a root selector or an element inside data-jqs="tooltip".');
 }
 
-function registerActions(api: StarTooltipStatic): void {
+function registerActions(api: StarTooltipStatic, registerAction: ActionRegistrar): void {
   for (const operation of ["open", "close"] as const) {
     registerAction(`ui.tooltip.${operation}`, (context) => {
       const root = controlledTooltip(context, context.args?.[0]);
@@ -343,11 +345,15 @@ function registerActions(api: StarTooltipStatic): void {
   }
 }
 
-export function createTooltips(): TooltipCollection {
+export function createTooltips(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): TooltipCollection {
+  installGlobalListeners(host);
   const api: StarTooltipStatic = {
     open: (target) => openTooltip(resolveRoot(target)),
     close: (target) => closeTooltip(resolveRoot(target)),
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

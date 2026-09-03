@@ -1,6 +1,10 @@
 import $ from "jquery";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../src/index";
+import { DeclarativeApplication } from "../src/declarative";
+import type { StarExpressionError } from "../src/expression";
+import { kernelForDocument } from "../src/kernel";
+import { effect, reactive } from "../src/reactivity";
 
 async function settled(): Promise<void> {
   await $.star.nextUpdate();
@@ -225,6 +229,41 @@ describe("declarative jQuery Star", () => {
     expect($(".good").text()).toBe("2");
   });
 
+  it("aborts staged requests when a later setup error forces rollback", async () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <i data-init="@get('/slow', { openWhenHidden: true })"></i>
+        <output data-text="("></output>
+      </section>
+    `;
+    let signal: AbortSignal | undefined;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      signal = init?.signal as AbortSignal;
+      return new Promise<Response>((_resolve, reject) => {
+        signal?.addEventListener("abort", () => reject(new Error("request aborted")), {
+          once: true,
+        });
+      });
+    });
+    const setupFailure = new Error("error reporter failed");
+    let reports = 0;
+    $("#app").on("jquery-star:error", () => {
+      reports += 1;
+      if (reports === 1) throw setupFailure;
+    });
+
+    try {
+      expect(() => $("#app").star()).toThrow(setupFailure);
+      await settled();
+
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(signal?.aborted).toBe(true);
+      expect($("#app").star("instance")).toBeUndefined();
+    } finally {
+      fetchMock.mockRestore();
+    }
+  });
+
   it("boots from a selector, merges signal declarations, and awaits event expressions", async () => {
     document.body.innerHTML = `
       <main id="app" data-signals="{ count: 1, user: { first: 'Ada' } }">
@@ -385,5 +424,661 @@ describe("declarative jQuery Star", () => {
     expect($("output").text()).toBe("0");
     expect(state.count).toBe(10);
     expect($("#app").star("instance")).toBeUndefined();
+  });
+
+  it("stops declarative model effects when explicitly destroyed", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1 }">
+        <input data-bind:count>
+      </section>
+    `;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const state = instance.state as { count: number };
+    instance.destroy();
+
+    state.count = 2;
+    await $.star.nextUpdate();
+
+    expect($("input").val()).toBe("1");
+  });
+
+  it("removes directive cleanup records before attempting every failing listener teardown", () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0 }">
+        <button class="first" data-on:click__capture="$count++"></button>
+        <button class="complete" data-on:click__capture="$count++"></button>
+        <button class="second" data-on:click__capture="$count++"></button>
+      </section>
+    `;
+    const firstFailure = new Error("first directive cleanup failed");
+    const secondFailure = new Error("second directive cleanup failed");
+    $("#app").star();
+    const first = document.querySelector(".first")!;
+    const completeElement = document.querySelector(".complete")!;
+    const second = document.querySelector(".second")!;
+    const failOne = vi.spyOn(first, "removeEventListener").mockImplementation(() => {
+      throw firstFailure;
+    });
+    const complete = vi.spyOn(completeElement, "removeEventListener");
+    const failTwo = vi.spyOn(second, "removeEventListener").mockImplementation(() => {
+      throw secondFailure;
+    });
+    const instance = $("#app").star("instance")!;
+
+    let failure: unknown;
+    try {
+      instance.destroy();
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeInstanceOf(AggregateError);
+    expect((failure as AggregateError).errors).toEqual([firstFailure, secondFailure]);
+    expect(failOne).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledOnce();
+    expect(failTwo).toHaveBeenCalledOnce();
+    expect($("#app").star("instance")).toBeUndefined();
+    expect(() => instance.destroy()).not.toThrow();
+    expect(failOne).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledOnce();
+    expect(failTwo).toHaveBeenCalledOnce();
+  });
+
+  it("refreshes declarative effects explicitly and reports scheduled effect failures", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1, fail: false }">
+        <output data-text="$count"></output>
+        <i data-effect="if ($fail) throw new Error('scheduled effect failed')"></i>
+      </section>
+    `;
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => errors.push(detail));
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const state = instance.state as { count: number; fail: boolean };
+
+    state.count = 2;
+    instance.refresh();
+    expect($("output").text()).toBe("2");
+    state.fail = true;
+    await $.star.nextUpdate();
+
+    expect(errors).toHaveLength(1);
+    const detail = errors[0] as {
+      attribute: string;
+      error: StarExpressionError;
+      expression: string;
+    };
+    expect(detail).toMatchObject({
+      attribute: "data-effect",
+      expression: "if ($fail) throw new Error('scheduled effect failed')",
+      error: {
+        name: "StarExpressionError",
+        phase: "evaluate",
+        location: { attribute: "data-effect" },
+      },
+    });
+    expect(detail.error.message).toContain("scheduled effect failed");
+  });
+
+  it("identifies multiple declarative refresh failures", () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const first = new Error("first refresh failed");
+    const second = new Error("second refresh failed");
+    const firstRunner = effect(() => undefined);
+    const secondRunner = effect(() => undefined);
+    const internals = instance as unknown as { effects: Set<typeof firstRunner> };
+    Object.assign(firstRunner, { active: true });
+    Object.assign(secondRunner, { active: true });
+    internals.effects.add(
+      Object.assign(() => {
+        throw first;
+      }, firstRunner),
+    );
+    internals.effects.add(
+      Object.assign(() => {
+        throw second;
+      }, secondRunner),
+    );
+
+    expect(() => instance.refresh()).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star declarative refresh failed.",
+        errors: [first, second],
+      }),
+    );
+  });
+
+  it("reports failures from owned directive and model effects", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1 }">
+        <input data-bind:count>
+        <output></output>
+      </section>
+    `;
+    const reports: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => reports.push(detail));
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as {
+      bindEffect(element: Element, attribute: string, run: () => void): void;
+    };
+    const output = document.querySelector("output")!;
+    const local = reactive({ fail: false });
+    internals.bindEffect(output, "test:effect", () => {
+      if (local.fail) throw new Error("owned directive failed");
+    });
+    const originalVal = $.fn.val;
+    const valueFailure = new Error("model write failed");
+    const val = vi.spyOn($.fn, "val").mockImplementation(function (
+      this: JQuery,
+      ...args: unknown[]
+    ) {
+      if (args.length > 0 && this.is("input")) throw valueFailure;
+      return originalVal.apply(this, args as Parameters<typeof originalVal>);
+    });
+
+    try {
+      local.fail = true;
+      (instance.state as { count: number }).count = 2;
+      await $.star.nextUpdate();
+      expect((reports[0] as { error: Error }).error.message).toBe("owned directive failed");
+      expect(reports[0]).toMatchObject({ attribute: "test:effect", expression: "" });
+      expect((reports[1] as { error: Error }).error).toBe(valueFailure);
+    } finally {
+      val.mockRestore();
+    }
+  });
+
+  it("rolls back model and native event setup failures", () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ value: '' }">
+        <input data-bind:value>
+        <button data-on:click__capture="$value = 'clicked'"></button>
+      </section>
+    `;
+    const input = document.querySelector("input")!;
+    const button = document.querySelector("button")!;
+    const modelFailure = new Error("model listener failed");
+    const modelCleanupFailure = new Error("model cleanup failed");
+    const eventFailure = new Error("native listener failed");
+    const eventCleanupFailure = new Error("native cleanup failed");
+    const reports: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => reports.push(detail));
+    const originalOn = Reflect.get($.fn, "on") as JQuery["on"];
+    const originalOff = $.fn.off;
+    const on = vi.spyOn($.fn, "on").mockImplementation(function (this: JQuery, ...args: unknown[]) {
+      if (typeof args[0] === "string" && args[0].includes("jqueryStarBind")) throw modelFailure;
+      return originalOn.apply(this, args as Parameters<typeof originalOn>);
+    });
+    const off = vi.spyOn($.fn, "off").mockImplementation(function (
+      this: JQuery,
+      ...args: unknown[]
+    ) {
+      if (typeof args[0] === "string" && args[0].includes("jqueryStarBind")) {
+        throw modelCleanupFailure;
+      }
+      return originalOff.apply(this, args as Parameters<typeof originalOff>);
+    });
+    const add = vi.spyOn(button, "addEventListener").mockImplementation(() => {
+      throw eventFailure;
+    });
+    const remove = vi.spyOn(button, "removeEventListener").mockImplementation(() => {
+      throw eventCleanupFailure;
+    });
+
+    try {
+      $("#app").star();
+      expect(reports).toHaveLength(2);
+      expect((reports[0] as { error: AggregateError }).error).toMatchObject({
+        message: "jQuery Star model setup rollback failed.",
+        errors: [modelFailure, modelCleanupFailure],
+      });
+      expect((reports[1] as { error: AggregateError }).error).toMatchObject({
+        message: "jQuery Star event setup rollback failed.",
+        errors: [eventFailure, eventCleanupFailure],
+      });
+      expect(remove).toHaveBeenCalledOnce();
+      expect(input.getAttribute("data-bind:value")).not.toBeNull();
+    } finally {
+      on.mockRestore();
+      off.mockRestore();
+      add.mockRestore();
+      remove.mockRestore();
+    }
+  });
+
+  it("passes capture and passive options to native declarative listeners", () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <button data-on:click__capture__passive=""></button>
+      </section>
+    `;
+    const button = document.querySelector("button")!;
+    const add = vi.spyOn(button, "addEventListener");
+
+    $("#app").star();
+
+    expect(add).toHaveBeenCalledWith("click", expect.any(Function), {
+      capture: true,
+      passive: true,
+    });
+  });
+
+  it("cleans both callbacks when replacing a cleanup fails", () => {
+    document.body.innerHTML = `<section id="app"><i></i></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as {
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+    };
+    const element = document.querySelector("i")!;
+    const previousFailure = new Error("previous cleanup failed");
+    const replacement = vi.fn();
+    internals.setCleanup(element, "test:cleanup", () => {
+      throw previousFailure;
+    });
+
+    expect(() => internals.setCleanup(element, "test:cleanup", replacement)).toThrow(
+      previousFailure,
+    );
+    expect(replacement).toHaveBeenCalledOnce();
+    const cleanupMaps = (instance as unknown as { cleanups: Map<Element, unknown> }).cleanups;
+    expect(cleanupMaps.has(element)).toBe(false);
+    expect(() => instance.destroy()).not.toThrow();
+  });
+
+  it("replaces a successful cleanup without running its replacement early", () => {
+    document.body.innerHTML = `<section id="app"><i></i></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as {
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+    };
+    const element = document.querySelector("i")!;
+    const previous = vi.fn();
+    const replacement = vi.fn();
+    internals.setCleanup(element, "test:cleanup", previous);
+    internals.setCleanup(element, "test:cleanup", replacement);
+
+    expect(previous).toHaveBeenCalledOnce();
+    expect(replacement).not.toHaveBeenCalled();
+    instance.destroy();
+    expect(replacement).toHaveBeenCalledOnce();
+  });
+
+  it("retains unrelated cleanup ownership after a replacement rollback", () => {
+    document.body.innerHTML = `<section id="app"><i></i></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as {
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+      cleanups: Map<Element, Map<string, () => void>>;
+    };
+    const element = document.querySelector("i")!;
+    const firstFailure = new Error("first replacement cleanup failed");
+    const secondFailure = new Error("second replacement cleanup failed");
+    const unrelated = vi.fn();
+    internals.setCleanup(element, "unrelated", unrelated);
+    internals.setCleanup(element, "failing", () => {
+      throw firstFailure;
+    });
+
+    expect(() =>
+      internals.setCleanup(element, "failing", () => {
+        throw secondFailure;
+      }),
+    ).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star cleanup replacement failed.",
+        errors: [firstFailure, secondFailure],
+      }),
+    );
+    expect(internals.cleanups.get(element)?.has("unrelated")).toBe(true);
+    instance.destroy();
+    expect(unrelated).toHaveBeenCalledOnce();
+  });
+
+  it("stops residual owned effects during destruction", async () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const state = reactive({ count: 0 });
+    const runs = vi.fn(() => void state.count);
+    const runner = effect(runs);
+    const internals = instance as unknown as { effects: Set<typeof runner> };
+    internals.effects.add(runner);
+
+    instance.destroy();
+    state.count = 1;
+    await $.star.nextUpdate();
+
+    expect(runs).toHaveBeenCalledOnce();
+    expect(internals.effects.size).toBe(0);
+  });
+
+  it("handles ignore and signal attribute changes and reports asynchronous cleanup failures", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1 }">
+        <div class="scope">
+          <button data-on:click__capture="$count++"></button>
+          <output data-text="$count"></output>
+        </div>
+      </section>
+    `;
+    const reports: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => reports.push(detail));
+    $("#app").star();
+    const scope = document.querySelector(".scope")!;
+    const button = document.querySelector("button")!;
+
+    scope.setAttribute("data-ignore", "");
+    await settled();
+    scope.removeAttribute("data-ignore");
+    await settled();
+    scope.setAttribute("data-signals", "{ count: 3 }");
+    scope.setAttribute("data-computed:double", "$count * 2");
+    await settled();
+    expect($("output").text()).toBe("3");
+
+    const cleanupFailure = new Error("async listener cleanup failed");
+    vi.spyOn(button, "removeEventListener").mockImplementation(() => {
+      throw cleanupFailure;
+    });
+    button.remove();
+    await settled();
+
+    expect(reports).toContain(cleanupFailure);
+  });
+
+  it("owns its observer under the declarative application identity", () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as { owner: string };
+    const observer = kernelForDocument(document)!
+      .resourceSummary()
+      .find(({ kind, owner }) => kind === "observer" && owner === `${internals.owner}:mutation`);
+
+    expect(internals.owner).toMatch(/^application:attributes:\d+$/);
+    expect(observer).toEqual({ kind: "observer", owner: `${internals.owner}:mutation` });
+  });
+
+  it("marks direct constructor rollback destroyed and aggregates cleanup failures", () => {
+    const root = document.createElement("section");
+    root.setAttribute("data-text", "(");
+    document.body.append(root);
+    const setupFailure = new Error("declarative setup failed");
+    const releaseFailure = new Error("declarative release failed");
+    let staged: DeclarativeApplication | undefined;
+    $(root).on("jquery-star:error", (_event, detail: { instance: DeclarativeApplication }) => {
+      staged = detail.instance;
+      throw setupFailure;
+    });
+    const removeData = vi.spyOn($, "removeData").mockImplementation(() => {
+      throw releaseFailure;
+    });
+
+    try {
+      expect(
+        () =>
+          new DeclarativeApplication($, root, kernelForDocument(document)!.applicationCapabilities),
+      ).toThrow(
+        expect.objectContaining({
+          message: "jQuery Star declarative setup rollback failed.",
+          errors: [setupFailure, releaseFailure],
+        }),
+      );
+      expect(staged?.destroyed).toBe(true);
+    } finally {
+      removeData.mockRestore();
+    }
+  });
+
+  it("identifies failures aggregated across declarative resource groups", () => {
+    document.body.innerHTML = `<section id="app"><i></i></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const internals = instance as unknown as {
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+    };
+    const cleanupFailure = new Error("directive cleanup failed");
+    internals.setCleanup(document.querySelector("i")!, "test:failure", () => {
+      throw cleanupFailure;
+    });
+    const releaseFailure = new Error("declarative data release failed");
+    const removeData = vi.spyOn($, "removeData").mockImplementation(() => {
+      throw releaseFailure;
+    });
+
+    try {
+      expect(() => instance.destroy()).toThrow(
+        expect.objectContaining({
+          message: "jQuery Star declarative destruction failed.",
+          errors: [cleanupFailure, releaseFailure],
+        }),
+      );
+    } finally {
+      removeData.mockRestore();
+    }
+  });
+
+  it("releases a declarative subtree through its lifecycle contract", () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <i data-destroy="@testDeclarativeRelease"></i>
+      </section>
+    `;
+    const released = vi.fn();
+    $.star.action("testDeclarativeRelease", released);
+    $("#app").star();
+    const instance = $("#app").star("instance")! as unknown as {
+      releaseTree(tree: Element): void;
+    };
+    const child = document.querySelector("i")!;
+
+    instance.releaseTree(child);
+    expect(released).toHaveBeenCalledOnce();
+  });
+
+  it("cancels only data-on cleanup requests", async () => {
+    document.body.innerHTML = `<section id="app"><button></button></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const button = document.querySelector("button")!;
+    const internals = instance as unknown as {
+      cleanupDirective(element: Element, attribute: string): void;
+    };
+    const signals: AbortSignal[] = [];
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const signal = init?.signal as AbortSignal;
+      signals.push(signal);
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener("abort", () => reject(new Error("request aborted")), {
+          once: true,
+        });
+      });
+    });
+
+    const first = instance.run(
+      $.star.get("/first", { openWhenHidden: true, requestCancellation: "cleanup" }),
+      { element: button, $element: $(button) },
+    );
+    internals.cleanupDirective(button, "customdata-on:");
+    expect(signals[0]?.aborted).toBe(false);
+    internals.cleanupDirective(button, "data-on:click");
+    expect(signals[0]?.aborted).toBe(true);
+    await first;
+    fetchMock.mockRestore();
+  });
+
+  it("identifies aggregated directive cleanup failures", async () => {
+    document.body.innerHTML = `<section id="app"><button></button></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const button = document.querySelector("button")!;
+    const internals = instance as unknown as {
+      cleanupDirective(element: Element, attribute: string): void;
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+    };
+    const cleanupFailure = new Error("listener cleanup failed");
+    const cancellationFailure = new Error("request cancellation failed");
+    internals.setCleanup(button, "data-on:click", () => {
+      throw cleanupFailure;
+    });
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const signal = init?.signal as AbortSignal;
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener("abort", () => reject(new Error("request aborted")), {
+          once: true,
+        });
+      });
+    });
+    const request = instance.run(
+      $.star.get("/slow", { openWhenHidden: true, requestCancellation: "cleanup" }),
+      { element: button, $element: $(button) },
+    );
+    const abort = vi.spyOn(AbortController.prototype, "abort").mockImplementation(() => {
+      throw cancellationFailure;
+    });
+
+    expect(() => internals.cleanupDirective(button, "data-on:click")).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star directive cleanup failed.",
+        errors: [cleanupFailure, cancellationFailure],
+      }),
+    );
+
+    abort.mockRestore();
+    instance.destroy();
+    await request;
+    fetchMock.mockRestore();
+  });
+
+  it("aggregates multiple declarative subtree cleanup failures", () => {
+    document.body.innerHTML = `<section id="app"><i></i><b></b></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")! as unknown as {
+      releaseTree(tree: Element): void;
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+    };
+    const first = new Error("first subtree failure");
+    const second = new Error("second subtree failure");
+    instance.setCleanup(document.querySelector("i")!, "test:first", () => {
+      throw first;
+    });
+    instance.setCleanup(document.querySelector("b")!, "test:second", () => {
+      throw second;
+    });
+
+    expect(() => instance.releaseTree(document.querySelector("#app")!)).toThrow(
+      expect.objectContaining({
+        message: "jQuery Star declarative subtree cleanup failed.",
+        errors: [first, second],
+      }),
+    );
+  });
+
+  it("retains declarative ownership inside preserved render subtrees", () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <div id="preserved"><button></button></div>
+        <div id="removed"><button></button></div>
+      </section>
+    `;
+    $("#app").star();
+    const instance = $("#app").star("instance")! as unknown as {
+      releaseTree(tree: Element, preservedRoots?: readonly Element[]): void;
+      setCleanup(element: Element, attribute: string, cleanup: () => void): void;
+    };
+    const app = document.querySelector("#app")!;
+    const preserved = document.querySelector("#preserved")!;
+    const removed = document.querySelector("#removed")!;
+    const preservedCleanup = vi.fn();
+    const removedCleanup = vi.fn();
+    instance.setCleanup(preserved.querySelector("button")!, "test:preserved", preservedCleanup);
+    instance.setCleanup(removed.querySelector("button")!, "test:removed", removedCleanup);
+
+    instance.releaseTree(app, [preserved]);
+
+    expect(preservedCleanup).not.toHaveBeenCalled();
+    expect(removedCleanup).toHaveBeenCalledOnce();
+  });
+
+  it("routes each declarative mutation kind to its exact lifecycle work", () => {
+    document.body.innerHTML = `<section id="app"><div class="target"></div></section>`;
+    $("#app").star();
+    const instance = $("#app").star("instance")!;
+    const target = document.querySelector(".target")!;
+    interface MutationInternals {
+      cleanupDirective(element: Element, attribute: string): void;
+      cleanupTree(tree: Element): void;
+      handleMutations(mutations: MutationRecord[]): void;
+      initializeComputed(element: Element, attribute: string): void;
+      initializeDirective(element: Element, attribute: string): void;
+      loadComputed(tree: Element): void;
+      loadSignals(tree: Element): void;
+      scanTree(tree: Element): void;
+    }
+    const internals = instance as unknown as MutationInternals;
+    const cleanupDirective = vi
+      .spyOn(internals, "cleanupDirective")
+      .mockImplementation(() => undefined);
+    const cleanupTree = vi.spyOn(internals, "cleanupTree").mockImplementation(() => undefined);
+    const initializeComputed = vi
+      .spyOn(internals, "initializeComputed")
+      .mockImplementation(() => undefined);
+    const initializeDirective = vi
+      .spyOn(internals, "initializeDirective")
+      .mockImplementation(() => undefined);
+    const loadComputed = vi.spyOn(internals, "loadComputed").mockImplementation(() => undefined);
+    const loadSignals = vi.spyOn(internals, "loadSignals").mockImplementation(() => undefined);
+    const scanTree = vi.spyOn(internals, "scanTree").mockImplementation(() => undefined);
+    const attributeMutation = (attributeName: string): MutationRecord =>
+      ({ type: "attributes", target, attributeName }) as unknown as MutationRecord;
+
+    target.setAttribute("data-ignore", "");
+    internals.handleMutations([attributeMutation("data-ignore")]);
+    expect(cleanupTree).toHaveBeenCalledWith(target);
+
+    target.removeAttribute("data-ignore");
+    internals.handleMutations([attributeMutation("data-ignore")]);
+    expect(loadSignals).toHaveBeenCalledWith(target);
+    expect(loadComputed).toHaveBeenCalledWith(target);
+    expect(scanTree).toHaveBeenCalledWith(target);
+
+    cleanupDirective.mockClear();
+    initializeDirective.mockClear();
+    target.setAttribute("data-ignore", "");
+    internals.handleMutations([attributeMutation("data-text")]);
+    expect(cleanupDirective).not.toHaveBeenCalled();
+    expect(initializeDirective).not.toHaveBeenCalled();
+    target.removeAttribute("data-ignore");
+
+    internals.handleMutations([attributeMutation("data-signals")]);
+    expect(cleanupDirective).toHaveBeenCalledWith(target, "data-signals");
+    expect(loadSignals).toHaveBeenCalledTimes(2);
+
+    internals.handleMutations([attributeMutation("data-computed:total")]);
+    expect(initializeComputed).toHaveBeenCalledWith(target, "data-computed:total");
+
+    internals.handleMutations([attributeMutation("data-text")]);
+    expect(initializeDirective).toHaveBeenCalledWith(target, "data-text");
+
+    const added = document.createElement("i");
+    internals.handleMutations([
+      {
+        type: "childList",
+        target,
+        addedNodes: [added],
+        removedNodes: [],
+      } as unknown as MutationRecord,
+    ]);
+    expect(loadSignals).toHaveBeenLastCalledWith(added, []);
+    expect(loadComputed).toHaveBeenLastCalledWith(added, []);
+    expect(scanTree).toHaveBeenLastCalledWith(added, []);
   });
 });

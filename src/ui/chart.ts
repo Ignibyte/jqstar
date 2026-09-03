@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   ChartData,
   ChartSeries,
@@ -152,7 +152,7 @@ function drawGrid(
   dimensions: { bottom: number; left: number; plotHeight: number; plotWidth: number; top: number },
 ): void {
   const grid = svgElement("g", { "data-part": "grid" });
-  for (let index = 0; index <= 4; index += 1) {
+  for (const index of [0, 1, 2, 3, 4]) {
     const ratio = index / 4;
     const y = dimensions.bottom - dimensions.plotHeight * ratio;
     grid.append(
@@ -390,7 +390,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createCharts(): ChartCollection {
+export function createCharts(registerAction: ActionRegistrar): ChartCollection {
   const api: StarChartStatic = {
     refresh: (target) => enhanceChart(resolve(target), true).root,
     setType: (target, type) => {

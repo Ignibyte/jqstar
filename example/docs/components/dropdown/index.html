@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dropdown · jQStar Components</title>
+    <meta
+      name="description"
+      content="Build accessible jQStar dropdown menus with roving focus, typeahead, selection, and positioning."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Dropdown</h1>
+      <p class="docs-lede">
+        A popup action menu with managed positioning, roving focus, typeahead, selection, disabled
+        items, checkbox and radio state, dismissal, and trigger focus return.
+      </p>
+
+      <div class="component-preview" data-jqs="tabs" data-value="preview">
+        <div data-part="list" aria-label="Dropdown menu example">
+          <button data-part="trigger" data-value="preview" type="button">Preview</button>
+          <button data-part="trigger" data-value="code" type="button">Code</button>
+        </div>
+        <section data-part="panel" data-value="preview">
+          <div class="preview-stage">
+            <div id="docs-actions-menu" data-jqs="menu" data-align="end">
+              <button data-jqs="button" data-part="trigger" type="button">Project actions</button>
+              <div data-part="content" aria-label="Project actions">
+                <button data-part="item" data-value="edit" type="button">Edit project</button>
+                <button
+                  data-part="checkbox-item"
+                  data-value="preview"
+                  data-checked="true"
+                  type="button"
+                >
+                  Show preview
+                </button>
+                <div data-part="separator"></div>
+                <button data-part="item" data-value="archive" type="button">Archive</button>
+                <button data-part="item" data-value="delete" data-disabled type="button">
+                  Delete permanently
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section data-part="panel" data-value="code">
+          <div class="code-block">
+            <div class="code-heading">
+              <span>dropdown-menu.html</span
+              ><button type="button" data-on:click="@site.copyCode">Copy</button>
+            </div>
+            <pre><code>&lt;div data-jqs="menu" data-align="end"&gt;
+  &lt;button data-part="trigger"&gt;Actions&lt;/button&gt;
+  &lt;div data-part="content" aria-label="Project actions"&gt;
+    &lt;button data-part="item" data-value="edit"&gt;Edit&lt;/button&gt;
+    &lt;button
+      data-part="checkbox-item"
+      data-value="preview"
+      data-checked="true"
+    &gt;
+      Show preview
+    &lt;/button&gt;
+    &lt;div data-part="separator"&gt;&lt;/div&gt;
+    &lt;button data-part="item" data-value="delete" data-disabled&gt;
+      Delete
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+      </div>
+
+      <h2>API Reference</h2>
+      <div class="api-table-wrap" role="region" aria-label="Dropdown Menu anatomy" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Contract</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>data-jqs="menu"</code></td>
+              <td>The positioned menu root.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="trigger"</code></td>
+              <td>The button that opens and receives focus after dismissal.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="content"</code></td>
+              <td>The generated menu surface and accessible menu owner.</td>
+            </tr>
+            <tr>
+              <td><code>item</code> / <code>checkbox-item</code> / <code>radio-item</code></td>
+              <td>Selectable item types with stable <code>data-value</code> identities.</td>
+            </tr>
+            <tr>
+              <td><code>data-disabled</code></td>
+              <td>Keeps an item focusable for discovery but prevents selection.</td>
+            </tr>
+            <tr>
+              <td><code>data-side</code> / <code>data-align</code></td>
+              <td>Preferred floating placement; collision handling remains automatic.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Keyboard Interactions</h2>
+      <ul class="keyboard-list">
+        <li><kbd>Enter / Space</kbd><span>Opens the menu or selects the focused item.</span></li>
+        <li>
+          <kbd>Arrow Up / Down</kbd><span>Moves focus among items and wraps at either end.</span>
+        </li>
+        <li><kbd>Home / End</kbd><span>Moves to the first or last menu item.</span></li>
+        <li>
+          <kbd>Typeahead</kbd
+          ><span>Moves to an item whose label starts with the typed characters.</span>
+        </li>
+        <li><kbd>Escape</kbd><span>Closes the menu and restores focus to its trigger.</span></li>
+      </ul>
+      <p>
+        The cancelable <code>jquery-star:menu:select</code> event can prevent a selection. Add
+        <code>data-close-on-select="false"</code> when a menu should remain open. Programmatic and
+        named actions are available under <code>$.star.ui.menu</code> and <code>@ui.menu.*</code>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

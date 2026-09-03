@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/release-report.schema.json",
+  "type": "object",
+  "required": ["schema", "runId", "mode", "status", "checks", "environment", "provenance"],
+  "properties": {
+    "schema": { "const": "jqstar-release-quality/1" },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "maxLength": 160
+    },
+    "mode": { "const": "release" },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "checks": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "prefixItems": [
+        { "$ref": "#/$defs/cleanInstallCheck" },
+        { "$ref": "#/$defs/reproducibleBuildCheck" },
+        { "$ref": "#/$defs/sbomCheck" },
+        { "$ref": "#/$defs/licensesCheck" },
+        { "$ref": "#/$defs/provenanceEligibilityCheck" },
+        { "$ref": "#/$defs/supportedToolchainCheck" },
+        { "$ref": "#/$defs/packedSelfHostedCheck" }
+      ],
+      "items": false
+    },
+    "environment": { "type": "object" },
+    "provenance": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "pass" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array",
+            "not": {
+              "type": "array",
+              "contains": {
+                "type": "object",
+                "properties": { "status": { "enum": ["fail", "error"] } },
+                "required": ["status"]
+              }
+            }
+          },
+          "environment": { "$ref": "#/$defs/environment" },
+          "provenance": { "$ref": "#/$defs/provenance" }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "fail" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": { "status": { "const": "fail" } },
+              "required": ["status"]
+            },
+            "not": {
+              "type": "array",
+              "contains": {
+                "type": "object",
+                "properties": { "status": { "const": "error" } },
+                "required": ["status"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "error" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": { "status": { "const": "error" } },
+              "required": ["status"]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["name", "status", "detail"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["pass", "fail", "error"] },
+        "detail": {}
+      },
+      "additionalProperties": false
+    },
+    "cleanInstallCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "clean-install" } } }
+      ]
+    },
+    "reproducibleBuildCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "reproducible-build" } },
+          "allOf": [
+            {
+              "if": {
+                "properties": { "status": { "const": "pass" } },
+                "required": ["status"]
+              },
+              "then": {
+                "properties": { "detail": { "$ref": "#/$defs/reproducibleBuildEvidence" } }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "sbomCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "sbom" } } }
+      ]
+    },
+    "licensesCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "licenses" } } }
+      ]
+    },
+    "provenanceEligibilityCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "provenance-eligibility" } }
+        }
+      ]
+    },
+    "supportedToolchainCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "supported-toolchain" } } }
+      ]
+    },
+    "packedSelfHostedCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "packed-self-hosted" } } }
+      ]
+    },
+    "browserVersion": {
+      "type": "object",
+      "required": ["version"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "budgetRatchet": {
+      "type": "object",
+      "required": ["status", "baseRevision", "reason", "failures"],
+      "properties": {
+        "status": { "enum": ["pass", "first-baseline", "not-applicable"] },
+        "baseRevision": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$" }
+          ]
+        },
+        "reason": { "type": "string", "minLength": 1 },
+        "failures": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "reproducibleBuildEvidence": {
+      "type": "object",
+      "required": [
+        "files",
+        "budgetRatchet",
+        "generatedOutputBudget",
+        "generatedOutputChanges",
+        "independentlyMaterializedWorkspaces",
+        "sha256"
+      ],
+      "properties": {
+        "files": { "type": "integer", "minimum": 1 },
+        "budgetRatchet": { "$ref": "#/$defs/budgetRatchet" },
+        "generatedOutputBudget": { "const": 0 },
+        "generatedOutputChanges": { "const": 0 },
+        "independentlyMaterializedWorkspaces": { "const": 2 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": ["node", "npm", "playwright", "typescript", "browsers"],
+      "properties": {
+        "node": { "type": "string", "pattern": "^v[0-9]+\\." },
+        "npm": { "type": "string", "pattern": "^[0-9]+\\." },
+        "playwright": { "type": "string", "pattern": "^Version [0-9]+\\." },
+        "typescript": { "type": "string", "pattern": "^Version [0-9]+\\." },
+        "browsers": {
+          "type": "object",
+          "required": ["chromium", "firefox", "webkit"],
+          "properties": {
+            "chromium": { "$ref": "#/$defs/browserVersion" },
+            "firefox": { "$ref": "#/$defs/browserVersion" },
+            "webkit": { "$ref": "#/$defs/browserVersion" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["eligible", "oidcEligible", "publishEligible", "repositoryEligible", "note"],
+      "properties": {
+        "eligible": { "type": "boolean" },
+        "oidcEligible": { "type": "boolean" },
+        "publishEligible": { "type": "boolean" },
+        "repositoryEligible": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

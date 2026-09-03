@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { ResizableTarget, StarContext, StarResizableStatic } from "../types";
 
 type Orientation = "horizontal" | "vertical";
@@ -444,7 +444,7 @@ function controlledResizable(context: StarContext, target?: unknown): HTMLElemen
   return resolveResizable(closest instanceof HTMLElement ? closest : String(target));
 }
 
-function registerActions(api: StarResizableStatic): void {
+function registerActions(api: StarResizableStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.resizable.set", (context) => {
     const first = context.args?.[0];
     const explicit = typeof first === "string" && first.startsWith("#");
@@ -487,7 +487,7 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-export function createResizables(): ResizableCollection {
+export function createResizables(registerAction: ActionRegistrar): ResizableCollection {
   const api: StarResizableStatic = {
     set: (target, sizes) => {
       const root = resolveResizable(target);
@@ -522,6 +522,6 @@ export function createResizables(): ResizableCollection {
       return [...(records.get(root) ?? enhanceResizable(root)).sizes];
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { EditableTarget, StarContext, StarEditableStatic } from "../types";
 
 interface EditableCollection {
@@ -279,7 +279,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createEditables(): EditableCollection {
+export function createEditables(registerAction: ActionRegistrar): EditableCollection {
   const api: StarEditableStatic = {
     cancel: (target) => cancel(recordFor(resolve(target))),
     commit: (target) => commit(recordFor(resolve(target))),

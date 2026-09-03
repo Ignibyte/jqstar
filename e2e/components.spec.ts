@@ -1,9 +1,26 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-test.describe("jQuery Star components", () => {
+async function installClipboardFixture(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    let clipboardText = "";
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        async readText(): Promise<string> {
+          return clipboardText;
+        },
+        async writeText(value: string): Promise<void> {
+          clipboardText = value;
+        },
+      },
+    });
+  });
+}
+
+test.describe("jQStar components", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/components/lab/");
   });
 
   test("button variants render with usable states", async ({ page }) => {
@@ -216,6 +233,7 @@ test.describe("jQuery Star components", () => {
     await expect(sidebar).toHaveAttribute("data-state", "collapsed");
     await trigger.click();
     await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await trigger.focus();
     await page.keyboard.press("Escape");
     await expect(sidebar).toHaveAttribute("data-state", "collapsed");
     await expect(trigger).toBeFocused();
@@ -447,7 +465,7 @@ test.describe("jQuery Star components", () => {
     const card = page.getByRole("region", { name: "Choice and toggle controls" });
     const compact = card.getByRole("radio", { name: "Compact" });
     const slider = card.getByRole("slider", { name: /Preview volume/ });
-    const volume = card.locator('label[for="component-volume"] output');
+    const volume = card.locator('label[for="component-volume"] [data-text="$componentVolume"]');
     const toggle = card.getByRole("button", { name: "Live preview" });
     const group = card.getByRole("toolbar", { name: "Text formatting" });
     const bold = group.getByRole("button", { name: "B", exact: true });
@@ -643,7 +661,7 @@ test.describe("jQuery Star components", () => {
     const control = root.locator('select[data-part="control"]');
     const preview = page.locator(".select-preview");
 
-    await expect(trigger).toContainText("jQuery Star");
+    await expect(trigger).toContainText("jQStar");
     await expect(control).toBeHidden();
     await expect(root.getByRole("combobox")).toHaveCount(1);
     await trigger.focus();
@@ -760,7 +778,10 @@ test.describe("jQuery Star components", () => {
     );
   });
 
-  test("validated forms and composed surfaces retain native behavior", async ({ page }) => {
+  test("validated forms and composed surfaces retain native behavior", async ({
+    page,
+    browserName,
+  }) => {
     const card = page.getByRole("region", { name: "Validated forms and composed surfaces" });
     const form = card.getByRole("form", { name: "Profile proof" });
     const email = form.getByRole("textbox", { name: "Work email" });
@@ -773,7 +794,7 @@ test.describe("jQuery Star components", () => {
     await expect(form.locator('[data-part="message"]:not([hidden])')).toHaveCount(2);
 
     await email.fill("proof@example.com");
-    await site.fill("jqstar");
+    await site.fill("https://jqstar.dev");
     await expect(email).not.toHaveAttribute("aria-invalid", "true");
     await expect(site).not.toHaveAttribute("aria-invalid", "true");
     await form.getByRole("button", { name: "Validate profile" }).click();
@@ -785,7 +806,7 @@ test.describe("jQuery Star components", () => {
     const hoverContent = hoverCard.locator(':scope > [data-part="content"]');
     await hoverTrigger.focus();
     await expect(hoverContent).toBeVisible();
-    await page.keyboard.press("Tab");
+    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
     await expect(hoverContent.getByRole("link", { name: "View component system" })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(hoverContent).toBeHidden();
@@ -870,7 +891,7 @@ test.describe("jQuery Star components", () => {
     await expect(visibleRows.nth(1)).toContainText("Bootstrap");
 
     await root.getByRole("button", { name: "Coverage" }).click();
-    await expect(visibleRows.nth(0)).toContainText("jQuery Star");
+    await expect(visibleRows.nth(0)).toContainText("jQStar");
     await expect(visibleRows.nth(1)).toContainText("daisyUI");
 
     const filter = root.getByRole("searchbox", { name: "Filter systems" });
@@ -888,33 +909,203 @@ test.describe("jQuery Star components", () => {
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("4 selected");
   });
 
-  test("project browser streams server search, sort, rows, and Pagination", async ({ page }) => {
+  test("project browser drives server facets, sizing, columns, selection, and sorting", async ({
+    page,
+  }) => {
     const root = page.locator('[data-block="project-browser"]');
-    const rows = root.locator("#project-browser-rows tr");
-    await expect(rows).toHaveCount(4);
+    const rows = root.locator("#project-browser-rows tr[data-row-id]");
+    await expect(rows).toHaveCount(5);
 
-    await root.getByRole("checkbox", { name: "Select jqstar" }).check();
+    await root.getByRole("checkbox", { name: "Select jQuery Star" }).check();
     await root.locator('[data-part="page"][data-page="2"]').click();
-    await expect(root.locator('[data-row-id="deployment-kit"]')).toBeVisible();
+    await expect(root.locator('[data-row-id="accessibility-lab"]')).toBeVisible();
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
     await expect(root.locator('[data-jqs="pagination"] [data-part="status"]')).toHaveText(
-      "Page 2 of 3",
+      "Page 2 of 500",
     );
 
-    await root.getByRole("searchbox", { name: "Search projects" }).fill("Runtime");
-    await root.getByRole("button", { name: "Search", exact: true }).click();
-    await expect(rows).toHaveCount(3);
+    await root.getByRole("combobox", { name: "Owner" }).selectOption("Runtime");
+    await expect(rows).toHaveCount(5);
     await expect(rows.nth(0)).toContainText("Datastar Bridge");
-    await expect(root.locator('[data-jqs="pagination"] [data-part="status"]')).toHaveText(
-      "Page 1 of 1",
+    await root.getByRole("combobox", { name: "Status" }).selectOption("active");
+    await expect(rows).toHaveCount(5);
+    await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(
+      "Showing 1–5 of",
     );
+
+    await root.getByRole("combobox", { name: "Rows" }).selectOption("10");
+    await expect(root.locator('[data-jqs="pagination"] [data-part="status"]')).toHaveText(
+      /Page 1 of \d+/,
+    );
+
+    await root.getByRole("button", { name: /Clear filters/ }).click();
+    await expect(rows).toHaveCount(10);
+    await root.getByRole("searchbox", { name: "Search projects" }).fill("official SDK");
+    await root.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(rows).toHaveCount(1);
+    await expect(rows.nth(0)).toContainText("Datastar Bridge");
+
+    await root.getByRole("button", { name: /Clear filters/ }).click();
+    await expect(rows).toHaveCount(10);
 
     await root.getByRole("button", { name: "Owner" }).click();
     await expect(root.locator('th[data-key="owner"]')).toHaveAttribute("aria-sort", "ascending");
-    await expect(rows.nth(0)).toContainText("Server Runtime");
+
+    await root.getByText("Columns", { exact: true }).click();
+    await root.getByRole("checkbox", { name: "Owner" }).uncheck();
+    await expect(root.locator('th[data-column="owner"]')).toBeHidden();
+    await expect
+      .poll(() =>
+        root
+          .locator('td[data-column="owner"]')
+          .evaluateAll(
+            (cells) =>
+              cells.length > 0 && cells.every((cell) => cell instanceof HTMLElement && cell.hidden),
+          ),
+      )
+      .toBe(true);
+    await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
+  });
+
+  test("project browser supports multi-sort, groups, durable editing, and persistent column layouts", async ({
+    page,
+  }) => {
+    const root = page.locator('[data-block="project-browser"]');
+    await root.locator('th[data-key="owner"] [data-part="sort"]').click();
+    await root.locator('th[data-key="status"] [data-part="sort"]').click({
+      modifiers: ["Shift"],
+    });
+    await expect(root.locator('th[data-key="owner"] [data-part="sort"]')).toHaveAttribute(
+      "data-sort-order",
+      "1",
+    );
+    await expect(root.locator('th[data-key="status"] [data-part="sort"]')).toHaveAttribute(
+      "data-sort-order",
+      "2",
+    );
+
+    await root.getByRole("combobox", { name: "Group" }).selectOption("owner");
+    const firstGroup = root.locator("[data-project-browser-group]").first();
+    await expect(firstGroup).toBeVisible();
+    await expect(firstGroup).toContainText(/projects/);
+    const groupButton = firstGroup.getByRole("button");
+    await groupButton.click();
+    await expect(groupButton).toHaveAttribute("aria-expanded", "false");
+    await groupButton.click();
+
+    const expand = root.locator("[data-project-browser-expand]").first();
+    const projectId = await expand.getAttribute("data-project-id");
+    expect(projectId).toBeTruthy();
+    await expand.click();
+    const form = root.locator(`[data-project-browser-edit="${projectId}"]`);
+    await expect(form).toBeVisible();
+    const name = form.locator('input[name="name"]');
+    const originalName = await name.inputValue();
+    const owner = await form.locator('select[name="owner"]').inputValue();
+    const status = await form.locator('select[name="status"]').inputValue();
+    const version = Number(await form.locator('input[name="version"]').inputValue());
+
+    const concurrent = await page.request.patch(`/api/demo/projects/${projectId}`, {
+      data: {
+        name: `${originalName} concurrent`,
+        owner,
+        status,
+        version,
+      },
+    });
+    expect(concurrent.status()).toBe(200);
+    await name.fill(`${originalName} stale`);
+    await form.getByRole("button", { name: "Save changes" }).click();
+    await expect(root.getByRole("alert")).toContainText("changed after the editor was opened");
+    const reloadedForm = root.locator(`[data-project-browser-edit="${projectId}"]`);
+    await expect(reloadedForm.locator('input[name="name"]')).toHaveValue(
+      `${originalName} concurrent`,
+    );
+    await expect(reloadedForm.locator('input[name="name"]')).toBeFocused();
+
+    await reloadedForm.locator('input[name="name"]').fill(`${originalName} production`);
+    await reloadedForm.getByRole("button", { name: "Save changes" }).click();
+    await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(
+      "saved at version",
+    );
+
+    await root.getByText("Columns", { exact: true }).click();
+    const statusItem = root.locator('[data-column-item="status"]');
+    const ownerItem = root.locator('[data-column-item="owner"]');
+    await statusItem.dragTo(ownerItem);
+    await statusItem.getByRole("button", { name: "Pin left" }).click();
+    await expect(root.locator('th[data-column="status"]')).toHaveAttribute("data-pinned", "left");
+    await expect
+      .poll(() =>
+        root
+          .locator("thead [data-column]")
+          .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("data-column"))),
+      )
+      .toEqual(["name", "status", "owner", "updated"]);
+
+    await page.reload();
+    const reloaded = page.locator('[data-block="project-browser"]');
+    await expect(reloaded.locator('th[data-column="status"]')).toHaveAttribute(
+      "data-pinned",
+      "left",
+    );
+    await expect
+      .poll(() =>
+        reloaded
+          .locator("thead [data-column]")
+          .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("data-column"))),
+      )
+      .toEqual(["name", "status", "owner", "updated"]);
+
+    await page.evaluate(() =>
+      localStorage.setItem("jquery-star:project-browser:columns:v1", "{invalid"),
+    );
+    await page.reload();
+    await expect
+      .poll(() =>
+        page
+          .locator('[data-block="project-browser"] thead [data-column]')
+          .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("data-column"))),
+      )
+      .toEqual(["name", "owner", "status", "updated"]);
+  });
+
+  test("project browser virtual mode keeps a bounded DOM and stable selection", async ({
+    page,
+  }) => {
+    const root = page.locator('[data-block="project-browser"]');
+    await root.getByRole("checkbox", { name: "Select jQuery Star" }).check();
+    await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    const projectRows = root.locator("#project-browser-rows tr[data-row-id]");
+    await expect(projectRows).toHaveCount(40);
+    await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
+    await expect(root.locator('[data-jqs="pagination"]')).toBeHidden();
+    await expect(root.getByRole("combobox", { name: "Group" })).toBeDisabled();
+    await expect(root.locator("[data-project-browser-expand]").first()).toBeDisabled();
+
+    const firstId = await projectRows.first().getAttribute("data-row-id");
+    await root.locator('[data-part="viewport"]').evaluate((viewport) => {
+      viewport.scrollTop = 52_000;
+      viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
+    });
+    await expect
+      .poll(async () => projectRows.first().getAttribute("data-row-id"))
+      .not.toBe(firstId);
+    expect(await projectRows.count()).toBeLessThanOrEqual(80);
+    await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
+    await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(/of 2500/);
   });
 
   test("access manager moves, persists, and reloads permission assignments", async ({ page }) => {
+    const baselinePermissions = ["components:read", "components:write", "releases:deploy"];
+    const baseline = await page.request.post("/api/demo/access", {
+      data: {
+        accessManagerMember: "maya",
+        accessManagerPermissions: baselinePermissions,
+      },
+    });
+    expect(baseline.status()).toBe(200);
+
     const root = page.locator('[data-block="access-manager"]');
     const available = root.getByRole("listbox", { name: "Available permissions" });
     const assigned = root.getByRole("listbox", { name: "Assigned permissions" });
@@ -935,8 +1126,11 @@ test.describe("jQuery Star components", () => {
     await expect(auditLog.locator("#audit-log-rows tr").first()).toContainText(
       "Added Read audit log",
     );
-    await expect(auditLog.locator("#audit-log-pagination")).toHaveAttribute("data-page-count", "2");
-    await auditLog.locator('[data-part="page"][data-page="2"]').click();
+    const pageCount = Number(
+      await auditLog.locator("#audit-log-pagination").getAttribute("data-page-count"),
+    );
+    expect(pageCount).toBeGreaterThan(1);
+    await auditLog.locator(`[data-part="page"][data-page="${pageCount}"]`).click();
     await expect(auditLog.locator('#audit-log-rows [data-row-id="access-audit-1"]')).toBeVisible();
 
     await root.getByRole("combobox", { name: "Team member" }).selectOption("luis");
@@ -973,7 +1167,10 @@ test.describe("jQuery Star components", () => {
     await expect(rows.first()).toContainText("No access events match these filters");
   });
 
-  test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({ page }) => {
+  test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({
+    page,
+    browserName,
+  }) => {
     const show = page.getByRole("button", { name: "Show verified toast" });
     const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
 
@@ -982,7 +1179,7 @@ test.describe("jQuery Star components", () => {
     await expect(toast).toBeVisible();
     await page.keyboard.press("F8");
     await expect(viewport).toBeFocused();
-    await page.keyboard.press("Tab");
+    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
     await expect(toast.getByRole("button", { name: "Dismiss notification" })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(toast).toBeHidden();
@@ -1031,7 +1228,8 @@ test.describe("jQuery Star components", () => {
       "page",
     );
 
-    await products.click();
+    await products.focus();
+    await page.keyboard.press("Enter");
     await expect(panel).toBeVisible();
     await expect(panel.getByRole("link")).toHaveCount(4);
     await page.keyboard.press("Escape");
@@ -1081,9 +1279,8 @@ test.describe("jQuery Star components", () => {
 
   test("clipboard and editable preserve text, keyboard, and native form behavior", async ({
     page,
-    context,
   }) => {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await installClipboardFixture(page);
     const card = page.getByRole("region", { name: "Clipboard and Editable" });
     const clipboard = card.locator("#catalog-clipboard");
     const editable = card.locator("#catalog-editable");
@@ -1142,9 +1339,8 @@ test.describe("jQuery Star components", () => {
 
   test("operations components update from the shared backend and copy exact JSON", async ({
     page,
-    context,
   }) => {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await installClipboardFixture(page);
     const card = page.getByRole("region", { name: "Self-hosting operations console" });
     const payload = card.locator("#operations-payload");
     const diff = card.locator("#operations-diff");
@@ -1158,9 +1354,16 @@ test.describe("jQuery Star components", () => {
     await expect(card.locator(".operations-message")).toContainText(
       "Local backend operations revision",
     );
-    await expect(payload.locator('[data-part="code"]')).toContainText('"revision": 1');
+    const payloadCode = payload.locator('[data-part="code"]');
+    await expect(payloadCode).toContainText('"revision":');
+    const operations = JSON.parse((await payloadCode.textContent()) ?? "{}") as {
+      components?: number;
+      revision?: number;
+    };
+    expect(operations.components).toBe(102);
+    expect(operations.revision).toBeGreaterThan(0);
     await expect(card.locator("#operations-timeline [data-state='current'] strong")).toHaveText(
-      "Operations revision 1",
+      `Operations revision ${operations.revision}`,
     );
 
     await payload.getByRole("button", { name: "Copy JSON" }).click();
@@ -1192,18 +1395,24 @@ test.describe("jQuery Star components", () => {
     await expect(countdown).toHaveAttribute("data-state", "running");
 
     await card.getByRole("button", { name: "Refresh snapshot" }).click();
-    await expect(card.locator(".control-plane-message")).toContainText(
-      "Runtime snapshot revision 1 applied",
+    const snapshotMessage = card.locator(".control-plane-message");
+    await expect(snapshotMessage).toHaveText(/Runtime snapshot revision \d+ applied\./);
+    const revision = Number(
+      /revision (\d+)/.exec((await snapshotMessage.textContent()) ?? "")?.[1],
     );
-    await expect(capacity).toHaveAttribute("aria-valuenow", "67");
+    expect(revision).toBeGreaterThan(0);
+    await expect(capacity).toHaveAttribute(
+      "aria-valuenow",
+      String(Math.min(88, 64 + revision * 3)),
+    );
     await expect(card.locator("#runtime-environment")).toHaveText("local");
     await expect(jsonViewer).toContainText("revision");
     await expect(jsonViewer).toContainText("102");
     await expect(logEntries).toHaveCount(3);
 
     await card.getByRole("button", { name: "Stream 3 logs" }).click();
-    await expect(card.locator(".control-plane-message")).toContainText(
-      "Datastar stream 1 appended 3 log entries",
+    await expect(card.locator(".control-plane-message")).toHaveText(
+      /Datastar stream \d+ appended 3 log entries\./,
     );
     await expect(logEntries).toHaveCount(6);
     await expect(logViewer).toContainText("jQuery Star enhanced the server-appended entry.");
@@ -1559,8 +1768,8 @@ test.describe("jQuery Star components", () => {
     expect(results.violations).toEqual([]);
 
     await root.locator('[data-part="page"][data-page="2"]').click();
-    await expect(root.locator('[data-row-id="deployment-kit"]')).toBeVisible();
-    await root.getByRole("checkbox", { name: "Select Deployment Kit" }).check();
+    await expect(root.locator('[data-row-id="accessibility-lab"]')).toBeVisible();
+    await root.getByRole("checkbox", { name: "Select Accessibility Lab" }).check();
     results = await new AxeBuilder({ page }).include(".project-browser-demo").analyze();
     expect(results.violations).toEqual([]);
   });

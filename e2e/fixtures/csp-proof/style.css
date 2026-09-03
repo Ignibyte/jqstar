@@ -1,0 +1,27 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 1rem;
+  max-width: 48rem;
+}
+
+button,
+input {
+  font: inherit;
+  margin: 0.25rem;
+}
+
+output,
+section {
+  display: block;
+  margin-block: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+  }
+}

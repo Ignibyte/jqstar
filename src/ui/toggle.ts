@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   StarContext,
   StarToggleGroupStatic,
@@ -373,7 +373,11 @@ function controlledGroup(context: StarContext, target?: unknown): HTMLElement {
   return resolveGroup(closest instanceof HTMLElement ? closest : String(target));
 }
 
-function registerActions(toggle: StarToggleStatic, group: StarToggleGroupStatic): void {
+function registerActions(
+  toggle: StarToggleStatic,
+  group: StarToggleGroupStatic,
+  registerAction: ActionRegistrar,
+): void {
   registerAction("ui.toggle.press", (context) => {
     const first = context.args?.[0];
     const explicitTarget = typeof first === "string" && first.startsWith("#");
@@ -403,7 +407,7 @@ function registerActions(toggle: StarToggleStatic, group: StarToggleGroupStatic)
   });
 }
 
-export function createToggles(): ToggleCollection {
+export function createToggles(registerAction: ActionRegistrar): ToggleCollection {
   const toggle: StarToggleStatic = {
     press: (target, pressed = true) => requestToggle(resolveToggle(target), pressed),
     toggle: (target) => {
@@ -432,6 +436,6 @@ export function createToggles(): ToggleCollection {
       return groupType(root) === "multiple" ? values : values[0];
     },
   };
-  registerActions(toggle, toggleGroup);
+  registerActions(toggle, toggleGroup, registerAction);
   return { toggle, toggleGroup, enhance: enhanceTree };
 }

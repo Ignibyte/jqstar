@@ -2,17 +2,18 @@
   data-jqs="card"
   data-block="project-browser"
   data-projects-url="/api/demo/projects"
-  data-signals="{ projectBrowserQuery: '', projectBrowserPage: 1, projectBrowserSort: 'name', projectBrowserDirection: 'ascending', projectBrowserCount: 12, projectBrowserLoading: false, projectBrowserError: null, projectBrowserMessage: '12 projects available.' }"
+  data-signals="{ projectBrowserQuery: '', projectBrowserOwner: 'all', projectBrowserStatus: 'all', projectBrowserPage: 1, projectBrowserPageSize: 5, projectBrowserSort: 'updated', projectBrowserDirection: 'descending', projectBrowserSorts: [{ key: 'updated', direction: 'descending' }], projectBrowserGroupBy: 'none', projectBrowserMode: 'page', projectBrowserWindowStart: 0, projectBrowserWindowSize: 40, projectBrowserRequestId: 0, projectBrowserCount: 2500, projectBrowserRangeStart: 1, projectBrowserRangeEnd: 5, projectBrowserActiveFilters: 0, projectBrowserLoading: false, projectBrowserError: null, projectBrowserMessage: 'Showing 1–5 of 2500 projects.' }"
   aria-labelledby="project-browser-title"
 >
   <header data-part="header">
     <div>
-      <h2 id="project-browser-title" data-part="title">Project browser</h2>
+      <h2 id="project-browser-title" data-part="title">Project data explorer</h2>
       <p data-part="description">
-        Search, sort, selection, and pagination over Datastar SDK patches.
+        Persistent server queries, multi-sort, groups, inline editing, column layouts, and virtual
+        windows over Datastar SDK patches.
       </p>
     </div>
-    <span data-jqs="badge" data-variant="success">Backend + SDK</span>
+    <span data-jqs="badge" data-variant="success">Live Datastar table</span>
   </header>
 
   <form
@@ -29,83 +30,444 @@
         data-bind:project-browser-query
         type="search"
         name="query"
-        placeholder="Name, owner, or status"
+        placeholder="Project, description, owner, or status"
       />
       <button data-part="clear" type="button">Clear</button>
       <button data-part="submit" type="submit">Search</button>
     </div>
   </form>
 
+  <div data-project-browser-part="controls">
+    <div data-project-browser-part="facets">
+      <label for="project-browser-owner">
+        Owner
+        <select
+          id="project-browser-owner"
+          data-project-browser-control="owner"
+          data-bind:project-browser-owner
+          data-on:change="@projectBrowser.filter"
+        >
+          <option value="all">All owners</option>
+          <option value="Data">Data</option>
+          <option value="Design Systems">Design Systems</option>
+          <option value="Developer Experience">Developer Experience</option>
+          <option value="Operations">Operations</option>
+          <option value="Platform">Platform</option>
+          <option value="Quality">Quality</option>
+          <option value="Runtime">Runtime</option>
+          <option value="Security">Security</option>
+        </select>
+      </label>
+
+      <label for="project-browser-status">
+        Status
+        <select
+          id="project-browser-status"
+          data-project-browser-control="status"
+          data-bind:project-browser-status
+          data-on:change="@projectBrowser.filter"
+        >
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="planning">Planning</option>
+          <option value="paused">Paused</option>
+        </select>
+      </label>
+
+      <button
+        data-jqs="button"
+        data-variant="ghost"
+        type="button"
+        data-on:click="@projectBrowser.clearFilters"
+        data-prop:disabled="$projectBrowserActiveFilters === 0"
+      >
+        Clear filters
+        <span
+          data-show="$projectBrowserActiveFilters > 0"
+          data-text="$projectBrowserActiveFilters"
+        ></span>
+      </button>
+    </div>
+
+    <div data-project-browser-part="view-options">
+      <label for="project-browser-page-size">
+        Rows
+        <select
+          id="project-browser-page-size"
+          data-project-browser-control="page-size"
+          data-on:change="@projectBrowser.pageSize"
+        >
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+        </select>
+      </label>
+
+      <label for="project-browser-group">
+        Group
+        <select
+          id="project-browser-group"
+          data-project-browser-control="group"
+          data-on:change="@projectBrowser.group"
+        >
+          <option value="none" selected>No grouping</option>
+          <option value="owner">Owner</option>
+          <option value="status">Status</option>
+        </select>
+      </label>
+
+      <label for="project-browser-mode">
+        View
+        <select
+          id="project-browser-mode"
+          data-project-browser-control="mode"
+          data-on:change="@projectBrowser.mode"
+        >
+          <option value="page" selected>Pages</option>
+          <option value="virtual">Virtual scroll</option>
+        </select>
+      </label>
+
+      <details data-project-browser-part="columns">
+        <summary>Columns</summary>
+        <p>
+          Drag columns or use the move buttons. Pinned columns stay visible on horizontal scroll.
+        </p>
+        <div data-project-browser-part="column-list" role="list" aria-label="Column layout">
+          <div
+            data-column-item="name"
+            draggable="true"
+            role="listitem"
+            data-on:dragstart="@projectBrowser.columnDragStart"
+            data-on:dragover__prevent="@projectBrowser.columnDragOver"
+            data-on:drop__prevent="@projectBrowser.columnDrop"
+          >
+            <span>Project <small>Required</small></span>
+            <button
+              type="button"
+              data-column-move="previous"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Project left"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              data-column-move="next"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Project right"
+            >
+              →
+            </button>
+            <button
+              type="button"
+              data-column-pin="name"
+              data-on:click="@projectBrowser.columnPin"
+              aria-pressed="true"
+            >
+              Unpin
+            </button>
+          </div>
+          <div
+            data-column-item="owner"
+            draggable="true"
+            role="listitem"
+            data-on:dragstart="@projectBrowser.columnDragStart"
+            data-on:dragover__prevent="@projectBrowser.columnDragOver"
+            data-on:drop__prevent="@projectBrowser.columnDrop"
+          >
+            <label
+              ><input
+                type="checkbox"
+                data-column-toggle="owner"
+                data-on:change="@projectBrowser.columns"
+                checked
+              />
+              Owner</label
+            >
+            <button
+              type="button"
+              data-column-move="previous"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Owner left"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              data-column-move="next"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Owner right"
+            >
+              →
+            </button>
+            <button
+              type="button"
+              data-column-pin="owner"
+              data-on:click="@projectBrowser.columnPin"
+              aria-pressed="false"
+            >
+              Pin left
+            </button>
+          </div>
+          <div
+            data-column-item="status"
+            draggable="true"
+            role="listitem"
+            data-on:dragstart="@projectBrowser.columnDragStart"
+            data-on:dragover__prevent="@projectBrowser.columnDragOver"
+            data-on:drop__prevent="@projectBrowser.columnDrop"
+          >
+            <label
+              ><input
+                type="checkbox"
+                data-column-toggle="status"
+                data-on:change="@projectBrowser.columns"
+                checked
+              />
+              Status</label
+            >
+            <button
+              type="button"
+              data-column-move="previous"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Status left"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              data-column-move="next"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Status right"
+            >
+              →
+            </button>
+            <button
+              type="button"
+              data-column-pin="status"
+              data-on:click="@projectBrowser.columnPin"
+              aria-pressed="false"
+            >
+              Pin left
+            </button>
+          </div>
+          <div
+            data-column-item="updated"
+            draggable="true"
+            role="listitem"
+            data-on:dragstart="@projectBrowser.columnDragStart"
+            data-on:dragover__prevent="@projectBrowser.columnDragOver"
+            data-on:drop__prevent="@projectBrowser.columnDrop"
+          >
+            <label
+              ><input
+                type="checkbox"
+                data-column-toggle="updated"
+                data-on:change="@projectBrowser.columns"
+                checked
+              />
+              Updated</label
+            >
+            <button
+              type="button"
+              data-column-move="previous"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Updated left"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              data-column-move="next"
+              data-on:click="@projectBrowser.columnMove"
+              aria-label="Move Updated right"
+            >
+              →
+            </button>
+            <button
+              type="button"
+              data-column-pin="updated"
+              data-on:click="@projectBrowser.columnPin"
+              aria-pressed="false"
+            >
+              Pin left
+            </button>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
   <div
     id="project-browser-table"
     data-jqs="data-table"
     data-processing="manual"
     data-page="1"
-    data-sort="name"
-    data-direction="ascending"
+    data-sort="updated"
+    data-direction="descending"
+    data-sorts='[{"key":"updated","direction":"descending"}]'
     data-on:jquery-star:data-table:sort="@projectBrowser.sort"
-    data-attr:aria-busy="$projectBrowserLoading"
+    data-attr:aria-busy="$projectBrowserLoading ? 'true' : null"
   >
     <div data-part="toolbar">
       <span data-part="selection-status">0 selected</span>
-      <span data-text="$projectBrowserCount + ' matching projects'"></span>
+      <span><strong data-text="$projectBrowserCount"></strong> matching projects</span>
+      <span data-show="$projectBrowserLoading" role="status">Updating results…</span>
     </div>
-    <div data-part="viewport">
+    <div
+      data-part="viewport"
+      data-mode="page"
+      data-on:scroll__passive="@projectBrowser.virtualScroll"
+      tabindex="0"
+      aria-label="Project results table"
+    >
       <table data-part="table">
         <caption>
-          Projects returned by the backend
+          Projects returned by the backend. Select a sort button normally to replace sorting, or
+          hold Shift to add that column to the ordered sort.
         </caption>
         <thead>
           <tr>
             <th scope="col">
               <input data-part="select-all" type="checkbox" aria-label="Select visible projects" />
             </th>
-            <th scope="col" data-key="name" aria-sort="ascending">
+            <th scope="col" data-key="name" data-column="name">
               <button data-part="sort" type="button">Project</button>
             </th>
-            <th scope="col" data-key="owner">
+            <th scope="col" data-key="owner" data-column="owner">
               <button data-part="sort" type="button">Owner</button>
             </th>
-            <th scope="col" data-key="status">
+            <th scope="col" data-key="status" data-column="status">
               <button data-part="sort" type="button">Status</button>
             </th>
-            <th scope="col" data-key="updated" data-type="date">
+            <th
+              scope="col"
+              data-key="updated"
+              data-type="date"
+              data-column="updated"
+              aria-sort="descending"
+            >
               <button data-part="sort" type="button">Updated</button>
             </th>
           </tr>
         </thead>
         <tbody id="project-browser-rows">
-          <tr data-row-id="jqstar">
-            <td><input data-part="row-select" type="checkbox" aria-label="Select jqstar" /></td>
-            <th scope="row" data-key="name">jqstar</th>
-            <td data-key="owner">Platform</td>
-            <td data-key="status"><span data-jqs="badge" data-variant="success">Active</span></td>
-            <td data-key="updated" data-value="2026-08-28">Aug 28, 2026</td>
+          <tr data-row-id="jqstar" data-project-version="1">
+            <td>
+              <input data-part="row-select" type="checkbox" aria-label="Select jQuery Star" />
+            </td>
+            <th scope="row" data-key="name" data-column="name">
+              <button
+                data-project-browser-expand
+                data-project-id="jqstar"
+                data-on:click="@projectBrowser.expand"
+                type="button"
+                aria-expanded="false"
+                aria-controls="project-browser-details-jqstar"
+              >
+                <span aria-hidden="true">›</span
+                ><span class="sr-only">Show details for </span>jQuery Star
+              </button>
+            </th>
+            <td data-key="owner" data-column="owner">Platform</td>
+            <td data-key="status" data-column="status" data-value="active">
+              <span data-jqs="badge" data-variant="success">Active</span>
+            </td>
+            <td data-key="updated" data-column="updated" data-value="2026-08-30">Aug 30, 2026</td>
           </tr>
-          <tr data-row-id="registry-cli">
+          <tr data-row-id="registry-cli" data-project-version="1">
             <td>
               <input data-part="row-select" type="checkbox" aria-label="Select Registry CLI" />
             </td>
-            <th scope="row" data-key="name">Registry CLI</th>
-            <td data-key="owner">Developer Experience</td>
-            <td data-key="status"><span data-jqs="badge" data-variant="success">Active</span></td>
-            <td data-key="updated" data-value="2026-08-27">Aug 27, 2026</td>
+            <th scope="row" data-key="name" data-column="name">
+              <button
+                data-project-browser-expand
+                data-project-id="registry-cli"
+                data-on:click="@projectBrowser.expand"
+                type="button"
+                aria-expanded="false"
+                aria-controls="project-browser-details-registry-cli"
+              >
+                <span aria-hidden="true">›</span
+                ><span class="sr-only">Show details for </span>Registry CLI
+              </button>
+            </th>
+            <td data-key="owner" data-column="owner">Developer Experience</td>
+            <td data-key="status" data-column="status" data-value="active">
+              <span data-jqs="badge" data-variant="success">Active</span>
+            </td>
+            <td data-key="updated" data-column="updated" data-value="2026-08-29">Aug 29, 2026</td>
           </tr>
-          <tr data-row-id="datastar-bridge">
+          <tr data-row-id="datastar-bridge" data-project-version="1">
             <td>
               <input data-part="row-select" type="checkbox" aria-label="Select Datastar Bridge" />
             </td>
-            <th scope="row" data-key="name">Datastar Bridge</th>
-            <td data-key="owner">Runtime</td>
-            <td data-key="status"><span data-jqs="badge" data-variant="success">Active</span></td>
-            <td data-key="updated" data-value="2026-08-26">Aug 26, 2026</td>
+            <th scope="row" data-key="name" data-column="name">
+              <button
+                data-project-browser-expand
+                data-project-id="datastar-bridge"
+                data-on:click="@projectBrowser.expand"
+                type="button"
+                aria-expanded="false"
+                aria-controls="project-browser-details-datastar-bridge"
+              >
+                <span aria-hidden="true">›</span
+                ><span class="sr-only">Show details for </span>Datastar Bridge
+              </button>
+            </th>
+            <td data-key="owner" data-column="owner">Runtime</td>
+            <td data-key="status" data-column="status" data-value="active">
+              <span data-jqs="badge" data-variant="success">Active</span>
+            </td>
+            <td data-key="updated" data-column="updated" data-value="2026-08-28">Aug 28, 2026</td>
           </tr>
-          <tr data-row-id="theme-lab">
+          <tr data-row-id="theme-lab" data-project-version="1">
             <td><input data-part="row-select" type="checkbox" aria-label="Select Theme Lab" /></td>
-            <th scope="row" data-key="name">Theme Lab</th>
-            <td data-key="owner">Design Systems</td>
-            <td data-key="status"><span data-jqs="badge" data-variant="warning">Planning</span></td>
-            <td data-key="updated" data-value="2026-08-25">Aug 25, 2026</td>
+            <th scope="row" data-key="name" data-column="name">
+              <button
+                data-project-browser-expand
+                data-project-id="theme-lab"
+                data-on:click="@projectBrowser.expand"
+                type="button"
+                aria-expanded="false"
+                aria-controls="project-browser-details-theme-lab"
+              >
+                <span aria-hidden="true">›</span><span class="sr-only">Show details for </span>Theme
+                Lab
+              </button>
+            </th>
+            <td data-key="owner" data-column="owner">Design Systems</td>
+            <td data-key="status" data-column="status" data-value="planning">
+              <span data-jqs="badge" data-variant="warning">Planning</span>
+            </td>
+            <td data-key="updated" data-column="updated" data-value="2026-08-27">Aug 27, 2026</td>
+          </tr>
+          <tr data-row-id="catalog-site" data-project-version="1">
+            <td>
+              <input data-part="row-select" type="checkbox" aria-label="Select Catalog Site" />
+            </td>
+            <th scope="row" data-key="name" data-column="name">
+              <button
+                data-project-browser-expand
+                data-project-id="catalog-site"
+                data-on:click="@projectBrowser.expand"
+                type="button"
+                aria-expanded="false"
+                aria-controls="project-browser-details-catalog-site"
+              >
+                <span aria-hidden="true">›</span
+                ><span class="sr-only">Show details for </span>Catalog Site
+              </button>
+            </th>
+            <td data-key="owner" data-column="owner">Developer Experience</td>
+            <td data-key="status" data-column="status" data-value="active">
+              <span data-jqs="badge" data-variant="success">Active</span>
+            </td>
+            <td data-key="updated" data-column="updated" data-value="2026-08-26">Aug 26, 2026</td>
           </tr>
         </tbody>
       </table>
@@ -117,7 +479,7 @@
     data-jqs="pagination"
     data-navigation="manual"
     data-page="1"
-    data-page-count="3"
+    data-page-count="500"
     data-on:jquery-star:pagination:change="@projectBrowser.page"
     aria-label="Project results pages"
   >
@@ -126,9 +488,11 @@
       <li><a data-part="page" data-page="1" href="?page=1" aria-current="page">1</a></li>
       <li><a data-part="page" data-page="2" href="?page=2">2</a></li>
       <li><a data-part="page" data-page="3" href="?page=3">3</a></li>
+      <li><span data-part="ellipsis" aria-hidden="true">…</span></li>
+      <li><a data-part="page" data-page="500" href="?page=500">500</a></li>
       <li><a data-part="next" href="?page=2">Next</a></li>
     </ul>
-    <p data-part="status" aria-live="polite">Page 1 of 3</p>
+    <p data-part="status" aria-live="polite">Page 1 of 500</p>
   </nav>
 
   <footer data-part="footer">

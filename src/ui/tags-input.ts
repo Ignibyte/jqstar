@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTagsInputStatic, TagsInputTarget } from "../types";
 
 type TagsOperation = "add" | "remove" | "clear";
@@ -354,7 +354,7 @@ function controlledTagsInput(context: StarContext, target?: unknown): HTMLElemen
   return resolveTagsInput(closest instanceof HTMLElement ? closest : String(target));
 }
 
-function registerActions(api: StarTagsInputStatic): void {
+function registerActions(api: StarTagsInputStatic, registerAction: ActionRegistrar): void {
   for (const name of ["add", "remove"] as const) {
     registerAction(`ui.tags-input.${name}`, (context) => {
       const first = context.args?.[0];
@@ -379,7 +379,7 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-export function createTagsInputs(): TagsInputCollection {
+export function createTagsInputs(registerAction: ActionRegistrar): TagsInputCollection {
   const api: StarTagsInputStatic = {
     add: (target, value) => requestAdd(resolveTagsInput(target), value),
     remove: (target, value) => requestRemove(resolveTagsInput(target), value),
@@ -389,6 +389,6 @@ export function createTagsInputs(): TagsInputCollection {
       return [...(records.get(root) ?? enhanceTagsInput(root)).values];
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

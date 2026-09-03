@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTimePickerStatic, TimePickerTarget } from "../types";
 
 interface TimePickerRecord {
@@ -294,7 +294,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createTimePickers(): TimePickerCollection {
+export function createTimePickers(registerAction: ActionRegistrar): TimePickerCollection {
   const api: StarTimePickerStatic = {
     increment: (target, amount = 1) => step(resolve(target), 1, amount),
     decrement: (target, amount = 1) => step(resolve(target), -1, amount),

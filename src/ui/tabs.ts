@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTabsStatic, TabsTarget, TabTarget } from "../types";
 
 type Orientation = "horizontal" | "vertical";
@@ -316,7 +316,7 @@ function controlledTabs(context: StarContext, target?: unknown): HTMLElement {
   throw new Error('Tabs action needs a root selector or an element inside data-jqs="tabs".');
 }
 
-function registerActions(api: StarTabsStatic): void {
+function registerActions(api: StarTabsStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.tabs.activate", (context) => {
     const first = context.args?.[0];
     const second = context.args?.[1];
@@ -331,7 +331,7 @@ function registerActions(api: StarTabsStatic): void {
   });
 }
 
-export function createTabs(): TabsCollection {
+export function createTabs(registerAction: ActionRegistrar): TabsCollection {
   const api: StarTabsStatic = {
     activate: (target, tab) => {
       const root = resolveRoot(target);
@@ -343,6 +343,6 @@ export function createTabs(): TabsCollection {
       return (records.get(root) ?? enhanceTabs(root)).value;
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

@@ -1,12 +1,18 @@
 import $ from "jquery";
-import "../src/index";
+import { installStar } from "../src/index";
 import "../src/ui/theme.css";
 import projectBrowserHTML from "../registry/blocks/project-browser.html?raw";
-import "../registry/blocks/project-browser";
+import { installProjectBrowser } from "../registry/blocks/project-browser";
 import accessManagerHTML from "../registry/blocks/access-manager.html?raw";
-import "../registry/blocks/access-manager";
+import { installAccessManager } from "../registry/blocks/access-manager";
 import auditLogHTML from "../registry/blocks/audit-log.html?raw";
-import "../registry/blocks/audit-log";
+import { installAuditLog } from "../registry/blocks/audit-log";
+import { disposeJqStarWebMcp, installJqStarWebMcp } from "./webmcp";
+
+installStar($);
+installProjectBrowser();
+installAccessManager();
+installAuditLog();
 
 interface DemoState extends Record<string, unknown> {
   componentBackendError: string | null;
@@ -98,7 +104,7 @@ interface FeedResponse {
 }
 
 const componentSystems = [
-  ["jquery-star", "jQuery Star"],
+  ["jquery-star", "jQStar"],
   ["datastar", "Datastar"],
   ["daisyui", "daisyUI"],
   ["radix", "Radix Primitives"],
@@ -110,7 +116,7 @@ const componentSystems = [
 const feedItems: FeedResult[] = [
   {
     value: "jquery-star",
-    title: "jQuery Star",
+    title: "jQStar",
     description: "Reactive HTML components with real jQuery expressions and native forms.",
     meta: "Runtime · Source owned",
   },
@@ -123,7 +129,7 @@ const feedItems: FeedResult[] = [
   {
     value: "tailwind",
     title: "Tailwind CSS",
-    description: "Build-time utility CSS used to author the compiled jQuery Star theme.",
+    description: "Build-time utility CSS used to author the compiled jQStar theme.",
     meta: "Styling · Build time",
   },
   {
@@ -755,7 +761,7 @@ $.star.action<DemoState>("streamControlPlane", async (context) => {
     {
       id: "static-stream-2",
       level: "debug",
-      message: "jQuery Star enhanced the appended entry.",
+      message: "jQStar enhanced the appended entry.",
       source: "ui",
       timestamp: new Date(Date.now() + 1_000).toISOString(),
     },
@@ -833,3 +839,6 @@ if (__JQS_STATIC_DEMO__) {
   }
   document.documentElement.dataset.deployment = "static";
 }
+
+void installJqStarWebMcp().catch(() => undefined);
+window.addEventListener("pagehide", () => disposeJqStarWebMcp(), { once: true });

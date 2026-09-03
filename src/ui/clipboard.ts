@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { ClipboardState, ClipboardTarget, StarClipboardStatic, StarContext } from "../types";
 import { writeClipboard } from "./clipboard-write";
 
@@ -213,7 +213,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createClipboards(): ClipboardCollection {
+export function createClipboards(registerAction: ActionRegistrar): ClipboardCollection {
   const api: StarClipboardStatic = {
     copy: (target, copiedText) => copy(recordFor(resolve(target)), copiedText),
     state: (target) => recordFor(resolve(target)).state,

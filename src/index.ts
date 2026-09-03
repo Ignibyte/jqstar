@@ -1,10 +1,127 @@
 import jQuery from "jquery";
-import { installStar } from "./runtime";
+import { installStar } from "./compatibility";
 
 installStar(jQuery);
 
-export { installStar } from "./runtime";
-export { clearExpressionCache, compileStatement, compileValue } from "./expression";
+export { installStar } from "./compatibility";
+export type { StarInstallOptions } from "./compatibility";
+export { installStarCore } from "./trusted-runtime";
+export type { StarCoreInstallOptions } from "./trusted-runtime";
+export { createRenderAdapter, StarRenderTransactionError } from "./render-adapter";
+export type {
+  StarRenderAdapter,
+  StarRenderBeginOptions,
+  StarRenderTransaction,
+} from "./render-adapter";
+export { StarDisposalError } from "./disposal";
+export type {
+  StarDisposalCategory,
+  StarDisposalFailure,
+  StarDisposalReport,
+  StarDisposalResource,
+} from "./disposal";
+export {
+  clearExpressionCache,
+  compileStatement,
+  compileValue,
+  createTrustedExpressionEngine,
+} from "./expression";
+export type {
+  StarExpressionEngine,
+  StarExpressionError,
+  StarExpressionLocation,
+  StarStatementEvaluator,
+  StarValueEvaluator,
+} from "./expression";
+export type {
+  StarDirective,
+  StarDirectiveAttribute,
+  StarDirectiveCleanup,
+  StarDirectiveContext,
+  StarDirectiveExactMatcher,
+  StarDirectiveMatcher,
+  StarDirectivePrefixMatcher,
+  StarDirectiveTask,
+  StarExpressionHelperScope,
+  StarParsedDirectiveAttribute,
+} from "./directive";
+export { STAR_PLUGIN_API_VERSION } from "./plugin";
+export type {
+  StarPlugin,
+  StarPluginActivation,
+  StarPluginApplicationHook,
+  StarPluginCleanup,
+  StarPluginDocumentHost,
+  StarPluginFacade,
+  StarPluginRegistrar,
+  StarPluginResourceKind,
+} from "./plugin";
+export type {
+  StarActionCancelledObservation,
+  StarActionCompletedObservation,
+  StarActionFailedObservation,
+  StarActionOperationObservation,
+  StarActionStartedObservation,
+  StarOperationCancellationReason,
+  StarOperationError,
+  StarOperationKind,
+  StarOperationObservation,
+  StarOperationObserver,
+  StarOperationObserverErrorHandler,
+  StarOperationOwner,
+  StarOperationSubscriptionOptions,
+  StarOperationTerminalPhase,
+  StarOperationUnsubscribe,
+  StarRequestCancelledObservation,
+  StarRequestCompletedObservation,
+  StarRequestFailedObservation,
+  StarRequestOperationMetadata,
+  StarRequestOperationObservation,
+  StarRequestProgressObservation,
+  StarRequestRetryingObservation,
+  StarRequestStartedObservation,
+} from "./observation";
+export {
+  StarProtocolBodyOwnershipError,
+  StarProtocolSelectionError,
+  StarProtocolValidationError,
+} from "./protocol";
+export type {
+  StarProtocolBodyLease,
+  StarProtocolCompatibilityEvent,
+  StarProtocolEmptyResponseHandler,
+  StarProtocolExactMediaMatcher,
+  StarProtocolFormMetadata,
+  StarProtocolMediaMatcher,
+  StarProtocolProfileDefinition,
+  StarProtocolRequestInput,
+  StarProtocolRequestPreparer,
+  StarProtocolRequestWriter,
+  StarProtocolResponseAdapter,
+  StarProtocolResponseCapabilities,
+  StarProtocolResponseHandler,
+  StarProtocolResponseMetadata,
+  StarProtocolSerializedPayload,
+  StarProtocolStreamConsumer,
+  StarProtocolSuffixMediaMatcher,
+} from "./protocol";
+export {
+  StarRequestMiddlewareNextError,
+  StarRequestMiddlewareValidationError,
+} from "./request-middleware";
+export type {
+  StarRequestBodyKind,
+  StarRequestBodyMetadata,
+  StarRequestDescriptor,
+  StarRequestMiddleware,
+  StarRequestMiddlewareCancelledOutcome,
+  StarRequestMiddlewareCompletedOutcome,
+  StarRequestMiddlewareContext,
+  StarRequestMiddlewareDefinition,
+  StarRequestMiddlewareFailedOutcome,
+  StarRequestMiddlewareNext,
+  StarRequestMiddlewareOutcome,
+} from "./request-middleware";
 export {
   cancelElementRequests,
   cancelRequests,
@@ -25,6 +142,7 @@ export type {
   ContextMenuTarget,
   CalendarDate,
   CalendarTarget,
+  DataTableSort,
   DataTableSortDirection,
   DataTableTarget,
   DatePickerTarget,
@@ -104,10 +222,13 @@ export type {
   StarDatePickerStatic,
   StarDateRangePickerStatic,
   StarContext,
+  StarCoreStatic,
   StarDefinition,
+  StarInstalledJQuery,
   StarDialogStatic,
   StarDisclosureStatic,
   StarInstance,
+  StarJQueryMethod,
   StarFormStatic,
   StarFileUploadStatic,
   StarMultiSelectStatic,

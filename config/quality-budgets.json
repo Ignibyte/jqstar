@@ -1,0 +1,66 @@
+{
+  "$schema": "jqstar-quality-budgets/1",
+  "ratchet": {
+    "comparison": "immutable-delivery-base",
+    "firstBaseline": "establish-when-base-has-no-budgets"
+  },
+  "package": {
+    "packedBytes": 2470000,
+    "unpackedBytes": 8350000,
+    "files": 324
+  },
+  "cspPackage": {
+    "packedBytes": 400000,
+    "unpackedBytes": 1660000
+  },
+  "turboPackage": {
+    "packedBytes": 32000,
+    "unpackedBytes": 120000
+  },
+  "bundles": {
+    "dist/core.cjs": 1024,
+    "dist/core.js": 1024,
+    "dist/csp.cjs": 158000,
+    "dist/csp.js": 160000,
+    "dist/datastar.cjs": 512,
+    "dist/datastar.js": 512,
+    "dist/datastar-testing.cjs": 6000,
+    "dist/datastar-testing.js": 6000,
+    "dist/jquery-star.cjs": 2048,
+    "dist/jquery-star.js": 2048,
+    "dist/jquery-star.umd.cjs": 464896,
+    "dist/testing.cjs": 13000,
+    "dist/testing.js": 13000,
+    "dist/turbo.cjs": 8192,
+    "dist/turbo.js": 8192,
+    "dist/ui.cjs": 318464,
+    "dist/ui.js": 318464,
+    "dist/jquery-star-ui.css": 169984
+  },
+  "consumerBundles": {
+    "coreImportBytes": 197632,
+    "coreImportGzipBytes": 63000,
+    "cspImportBytes": 156000,
+    "cspImportGzipBytes": 45000,
+    "cspImportBrotliBytes": 39000,
+    "rootImportBytes": 542720,
+    "testingImportBytes": 260000,
+    "testingImportGzipBytes": 85000,
+    "datastarTestingImportBytes": 80000,
+    "datastarTestingImportGzipBytes": 30000,
+    "turboImportBytes": 220000,
+    "turboImportGzipBytes": 70000
+  },
+  "browser": {
+    "domNodes": 2300,
+    "activeMutationObservers": 2,
+    "eventListeners": 2,
+    "pendingTimers": 0,
+    "requests": 0,
+    "queries": 1200,
+    "patchMutations": 4
+  },
+  "generatedOutputs": {
+    "changedFiles": 0
+  }
+}

@@ -91,6 +91,107 @@ describe("jQuery Star Toast", () => {
     expect(toast.isConnected).toBe(false);
   });
 
+  it("pauses timers while the window or document is inactive", () => {
+    vi.useFakeTimers();
+    const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    const visible = $.star.ui.toast.show({ description: "Visible", duration: 100 });
+    vi.advanceTimersByTime(60);
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(40);
+    expect(visible.isConnected).toBe(false);
+
+    const blurred = $.star.ui.toast.show({ description: "Blurred", duration: 100 });
+
+    vi.advanceTimersByTime(60);
+    window.dispatchEvent(new Event("blur"));
+    vi.advanceTimersByTime(100);
+    expect(blurred.isConnected).toBe(true);
+    window.dispatchEvent(new Event("focus"));
+    vi.advanceTimersByTime(40);
+    expect(blurred.isConnected).toBe(false);
+
+    const pointed = $.star.ui.toast.show({ description: "Pointed", duration: 100 });
+    vi.advanceTimersByTime(60);
+    pointed.dispatchEvent(new Event("pointerenter"));
+    window.dispatchEvent(new Event("blur"));
+    window.dispatchEvent(new Event("focus"));
+    vi.advanceTimersByTime(40);
+    expect(pointed.isConnected).toBe(true);
+    pointed.dispatchEvent(new Event("pointerleave"));
+    vi.advanceTimersByTime(40);
+    expect(pointed.isConnected).toBe(false);
+
+    const resumed = $.star.ui.toast.show({ description: "Resumed", duration: 100 });
+    vi.advanceTimersByTime(60);
+    hidden.mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(100);
+    expect(resumed.isConnected).toBe(true);
+    hidden.mockReturnValue(false);
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(40);
+    expect(resumed.isConnected).toBe(false);
+
+    const hiddenToast = $.star.ui.toast.show({ description: "Hidden", duration: 100 });
+    vi.advanceTimersByTime(60);
+    hidden.mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+    hiddenToast.dispatchEvent(new Event("pointerenter"));
+    hidden.mockReturnValue(false);
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(40);
+    expect(hiddenToast.isConnected).toBe(true);
+    hiddenToast.dispatchEvent(new Event("pointerleave"));
+    vi.advanceTimersByTime(40);
+    expect(hiddenToast.isConnected).toBe(false);
+
+    const focused = $.star.ui.toast.show({ description: "Focused", duration: 100 });
+    vi.advanceTimersByTime(60);
+    hidden.mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+    focused.dispatchEvent(new Event("focusin"));
+    hidden.mockReturnValue(false);
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(40);
+    expect(focused.isConnected).toBe(true);
+    focused.dispatchEvent(new Event("focusout"));
+    vi.advanceTimersByTime(40);
+    expect(focused.isConnected).toBe(false);
+  });
+
+  it("keeps a connected toast active across unrelated DOM mutations", async () => {
+    vi.useFakeTimers();
+    const toast = document.createElement("div");
+    toast.dataset.jqs = "toast";
+    toast.dataset.duration = "100";
+    toast.innerHTML = '<div data-part="description"></div>';
+    viewport().append(toast);
+    $.star.ui.enhance(toast);
+
+    document.body.append(document.createElement("aside"));
+    await Promise.resolve();
+
+    expect(vi.getTimerCount()).toBe(1);
+    vi.advanceTimersByTime(100);
+    expect(toast.isConnected).toBe(false);
+  });
+
+  it("releases a timer when a nested toast is removed outside the API", async () => {
+    vi.useFakeTimers();
+    const toast = document.createElement("div");
+    toast.dataset.jqs = "toast";
+    toast.dataset.duration = "100";
+    toast.innerHTML = '<div data-part="description"></div>';
+    viewport().append(toast);
+    $.star.ui.enhance(toast);
+    expect(vi.getTimerCount()).toBe(1);
+
+    toast.remove();
+    await Promise.resolve();
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("supports the F8 viewport hotkey, Escape, actions, and action fallback validation", () => {
     $.star.ui.toast.clear();
     const toast = document.createElement("div");

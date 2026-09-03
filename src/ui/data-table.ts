@@ -1,5 +1,6 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
+  DataTableSort,
   DataTableSortDirection,
   DataTableTarget,
   StarContext,
@@ -14,9 +15,11 @@ interface DataTableRecord {
   order: WeakMap<HTMLTableRowElement, number>;
   page: number;
   root: HTMLElement;
+  selectionSeeded: boolean;
   selected: Set<string>;
   sortDirection: DataTableSortDirection;
   sortKey: string | undefined;
+  sorts: DataTableSort[];
   table: HTMLTableElement;
 }
 
@@ -27,6 +30,7 @@ interface DataTableEventDetail {
   key?: string;
   page: number;
   selected: string[];
+  sorts: DataTableSort[];
 }
 
 interface DataTableCollection {
@@ -105,15 +109,18 @@ function emit(
   record: DataTableRecord,
   name: "before-sort" | "sort" | "filter" | "page" | "selection-change",
   cancelable = false,
+  changed?: { direction: DataTableSortDirection; key: string },
 ): boolean {
   const detail: DataTableEventDetail = {
     dataTable: record.root,
-    direction: record.sortDirection,
+    direction: changed?.direction ?? record.sortDirection,
     filter: record.filter,
     page: record.page,
     selected: [...record.selected],
-    ...(record.sortKey ? { key: record.sortKey } : {}),
+    sorts: record.sorts.map((sort) => ({ ...sort })),
   };
+  const key = changed?.key || record.sortKey;
+  if (key) detail.key = key;
   return record.root.dispatchEvent(
     new CustomEvent(`jquery-star:data-table:${name}`, {
       bubbles: true,
@@ -136,7 +143,10 @@ function cellFor(row: HTMLTableRowElement, key: string): HTMLTableCellElement | 
   return Array.from(row.cells).find((cell) => cell.getAttribute("data-key") === key);
 }
 
-function comparable(cell: HTMLTableCellElement | undefined, type: string): string | number {
+function comparable(
+  cell: HTMLTableCellElement | undefined,
+  type: string | null | undefined,
+): string | number {
   const source = cell?.getAttribute("data-value") ?? cell?.textContent?.trim() ?? "";
   if (type === "number") {
     const value = Number(source.replaceAll(",", ""));
@@ -159,19 +169,18 @@ function compareValues(left: string | number, right: string | number): number {
 
 function reorder(record: DataTableRecord): void {
   if (manual(record)) return;
-  const header = headers(record).find((candidate) => candidate.dataset.key === record.sortKey);
-  const type = header?.getAttribute("data-type") ?? "string";
   for (const body of Array.from(record.table.tBodies)) {
     const current = Array.from(body.rows);
     const desired = [...current].sort((left, right) => {
-      if (!record.sortKey || record.sortDirection === "none") {
-        return (record.order.get(left) ?? 0) - (record.order.get(right) ?? 0);
+      for (const sort of record.sorts) {
+        const header = headers(record).find((candidate) => candidate.dataset.key === sort.key);
+        const type = header?.getAttribute("data-type");
+        const result = compareValues(
+          comparable(cellFor(left, sort.key), type),
+          comparable(cellFor(right, sort.key), type),
+        );
+        if (result !== 0) return sort.direction === "descending" ? -result : result;
       }
-      const result = compareValues(
-        comparable(cellFor(left, record.sortKey), type),
-        comparable(cellFor(right, record.sortKey), type),
-      );
-      if (result !== 0) return record.sortDirection === "descending" ? -result : result;
       return (record.order.get(left) ?? 0) - (record.order.get(right) ?? 0);
     });
     if (desired.some((row, index) => row !== current[index])) body.append(...desired);
@@ -191,24 +200,51 @@ function setText(record: DataTableRecord, part: string, value: string): void {
   }
 }
 
-function syncSortHeaders(record: DataTableRecord): void {
-  if (record.sortKey && record.sortDirection !== "none") {
-    if (record.root.dataset.sort !== record.sortKey) record.root.dataset.sort = record.sortKey;
-    if (record.root.dataset.direction !== record.sortDirection) {
-      record.root.dataset.direction = record.sortDirection;
-    }
+function syncRootSortAttributes(record: DataTableRecord): void {
+  const primary = record.sorts[0];
+  if (primary) {
+    record.root.dataset.sort = primary.key;
+    record.root.dataset.direction = primary.direction;
+    record.root.dataset.sorts = JSON.stringify(record.sorts);
   } else {
-    if (record.root.hasAttribute("data-sort")) record.root.removeAttribute("data-sort");
-    if (record.root.hasAttribute("data-direction")) record.root.removeAttribute("data-direction");
+    record.root.removeAttribute("data-sort");
+    record.root.removeAttribute("data-direction");
+    record.root.removeAttribute("data-sorts");
   }
+}
+
+function syncSortHeaders(record: DataTableRecord): void {
+  const primary = record.sorts[0];
+  record.sortKey = primary?.key;
+  record.sortDirection = primary?.direction ?? "none";
   for (const header of headers(record)) {
-    const active = header.dataset.key === record.sortKey && record.sortDirection !== "none";
-    if (active) header.setAttribute("aria-sort", record.sortDirection);
+    const index = record.sorts.findIndex((sort) => sort.key === header.dataset.key);
+    const active = index >= 0;
+    const sort = record.sorts[index];
+    if (sort && index === 0) header.setAttribute("aria-sort", sort.direction);
     else header.removeAttribute("aria-sort");
     const button = header.querySelector<HTMLElement>('[data-part="sort"]');
-    const buttonDirection = active ? record.sortDirection : "none";
+    const buttonDirection = sort?.direction ?? "none";
     if (button && button.dataset.direction !== buttonDirection) {
       button.dataset.direction = buttonDirection;
+    }
+    if (button) {
+      if (active) button.dataset.sortOrder = String(index + 1);
+      else button.removeAttribute("data-sort-order");
+      if (!button.hasAttribute("aria-label") || button.dataset.generatedSortLabel === "true") {
+        button.dataset.sortBaseLabel ??=
+          button.textContent.trim() || header.dataset.key || "Column";
+        if (sort) {
+          button.setAttribute(
+            "aria-label",
+            `${button.dataset.sortBaseLabel}, sort priority ${index + 1}, ${sort.direction}`,
+          );
+          button.dataset.generatedSortLabel = "true";
+        } else {
+          button.removeAttribute("aria-label");
+          button.removeAttribute("data-generated-sort-label");
+        }
+      }
     }
   }
 }
@@ -282,30 +318,34 @@ function sortTable(
   root: HTMLElement,
   key: string,
   direction?: DataTableSortDirection,
+  additive = false,
 ): HTMLElement {
   const record = records.get(root) ?? enhanceDataTable(root);
   if (!headers(record).some((header) => header.dataset.key === key)) {
     throw new Error(`Data Table #${root.id} has no sortable header with key "${key}".`);
   }
+  const existing = record.sorts.find((sort) => sort.key === key);
   const next =
     direction ??
-    (record.sortKey !== key || record.sortDirection === "none"
-      ? "ascending"
-      : record.sortDirection === "ascending"
-        ? "descending"
-        : "none");
-  const previousKey = record.sortKey;
-  const previousDirection = record.sortDirection;
-  record.sortKey = next === "none" ? undefined : key;
-  record.sortDirection = next;
-  if (!emit(record, "before-sort", true)) {
-    record.sortKey = previousKey;
-    record.sortDirection = previousDirection;
+    (!existing ? "ascending" : existing.direction === "ascending" ? "descending" : "none");
+  const previous = record.sorts.map((sort) => ({ ...sort }));
+  if (!additive) {
+    record.sorts = next === "none" ? [] : [{ direction: next, key }];
+  } else {
+    record.sorts = record.sorts.filter((sort) => sort.key !== key);
+    if (next !== "none") record.sorts.push({ direction: next, key });
+  }
+  syncRootSortAttributes(record);
+  syncSortHeaders(record);
+  if (!emit(record, "before-sort", true, { direction: next, key })) {
+    record.sorts = previous;
+    syncRootSortAttributes(record);
+    syncSortHeaders(record);
     return root;
   }
   record.page = 1;
   render(record);
-  emit(record, "sort");
+  emit(record, "sort", false, { direction: next, key });
   return root;
 }
 
@@ -331,6 +371,7 @@ function pageTable(root: HTMLElement, page: number): HTMLElement {
 
 function configureRows(record: DataTableRecord): void {
   const currentIds = new Set<string>();
+  const seedSelection = !record.selectionSeeded;
   for (const row of rows(record)) {
     if (!record.order.has(row)) record.order.set(row, record.nextOrder++);
     const checkbox = rowCheckbox(row);
@@ -342,18 +383,19 @@ function configureRows(record: DataTableRecord): void {
     currentIds.add(id);
     checkbox.value ||= id;
     if (!record.initializedRows.has(id)) {
-      if (checkbox.checked) record.selected.add(id);
+      if (seedSelection && checkbox.checked) record.selected.add(id);
       record.initializedRows.add(id);
     }
   }
+  record.selectionSeeded = true;
 }
 
 function wire(record: DataTableRecord): void {
   for (const header of headers(record)) {
     const button = header.querySelector<HTMLElement>('[data-part="sort"]');
     if (!button) continue;
-    const click = (): void => {
-      sortTable(record.root, header.dataset.key!);
+    const click = (event: MouseEvent): void => {
+      sortTable(record.root, header.dataset.key!, undefined, event.shiftKey);
     };
     button.addEventListener("click", click);
     record.cleanups.push(() => button.removeEventListener("click", click));
@@ -383,9 +425,13 @@ function wire(record: DataTableRecord): void {
     record.cleanups.push(() => button.removeEventListener("click", click));
   }
 
-  for (const row of selectableRows(record)) {
-    const checkbox = rowCheckbox(row)!;
-    const change = (): void => {
+  const selectionChange = (event: Event): void => {
+    const checkbox = event.target;
+    if (!(checkbox instanceof HTMLInputElement)) return;
+    if (checkbox.closest('[data-jqs="data-table"]') !== record.root) return;
+    if (checkbox.matches('input[data-part="row-select"]')) {
+      const row = checkbox.closest<HTMLTableRowElement>("tr[data-row-id]");
+      if (!row) return;
       const id = rowId(row)!;
       if (checkbox.checked) {
         if (record.root.getAttribute("data-selection") === "single") record.selected.clear();
@@ -395,14 +441,9 @@ function wire(record: DataTableRecord): void {
       }
       syncSelection(record);
       emit(record, "selection-change");
-    };
-    checkbox.addEventListener("change", change);
-    record.cleanups.push(() => checkbox.removeEventListener("change", change));
-  }
-
-  for (const checkbox of owned(record, 'input[data-part="select-all"]')) {
-    if (!(checkbox instanceof HTMLInputElement)) continue;
-    const change = (): void => {
+      return;
+    }
+    if (checkbox.matches('input[data-part="select-all"]')) {
       for (const row of visibleSelectableRows(record)) {
         const id = rowId(row)!;
         if (checkbox.checked) record.selected.add(id);
@@ -410,10 +451,46 @@ function wire(record: DataTableRecord): void {
       }
       syncSelection(record);
       emit(record, "selection-change");
-    };
-    checkbox.addEventListener("change", change);
-    record.cleanups.push(() => checkbox.removeEventListener("change", change));
+    }
+  };
+  record.root.addEventListener("change", selectionChange);
+  record.cleanups.push(() => record.root.removeEventListener("change", selectionChange));
+}
+
+function authoredSorts(root: HTMLElement): DataTableSort[] {
+  const source = root.getAttribute("data-sorts");
+  if (source) {
+    try {
+      const value = JSON.parse(source) as unknown;
+      if (Array.isArray(value)) {
+        const result: DataTableSort[] = [];
+        const seen = new Set<string>();
+        for (const candidate of value) {
+          const item = Object(candidate) as Record<string, unknown>;
+          const key = item.key;
+          const direction = item.direction;
+          if (
+            typeof key !== "string" ||
+            !key ||
+            seen.has(key) ||
+            (direction !== "ascending" && direction !== "descending")
+          ) {
+            continue;
+          }
+          seen.add(key);
+          result.push({ direction, key });
+        }
+        return result;
+      }
+    } catch {
+      // Fall through to the legacy primary-sort attributes.
+    }
   }
+  const key = root.getAttribute("data-sort")?.trim();
+  const direction = root.getAttribute("data-direction");
+  return key && (direction === "ascending" || direction === "descending")
+    ? [{ direction, key }]
+    : [];
 }
 
 function enhanceDataTable(root: HTMLElement): DataTableRecord {
@@ -421,7 +498,8 @@ function enhanceDataTable(root: HTMLElement): DataTableRecord {
   const table = tablePart(root);
   let record = records.get(root);
   if (!record) {
-    const direction = root.getAttribute("data-direction");
+    const sorts = authoredSorts(root);
+    const primary = sorts[0];
     record = {
       cleanups: [],
       filter: "",
@@ -430,9 +508,11 @@ function enhanceDataTable(root: HTMLElement): DataTableRecord {
       order: new WeakMap(),
       page: Math.max(1, Number(root.getAttribute("data-page") ?? 1) || 1),
       root,
+      selectionSeeded: false,
       selected: new Set(),
-      sortDirection: direction === "ascending" || direction === "descending" ? direction : "none",
-      sortKey: root.getAttribute("data-sort") ?? undefined,
+      sortDirection: primary?.direction ?? "none",
+      sortKey: primary?.key,
+      sorts,
       table,
     };
     records.set(root, record);
@@ -443,18 +523,9 @@ function enhanceDataTable(root: HTMLElement): DataTableRecord {
     const requestedPage = Number(root.getAttribute("data-page"));
     if (Number.isFinite(requestedPage) && requestedPage > 0)
       record.page = Math.floor(requestedPage);
-    const requestedSort = root.getAttribute("data-sort");
-    const requestedDirection = root.getAttribute("data-direction");
-    record.sortKey = requestedSort || undefined;
-    if (
-      requestedDirection === "ascending" ||
-      requestedDirection === "descending" ||
-      requestedDirection === "none"
-    ) {
-      record.sortDirection = requestedDirection;
-    } else if (!record.sortKey) {
-      record.sortDirection = "none";
-    }
+    record.sorts = authoredSorts(root);
+    record.sortKey = record.sorts[0]?.key;
+    record.sortDirection = record.sorts[0]?.direction ?? "none";
   }
 
   const filter = filterControl(record);
@@ -493,13 +564,14 @@ function controlledDataTable(context: StarContext, target?: unknown): HTMLElemen
   throw new Error('Data Table action needs a selector or an element inside data-jqs="data-table".');
 }
 
-function registerActions(api: StarDataTableStatic): void {
+function registerActions(api: StarDataTableStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.dataTable.sort", (context) => {
     const first = context.args?.[0];
     const second = context.args?.[1];
     const third = context.args?.[2];
+    const fourth = context.args?.[3];
     const explicitRoot =
-      second !== undefined || (typeof first === "string" && first.startsWith("#"));
+      first instanceof HTMLElement || (typeof first === "string" && first.startsWith("#"));
     const root = controlledDataTable(context, explicitRoot ? first : undefined);
     const key = explicitRoot ? second : first;
     const direction = explicitRoot ? third : second;
@@ -510,6 +582,7 @@ function registerActions(api: StarDataTableStatic): void {
       direction === "ascending" || direction === "descending" || direction === "none"
         ? direction
         : undefined,
+      Boolean(explicitRoot ? fourth : third),
     );
   });
   registerAction("ui.dataTable.filter", (context) => {
@@ -534,9 +607,14 @@ function registerActions(api: StarDataTableStatic): void {
   });
 }
 
-export function createDataTables(): DataTableCollection {
+export function createDataTables(registerAction: ActionRegistrar): DataTableCollection {
   const api: StarDataTableStatic = {
-    sort: (target, key, direction) => sortTable(resolveRoot(target), key, direction),
+    sort: (target, key, direction, additive) =>
+      sortTable(resolveRoot(target), key, direction, additive),
+    sorts: (target) => {
+      const root = resolveRoot(target);
+      return (records.get(root) ?? enhanceDataTable(root)).sorts.map((sort) => ({ ...sort }));
+    },
     filter: (target, query) => filterTable(resolveRoot(target), query),
     page: (target, page) => pageTable(resolveRoot(target), page),
     next: (target) => {
@@ -554,6 +632,6 @@ export function createDataTables(): DataTableCollection {
       return [...(records.get(root) ?? enhanceDataTable(root)).selected];
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

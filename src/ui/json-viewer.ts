@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { JSONViewerTarget, StarContext, StarJSONViewerStatic } from "../types";
 
 interface JSONViewerCollection {
@@ -280,7 +280,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createJSONViewers(): JSONViewerCollection {
+export function createJSONViewers(registerAction: ActionRegistrar): JSONViewerCollection {
   const api: StarJSONViewerStatic = {
     set: (target, value) => setValue(recordFor(target), value),
     value: (target) => structuredClone(recordFor(target).value),

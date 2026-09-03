@@ -1,6 +1,16 @@
+import type { StarPlugin, StarPluginFacade } from "./plugin";
+import type { StarExpressionHelperScope } from "./directive";
+import type { StarDisposalReport } from "./disposal";
+import type {
+  StarOperationObserver,
+  StarOperationSubscriptionOptions,
+  StarOperationUnsubscribe,
+} from "./observation";
+
 export type StateRecord = Record<string, unknown>;
 export type ComputedRecord = Record<string, unknown>;
 export type DOMValue = string | number | boolean | null | undefined;
+type RequestPayload = DOMValue | Record<string, unknown> | readonly unknown[];
 export type BackendMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 export type PatchMode =
   "outer" | "inner" | "replace" | "prepend" | "append" | "before" | "after" | "remove";
@@ -34,8 +44,9 @@ export interface BackendActionOptions<
   filterSignals?: SignalFilter;
   headers?: HeadersInit;
   openWhenHidden?: boolean;
-  payload?: unknown | ((context: StarContext<State, Computed>) => unknown);
+  payload?: RequestPayload | ((context: StarContext<State, Computed>) => unknown);
   params?: Record<string, DOMValue>;
+  profile?: string;
   selector?: string | null;
   target?: string;
   mode?: PatchMode;
@@ -76,6 +87,7 @@ export interface StarContext<
   $: JQueryStatic;
   state: State;
   computed: Readonly<Computed>;
+  readonly helpers?: StarExpressionHelperScope;
   root: Element;
   $root: JQuery<Element>;
   element?: Element;
@@ -94,7 +106,7 @@ export type Value<
 export type StarAction<
   State extends StateRecord = StateRecord,
   Computed extends ComputedRecord = ComputedRecord,
-> = (context: StarContext<State, Computed>) => unknown | Promise<unknown>;
+> = (context: StarContext<State, Computed>) => unknown;
 
 export interface EventOptions<
   State extends StateRecord = StateRecord,
@@ -164,6 +176,10 @@ export interface StarInstance<
   readonly state: State;
   readonly computed: Readonly<Computed>;
   readonly destroyed: boolean;
+  observeOperations(
+    observer: StarOperationObserver,
+    options?: StarOperationSubscriptionOptions,
+  ): StarOperationUnsubscribe;
   run(
     action: string | StarAction<State, Computed>,
     overrides?: Partial<StarContext<State, Computed>>,
@@ -300,9 +316,19 @@ export interface StarComboboxStatic {
 
 export type DataTableTarget = string | HTMLElement;
 export type DataTableSortDirection = "ascending" | "descending" | "none";
+export interface DataTableSort {
+  direction: Exclude<DataTableSortDirection, "none">;
+  key: string;
+}
 
 export interface StarDataTableStatic {
-  sort(target: DataTableTarget, key: string, direction?: DataTableSortDirection): HTMLElement;
+  sort(
+    target: DataTableTarget,
+    key: string,
+    direction?: DataTableSortDirection,
+    additive?: boolean,
+  ): HTMLElement;
+  sorts(target: DataTableTarget): DataTableSort[];
   filter(target: DataTableTarget, query: string): HTMLElement;
   page(target: DataTableTarget, page: number): HTMLElement;
   next(target: DataTableTarget): HTMLElement;
@@ -791,15 +817,23 @@ export interface StarUIStatic {
   enhance(root?: ParentNode): void;
 }
 
-export interface StarStatic {
+export interface StarCoreStatic {
   readonly version: string;
-  readonly ui: StarUIStatic;
+  dispose(): StarDisposalReport;
+  use<Facade>(plugin: StarPlugin<Facade>): Facade;
+  use<const Plugins extends readonly StarPlugin[]>(
+    plugins: Plugins,
+  ): { readonly [Key in keyof Plugins]: StarPluginFacade<Plugins[Key]> };
   action<State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(
     name: string,
     action: StarAction<State, Computed>,
-  ): StarStatic;
+  ): StarCoreStatic;
   boot(root?: Element | string): JQuery;
   clearExpressionCache(): void;
+  observeOperations(
+    observer: StarOperationObserver,
+    options?: StarOperationSubscriptionOptions,
+  ): StarOperationUnsubscribe;
   get<State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(
     url: string,
     options?: BackendActionOptions<State, Computed>,
@@ -821,7 +855,33 @@ export interface StarStatic {
     options?: BackendActionOptions<State, Computed>,
   ): StarAction<State, Computed>;
   nextUpdate(): Promise<void>;
+  whenEnhanced(): Promise<void>;
 }
+
+export interface StarStatic extends StarCoreStatic {
+  readonly ui: StarUIStatic;
+  action<State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(
+    name: string,
+    action: StarAction<State, Computed>,
+  ): StarStatic;
+}
+
+export interface StarJQueryMethod {
+  (): JQuery;
+  <State extends StateRecord, Computed extends ComputedRecord = ComputedRecord>(
+    definition: StarDefinition<State, Computed>,
+  ): JQuery;
+  (command: "destroy" | "refresh"): JQuery;
+  <State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(
+    command: "instance",
+  ): StarInstance<State, Computed> | undefined;
+  <State extends StateRecord = StateRecord>(command: "state"): State | undefined;
+}
+
+export type StarInstalledJQuery = JQueryStatic & {
+  readonly fn: JQueryStatic["fn"] & { star: StarJQueryMethod };
+  readonly star: StarCoreStatic;
+};
 
 declare global {
   interface JQuery {

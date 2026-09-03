@@ -1,0 +1,85 @@
+<template id="jqs-docs-shell">
+  <a class="skip-link" href="#docs-content">Skip to content</a>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <button
+        class="mobile-menu-button icon-button"
+        type="button"
+        aria-haspopup="dialog"
+        aria-label="Menu"
+        data-on:click="@site.openMobileNav"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+      <a class="brand" href="%BASE_URL%" aria-label="jQStar home">
+        <img class="brand-mark" src="%BASE_URL%favicon.svg" alt="" />
+        <span class="brand-name">jQStar</span>
+      </a>
+      <nav class="site-nav" aria-label="Documentation tools">
+        <button class="search-button" type="button" data-on:click="@site.openSearch">
+          <span class="search-wide">Search documentation…</span>
+          <span class="search-compact">Search…</span>
+          <kbd aria-hidden="true">⌘K</kbd>
+        </button>
+        <a
+          class="icon-button"
+          href="https://github.com/Ignibyte/jqstar"
+          aria-label="jQStar on GitHub"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path
+              d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.4 4 5 5 0 0 0 19.3.5S18.2.1 15 1.8a13.4 13.4 0 0 0-6 0C5.8.1 4.7.5 4.7.5A5 5 0 0 0 4.6 4a5.4 5.4 0 0 0-1.4 3.7c0 5.4 3.5 6.6 6.8 7A4.8 4.8 0 0 0 9 18v4M9 19c-3 .9-3-1.5-4-2"
+            ></path>
+          </svg>
+        </a>
+        <button
+          class="icon-button"
+          type="button"
+          data-on:click="@site.toggleTheme"
+          aria-label="Toggle color theme"
+        >
+          <svg data-theme-dark-icon aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+          <svg data-theme-light-icon aria-hidden="true" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            ></path>
+          </svg>
+          <span class="visually-hidden" data-theme-label>Use light theme</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+  <div class="docs-layout">
+    <aside class="docs-sidebar">
+      <nav data-docs-nav aria-label="Documentation">
+        <h2>Getting started</h2>
+        <ul>
+          <li><a data-doc-link href="%BASE_URL%docs/">Introduction</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/datastar/">Datastar Integration</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/api/">Core API</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/csp/">CSP Expressions</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/interoperability/">Turbo and htmx</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/ecosystem/">jQuery ecosystem</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/plugins/">Plugins</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/testing/">Testing</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/agents/">Agent Support</a></li>
+        </ul>
+        <h2>Components</h2>
+        <ul>
+          <li><a data-doc-link href="%BASE_URL%docs/components/">Overview</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/components/dialog/">Dialog</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/components/dropdown/">Dropdown</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/components/tabs/">Tabs</a></li>
+          <li><a data-doc-link href="%BASE_URL%docs/components/toast/">Toast</a></li>
+          <li><a href="%BASE_URL%components/lab/">Component Lab</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main id="docs-content" class="docs-main"><slot></slot></main>
+  </div>
+</template>

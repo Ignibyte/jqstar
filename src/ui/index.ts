@@ -1,4 +1,10 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
+import {
+  defineOfficialPlugin,
+  STAR_PLUGIN_API_VERSION,
+  type StarPluginActivation,
+} from "../plugin";
 import { createDisclosures } from "./disclosure";
 import { createCarousels } from "./carousel";
 import { createForms } from "./form";
@@ -49,6 +55,7 @@ import type {
   StarDialogStatic,
   StarUIStatic,
 } from "../types";
+import { STAR_VERSION } from "../version";
 
 interface DialogRecord {
   trigger: Element | undefined;
@@ -58,6 +65,12 @@ interface DialogEventDetail {
   dialog: HTMLDialogElement;
   returnValue?: string;
   trigger?: Element | undefined;
+}
+
+interface UICapabilities {
+  readonly activate?: (setup: StarPluginActivation) => void;
+  readonly documentHost: DocumentHost;
+  readonly registerAction: ActionRegistrar;
 }
 
 const records = new WeakMap<HTMLDialogElement, DialogRecord>();
@@ -79,16 +92,17 @@ function resolveDialog(target: DialogTarget, root: ParentNode = document): HTMLD
 }
 
 function controlledDialog(context: StarContext, target?: unknown): HTMLDialogElement {
+  const owner = context.root.ownerDocument;
   if (target instanceof HTMLDialogElement) return target;
 
   if (typeof target === "string") {
     const local = context.root.querySelector(target);
-    return isDialog(local) ? local : queryDialog(target);
+    return isDialog(local) ? local : queryDialog(target, owner);
   }
 
   const element = context.element;
   const controls = element?.getAttribute("aria-controls");
-  if (controls) return queryDialog(`#${CSS.escape(controls)}`);
+  if (controls) return queryDialog(`#${CSS.escape(controls)}`, owner);
 
   const closest = element?.closest("dialog[data-jqs='dialog']") ?? null;
   if (isDialog(closest)) return closest;
@@ -195,8 +209,12 @@ function focusInitial(dialog: HTMLDialogElement, target?: string | HTMLElement):
   element?.focus();
 }
 
-function openDialog(target: DialogTarget, options: DialogOpenOptions = {}): HTMLDialogElement {
-  const dialog = resolveDialog(target);
+function openDialog(
+  target: DialogTarget,
+  options: DialogOpenOptions = {},
+  owner: ParentNode = document,
+): HTMLDialogElement {
+  const dialog = resolveDialog(target, owner);
   const record = enhanceDialog(dialog);
   if (dialog.open) return dialog;
 
@@ -213,8 +231,12 @@ function openDialog(target: DialogTarget, options: DialogOpenOptions = {}): HTML
   return dialog;
 }
 
-function closeDialog(target: DialogTarget, returnValue = ""): HTMLDialogElement {
-  const dialog = resolveDialog(target);
+function closeDialog(
+  target: DialogTarget,
+  returnValue = "",
+  owner: ParentNode = document,
+): HTMLDialogElement {
+  const dialog = resolveDialog(target, owner);
   const record = enhanceDialog(dialog);
   if (!dialog.open) return dialog;
 
@@ -226,7 +248,7 @@ function closeDialog(target: DialogTarget, returnValue = ""): HTMLDialogElement 
   return dialog;
 }
 
-function registerDialogActions(dialog: StarDialogStatic): void {
+function registerDialogActions(dialog: StarDialogStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.dialog.open", (context) => {
     const target = controlledDialog(context, context.args?.[0]);
     const initialFocus = context.args?.[1];
@@ -245,7 +267,6 @@ function registerDialogActions(dialog: StarDialogStatic): void {
   });
 }
 
-const documentObservers = new WeakMap<Document, MutationObserver>();
 const enhancementOwnerSelector = [
   "accordion",
   "collapsible",
@@ -301,6 +322,66 @@ const enhancementOwnerSelector = [
   .concat('form[data-jqs="form"]', 'dialog[data-jqs="dialog"]')
   .join(", ");
 
+export const enhancementObserverOptions: MutationObserverInit = {
+  attributes: true,
+  attributeFilter: [
+    "data-jqs",
+    "data-mode",
+    "data-collapsible",
+    "data-value",
+    "data-start",
+    "data-end",
+    "data-activation",
+    "data-orientation",
+    "data-filter",
+    "data-inline",
+    "data-min-length",
+    "data-loading",
+    "disabled",
+    "label",
+    "selected",
+    "data-page",
+    "data-page-count",
+    "data-page-size",
+    "data-sort",
+    "data-direction",
+    "data-processing",
+    "data-type",
+    "data-name",
+    "data-required",
+    "data-month",
+    "data-min",
+    "data-max",
+    "min",
+    "max",
+    "step",
+    "data-disabled-dates",
+    "data-week-start",
+    "data-disable-weekends",
+    "data-show-label",
+    "data-hide-label",
+    "data-add-on-blur",
+    "data-length",
+    "data-pattern",
+    "data-storage-key",
+    "data-step",
+    "data-selection",
+    "data-expanded",
+    "data-loop",
+    "data-autoplay",
+    "data-shortcut",
+    "data-linear",
+    "data-disabled",
+    "data-validate",
+    "data-max-files",
+    "data-max-size",
+    "accept",
+    "multiple",
+  ],
+  childList: true,
+  subtree: true,
+};
+
 function dialogElements(root: ParentNode): HTMLDialogElement[] {
   const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-jqs="dialog"]'));
   if (root instanceof HTMLDialogElement && root.matches('[data-jqs="dialog"]')) {
@@ -309,144 +390,110 @@ function dialogElements(root: ParentNode): HTMLDialogElement[] {
   return dialogs;
 }
 
-function installAutoEnhancement(enhance: (root?: ParentNode) => void): void {
-  if (typeof document === "undefined" || documentObservers.has(document)) return;
+function installAutoEnhancement(
+  host: DocumentHost,
+  enhance: (root?: ParentNode) => void,
+  activate?: (setup: StarPluginActivation) => void,
+): void {
+  const start = (): void => {
+    const { document } = host;
+    let active = true;
+    host.own("service", "ui:auto-enhancement", () => {
+      active = false;
+    });
 
-  const run = (): void => enhance(document);
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run, { once: true });
-  } else {
-    queueMicrotask(run);
-  }
-
-  const observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.type === "attributes") {
-        enhance(mutation.target as Element);
-        const owner = (mutation.target as Element).closest<HTMLElement>(enhancementOwnerSelector);
-        if (owner && owner !== mutation.target) enhance(owner);
-        continue;
-      }
-
-      for (const node of mutation.addedNodes) {
-        if (!(node instanceof Element)) continue;
-        enhance(node);
-        const owner = node.parentElement?.closest<HTMLElement>(enhancementOwnerSelector);
-        if (owner) enhance(owner);
-      }
+    const run = (): void => {
+      if (active) enhance(document);
+    };
+    if (document.readyState === "loading") {
+      host.listen(document, "DOMContentLoaded", run, { once: true });
+    } else {
+      queueMicrotask(run);
     }
-  });
-  observer.observe(document, {
-    attributes: true,
-    attributeFilter: [
-      "data-jqs",
-      "data-mode",
-      "data-collapsible",
-      "data-value",
-      "data-start",
-      "data-end",
-      "data-activation",
-      "data-orientation",
-      "data-filter",
-      "data-inline",
-      "data-min-length",
-      "data-loading",
-      "disabled",
-      "label",
-      "selected",
-      "data-page",
-      "data-page-count",
-      "data-page-size",
-      "data-sort",
-      "data-direction",
-      "data-processing",
-      "data-type",
-      "data-name",
-      "data-required",
-      "data-month",
-      "data-min",
-      "data-max",
-      "min",
-      "max",
-      "step",
-      "data-disabled-dates",
-      "data-week-start",
-      "data-disable-weekends",
-      "data-show-label",
-      "data-hide-label",
-      "data-add-on-blur",
-      "data-length",
-      "data-pattern",
-      "data-storage-key",
-      "data-step",
-      "data-selection",
-      "data-expanded",
-      "data-loop",
-      "data-autoplay",
-      "data-shortcut",
-      "data-linear",
-      "data-disabled",
-      "data-validate",
-      "data-max-files",
-      "data-max-size",
-      "accept",
-      "multiple",
-    ],
-    childList: true,
-    subtree: true,
-  });
-  documentObservers.set(document, observer);
+
+    host.observe(
+      document,
+      (mutations) => {
+        for (const mutation of mutations) {
+          switch (mutation.type) {
+            case "attributes": {
+              enhance(mutation.target as Element);
+              const owner = (mutation.target as Element).closest<HTMLElement>(
+                enhancementOwnerSelector,
+              );
+              if (owner && owner !== mutation.target) enhance(owner);
+              break;
+            }
+            case "childList":
+              for (const node of mutation.addedNodes) {
+                if (!(node instanceof Element)) continue;
+                enhance(node);
+                const owner = node.parentElement?.closest<HTMLElement>(enhancementOwnerSelector);
+                if (owner) enhance(owner);
+              }
+              break;
+            default:
+              break;
+          }
+        }
+      },
+      enhancementObserverOptions,
+    );
+  };
+  if (activate) activate(start);
+  else start();
 }
 
-export function createUI(): StarUIStatic {
+export function createUI({ activate, documentHost, registerAction }: UICapabilities): StarUIStatic {
+  const owner = documentHost.document;
   const dialog: StarDialogStatic = {
-    open: openDialog,
-    close: closeDialog,
+    open: (target, options) => openDialog(target, options, owner),
+    close: (target, returnValue) => closeDialog(target, returnValue, owner),
   };
-  const disclosures = createDisclosures();
-  const menus = createMenus();
-  const menubars = createMenubars(menus.api);
-  const trees = createTrees();
-  const tabs = createTabs();
-  const selects = createSelects();
-  const comboboxes = createComboboxes();
-  const dataTables = createDataTables();
-  const paginations = createPaginations();
-  const popovers = createPopovers();
-  const calendars = createCalendars(popovers.api);
-  const forms = createForms();
-  const hoverCards = createHoverCards();
-  const tooltips = createTooltips();
-  const toasts = createToasts();
-  const toggles = createToggles();
-  const numberFields = createNumberFields();
-  const passwordFields = createPasswordFields();
-  const tagsInputs = createTagsInputs();
-  const inputOTPs = createInputOTPs();
-  const resizables = createResizables();
-  const sidebars = createSidebars();
-  const carousels = createCarousels();
-  const toolbars = createToolbars();
-  const steppers = createSteppers();
-  const sortables = createSortables();
-  const fileUploads = createFileUploads();
-  const multiSelects = createMultiSelects();
-  const transferLists = createTransferLists();
-  const timePickers = createTimePickers();
-  const colorPickers = createColorPickers();
-  const ratings = createRatings();
-  const messageScrollers = createMessageScrollers();
-  const searchFields = createSearchFields();
-  const feeds = createFeeds();
-  const questionnaires = createQuestionnaires();
-  const charts = createCharts();
-  const codeBlocks = createCodeBlocks();
-  const clipboards = createClipboards();
-  const editables = createEditables();
-  const logViewers = createLogViewers();
-  const jsonViewers = createJSONViewers();
-  const countdowns = createCountdowns();
-  const enhance = (root: ParentNode = document): void => {
+  const disclosures = createDisclosures(registerAction);
+  const menus = createMenus(documentHost, registerAction);
+  const menubars = createMenubars(menus.api, registerAction);
+  const trees = createTrees(registerAction);
+  const tabs = createTabs(registerAction);
+  const selects = createSelects(documentHost, registerAction);
+  const comboboxes = createComboboxes(documentHost, registerAction);
+  const dataTables = createDataTables(registerAction);
+  const paginations = createPaginations(registerAction);
+  const popovers = createPopovers(documentHost, registerAction);
+  const calendars = createCalendars(popovers.api, registerAction);
+  const forms = createForms(registerAction);
+  const hoverCards = createHoverCards(documentHost, registerAction);
+  const tooltips = createTooltips(documentHost, registerAction);
+  const toasts = createToasts(documentHost, registerAction);
+  const toggles = createToggles(registerAction);
+  const numberFields = createNumberFields(registerAction);
+  const passwordFields = createPasswordFields(registerAction);
+  const tagsInputs = createTagsInputs(registerAction);
+  const inputOTPs = createInputOTPs(registerAction);
+  const resizables = createResizables(registerAction);
+  const sidebars = createSidebars(documentHost, registerAction);
+  const carousels = createCarousels(registerAction);
+  const toolbars = createToolbars(registerAction);
+  const steppers = createSteppers(registerAction);
+  const sortables = createSortables(registerAction);
+  const fileUploads = createFileUploads(registerAction);
+  const multiSelects = createMultiSelects(documentHost, registerAction);
+  const transferLists = createTransferLists(registerAction);
+  const timePickers = createTimePickers(registerAction);
+  const colorPickers = createColorPickers(registerAction);
+  const ratings = createRatings(registerAction);
+  const messageScrollers = createMessageScrollers(registerAction);
+  const searchFields = createSearchFields(registerAction);
+  const feeds = createFeeds(registerAction);
+  const questionnaires = createQuestionnaires(registerAction);
+  const charts = createCharts(registerAction);
+  const codeBlocks = createCodeBlocks(registerAction);
+  const clipboards = createClipboards(registerAction);
+  const editables = createEditables(registerAction);
+  const logViewers = createLogViewers(registerAction);
+  const jsonViewers = createJSONViewers(registerAction);
+  const countdowns = createCountdowns(registerAction);
+  const enhance = (root: ParentNode = owner): void => {
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
     tabs.enhance(root);
@@ -545,7 +592,20 @@ export function createUI(): StarUIStatic {
     form: forms.api,
     enhance,
   };
-  registerDialogActions(dialog);
-  installAutoEnhancement(enhance);
+  registerDialogActions(dialog, registerAction);
+  installAutoEnhancement(documentHost, enhance, activate);
   return ui;
 }
+
+export const uiPlugin = defineOfficialPlugin({
+  name: "ui",
+  version: STAR_VERSION,
+  apiVersion: `^${STAR_PLUGIN_API_VERSION}`,
+  install(registrar): StarUIStatic {
+    return createUI({
+      activate: (setup) => registrar.activate(setup),
+      documentHost: registrar.documentHost,
+      registerAction: (name, action) => registrar.action(name, action),
+    });
+  },
+});

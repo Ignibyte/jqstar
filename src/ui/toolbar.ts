@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarToolbarStatic, ToolbarTarget } from "../types";
 
 type Orientation = "horizontal" | "vertical";
@@ -174,7 +174,7 @@ function enhanceToolbars(root: ParentNode): void {
   }
 }
 
-export function createToolbars(): ToolbarCollection {
+export function createToolbars(registerAction: ActionRegistrar): ToolbarCollection {
   const api: StarToolbarStatic = {
     focus: (target, value) => {
       const root = resolveToolbar(target);

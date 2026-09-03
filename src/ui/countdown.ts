@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   CountdownState,
   CountdownTarget,
@@ -276,7 +276,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createCountdowns(): CountdownCollection {
+export function createCountdowns(registerAction: ActionRegistrar): CountdownCollection {
   const api: StarCountdownStatic = {
     start: (target, seconds) => start(recordFor(target), seconds),
     until: (target, value) => setUntil(recordFor(target), value),

@@ -1,0 +1,192 @@
+{
+  "$schema": "jqstar-production-census/1",
+  "scan": {
+    "directories": [
+      "src",
+      "server",
+      "registry",
+      "bin",
+      "deploy",
+      "scripts",
+      "quality",
+      "config",
+      "schema",
+      ".github",
+      ".githooks"
+    ],
+    "rootPaths": [
+      "package.json",
+      "package-lock.json",
+      "registry.json",
+      "tsconfig.json",
+      "tsconfig.build.json",
+      "tsconfig.registry.json",
+      "eslint.config.js",
+      "playwright.config.ts",
+      "vite.config.ts",
+      "vite.csp.config.ts",
+      "vite.umd.config.ts",
+      "vite.demo.config.ts",
+      "vite.server.config.ts",
+      "vitest.config.ts",
+      "vitest.coverage.config.ts",
+      "vitest.property.config.ts",
+      ".dependency-cruiser.cjs",
+      ".gitleaks.toml",
+      ".htmlvalidate.json",
+      ".jscpd.json",
+      ".markdownlint-cli2.jsonc",
+      ".semgrep.yml",
+      "cspell.json",
+      "knip.json",
+      "stylelint.config.js",
+      "tsconfig.quality.production.json",
+      "tsconfig.quality.registry.json",
+      "tsconfig.quality.server.json",
+      "tsconfig.quality.test.json"
+    ],
+    "rootSuffixes": [".config.js", ".config.mjs", ".config.ts"]
+  },
+  "coverageExcludeGlobs": ["**/*.d.ts", "src/types.ts", "server/index.ts"],
+  "rules": [
+    {
+      "id": "runtime-coverage",
+      "kind": "coverage",
+      "prefixes": ["src/"],
+      "suffixes": [".ts"],
+      "excludePaths": ["src/types.ts"],
+      "excludeSuffixes": [".d.ts"],
+      "coverageGlobs": ["src/**/*.ts"]
+    },
+    {
+      "id": "server-coverage",
+      "kind": "coverage",
+      "prefixes": ["server/"],
+      "suffixes": [".ts"],
+      "excludePaths": ["server/index.ts"],
+      "coverageGlobs": ["server/**/*.ts"]
+    },
+    {
+      "id": "registry-block-coverage",
+      "kind": "coverage",
+      "prefixes": ["registry/blocks/"],
+      "suffixes": [".ts"],
+      "coverageGlobs": ["registry/blocks/**/*.ts"]
+    },
+    {
+      "id": "server-process-entry",
+      "kind": "process-contract-evidence",
+      "paths": ["server/index.ts"],
+      "evidence": ["npm run test:self-hosted"]
+    },
+    {
+      "id": "type-only-source",
+      "kind": "semantic-exclusion",
+      "paths": ["src/types.ts"],
+      "evidence": ["npm run typecheck"]
+    },
+    {
+      "id": "declarations",
+      "kind": "semantic-exclusion",
+      "prefixes": ["src/"],
+      "suffixes": [".d.ts"],
+      "evidence": ["npm run build:js", "npm run test:package"]
+    },
+    {
+      "id": "automation-declarations",
+      "kind": "semantic-exclusion",
+      "prefixes": ["scripts/"],
+      "suffixes": [".d.mts"],
+      "evidence": ["npm run typecheck"]
+    },
+    {
+      "id": "shipped-styles",
+      "kind": "browser-package-evidence",
+      "prefixes": ["src/"],
+      "suffixes": [".css"],
+      "evidence": ["npm run test:e2e", "npm run test:package"]
+    },
+    {
+      "id": "registry-markup",
+      "kind": "browser-contract-evidence",
+      "prefixes": ["registry/"],
+      "suffixes": [".html"],
+      "evidence": ["npm run test:unit", "npm run test:e2e"]
+    },
+    {
+      "id": "shipped-cli",
+      "kind": "process-contract-evidence",
+      "prefixes": ["bin/"],
+      "suffixes": [".mjs"],
+      "evidence": ["npm run test:unit", "npm run test:package"]
+    },
+    {
+      "id": "deployment-assets",
+      "kind": "deployment-evidence",
+      "prefixes": ["deploy/"],
+      "evidence": ["npm run test:self-hosted"]
+    },
+    {
+      "id": "operational-scripts",
+      "kind": "script-contract-evidence",
+      "prefixes": ["scripts/"],
+      "suffixes": [".mjs"],
+      "evidence": ["npm run test:quality:self", "npm run test:self-hosted", "npm run test:package"]
+    },
+    {
+      "id": "quality-infrastructure",
+      "kind": "quality-self-evidence",
+      "prefixes": ["quality/", "config/", ".github/", ".githooks/"],
+      "evidence": ["npm run test:quality:self", "npm run quality:static:self"]
+    },
+    {
+      "id": "quality-root-config",
+      "kind": "quality-self-evidence",
+      "paths": [
+        ".dependency-cruiser.cjs",
+        ".gitleaks.toml",
+        ".htmlvalidate.json",
+        ".jscpd.json",
+        ".markdownlint-cli2.jsonc",
+        ".semgrep.yml",
+        "cspell.json",
+        "knip.json",
+        "stylelint.config.js",
+        "tsconfig.quality.production.json",
+        "tsconfig.quality.registry.json",
+        "tsconfig.quality.server.json",
+        "tsconfig.quality.test.json"
+      ],
+      "evidence": ["npm run quality:static:self"]
+    },
+    {
+      "id": "published-schemas",
+      "kind": "schema-contract-evidence",
+      "prefixes": ["schema/"],
+      "evidence": ["npm run test:unit", "npm run test:package"]
+    },
+    {
+      "id": "package-and-build-contracts",
+      "kind": "build-package-evidence",
+      "paths": [
+        "package.json",
+        "package-lock.json",
+        "registry.json",
+        "tsconfig.json",
+        "tsconfig.build.json",
+        "tsconfig.registry.json",
+        "eslint.config.js",
+        "playwright.config.ts",
+        "vite.config.ts",
+        "vite.csp.config.ts",
+        "vite.umd.config.ts",
+        "vite.demo.config.ts",
+        "vite.server.config.ts",
+        "vitest.config.ts",
+        "vitest.coverage.config.ts",
+        "vitest.property.config.ts"
+      ],
+      "evidence": ["npm run quality:census", "npm run check", "npm run test:package"]
+    }
+  ]
+}

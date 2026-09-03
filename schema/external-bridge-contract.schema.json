@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/external-bridge-contract.schema.json",
+  "title": "jQStar external navigation bridge contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema",
+    "ownerTicket",
+    "contractVersion",
+    "publicBoundary",
+    "stateMachine",
+    "overlapPolicy",
+    "observation",
+    "libraries",
+    "downstreamTickets"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema": { "const": "jqstar-external-bridge-contract/1" },
+    "ownerTicket": { "const": "0016" },
+    "contractVersion": { "const": 1 },
+    "publicBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedImports", "forbiddenImports", "renderAdapterSha256"],
+      "properties": {
+        "allowedImports": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [{ "const": "jquery-star/core" }, { "const": "jquery-star/testing" }],
+          "items": false
+        },
+        "forbiddenImports": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "renderAdapterSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "stateMachine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phases", "terminal", "requiredOrder", "preMutationCancellation"],
+      "properties": {
+        "phases": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "prefixItems": [
+            { "const": "idle" },
+            { "const": "prepared" },
+            { "const": "removing" },
+            { "const": "externally-mutated" },
+            { "const": "enhancing" },
+            { "const": "committed" }
+          ],
+          "items": false
+        },
+        "terminal": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [{ "const": "canceled" }, { "const": "failed" }],
+          "items": false
+        },
+        "requiredOrder": {
+          "const": [
+            "intent",
+            "begin",
+            "beforeRemove",
+            "hostMutation",
+            "commit",
+            "whenEnhanced",
+            "hostComplete"
+          ]
+        },
+        "preMutationCancellation": { "const": "no-render-transaction" }
+      }
+    },
+    "overlapPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disjoint", "same", "ancestor", "descendant", "nestedCleanup"],
+      "properties": {
+        "disjoint": { "const": "parallel-distinct-operation-ids" },
+        "same": { "const": "reject-before-begin" },
+        "ancestor": { "const": "reject-before-begin" },
+        "descendant": { "const": "reject-before-begin" },
+        "nestedCleanup": { "const": "deduplicate-deepest-first" }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "allowedFields", "redactedFields", "terminalOutcomes"],
+      "properties": {
+        "schema": { "const": "jqstar-external-render-observation/1" },
+        "allowedFields": {
+          "type": "array",
+          "minItems": 8,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "redactedFields": {
+          "type": "array",
+          "minItems": 10,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "terminalOutcomes": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "prefixItems": [
+            { "const": "completed" },
+            { "const": "canceled-before-mutation" },
+            { "const": "failed-before-mutation" },
+            { "const": "failed-after-removal" },
+            { "const": "failed-after-mutation" }
+          ],
+          "items": false
+        }
+      }
+    },
+    "libraries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["turbo", "htmx"],
+      "properties": {
+        "turbo": { "$ref": "#/$defs/library" },
+        "htmx": { "$ref": "#/$defs/library" }
+      }
+    },
+    "downstreamTickets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["0036", "0037"],
+      "properties": {
+        "0036": { "$ref": "#/$defs/downstream" },
+        "0037": { "$ref": "#/$defs/downstream" }
+      }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "integrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "version", "alias", "tarball", "integrity", "sha1"],
+      "properties": {
+        "role": { "enum": ["oldest", "newest"] },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "alias": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "tarball": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://registry\\.npmjs\\.org/"
+        },
+        "integrity": { "$ref": "#/$defs/integrity" },
+        "sha1": { "$ref": "#/$defs/sha1" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "url", "contract"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^(turbo|htmx)\\.[a-z0-9.-]+$" },
+        "url": { "type": "string", "format": "uri" },
+        "contract": { "type": "string", "minLength": 12 }
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "flow",
+        "mutation",
+        "intentEvents",
+        "mutationEvent",
+        "removalBoundary",
+        "postMutationEvent",
+        "barrier",
+        "terminalEvent",
+        "cancelEvents",
+        "errorEvents",
+        "requiredOrder"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^(turbo|htmx)\\.[a-z0-9.-]+$" },
+        "flow": { "type": "string", "minLength": 3 },
+        "mutation": { "type": "boolean" },
+        "intentEvents": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "mutationEvent": { "type": ["string", "null"] },
+        "removalBoundary": { "type": ["string", "null"] },
+        "postMutationEvent": { "type": ["string", "null"] },
+        "barrier": { "enum": ["jquery-star.whenEnhanced", "none"] },
+        "terminalEvent": { "type": ["string", "null"] },
+        "cancelEvents": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "errorEvents": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "requiredOrder": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "traceCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "mappingId", "versions", "requiredEvents", "forbiddenEvents"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^(turbo|htmx)\\.trace\\.[a-z0-9.-]+$" },
+        "mappingId": { "type": "string", "pattern": "^(turbo|htmx)\\.[a-z0-9.-]+$" },
+        "versions": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+        },
+        "requiredEvents": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "forbiddenEvents": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "library": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package",
+        "stableChannel",
+        "approvedRange",
+        "browserProjects",
+        "fixtureTest",
+        "versionDetection",
+        "unsupportedVersionPolicy",
+        "dependencyPolicy",
+        "boundaries",
+        "officialSources",
+        "preservation",
+        "mappings",
+        "traceCases",
+        "unsupportedFlows"
+      ],
+      "properties": {
+        "package": { "enum": ["@hotwired/turbo", "htmx.org"] },
+        "stableChannel": { "type": "string", "pattern": "^\\d+\\.\\d+\\.x$" },
+        "approvedRange": {
+          "type": "string",
+          "pattern": "^>=\\d+\\.\\d+\\.\\d+ <\\d+\\.\\d+\\.\\d+$"
+        },
+        "browserProjects": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "const": "desktop-chromium" },
+            { "const": "desktop-firefox" },
+            { "const": "desktop-webkit" }
+          ],
+          "items": false
+        },
+        "fixtureTest": { "const": "e2e/interoperability-baseline.spec.ts" },
+        "versionDetection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "required"],
+          "properties": {
+            "source": { "type": "string", "minLength": 6 },
+            "required": { "const": true }
+          }
+        },
+        "unsupportedVersionPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["missing", "unknown", "prerelease", "outOfRange"],
+          "properties": {
+            "missing": { "const": "reject-before-listeners" },
+            "unknown": { "const": "reject-before-listeners" },
+            "prerelease": { "const": "reject-before-listeners" },
+            "outOfRange": { "const": "reject-before-listeners" }
+          }
+        },
+        "dependencyPolicy": { "const": "development-fixture-alias-and-optional-peer-only" },
+        "boundaries": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/boundary" }
+        },
+        "officialSources": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/source" }
+        },
+        "preservation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["marker", "key", "checks", "mismatch"],
+          "properties": {
+            "marker": { "enum": ["data-turbo-permanent", "hx-preserve"] },
+            "key": { "const": "unique-id-with-incoming-match" },
+            "checks": {
+              "type": "array",
+              "minItems": 6,
+              "uniqueItems": true,
+              "items": { "type": "string" }
+            },
+            "mismatch": { "const": "destroy-and-record-diagnostic" }
+          }
+        },
+        "mappings": {
+          "type": "array",
+          "minItems": 6,
+          "items": { "$ref": "#/$defs/mapping" }
+        },
+        "traceCases": {
+          "type": "array",
+          "minItems": 5,
+          "items": { "$ref": "#/$defs/traceCase" }
+        },
+        "unsupportedFlows": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "downstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host", "mappingIds", "requiredAcceptance"],
+      "properties": {
+        "host": { "enum": ["turbo", "htmx"] },
+        "mappingIds": {
+          "type": "array",
+          "minItems": 6,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(turbo|htmx)\\.[a-z0-9.-]+$" }
+        },
+        "requiredAcceptance": {
+          "type": "array",
+          "minItems": 8,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

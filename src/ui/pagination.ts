@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { PaginationTarget, StarContext, StarPaginationStatic } from "../types";
 
 interface PaginationCollection {
@@ -237,7 +237,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createPaginations(): PaginationCollection {
+export function createPaginations(registerAction: ActionRegistrar): PaginationCollection {
   const api: StarPaginationStatic = {
     page: (target) => {
       const root = resolve(target);

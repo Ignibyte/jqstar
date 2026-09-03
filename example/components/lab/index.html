@@ -1,0 +1,3344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component Lab · jQStar</title>
+    <meta
+      name="description"
+      content="The exhaustive jQStar component, block, backend, Datastar, and accessibility proof."
+    />
+    <meta property="og:title" content="Component Lab · jQStar" />
+    <meta
+      property="og:description"
+      content="Exercise the complete jQStar component and backend integration system."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ignibyte.github.io/jqstar/components/lab/" />
+    <meta property="og:image" content="%BASE_URL%og-jqstar.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="jQStar — Modern web applications. Without the SPA." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Component Lab · jQStar" />
+    <meta
+      name="twitter:description"
+      content="The exhaustive jQStar component, block, backend, Datastar, and accessibility proof."
+    />
+    <meta name="twitter:image" content="%BASE_URL%og-jqstar.png" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main
+      id="app"
+      data-signals="{ count: 0, name: 'Ada', itemCount: 3, serverCount: 0, serverLoading: false, serverError: null, serverMessage: 'No request yet.', componentEmail: '', componentNotes: '', componentTerms: false, componentNotifications: true, componentFramework: 'jquery-star', componentQuery: '', componentSelection: '', componentResultCount: 7, componentComboboxLoading: false, componentComboboxError: null, componentVolume: 60, componentDueDate: '2026-08-28', componentTripStart: '2026-08-28', componentTripEnd: '2026-08-31', componentCapacity: 68, componentTimezone: 'america-chicago', componentFormSubmitted: false, componentBackendSaving: false, componentBackendError: null, componentBackendMessage: 'Try taken@example.com to see structured server validation.', projectSaving: false, projectMessage: 'Complete the workflow to send native FormData.', preferencesSaving: false, preferencesMessage: 'Change the native controls, then submit one FormData payload.', feedbackSaving: false, feedbackMessage: 'Submit a native rating and reply to append a message.', feedQuery: '', feedMessage: '3 of 12 catalog results loaded.', questionnaireSaving: false, questionnaireMessage: 'Answer three questions to create a native multipart build brief.', metricsLoading: false, metricsMessage: 'The chart is rendered from the accessible table below it.', operationsLoading: false, operationsMessage: 'Ready to query the local operations endpoint.', controlPlaneCompact: false, controlPlaneLoading: false, controlPlaneStreaming: false, controlPlaneMessage: 'Ready to load a runtime snapshot or open the Datastar log stream.' }"
+      data-computed:greeting="$name.trim() ? 'Hello, ' + $name + '.' : 'Tell us your name.'"
+    >
+      <p class="eyebrow">jQStar · server-rendered application framework</p>
+      <h1>Modern web applications.<br />Without the SPA.</h1>
+      <p class="lede">
+        A full-featured frontend platform for server-rendered applications that do not want to
+        become single-page applications.
+      </p>
+
+      <section class="framework-promise" aria-label="Why jQStar">
+        <article class="card promise-panel">
+          <div>
+            <p class="label">Keep the server in charge</p>
+            <h2>Build a modern application without moving the application into the browser.</h2>
+          </div>
+          <ul>
+            <li>Keep routes, validation, permissions, and data on the server.</li>
+            <li>Keep HTML readable and useful before JavaScript runs.</li>
+            <li>Add reactivity and rich components where they are needed.</li>
+            <li>Update page regions through HTML, JSON, or Datastar streams.</li>
+            <li>Avoid JSX, hydration, virtual DOM ownership, and duplicated client routes.</li>
+            <li>Continue using existing backend templates and jQuery plugins.</li>
+            <li>Adopt it incrementally instead of rewriting the application.</li>
+          </ul>
+        </article>
+
+        <article class="card promise-panel">
+          <div>
+            <p class="label">What we are building for</p>
+            <h2>A complete server-rendered development experience.</h2>
+          </div>
+          <ol>
+            <li>An excellent server-rendered development experience.</li>
+            <li>Predictable enhancement and cleanup after HTML replacement.</li>
+            <li>Examples for PHP, Rails, Django, Node, and similar stacks.</li>
+            <li>Strong no-build and modular-package support.</li>
+            <li>Accessible components that solve real application workflows.</li>
+            <li>Optional navigation and shared state without making them mandatory.</li>
+            <li>Migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.</li>
+          </ol>
+        </article>
+      </section>
+
+      <p class="syntax-rule">
+        <code>$</code> is real jQuery. <code>$name</code> is a reactive signal. Named actions move
+        longer behavior back into JavaScript.
+      </p>
+
+      <section class="card component-card" aria-labelledby="components-title">
+        <div>
+          <p class="label" id="components-title">Component system proof</p>
+          <p class="hint">Tailwind-compiled styles, native semantics, and jQStar actions.</p>
+        </div>
+
+        <div class="button-showcase" aria-label="Button variants">
+          <button data-jqs="button" type="button">Primary</button>
+          <button data-jqs="button" data-variant="secondary" type="button">Secondary</button>
+          <button data-jqs="button" data-variant="outline" type="button">Outline</button>
+          <button data-jqs="button" data-variant="ghost" type="button">Ghost</button>
+          <button data-jqs="button" data-variant="danger" type="button">Danger</button>
+          <button data-jqs="button" type="button" disabled>Disabled</button>
+          <button
+            id="open-proof-dialog"
+            data-jqs="button"
+            data-size="lg"
+            type="button"
+            aria-haspopup="dialog"
+            data-on:click="@ui.dialog.open('#proof-dialog', '#proof-dialog-cancel')"
+          >
+            Open verified dialog
+          </button>
+        </div>
+
+        <dialog id="proof-dialog" data-jqs="dialog" data-close-on-backdrop>
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Keep building this system?</h2>
+              <p data-part="description">
+                The browser owns modality and focus containment. jQStar owns actions, lifecycle
+                events, state attributes, and styling hooks.
+              </p>
+            </header>
+
+            <div data-part="footer">
+              <button
+                id="proof-dialog-cancel"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('cancelled')"
+              >
+                Cancel
+              </button>
+              <button data-jqs="button" type="button" data-on:click="@ui.dialog.close('confirmed')">
+                Keep going
+              </button>
+            </div>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card controls-component-card" aria-labelledby="controls-components-title">
+        <div>
+          <p class="label" id="controls-components-title">Choice and toggle controls</p>
+          <p class="hint">
+            Native form behavior where the platform is strongest; focused jQStar behavior where a
+            composite widget earns it.
+          </p>
+        </div>
+
+        <div class="controls-showcase">
+          <fieldset data-jqs="radio-group">
+            <legend>Preview density</legend>
+            <label
+              ><input type="radio" name="density" value="comfortable" checked /> Comfortable</label
+            >
+            <label><input type="radio" name="density" value="compact" /> Compact</label>
+            <label><input type="radio" name="density" value="system" /> Follow system</label>
+          </fieldset>
+
+          <div data-jqs="field">
+            <label data-part="label" for="component-volume">
+              Preview volume: <span data-text="$componentVolume"></span>%
+            </label>
+            <input
+              id="component-volume"
+              data-jqs="slider"
+              data-bind:component-volume
+              type="range"
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div class="toggle-showcase">
+            <button id="live-preview-toggle" data-jqs="toggle" type="button">Live preview</button>
+            <div
+              id="format-toggle-group"
+              data-jqs="toggle-group"
+              data-type="multiple"
+              data-value="bold"
+              data-name="formatting"
+              aria-label="Text formatting"
+            >
+              <button data-part="item" data-value="bold" type="button"><strong>B</strong></button>
+              <button data-part="item" data-value="italic" type="button"><em>I</em></button>
+              <button data-part="item" data-value="underline" type="button"><u>U</u></button>
+              <button data-part="item" data-value="strike" type="button" disabled><s>S</s></button>
+            </div>
+          </div>
+
+          <div class="sheet-showcase">
+            <button
+              id="open-proof-sheet"
+              data-jqs="button"
+              data-variant="outline"
+              type="button"
+              aria-haspopup="dialog"
+              data-on:click="@ui.dialog.open('#proof-sheet', '#proof-sheet-close')"
+            >
+              Open side sheet
+            </button>
+            <span class="shortcut-proof">
+              Command palette <kbd data-jqs="kbd">⌘</kbd> <kbd data-jqs="kbd">K</kbd>
+            </span>
+            <span role="status" class="spinner-proof">
+              <span data-jqs="spinner" aria-hidden="true"></span>
+              Component batch building
+            </span>
+          </div>
+        </div>
+
+        <dialog id="proof-sheet" data-jqs="dialog" data-variant="sheet" data-close-on-backdrop>
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Component settings</h2>
+              <p data-part="description">
+                Sheet reuses Dialog’s native modality, focus return, lifecycle events, and actions.
+              </p>
+            </header>
+            <div data-jqs="empty">
+              <h3 data-part="title">No overrides yet</h3>
+              <p data-part="description">
+                Add a local theme override when the default component tokens are not enough.
+              </p>
+              <button data-jqs="button" type="button">Add override</button>
+            </div>
+            <footer data-part="footer">
+              <button
+                id="proof-sheet-close"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('close')"
+              >
+                Close
+              </button>
+            </footer>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card form-component-card" aria-labelledby="form-components-title">
+        <div>
+          <p class="label" id="form-components-title">Native form components</p>
+          <p class="hint">Accessible controls bound directly to jQStar signals.</p>
+        </div>
+
+        <div class="component-form">
+          <div data-jqs="field">
+            <label data-part="label" for="component-email">Email address</label>
+            <p data-part="description" id="component-email-description">
+              Used only for this browser proof.
+            </p>
+            <input
+              id="component-email"
+              data-jqs="input"
+              data-bind:component-email
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              aria-describedby="component-email-description"
+            />
+          </div>
+
+          <div data-jqs="field">
+            <label data-part="label" for="component-notes">Notes</label>
+            <textarea
+              id="component-notes"
+              data-jqs="textarea"
+              data-bind:component-notes
+              placeholder="Add context for the team"
+            ></textarea>
+          </div>
+
+          <label data-jqs="checkbox">
+            <input data-part="control" data-bind:component-terms type="checkbox" />
+            <span data-part="indicator" aria-hidden="true"></span>
+            <span data-part="label">Accept the component contract</span>
+          </label>
+
+          <label data-jqs="switch">
+            <input
+              data-part="control"
+              data-bind:component-notifications
+              type="checkbox"
+              role="switch"
+            />
+            <span data-part="track" aria-hidden="true">
+              <span data-part="thumb"></span>
+            </span>
+            <span data-part="label">Component notifications</span>
+          </label>
+
+          <output
+            class="component-form-preview"
+            data-text="($componentEmail || 'No email') + ' · ' + ($componentTerms ? 'accepted' : 'not accepted') + ' · notifications ' + ($componentNotifications ? 'on' : 'off')"
+            aria-live="polite"
+          ></output>
+        </div>
+      </section>
+
+      <section class="card advanced-fields-card" aria-labelledby="advanced-fields-title">
+        <div>
+          <p class="label" id="advanced-fields-title">Capable form fields</p>
+          <p class="hint">
+            Native number and password controls plus repeated tag values—each with jQuery APIs and
+            named actions.
+          </p>
+        </div>
+
+        <form class="advanced-fields-grid" aria-label="Capable form controls">
+          <div data-jqs="field">
+            <label data-jqs="label" for="component-guests">Guests</label>
+            <div id="component-number-field" data-jqs="number-field">
+              <button data-part="decrement" type="button" aria-label="Remove one guest">−</button>
+              <input
+                id="component-guests"
+                data-part="control"
+                type="number"
+                name="guests"
+                min="1"
+                max="5"
+                step="1"
+                value="2"
+              />
+              <button data-part="increment" type="button" aria-label="Add one guest">+</button>
+            </div>
+            <p data-part="description">Native min, max, step, validity, and form value.</p>
+          </div>
+
+          <div data-jqs="field">
+            <label data-jqs="label" for="component-password">Password</label>
+            <div id="component-password-field" data-jqs="password-field">
+              <input
+                id="component-password"
+                data-part="control"
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                value="jquery-star"
+              />
+              <button data-part="toggle" type="button">
+                <span data-part="toggle-label">Show password</span>
+              </button>
+              <p data-part="status"></p>
+            </div>
+            <p data-part="description">The same input stays available to password managers.</p>
+          </div>
+
+          <div class="advanced-tags-field" data-jqs="field">
+            <label data-jqs="label" for="component-tags-control">Project tags</label>
+            <div
+              id="component-tags"
+              data-jqs="tags-input"
+              data-name="tags"
+              data-max="5"
+              data-value='["jQuery","Datastar"]'
+            >
+              <ul data-part="list"></ul>
+              <input
+                id="component-tags-control"
+                data-part="control"
+                type="text"
+                placeholder="Add a tag"
+                aria-describedby="component-tags-help"
+              />
+              <p data-part="status"></p>
+            </div>
+            <p id="component-tags-help" data-part="description">
+              Enter or comma adds a tag. Backspace removes the last one.
+            </p>
+          </div>
+        </form>
+      </section>
+
+      <section class="card layout-primitives-card" aria-labelledby="layout-primitives-title">
+        <div>
+          <p class="label" id="layout-primitives-title">Verification and layout primitives</p>
+          <p class="hint">
+            One autofillable code input, a real keyboard splitter, and native scrolling composed in
+            source-owned HTML.
+          </p>
+        </div>
+
+        <div class="layout-primitives-grid">
+          <form class="otp-proof" aria-label="Verification code proof">
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-otp">Verification code</label>
+              <div id="component-input-otp" data-jqs="input-otp" data-length="6">
+                <input
+                  id="component-otp"
+                  data-part="control"
+                  type="text"
+                  name="code"
+                  autocomplete="one-time-code"
+                  inputmode="numeric"
+                  pattern="[0-9]{6}"
+                  required
+                />
+                <div data-part="slots"></div>
+                <p data-part="status"></p>
+              </div>
+              <p data-part="description">
+                Paste or autofill works because all six digits live in one native input.
+              </p>
+            </div>
+            <button
+              data-jqs="button"
+              data-size="sm"
+              data-variant="outline"
+              type="button"
+              data-on:click="@ui.input-otp.clear('#component-input-otp')"
+            >
+              Clear code
+            </button>
+          </form>
+
+          <div class="resizable-proof">
+            <div
+              id="component-resizable"
+              data-jqs="resizable"
+              data-value="[35,65]"
+              data-step="5"
+              data-storage-key="catalog-workspace"
+            >
+              <aside
+                data-part="panel"
+                data-min="25"
+                data-max="60"
+                aria-label="Workspace navigation panel"
+              >
+                <h2 data-part="title">Navigation</h2>
+                <nav aria-label="Workspace">
+                  <a href="#components-title">Overview</a>
+                  <a href="#layout-primitives-title" aria-current="page">Layout</a>
+                  <a href="#server-title">Backend</a>
+                </nav>
+              </aside>
+              <div data-part="handle" aria-label="Resize project navigation"></div>
+              <section data-part="panel" data-min="30">
+                <h2 data-part="title">Activity</h2>
+                <div
+                  data-jqs="scroll-area"
+                  style="--jqs-scroll-area-height: 10rem; --jqs-scroll-area-padding: 0.75rem"
+                >
+                  <div data-part="viewport" tabindex="0" aria-label="Component activity">
+                    <ol class="activity-list">
+                      <li><strong>Input OTP</strong><span>Native autofill retained</span></li>
+                      <li><strong>Resizable</strong><span>Pointer and keyboard ready</span></li>
+                      <li><strong>Scroll Area</strong><span>Native overflow retained</span></li>
+                      <li><strong>Tags Input</strong><span>Repeated form values</span></li>
+                      <li><strong>Date Range</strong><span>Backend-ready values</span></li>
+                    </ol>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <button
+              data-jqs="button"
+              data-size="sm"
+              data-variant="outline"
+              type="button"
+              data-on:click="@ui.resizable.reset('#component-resizable')"
+            >
+              Reset panels
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="card application-components-card"
+        aria-labelledby="application-components-title"
+        data-signals="{ interactionStatus: 'Ready for a command' }"
+      >
+        <div>
+          <p class="label" id="application-components-title">Application interaction</p>
+          <p class="hint">
+            Desktop-grade Context Menu, Menubar, and Tree View behavior on source-owned HTML.
+          </p>
+        </div>
+
+        <div data-jqs="menubar" aria-label="Workspace commands">
+          <div data-part="menu" data-jqs="menu" data-value="file">
+            <button data-part="trigger" type="button">File</button>
+            <div data-part="content">
+              <button
+                data-part="item"
+                data-value="new"
+                type="button"
+                data-on:click="$interactionStatus = 'Created a new file'"
+              >
+                New file <span data-part="shortcut">⌘N</span>
+              </button>
+              <button
+                data-part="item"
+                data-value="open"
+                type="button"
+                data-on:click="$interactionStatus = 'Opened the file picker'"
+              >
+                Open… <span data-part="shortcut">⌘O</span>
+              </button>
+            </div>
+          </div>
+          <div data-part="menu" data-jqs="menu" data-value="edit">
+            <button data-part="trigger" type="button">Edit</button>
+            <div data-part="content">
+              <button
+                data-part="item"
+                data-value="undo"
+                type="button"
+                data-on:click="$interactionStatus = 'Undid the last change'"
+              >
+                Undo <span data-part="shortcut">⌘Z</span>
+              </button>
+              <button
+                data-part="item"
+                data-value="redo"
+                type="button"
+                data-on:click="$interactionStatus = 'Redid the last change'"
+              >
+                Redo
+              </button>
+            </div>
+          </div>
+          <div data-part="menu" data-jqs="menu" data-value="view">
+            <button data-part="trigger" type="button">View</button>
+            <div data-part="content">
+              <button
+                data-part="checkbox-item"
+                data-value="sidebar"
+                data-checked="true"
+                data-close-on-select="false"
+                type="button"
+                data-on:click="$interactionStatus = 'Toggled the sidebar'"
+              >
+                Sidebar
+              </button>
+              <button
+                data-part="checkbox-item"
+                data-value="status"
+                data-checked="true"
+                data-close-on-select="false"
+                type="button"
+                data-on:click="$interactionStatus = 'Toggled the status bar'"
+              >
+                Status bar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="application-components-grid">
+          <div data-jqs="context-menu">
+            <div data-part="trigger" data-surface tabindex="0">
+              <strong>Project card</strong>
+              <span>Right-click · Shift+F10 · long-press</span>
+            </div>
+            <div data-part="content" aria-label="Project actions">
+              <button
+                data-part="item"
+                data-value="open"
+                type="button"
+                data-on:click="$interactionStatus = 'Opened jqstar'"
+              >
+                Open
+              </button>
+              <button
+                data-part="item"
+                data-value="duplicate"
+                type="button"
+                data-on:click="$interactionStatus = 'Duplicated jqstar'"
+              >
+                Duplicate <span data-part="shortcut">⌘D</span>
+              </button>
+              <button
+                data-part="checkbox-item"
+                data-value="favorite"
+                type="button"
+                data-on:click="$interactionStatus = 'Toggled favorite'"
+              >
+                Favorite
+              </button>
+              <div data-part="separator"></div>
+              <button
+                data-part="item"
+                data-value="archive"
+                type="button"
+                data-on:click="$interactionStatus = 'Archived jqstar'"
+              >
+                Archive
+              </button>
+            </div>
+          </div>
+
+          <ul
+            id="component-tree"
+            data-jqs="tree"
+            data-selection="multiple"
+            data-value='["src"]'
+            aria-label="Project files"
+            data-on:jquery-star:tree:select="$interactionStatus = 'Tree selection: ' + evt.detail.values.join(', ')"
+          >
+            <li data-part="item" data-value="src" data-expanded="true">
+              <div data-part="row">
+                <span data-part="toggle"></span>
+                <span data-part="label">src</span>
+                <span data-part="meta">2</span>
+              </div>
+              <ul data-part="group">
+                <li data-part="item" data-value="index">
+                  <div data-part="row">
+                    <span data-part="spacer"></span><span data-part="label">index.ts</span>
+                  </div>
+                </li>
+                <li data-part="item" data-value="ui" data-expanded="false">
+                  <div data-part="row">
+                    <span data-part="toggle"></span>
+                    <span data-part="label">ui</span>
+                    <span data-part="meta">1</span>
+                  </div>
+                  <ul data-part="group">
+                    <li data-part="item" data-value="tree">
+                      <div data-part="row">
+                        <span data-part="spacer"></span><span data-part="label">tree.ts</span>
+                      </div>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li data-part="item" data-value="readme">
+              <div data-part="row">
+                <span data-part="spacer"></span><span data-part="label">README.md</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <output
+          class="application-status"
+          data-text="$interactionStatus"
+          aria-live="polite"
+        ></output>
+      </section>
+
+      <section
+        class="card workspace-components-card"
+        aria-labelledby="workspace-components-title"
+        data-signals="{ workspaceStatus: 'Overview selected' }"
+      >
+        <div>
+          <p class="label" id="workspace-components-title">Navigation and content controls</p>
+          <p class="hint">
+            Sidebar, Carousel, and Toolbar compose into an application shell without a framework
+            runtime.
+          </p>
+        </div>
+
+        <section
+          id="component-sidebar"
+          data-jqs="sidebar"
+          data-collapsible="icon"
+          data-storage-key="component-workspace"
+        >
+          <aside data-part="panel" aria-label="Project navigation">
+            <header data-part="header">
+              <span data-part="icon" aria-hidden="true">JQ</span>
+              <strong data-part="label">jqstar</strong>
+            </header>
+
+            <div data-part="group">
+              <span data-part="group-label">Workspace</span>
+              <nav data-part="menu" aria-label="Project">
+                <a
+                  data-part="menu-item"
+                  href="#workspace-overview"
+                  aria-current="page"
+                  data-on:click="$workspaceStatus = 'Overview selected'"
+                >
+                  <span data-part="icon" aria-hidden="true">⌂</span>
+                  <span data-part="label">Overview</span>
+                </a>
+                <a
+                  data-part="menu-item"
+                  href="#workspace-overview"
+                  data-on:click="$workspaceStatus = 'Components selected'"
+                >
+                  <span data-part="icon" aria-hidden="true">◇</span>
+                  <span data-part="label">Components</span>
+                </a>
+                <a
+                  data-part="menu-item"
+                  href="#workspace-overview"
+                  data-on:click="$workspaceStatus = 'Activity selected'"
+                >
+                  <span data-part="icon" aria-hidden="true">↗</span>
+                  <span data-part="label">Activity</span>
+                </a>
+              </nav>
+            </div>
+
+            <footer data-part="footer">
+              <span data-part="icon" aria-hidden="true">CP</span>
+              <span data-part="label">Workspace owner</span>
+            </footer>
+          </aside>
+
+          <button data-part="rail" type="button" aria-label="Toggle project sidebar">↔</button>
+
+          <div data-part="content" id="workspace-overview">
+            <header class="workspace-topbar">
+              <button data-part="trigger" type="button" aria-label="Toggle project sidebar">
+                ☰
+              </button>
+
+              <div data-jqs="toolbar" aria-label="Preview tools">
+                <button
+                  data-jqs="toggle"
+                  data-part="item"
+                  data-value="grid"
+                  type="button"
+                  aria-label="Grid view"
+                  data-on:click="$workspaceStatus = 'Grid view toggled'"
+                >
+                  ⊞
+                </button>
+                <button
+                  data-jqs="toggle"
+                  data-part="item"
+                  data-value="focus"
+                  type="button"
+                  aria-label="Focus mode"
+                  data-on:click="$workspaceStatus = 'Focus mode toggled'"
+                >
+                  ◎
+                </button>
+                <span data-part="separator" aria-hidden="true"></span>
+                <button
+                  data-part="item"
+                  data-value="share"
+                  type="button"
+                  data-on:click="$workspaceStatus = 'Share action ready'"
+                >
+                  Share
+                </button>
+              </div>
+            </header>
+
+            <div class="workspace-heading">
+              <div>
+                <span class="workspace-kicker">Release workspace</span>
+                <h2>Ship the HTML you own</h2>
+              </div>
+              <output data-text="$workspaceStatus" aria-live="polite"></output>
+            </div>
+
+            <section
+              id="component-carousel"
+              data-jqs="carousel"
+              data-value="jquery"
+              data-loop
+              aria-label="jQStar feature tour"
+              data-on:jquery-star:carousel:change="$workspaceStatus = 'Slide: ' + evt.detail.value"
+            >
+              <div data-part="content">
+                <div data-part="slide" data-value="jquery">
+                  <span class="workspace-kicker">01 · Familiar</span>
+                  <h3>Real jQuery inside declarative events</h3>
+                  <p>
+                    Keep <code>$(el).fadeOut()</code>, plugins, selectors, and the event system you
+                    already know.
+                  </p>
+                </div>
+                <div data-part="slide" data-value="datastar">
+                  <span class="workspace-kicker">02 · Reactive</span>
+                  <h3>Datastar signals and SDK responses</h3>
+                  <p>State and server patches share one HTML-first contract.</p>
+                </div>
+                <div data-part="slide" data-value="owned">
+                  <span class="workspace-kicker">03 · Owned</span>
+                  <h3>Copy components into the application</h3>
+                  <p>The source stays local while jQStar supplies tested behavior.</p>
+                </div>
+              </div>
+              <button data-part="previous" type="button">←</button>
+              <button data-part="next" type="button">→</button>
+              <div data-part="indicators" aria-label="Choose feature slide">
+                <button data-part="indicator" data-value="jquery" type="button">jQuery</button>
+                <button data-part="indicator" data-value="datastar" type="button">Datastar</button>
+                <button data-part="indicator" data-value="owned" type="button">Owned</button>
+              </div>
+              <span data-part="status"></span>
+            </section>
+          </div>
+
+          <button data-part="backdrop" type="button" aria-label="Close project sidebar"></button>
+        </section>
+      </section>
+
+      <section class="card workflow-components-card" aria-labelledby="workflow-components-title">
+        <div>
+          <p class="label" id="workflow-components-title">Backend-ready project workflow</p>
+          <p class="hint">
+            Stepper, File Upload, and Sortable List compose into one multipart form. A static build
+            can simulate the response; the local demo sends the same FormData to a real endpoint.
+          </p>
+        </div>
+
+        <form
+          id="project-workflow-form"
+          data-jqs="form"
+          enctype="multipart/form-data"
+          data-on:submit__prevent="@submitProject"
+        >
+          <div
+            id="project-stepper"
+            data-jqs="stepper"
+            data-linear
+            data-value="details"
+            style="--jqs-step-count: 3"
+          >
+            <ol data-part="list">
+              <li data-part="step" data-value="details">
+                <button data-part="trigger" type="button">Details</button>
+              </li>
+              <li data-part="step" data-value="assets">
+                <button data-part="trigger" type="button">Assets</button>
+              </li>
+              <li data-part="step" data-value="review">
+                <button data-part="trigger" type="button">Review</button>
+              </li>
+            </ol>
+
+            <section data-part="panel" data-value="details">
+              <div class="workflow-panel-copy">
+                <span class="workspace-kicker">Step one</span>
+                <h2>Name the project</h2>
+                <p>Native constraint validation prevents an incomplete forward transition.</p>
+              </div>
+              <div data-jqs="field">
+                <label data-jqs="label" for="project-name">Project name</label>
+                <input id="project-name" data-jqs="input" name="name" type="text" required />
+                <p data-part="description">This value is submitted without serialization code.</p>
+                <p data-part="message" hidden></p>
+              </div>
+            </section>
+
+            <section data-part="panel" data-value="assets">
+              <div class="workflow-assets-grid">
+                <div>
+                  <div class="workflow-panel-copy">
+                    <span class="workspace-kicker">Native files</span>
+                    <h2>Add project assets</h2>
+                  </div>
+                  <div data-jqs="file-upload" data-max-files="3" data-max-size="5242880">
+                    <input
+                      data-part="control"
+                      type="file"
+                      name="assets"
+                      accept="image/*,.pdf"
+                      multiple
+                    />
+                    <label data-part="dropzone">
+                      <span><strong>Choose files</strong><br />or drop images and PDFs here</span>
+                    </label>
+                    <ul data-part="list"></ul>
+                    <p data-part="status"></p>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="workflow-panel-copy">
+                    <span class="workspace-kicker">Ordered values</span>
+                    <h2>Set the work priority</h2>
+                  </div>
+                  <div id="project-priority" data-jqs="sortable" data-name="priority">
+                    <ol data-part="list">
+                      <li data-part="item" data-value="design" data-label="Design system">
+                        <button data-part="handle" type="button">⋮⋮</button>
+                        <span data-part="label">Design system</span>
+                        <button data-part="up" type="button" aria-label="Move Design system up">
+                          ↑
+                        </button>
+                        <button data-part="down" type="button" aria-label="Move Design system down">
+                          ↓
+                        </button>
+                      </li>
+                      <li data-part="item" data-value="api" data-label="API contract">
+                        <button data-part="handle" type="button">⋮⋮</button>
+                        <span data-part="label">API contract</span>
+                        <button data-part="up" type="button" aria-label="Move API contract up">
+                          ↑
+                        </button>
+                        <button data-part="down" type="button" aria-label="Move API contract down">
+                          ↓
+                        </button>
+                      </li>
+                      <li data-part="item" data-value="docs" data-label="Documentation">
+                        <button data-part="handle" type="button">⋮⋮</button>
+                        <span data-part="label">Documentation</span>
+                        <button data-part="up" type="button" aria-label="Move Documentation up">
+                          ↑
+                        </button>
+                        <button data-part="down" type="button" aria-label="Move Documentation down">
+                          ↓
+                        </button>
+                      </li>
+                    </ol>
+                    <p data-part="status"></p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section data-part="panel" data-value="review">
+              <div class="workflow-review">
+                <span class="workspace-kicker">Native handoff</span>
+                <h2>Submit the assembled form</h2>
+                <p>
+                  The file input remains a real FileList. Priority is represented by repeated hidden
+                  inputs. The backend receives both through <code>new FormData(form)</code>.
+                </p>
+                <button
+                  id="project-submit"
+                  data-jqs="button"
+                  type="submit"
+                  data-prop:disabled="$projectSaving"
+                >
+                  <span data-show="!$projectSaving">Send project</span>
+                  <span data-show="$projectSaving">Sending…</span>
+                </button>
+              </div>
+            </section>
+
+            <div class="workflow-actions" data-part="actions">
+              <button data-jqs="button" data-part="previous" data-variant="outline" type="button">
+                Back
+              </button>
+              <button data-jqs="button" data-part="next" type="button">Continue</button>
+            </div>
+            <p data-part="status"></p>
+          </div>
+          <output class="workflow-result" data-text="$projectMessage" aria-live="polite"></output>
+        </form>
+      </section>
+
+      <section
+        class="card preferences-components-card"
+        aria-labelledby="preferences-components-title"
+      >
+        <div>
+          <p class="label" id="preferences-components-title">Native project preferences</p>
+          <p class="hint">
+            Multi Select, Time Picker, and Color Picker add richer behavior while their native
+            controls remain the submitted values.
+          </p>
+        </div>
+
+        <form
+          id="preferences-form"
+          data-jqs="form"
+          enctype="multipart/form-data"
+          data-on:submit__prevent="@submitPreferences"
+        >
+          <div class="preferences-grid">
+            <div class="preferences-field preferences-teams">
+              <div class="preferences-copy">
+                <span class="workspace-kicker">Multiple values</span>
+                <label for="preferences-team-control">Review teams</label>
+                <p>Space toggles options. Control or Command+A selects up to the limit.</p>
+              </div>
+              <div
+                id="preferences-teams"
+                data-jqs="multi-select"
+                data-placeholder="Choose review teams"
+                data-max="3"
+              >
+                <select
+                  id="preferences-team-control"
+                  data-part="control"
+                  name="teams"
+                  multiple
+                  required
+                >
+                  <optgroup label="Product">
+                    <option value="design" selected>Design</option>
+                    <option value="research">Research</option>
+                  </optgroup>
+                  <optgroup label="Engineering">
+                    <option value="frontend">Frontend</option>
+                    <option value="backend" selected>Backend</option>
+                    <option value="qa">Quality assurance</option>
+                  </optgroup>
+                </select>
+                <button data-part="trigger" type="button">
+                  <span data-part="value">Choose review teams</span>
+                  <span data-part="indicator" aria-hidden="true">⌄</span>
+                </button>
+                <div data-part="tags"></div>
+                <div data-part="content"></div>
+                <p data-part="status"></p>
+              </div>
+            </div>
+
+            <div class="preferences-field">
+              <div class="preferences-copy">
+                <span class="workspace-kicker">Constrained time</span>
+                <label for="preferences-review-time">Daily review</label>
+                <p>The browser enforces 08:00–18:00 in 15-minute steps.</p>
+              </div>
+              <div id="preferences-time" data-jqs="time-picker">
+                <button data-part="decrement" type="button" aria-label="Earlier review time">
+                  −
+                </button>
+                <input
+                  id="preferences-review-time"
+                  data-part="control"
+                  type="time"
+                  name="review_time"
+                  min="08:00"
+                  max="18:00"
+                  step="900"
+                  value="09:00"
+                  required
+                />
+                <button data-part="increment" type="button" aria-label="Later review time">
+                  +
+                </button>
+                <div data-part="presets">
+                  <button data-part="preset" data-value="09:00" type="button">Morning</button>
+                  <button data-part="preset" data-value="13:30" type="button">Afternoon</button>
+                  <button data-part="preset" data-value="17:00" type="button">End of day</button>
+                </div>
+                <p data-part="status"></p>
+              </div>
+            </div>
+
+            <div class="preferences-field">
+              <div class="preferences-copy">
+                <span class="workspace-kicker">Platform picker</span>
+                <label for="preferences-accent">Workspace accent</label>
+                <p>Use the operating-system picker, type a value, or choose a swatch.</p>
+              </div>
+              <div id="preferences-color" data-jqs="color-picker">
+                <input
+                  id="preferences-accent"
+                  data-part="control"
+                  type="color"
+                  name="accent"
+                  value="#0f766e"
+                />
+                <span data-part="preview"></span>
+                <input
+                  data-part="value"
+                  type="text"
+                  aria-label="Accent color value"
+                  value="#0f766e"
+                />
+                <div data-part="swatches" aria-label="Suggested accent colors">
+                  <button data-part="swatch" data-value="#0f766e" type="button">Teal</button>
+                  <button data-part="swatch" data-value="#2563eb" type="button">Blue</button>
+                  <button data-part="swatch" data-value="#9333ea" type="button">Purple</button>
+                  <button data-part="swatch" data-value="#dc2626" type="button">Red</button>
+                </div>
+                <p data-part="status"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="preferences-submit">
+            <output data-text="$preferencesMessage" aria-live="polite"></output>
+            <button
+              id="preferences-submit"
+              data-jqs="button"
+              type="submit"
+              data-prop:disabled="$preferencesSaving"
+            >
+              <span data-show="!$preferencesSaving">Save preferences</span>
+              <span data-show="$preferencesSaving">Saving…</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card conversation-components-card" aria-labelledby="conversation-title">
+        <div>
+          <p class="label" id="conversation-title">Backend-ready conversation</p>
+          <p class="hint">
+            Message Scroller follows server-appended messages until the reader scrolls up. Rating
+            remains one native radio value in the feedback form.
+          </p>
+        </div>
+
+        <div class="conversation-grid">
+          <section id="support-thread" data-jqs="message-scroller" data-threshold="40">
+            <div data-part="viewport" aria-labelledby="support-thread-title">
+              <div data-part="content">
+                <article data-jqs="message" aria-label="Message from Support">
+                  <header data-part="header">
+                    <strong id="support-thread-title" data-part="author">Support</strong>
+                    <time datetime="2026-08-28T09:30:00-05:00">9:30 AM</time>
+                  </header>
+                  <div data-part="content">
+                    <p>The multipart project submission arrived with its ordered priorities.</p>
+                  </div>
+                </article>
+
+                <article data-jqs="message" data-side="sent" aria-label="Message from You">
+                  <header data-part="header">
+                    <strong data-part="author">You</strong>
+                    <time datetime="2026-08-28T09:34:00-05:00">9:34 AM</time>
+                  </header>
+                  <div data-part="content">
+                    <p>Did the native file input survive the request?</p>
+                  </div>
+                  <footer data-part="footer">Delivered</footer>
+                </article>
+
+                <article data-jqs="message" aria-label="Message from Support">
+                  <header data-part="header">
+                    <strong data-part="author">Support</strong>
+                    <time datetime="2026-08-28T09:36:00-05:00">9:36 AM</time>
+                  </header>
+                  <div data-part="content">
+                    <p>Yes. The endpoint received the original File and repeated form values.</p>
+                  </div>
+                  <footer data-part="actions">
+                    <button data-jqs="button" data-size="sm" data-variant="ghost" type="button">
+                      View receipt
+                    </button>
+                  </footer>
+                </article>
+
+                <article data-jqs="message" data-side="sent" aria-label="Message from You">
+                  <header data-part="header">
+                    <strong data-part="author">You</strong>
+                    <time datetime="2026-08-28T09:38:00-05:00">9:38 AM</time>
+                  </header>
+                  <div data-part="content"><p>Perfect. I’ll send a rating and final note.</p></div>
+                </article>
+              </div>
+            </div>
+            <button data-part="latest" type="button" hidden>
+              <span data-part="latest-label">Latest</span>
+            </button>
+            <p data-part="status">New messages are announced without moving keyboard focus.</p>
+          </section>
+
+          <form
+            id="feedback-form"
+            data-jqs="form"
+            enctype="multipart/form-data"
+            data-on:submit__prevent="@submitFeedback"
+          >
+            <div class="feedback-copy">
+              <span class="workspace-kicker">Native feedback</span>
+              <h2>Close the support loop</h2>
+              <p>The selected radio and reply are sent through one FormData payload.</p>
+            </div>
+
+            <fieldset id="support-rating" data-jqs="rating" data-value="5">
+              <legend>Support rating</legend>
+              <div data-part="items">
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="1"
+                    data-label="1 star"
+                    required
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">1 star</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="2"
+                    data-label="2 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">2 stars</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="3"
+                    data-label="3 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">3 stars</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="4"
+                    data-label="4 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">4 stars</span>
+                </label>
+                <label data-part="item">
+                  <input
+                    data-part="control"
+                    type="radio"
+                    name="rating"
+                    value="5"
+                    data-label="5 stars"
+                  />
+                  <span data-part="icon" aria-hidden="true">★</span>
+                  <span data-part="label">5 stars</span>
+                </label>
+              </div>
+              <button data-part="clear" type="button">Clear rating</button>
+              <output data-part="status"></output>
+            </fieldset>
+
+            <label for="support-reply">Reply</label>
+            <textarea
+              id="support-reply"
+              data-jqs="textarea"
+              name="reply"
+              rows="4"
+              required
+              placeholder="Add a final note"
+            >
+Everything stayed native from browser to backend.</textarea>
+
+            <div class="feedback-submit">
+              <output data-text="$feedbackMessage" aria-live="polite"></output>
+              <button
+                id="feedback-submit"
+                data-jqs="button"
+                type="submit"
+                data-prop:disabled="$feedbackSaving"
+              >
+                <span data-show="!$feedbackSaving">Send feedback</span>
+                <span data-show="$feedbackSaving">Sending…</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="card feed-components-card" aria-labelledby="feed-components-title">
+        <div>
+          <p class="label" id="feed-components-title">Backend results feed</p>
+          <p class="hint">
+            Native search submission, source-owned result rows, cursor pagination, and accessible
+            article navigation.
+          </p>
+        </div>
+
+        <form class="feed-search-form" role="search" data-on:submit__prevent="@searchResultFeed">
+          <label for="feed-query">Search the component landscape</label>
+          <div id="feed-search-field" data-jqs="search-field">
+            <span data-part="icon" aria-hidden="true">⌕</span>
+            <input
+              id="feed-query"
+              data-part="control"
+              data-bind:feed-query
+              type="search"
+              name="query"
+              placeholder="Try server, React, or web components"
+            />
+            <button data-part="clear" type="button">Clear</button>
+            <button data-part="submit" type="submit">Search</button>
+          </div>
+        </form>
+
+        <section
+          id="component-results-feed"
+          data-jqs="feed"
+          data-cursor="3"
+          data-total="12"
+          aria-labelledby="feed-results-title"
+        >
+          <div class="feed-heading">
+            <div>
+              <span class="workspace-kicker">Source-owned results</span>
+              <h2 id="feed-results-title">Component landscape</h2>
+            </div>
+            <span data-jqs="badge" data-variant="success">Backend ready</span>
+          </div>
+          <p class="feed-keyboard-help">Use Page Up and Page Down to move between results.</p>
+          <div data-part="content">
+            <article data-jqs="item" data-part="item" data-value="jquery-star">
+              <div data-part="media" aria-hidden="true">JS</div>
+              <div data-part="content">
+                <h3 data-part="title">jQStar</h3>
+                <p data-part="description">
+                  Reactive HTML components with real jQuery expressions and native forms.
+                </p>
+                <span data-part="meta">Runtime · Source owned</span>
+              </div>
+              <div data-part="actions">
+                <button data-jqs="button" data-size="sm" data-variant="outline" type="button">
+                  Inspect
+                </button>
+              </div>
+            </article>
+            <article data-jqs="item" data-part="item" data-value="datastar">
+              <div data-part="media" aria-hidden="true">DS</div>
+              <div data-part="content">
+                <h3 data-part="title">Datastar</h3>
+                <p data-part="description">
+                  Server-driven signals and HTML patch events through the official SDK.
+                </p>
+                <span data-part="meta">Server channel · SDK</span>
+              </div>
+              <div data-part="actions">
+                <button data-jqs="button" data-size="sm" data-variant="outline" type="button">
+                  Inspect
+                </button>
+              </div>
+            </article>
+            <article data-jqs="item" data-part="item" data-value="tailwind">
+              <div data-part="media" aria-hidden="true">TC</div>
+              <div data-part="content">
+                <h3 data-part="title">Tailwind CSS</h3>
+                <p data-part="description">
+                  Build-time utility CSS used to author the compiled jQStar theme.
+                </p>
+                <span data-part="meta">Styling · Build time</span>
+              </div>
+              <div data-part="actions">
+                <button data-jqs="button" data-size="sm" data-variant="outline" type="button">
+                  Inspect
+                </button>
+              </div>
+            </article>
+          </div>
+          <button data-part="more" type="button" data-on:click="@loadMoreResults">
+            Load more results
+          </button>
+          <div data-part="sentinel" aria-hidden="true"></div>
+          <p data-part="status" aria-live="polite">3 of 12 catalog results loaded.</p>
+          <output class="feed-backend-status" data-text="$feedMessage" aria-live="polite"></output>
+        </section>
+      </section>
+
+      <section class="card questionnaire-components-card" aria-labelledby="questionnaire-title">
+        <div>
+          <p class="label" id="questionnaire-title">Agent clarification workflow</p>
+          <p class="hint">
+            Questionnaire collects native form values. Attachment presents the source brief, and
+            Bubble renders the backend-ready summary.
+          </p>
+        </div>
+
+        <div class="questionnaire-workspace">
+          <aside class="questionnaire-brief" aria-labelledby="questionnaire-brief-title">
+            <span class="workspace-kicker">Attached context</span>
+            <h2 id="questionnaire-brief-title">Component contract</h2>
+            <p>The agent can ask only what changes the implementation, then submit one FormData.</p>
+            <article
+              data-jqs="attachment"
+              data-state="complete"
+              aria-label="Attachment component-contract.pdf"
+            >
+              <div data-part="media" aria-hidden="true">PDF</div>
+              <div data-part="content">
+                <strong data-part="name">component-contract.pdf</strong>
+                <span data-part="meta">PDF · 820 KB</span>
+                <span data-part="status">Ready</span>
+              </div>
+              <div data-part="actions">
+                <button type="button">View</button>
+              </div>
+            </article>
+          </aside>
+
+          <form
+            id="component-questionnaire-form"
+            class="questionnaire-form"
+            enctype="multipart/form-data"
+            data-on:submit__prevent="@submitQuestionnaire"
+          >
+            <section id="component-questionnaire" data-jqs="questionnaire" data-value="direction">
+              <header data-part="header">
+                <strong>Build brief</strong>
+                <span data-part="progress-label"></span>
+                <progress data-part="progress" aria-label="Question progress"></progress>
+              </header>
+
+              <fieldset data-part="item" data-value="direction" data-name="direction" data-required>
+                <legend>What should we build next?</legend>
+                <p data-part="description">Choose an option or write a different direction.</p>
+                <div data-part="choices">
+                  <label data-part="choice" data-shortcut="1">
+                    <input data-part="control" type="radio" name="direction" value="component" />
+                    <span data-part="choice-copy">
+                      <strong>Component</strong>
+                      <small>Add one focused primitive.</small>
+                    </span>
+                    <kbd>1</kbd>
+                  </label>
+                  <label data-part="choice" data-shortcut="2">
+                    <input data-part="control" type="radio" name="direction" value="workflow" />
+                    <span data-part="choice-copy">
+                      <strong>Workflow</strong>
+                      <small>Compose several primitives.</small>
+                    </span>
+                    <kbd>2</kbd>
+                  </label>
+                </div>
+                <label data-part="input">
+                  Another direction
+                  <input data-part="freeform" type="text" placeholder="Write a short answer" />
+                </label>
+                <p data-part="error" role="alert"></p>
+              </fieldset>
+
+              <fieldset
+                data-part="item"
+                data-value="constraints"
+                data-name="constraints"
+                data-multiple
+                data-required
+                data-min="1"
+                data-max="2"
+                data-skippable
+              >
+                <legend>Which constraints matter most?</legend>
+                <p data-part="description">Choose up to two, or explicitly skip this question.</p>
+                <div data-part="choices">
+                  <label data-part="choice" data-shortcut="1">
+                    <input
+                      data-part="control"
+                      type="checkbox"
+                      name="constraints"
+                      value="accessible"
+                    />
+                    <span data-part="choice-copy"><strong>Accessible</strong></span>
+                    <kbd>1</kbd>
+                  </label>
+                  <label data-part="choice" data-shortcut="2">
+                    <input
+                      data-part="control"
+                      type="checkbox"
+                      name="constraints"
+                      value="server-ready"
+                    />
+                    <span data-part="choice-copy"><strong>Server-ready</strong></span>
+                    <kbd>2</kbd>
+                  </label>
+                  <label data-part="choice" data-shortcut="3">
+                    <input
+                      data-part="control"
+                      type="checkbox"
+                      name="constraints"
+                      value="portable"
+                    />
+                    <span data-part="choice-copy"><strong>Portable</strong></span>
+                    <kbd>3</kbd>
+                  </label>
+                </div>
+                <p data-part="error" role="alert"></p>
+              </fieldset>
+
+              <fieldset data-part="item" data-value="delivery" data-name="delivery" data-required>
+                <legend>How should it ship?</legend>
+                <div data-part="choices">
+                  <label data-part="choice" data-shortcut="1">
+                    <input data-part="control" type="radio" name="delivery" value="source" />
+                    <span data-part="choice-copy">
+                      <strong>Source-owned recipe</strong>
+                      <small>Copy, inspect, and change every line.</small>
+                    </span>
+                    <kbd>1</kbd>
+                  </label>
+                  <label data-part="choice" data-shortcut="2">
+                    <input data-part="control" type="radio" name="delivery" value="package" />
+                    <span data-part="choice-copy">
+                      <strong>Package API</strong>
+                      <small>Install the behavior as a dependency.</small>
+                    </span>
+                    <kbd>2</kbd>
+                  </label>
+                </div>
+                <p data-part="error" role="alert"></p>
+              </fieldset>
+
+              <div data-part="actions">
+                <button data-part="previous" type="button">Previous</button>
+                <button data-part="skip" type="button">Skip</button>
+                <button data-part="reset" type="button">Reset</button>
+                <button data-part="next" type="button">Next</button>
+                <button
+                  id="questionnaire-submit"
+                  data-part="submit"
+                  type="submit"
+                  data-prop:disabled="$questionnaireSaving"
+                >
+                  <span data-show="!$questionnaireSaving">Create brief</span>
+                  <span data-show="$questionnaireSaving">Sending…</span>
+                </button>
+              </div>
+              <p data-part="status"></p>
+            </section>
+          </form>
+        </div>
+
+        <div class="questionnaire-result-stack">
+          <output data-text="$questionnaireMessage" aria-live="polite"></output>
+          <article
+            id="questionnaire-result"
+            data-jqs="message"
+            aria-label="Message from Build agent"
+            hidden
+          >
+            <header data-part="header">
+              <strong data-part="author">Build agent</strong>
+              <time datetime="2026-08-28">Now</time>
+            </header>
+            <div data-part="content">
+              <div data-jqs="bubble">
+                <div data-part="content"><p id="questionnaire-summary"></p></div>
+                <div data-part="reactions" aria-label="Reactions">
+                  <button type="button" aria-label="Approve summary">✓ Approve</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card calendar-component-card" aria-labelledby="calendar-components-title">
+        <div>
+          <p class="label" id="calendar-components-title">Calendar and date forms</p>
+          <p class="hint">
+            One roving grid tab stop, native form values, and Popover composition with no React
+            runtime.
+          </p>
+        </div>
+
+        <div class="calendar-showcase">
+          <div>
+            <h2 class="showcase-title">Release calendar</h2>
+            <div
+              id="release-calendar"
+              data-jqs="calendar"
+              data-month="2026-08"
+              data-value="2026-08-28"
+              data-min="2026-08-03"
+              data-disabled-dates="2026-08-30"
+              data-week-start="1"
+            >
+              <div data-part="header">
+                <button data-part="previous" type="button" aria-label="Previous month">←</button>
+                <h2 data-part="heading"></h2>
+                <button data-part="next" type="button" aria-label="Next month">→</button>
+              </div>
+              <div data-part="grid"></div>
+            </div>
+          </div>
+
+          <div class="date-form-showcase">
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-due-date">Delivery date</label>
+              <div id="component-date-picker" data-jqs="date-picker">
+                <input
+                  id="component-due-date"
+                  data-part="control"
+                  data-bind:component-due-date
+                  type="text"
+                  name="dueDate"
+                  value="2026-08-28"
+                  autocomplete="off"
+                />
+                <div
+                  id="component-date-popover"
+                  data-jqs="popover"
+                  data-part="popover"
+                  data-side="bottom"
+                  data-align="end"
+                >
+                  <button data-part="trigger" type="button">
+                    <span aria-hidden="true">▦</span>
+                    <span data-part="value" hidden>Choose date</span>
+                  </button>
+                  <div data-part="content">
+                    <div
+                      id="component-date-calendar"
+                      data-jqs="calendar"
+                      data-month="2026-08"
+                      data-min="2026-08-03"
+                    >
+                      <div data-part="header">
+                        <button data-part="previous" type="button" aria-label="Previous month">
+                          ←
+                        </button>
+                        <h2 data-part="heading"></h2>
+                        <button data-part="next" type="button" aria-label="Next month">→</button>
+                      </div>
+                      <div data-part="grid"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-timezone">Timezone</label>
+              <select
+                id="component-timezone"
+                data-jqs="native-select"
+                data-bind:component-timezone
+                name="timezone"
+              >
+                <option value="america-chicago">America/Chicago</option>
+                <option value="america-new-york">America/New_York</option>
+                <option value="europe-london">Europe/London</option>
+              </select>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="capacity-meter">
+                Storage used: <span data-text="$componentCapacity"></span>%
+              </label>
+              <meter
+                id="capacity-meter"
+                data-jqs="meter"
+                min="0"
+                max="100"
+                low="55"
+                high="80"
+                optimum="30"
+                data-attr:value="$componentCapacity"
+              >
+                68%
+              </meter>
+              <div data-jqs="button-group" role="group" aria-label="Storage allocation">
+                <button
+                  data-jqs="button"
+                  data-variant="outline"
+                  type="button"
+                  data-on:click="$componentCapacity = $componentCapacity <= 10 ? 0 : $componentCapacity - 10"
+                >
+                  Reduce
+                </button>
+                <button
+                  data-jqs="button"
+                  data-variant="outline"
+                  type="button"
+                  data-on:click="$componentCapacity = $componentCapacity >= 90 ? 100 : $componentCapacity + 10"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <p
+              class="date-form-preview"
+              data-text="'Delivery ' + $componentDueDate + ' · ' + $componentTimezone"
+              aria-live="polite"
+            ></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card range-backend-card" aria-labelledby="range-backend-title">
+        <div>
+          <p class="label" id="range-backend-title">Date ranges and backend-ready forms</p>
+          <p class="hint">
+            Continuous range selection, two native form values, multipart upload, and structured
+            server errors through browser validity.
+          </p>
+        </div>
+
+        <div class="range-backend-grid">
+          <div>
+            <h2 class="showcase-title">Sprint window</h2>
+            <div
+              id="component-range-calendar"
+              data-jqs="range-calendar"
+              data-month="2026-08"
+              data-start="2026-08-28"
+              data-end="2026-08-31"
+              data-disabled-dates="2026-09-03"
+              data-week-start="1"
+              aria-label="Sprint window"
+            >
+              <div data-part="header">
+                <button data-part="previous" type="button" aria-label="Previous month">←</button>
+                <h2 data-part="heading"></h2>
+                <button data-part="next" type="button" aria-label="Next month">→</button>
+              </div>
+              <div data-part="grid"></div>
+              <p data-part="status"></p>
+            </div>
+          </div>
+
+          <div class="range-form-showcase">
+            <div data-jqs="field">
+              <label data-jqs="label" for="component-trip-start">Travel dates</label>
+              <div id="component-range-picker" data-jqs="date-range-picker">
+                <input
+                  id="component-trip-start"
+                  data-part="start-control"
+                  data-bind:component-trip-start
+                  type="text"
+                  name="startDate"
+                  value="2026-08-28"
+                  autocomplete="off"
+                />
+                <input
+                  data-part="end-control"
+                  data-bind:component-trip-end
+                  type="text"
+                  name="endDate"
+                  value="2026-08-31"
+                  autocomplete="off"
+                  aria-label="Travel end date"
+                />
+                <div
+                  id="component-range-popover"
+                  data-jqs="popover"
+                  data-part="popover"
+                  data-side="bottom"
+                  data-align="end"
+                >
+                  <button data-part="trigger" type="button">
+                    <span aria-hidden="true">▦</span>
+                    <span data-part="value" hidden>Choose dates</span>
+                  </button>
+                  <div data-part="content" aria-label="Travel date range calendar">
+                    <div data-jqs="range-calendar" data-month="2026-08" data-week-start="1">
+                      <div data-part="header">
+                        <button data-part="previous" type="button" aria-label="Previous month">
+                          ←
+                        </button>
+                        <h2 data-part="heading"></h2>
+                        <button data-part="next" type="button" aria-label="Next month">→</button>
+                      </div>
+                      <div data-part="grid"></div>
+                      <p data-part="status"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form
+              id="component-backend-form"
+              data-jqs="form"
+              data-on:submit__prevent="@submitComponentAccount"
+              data-on:reset="$componentBackendMessage = 'Try taken@example.com to see structured server validation.'; $componentBackendError = null"
+              enctype="multipart/form-data"
+              aria-label="Backend account proof"
+            >
+              <div data-jqs="field">
+                <label data-jqs="label" for="component-backend-email">Account email</label>
+                <input
+                  id="component-backend-email"
+                  data-jqs="input"
+                  name="email"
+                  type="email"
+                  value="taken@example.com"
+                  required
+                />
+                <p data-part="description">The local endpoint returns a real 422 error map.</p>
+                <p data-part="message" hidden></p>
+              </div>
+              <div data-jqs="field">
+                <label data-jqs="label" for="component-backend-file">Optional avatar</label>
+                <input
+                  id="component-backend-file"
+                  data-jqs="file-input"
+                  name="avatar"
+                  type="file"
+                  accept="image/*"
+                />
+              </div>
+              <p data-part="server-message" hidden></p>
+              <div data-part="actions">
+                <button data-jqs="button" data-variant="outline" type="reset">Reset</button>
+                <button
+                  data-jqs="button"
+                  type="submit"
+                  data-prop:disabled="$componentBackendSaving"
+                >
+                  <span data-show="!$componentBackendSaving">Send multipart form</span>
+                  <span data-show="$componentBackendSaving">Sending…</span>
+                </button>
+              </div>
+              <p
+                class="backend-form-status"
+                data-text="$componentBackendMessage"
+                aria-live="polite"
+              ></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="card form-surfaces-card" aria-labelledby="form-surfaces-title">
+        <div>
+          <p class="label" id="form-surfaces-title">Validated forms and composed surfaces</p>
+          <p class="hint">
+            Browser constraint validation, multipart-ready files, hover detail, and native modal
+            compositions.
+          </p>
+        </div>
+
+        <div class="form-surfaces-grid">
+          <form
+            id="component-profile-form"
+            data-jqs="form"
+            aria-label="Profile proof"
+            data-on:submit__prevent="$componentFormSubmitted = true"
+            data-on:reset="$componentFormSubmitted = false"
+          >
+            <div data-jqs="field">
+              <label data-jqs="label" for="profile-proof-email">Work email</label>
+              <input
+                id="profile-proof-email"
+                data-jqs="input"
+                name="email"
+                type="email"
+                required
+                aria-describedby="profile-proof-email-help"
+              />
+              <p id="profile-proof-email-help" data-part="description">
+                Required and validated by the browser.
+              </p>
+              <p data-part="message" hidden></p>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="profile-proof-site">Project site</label>
+              <div data-jqs="input-group">
+                <span data-part="addon" aria-hidden="true">https://</span>
+                <input
+                  id="profile-proof-site"
+                  data-jqs="input"
+                  type="url"
+                  name="site"
+                  required
+                  autocomplete="url"
+                />
+                <span data-part="addon" aria-hidden="true">.dev</span>
+              </div>
+              <p data-part="message" hidden></p>
+            </div>
+
+            <div data-jqs="field">
+              <label data-jqs="label" for="profile-proof-files">Reference files</label>
+              <input
+                id="profile-proof-files"
+                data-jqs="file-input"
+                name="attachments"
+                type="file"
+                accept="image/png,image/jpeg,application/pdf"
+                multiple
+              />
+              <p data-part="description">Ready for multipart submission to our future backend.</p>
+            </div>
+
+            <div data-part="actions">
+              <button data-jqs="button" data-variant="outline" type="reset">Reset form</button>
+              <button data-jqs="button" type="submit">Validate profile</button>
+            </div>
+            <p
+              class="form-success"
+              role="status"
+              data-show="$componentFormSubmitted"
+              data-text="$componentFormSubmitted ? 'Profile is valid and ready to submit.' : ''"
+            ></p>
+          </form>
+
+          <div class="surface-compositions">
+            <div id="maintainer-hover-card" data-jqs="hover-card" data-delay="120">
+              <a data-part="trigger" href="#maintainer-profile">Preview maintainer</a>
+              <div data-part="content">
+                <div class="hover-card-person">
+                  <span data-jqs="avatar" role="img" aria-label="Ada Lovelace">AL</span>
+                  <div>
+                    <h2 data-part="title">Ada Lovelace</h2>
+                    <p data-part="description">Maintains the component proof and backend seam.</p>
+                  </div>
+                </div>
+                <a id="maintainer-profile" href="#components-title">View component system</a>
+              </div>
+            </div>
+
+            <div class="surface-actions">
+              <button
+                id="open-delete-alert"
+                data-jqs="button"
+                data-variant="danger"
+                type="button"
+                data-on:click="@ui.dialog.open('#delete-alert-dialog', '#delete-alert-cancel')"
+              >
+                Open alert dialog
+              </button>
+              <button
+                id="open-proof-drawer"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.open('#proof-drawer', '#proof-drawer-close')"
+              >
+                Open bottom drawer
+              </button>
+            </div>
+
+            <p class="surface-note">
+              Alert Dialog and Drawer reuse Dialog modality, Escape, initial focus, lifecycle
+              events, and focus return.
+            </p>
+          </div>
+        </div>
+
+        <dialog id="delete-alert-dialog" data-jqs="dialog" role="alertdialog">
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Delete the draft?</h2>
+              <p data-part="description">
+                This interrupts the workflow because the draft cannot be restored.
+              </p>
+            </header>
+            <footer data-part="footer">
+              <button
+                id="delete-alert-cancel"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('cancel')"
+              >
+                Keep draft
+              </button>
+              <button
+                data-jqs="button"
+                data-variant="danger"
+                type="button"
+                data-on:click="@ui.dialog.close('confirm')"
+              >
+                Delete draft
+              </button>
+            </footer>
+          </div>
+        </dialog>
+
+        <dialog id="proof-drawer" data-jqs="dialog" data-variant="drawer" data-close-on-backdrop>
+          <div data-part="content">
+            <header data-part="header">
+              <h2 data-part="title">Backend connection</h2>
+              <p data-part="description">
+                Keep the same components when this static catalog connects to our hosted API.
+              </p>
+            </header>
+            <div data-jqs="empty">
+              <h3 data-part="title">No endpoint required yet</h3>
+              <p data-part="description">
+                The local proof already runs the official Datastar SDK contract.
+              </p>
+            </div>
+            <footer data-part="footer">
+              <button
+                id="proof-drawer-close"
+                data-jqs="button"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.dialog.close('close')"
+              >
+                Close drawer
+              </button>
+            </footer>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card select-component-card" aria-labelledby="select-components-title">
+        <div>
+          <p class="label" id="select-components-title">Select component</p>
+          <p class="hint">A custom listbox backed by a real form select and reactive signal.</p>
+        </div>
+
+        <form id="select-proof-form" class="select-showcase">
+          <label id="framework-select-label" for="framework-select-control">UI foundation</label>
+          <div id="framework-select" data-jqs="select" data-placeholder="Choose a foundation">
+            <select
+              id="framework-select-control"
+              data-part="control"
+              data-bind:component-framework
+              name="framework"
+            >
+              <optgroup label="This project">
+                <option value="jquery-star">jQStar</option>
+                <option value="datastar">Datastar</option>
+              </optgroup>
+              <optgroup label="Reference systems">
+                <option value="radix">Radix Primitives</option>
+                <option value="daisyui">daisyUI</option>
+                <option value="legacy" disabled>Legacy widget (unavailable)</option>
+              </optgroup>
+            </select>
+          </div>
+          <output
+            class="select-preview"
+            data-text="'Selected value: ' + $componentFramework"
+            aria-live="polite"
+          ></output>
+          <button data-jqs="button" data-variant="outline" data-size="sm" type="reset">
+            Reset choice
+          </button>
+        </form>
+      </section>
+
+      <section class="card combobox-component-card" aria-labelledby="combobox-components-title">
+        <div>
+          <p class="label" id="combobox-components-title">Server-backed Combobox</p>
+          <p class="hint">
+            Editable query, committed value, and results streamed by the Datastar SDK when a backend
+            is connected.
+          </p>
+        </div>
+
+        <form id="combobox-proof-form" class="combobox-showcase">
+          <label for="technology-combobox-control">Find a UI system</label>
+          <div
+            id="technology-combobox"
+            data-jqs="combobox"
+            data-filter="manual"
+            data-min-length="1"
+            data-attr:data-loading="$componentComboboxLoading"
+          >
+            <input
+              id="technology-combobox-control"
+              data-part="control"
+              data-bind:component-query
+              data-on:input__debounce.180ms="@searchComponents"
+              type="search"
+              name="technologyQuery"
+              placeholder="Type to search systems"
+            />
+            <input
+              data-part="value"
+              data-bind:component-selection
+              type="hidden"
+              name="technology"
+            />
+            <div id="technology-combobox-content" data-part="content">
+              <div data-part="option" data-value="jquery-star">jQStar</div>
+              <div data-part="option" data-value="datastar">Datastar</div>
+              <div data-part="option" data-value="daisyui">daisyUI</div>
+              <div data-part="option" data-value="radix">Radix Primitives</div>
+              <div data-part="option" data-value="tailwind">Tailwind CSS</div>
+              <div data-part="option" data-value="bootstrap">Bootstrap</div>
+              <div data-part="option" data-value="shoelace">Shoelace</div>
+              <div data-part="loading" hidden>Searching the server…</div>
+              <div data-part="empty" hidden>No matching systems</div>
+            </div>
+          </div>
+          <div class="combobox-status" aria-live="polite">
+            <span
+              data-text="$componentComboboxLoading ? 'Searching…' : $componentResultCount + ' results'"
+            ></span>
+            <span data-show="$componentComboboxError" data-text="$componentComboboxError"></span>
+          </div>
+          <output
+            class="combobox-preview"
+            data-text="$componentSelection ? 'Committed value: ' + $componentSelection : 'No committed value'"
+          ></output>
+          <button
+            data-jqs="button"
+            data-variant="outline"
+            data-size="sm"
+            type="button"
+            data-on:click="@ui.combobox.clear('#technology-combobox')"
+          >
+            Clear search
+          </button>
+        </form>
+      </section>
+
+      <section class="card data-table-component-card" aria-labelledby="data-table-components-title">
+        <div>
+          <p class="label" id="data-table-components-title">Data Table</p>
+          <p class="hint">
+            Native table semantics with sorting, filtering, pagination, and stable selection.
+          </p>
+        </div>
+
+        <div id="systems-data-table" data-jqs="data-table" data-page-size="3">
+          <div data-part="toolbar">
+            <label class="data-table-filter-label" for="systems-table-filter">Filter systems</label>
+            <input
+              id="systems-table-filter"
+              data-part="filter"
+              type="search"
+              placeholder="Search table"
+            />
+            <span data-part="selection-status" aria-live="polite"></span>
+          </div>
+          <div data-part="viewport">
+            <table data-part="table">
+              <caption>
+                Component system comparison
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <input
+                      data-part="select-all"
+                      type="checkbox"
+                      aria-label="Select visible systems"
+                    />
+                  </th>
+                  <th scope="col" data-key="name">
+                    <button data-part="sort" type="button">System</button>
+                  </th>
+                  <th scope="col" data-key="kind">
+                    <button data-part="sort" type="button">Kind</button>
+                  </th>
+                  <th scope="col" data-key="runtime">
+                    <button data-part="sort" type="button">Runtime</button>
+                  </th>
+                  <th scope="col" data-key="coverage" data-type="number">
+                    <button data-part="sort" type="button">Coverage</button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-row-id="jquery-star">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select jQStar" />
+                  </td>
+                  <th scope="row" data-key="name">jQStar</th>
+                  <td data-key="kind">Behavior + theme</td>
+                  <td data-key="runtime">jQuery</td>
+                  <td data-key="coverage" data-value="102">102 components</td>
+                </tr>
+                <tr data-row-id="datastar">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Datastar" />
+                  </td>
+                  <th scope="row" data-key="name">Datastar</th>
+                  <td data-key="kind">Server hypermedia</td>
+                  <td data-key="runtime">Framework-neutral</td>
+                  <td data-key="coverage" data-value="4">4 core plugins</td>
+                </tr>
+                <tr data-row-id="daisyui">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select daisyUI" />
+                  </td>
+                  <th scope="row" data-key="name">daisyUI</th>
+                  <td data-key="kind">Theme</td>
+                  <td data-key="runtime">CSS</td>
+                  <td data-key="coverage" data-value="65">65 components</td>
+                </tr>
+                <tr data-row-id="radix">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Radix" />
+                  </td>
+                  <th scope="row" data-key="name">Radix Primitives</th>
+                  <td data-key="kind">Headless behavior</td>
+                  <td data-key="runtime">React</td>
+                  <td data-key="coverage" data-value="32">32 primitives</td>
+                </tr>
+                <tr data-row-id="bootstrap">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Bootstrap" />
+                  </td>
+                  <th scope="row" data-key="name">Bootstrap</th>
+                  <td data-key="kind">Full framework</td>
+                  <td data-key="runtime">JavaScript</td>
+                  <td data-key="coverage" data-value="24">24 components</td>
+                </tr>
+                <tr data-row-id="shoelace">
+                  <td>
+                    <input data-part="row-select" type="checkbox" aria-label="Select Shoelace" />
+                  </td>
+                  <th scope="row" data-key="name">Shoelace</th>
+                  <td data-key="kind">Web components</td>
+                  <td data-key="runtime">Framework-neutral</td>
+                  <td data-key="coverage" data-value="50">50 components</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div data-part="pagination">
+            <button
+              data-jqs="button"
+              data-part="previous"
+              data-variant="outline"
+              data-size="sm"
+              type="button"
+            >
+              Previous
+            </button>
+            <span data-part="page-status" aria-live="polite"></span>
+            <button
+              data-jqs="button"
+              data-part="next"
+              data-variant="outline"
+              data-size="sm"
+              type="button"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div id="project-browser-demo" class="project-browser-demo"></div>
+
+      <div id="access-manager-demo" class="access-manager-demo"></div>
+
+      <div id="audit-log-demo" class="audit-log-demo"></div>
+
+      <section class="card disclosure-component-card" aria-labelledby="disclosure-components-title">
+        <div>
+          <p class="label" id="disclosure-components-title">Disclosure components</p>
+          <p class="hint">Native details behavior with synchronized state and lifecycle events.</p>
+        </div>
+
+        <div class="disclosure-showcase">
+          <details id="server-collapsible" data-jqs="collapsible">
+            <summary data-part="trigger">
+              How does Datastar fit?
+              <span data-part="indicator" aria-hidden="true"></span>
+            </summary>
+            <div data-part="content">
+              Datastar patches signals and HTML. The component survives those updates because its
+              public state lives in native attributes and stable data parts.
+            </div>
+          </details>
+
+          <div
+            id="component-accordion"
+            data-jqs="accordion"
+            data-mode="single"
+            data-collapsible="false"
+          >
+            <details data-part="item" open>
+              <summary data-part="trigger">
+                Native foundation
+                <span data-part="indicator" aria-hidden="true"></span>
+              </summary>
+              <div data-part="content">
+                Details and summary provide pointer, Enter, and Space behavior without replacing
+                browser semantics.
+              </div>
+            </details>
+            <details data-part="item">
+              <summary data-part="trigger">
+                jQStar behavior
+                <span data-part="indicator" aria-hidden="true"></span>
+              </summary>
+              <div data-part="content">
+                Named actions, cancelable lifecycle events, data-state hooks, and programmatic APIs
+                layer on top.
+              </div>
+            </details>
+            <details data-part="item">
+              <summary data-part="trigger">
+                Tailwind theme
+                <span data-part="indicator" aria-hidden="true"></span>
+              </summary>
+              <div data-part="content">
+                The published CSS is compiled ahead of time, so consuming applications do not need
+                Tailwind.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="card tabs-component-card" aria-labelledby="tabs-components-title">
+        <div>
+          <p class="label" id="tabs-components-title">Tabs component</p>
+          <p class="hint">Roving focus with automatic or manual activation.</p>
+        </div>
+
+        <div id="architecture-tabs" data-jqs="tabs" data-value="runtime">
+          <div data-part="list" aria-label="Component architecture">
+            <button data-part="trigger" data-value="runtime" type="button">Runtime</button>
+            <button data-part="trigger" data-value="server" type="button">Server</button>
+            <button data-part="trigger" data-value="theme" type="button">Theme</button>
+          </div>
+          <div data-part="panel" data-value="runtime">
+            <strong>jQStar runtime</strong>
+            <p>Expressions, named actions, component behavior, and real jQuery plugins.</p>
+          </div>
+          <div data-part="panel" data-value="server">
+            <strong>Datastar server channel</strong>
+            <p>Signal patches and HTML morphs generated with the official Datastar SDK.</p>
+          </div>
+          <div data-part="panel" data-value="theme">
+            <strong>Tailwind-compiled theme</strong>
+            <p>CSS variables and semantic data selectors with no runtime Tailwind dependency.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card overlay-component-card" aria-labelledby="overlay-components-title">
+        <div>
+          <p class="label" id="overlay-components-title">Overlay components</p>
+          <p class="hint">Top-layer placement, light dismissal, hover, focus, and Escape.</p>
+        </div>
+
+        <div class="overlay-showcase">
+          <div
+            id="deployment-popover"
+            data-jqs="popover"
+            data-side="bottom"
+            data-align="start"
+            data-initial-focus="[data-part='close']"
+          >
+            <button data-jqs="button" data-part="trigger" data-variant="outline" type="button">
+              Deployment
+            </button>
+            <div data-part="content">
+              <h2 data-part="title">Ready to deploy</h2>
+              <p data-part="description">
+                The compiled theme, runtime, and Datastar-compatible server channel are verified.
+              </p>
+              <div data-part="footer">
+                <button
+                  data-jqs="button"
+                  data-part="close"
+                  data-size="sm"
+                  type="button"
+                  data-on:click="@ui.popover.close"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="verification-tooltip" data-jqs="tooltip" data-side="top" data-align="center">
+            <button data-jqs="button" data-part="trigger" data-variant="ghost" type="button">
+              Hover or focus me
+            </button>
+            <div data-part="content">Verified with pointer and keyboard</div>
+          </div>
+
+          <div id="proof-menu" data-jqs="menu" data-side="bottom" data-align="end">
+            <button data-jqs="button" data-part="trigger" data-variant="secondary" type="button">
+              Actions
+            </button>
+            <div data-part="content">
+              <div data-part="label">Proof actions</div>
+              <button data-part="item" data-value="inspect" type="button">
+                Inspect component <span data-part="shortcut">⌘I</span>
+              </button>
+              <button
+                data-part="checkbox-item"
+                data-value="persistent"
+                data-checked="true"
+                data-close-on-select="false"
+                type="button"
+              >
+                Keep menu open
+              </button>
+              <div data-part="separator"></div>
+              <button data-part="item" data-value="disabled" data-disabled type="button">
+                Publish later
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card navigation-component-card" aria-labelledby="navigation-components-title">
+        <div>
+          <p class="label" id="navigation-components-title">Navigation components</p>
+          <p class="hint">
+            Native landmarks and links, with disclosure behavior for site navigation.
+          </p>
+        </div>
+
+        <div class="navigation-showcase">
+          <nav data-jqs="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+              <li><a href="#app">Home</a></li>
+              <li><a href="#navigation-components-title">Components</a></li>
+              <li><a href="#navigation-components-title" aria-current="page">Navigation</a></li>
+            </ol>
+          </nav>
+
+          <nav id="primary-navigation" data-jqs="navigation-menu" aria-label="Primary">
+            <ul data-part="list">
+              <li><a data-part="link" href="#app" aria-current="page">Overview</a></li>
+              <li>
+                <div
+                  id="product-navigation"
+                  data-jqs="popover"
+                  data-side="bottom"
+                  data-align="start"
+                >
+                  <button data-part="trigger" type="button">Products</button>
+                  <div data-part="content" aria-label="Products">
+                    <a data-part="link" href="#data-table-components-title">
+                      <strong>Data Table</strong>
+                      <span data-part="description">Sorting, filtering, selection, and pages.</span>
+                    </a>
+                    <a data-part="link" href="#combobox-components-title">
+                      <strong>Combobox</strong>
+                      <span data-part="description">Local or server-backed suggestions.</span>
+                    </a>
+                    <a data-part="link" href="#overlay-components-title">
+                      <strong>Overlays</strong>
+                      <span data-part="description">Popover, tooltip, menu, and dialog.</span>
+                    </a>
+                    <a data-part="link" href="#primitives-components-title">
+                      <strong>Primitives</strong>
+                      <span data-part="description">Composable zero-runtime presentation.</span>
+                    </a>
+                  </div>
+                </div>
+              </li>
+              <li><a data-part="link" href="#server-title">Server</a></li>
+            </ul>
+          </nav>
+
+          <nav data-jqs="pagination" aria-label="Component pages">
+            <ul>
+              <li><span data-part="previous" aria-disabled="true">Previous</span></li>
+              <li>
+                <a data-part="page" href="#navigation-components-title" aria-current="page">1</a>
+              </li>
+              <li><a data-part="page" href="#navigation-components-title">2</a></li>
+              <li><a data-part="page" href="#navigation-components-title">3</a></li>
+              <li><a data-part="next" href="#navigation-components-title">Next</a></li>
+            </ul>
+          </nav>
+        </div>
+      </section>
+
+      <section class="card command-component-card" aria-labelledby="command-components-title">
+        <div>
+          <p class="label" id="command-components-title">Command Palette</p>
+          <p class="hint">
+            A registry block composed from the verified Dialog and Combobox contracts.
+          </p>
+        </div>
+        <button
+          id="command-palette-trigger"
+          data-jqs="button"
+          data-variant="outline"
+          type="button"
+          aria-haspopup="dialog"
+          data-on:click="@ui.dialog.open('#command-palette-dialog', '#command-query')"
+        >
+          Open command palette <span aria-hidden="true">⌘K</span>
+        </button>
+
+        <dialog
+          id="command-palette-dialog"
+          data-jqs="dialog"
+          data-component="command"
+          data-close-on-backdrop
+        >
+          <div data-part="content">
+            <div data-jqs="command">
+              <header data-part="header">
+                <h2 data-part="title">Jump to a component</h2>
+                <p data-part="description">Type to filter, then press Enter to choose.</p>
+              </header>
+              <div
+                id="command-combobox"
+                data-jqs="combobox"
+                data-inline
+                data-filter="contains"
+                data-on:jquery-star:combobox:select="@ui.dialog.close('select')"
+              >
+                <label for="command-query">Search commands</label>
+                <input id="command-query" data-part="control" type="search" />
+                <input data-part="value" type="hidden" name="command" />
+                <div data-part="content">
+                  <div data-part="option" data-value="components">
+                    Browse components <span data-part="shortcut">G C</span>
+                  </div>
+                  <div data-part="option" data-value="server">
+                    Open server proof <span data-part="shortcut">G S</span>
+                  </div>
+                  <div data-part="option" data-value="settings">
+                    Project settings <span data-part="shortcut">⌘ ,</span>
+                  </div>
+                  <div data-part="empty">No matching commands.</div>
+                </div>
+                <span data-part="status"></span>
+              </div>
+              <footer data-part="footer">
+                <span>↑↓ navigate · Enter choose</span>
+                <button
+                  data-jqs="button"
+                  data-size="sm"
+                  data-variant="ghost"
+                  type="button"
+                  data-on:click="@ui.dialog.close('cancel')"
+                >
+                  Close
+                </button>
+              </footer>
+            </div>
+          </div>
+        </dialog>
+      </section>
+
+      <section class="card toast-component-card" aria-labelledby="toast-components-title">
+        <div>
+          <p class="label" id="toast-components-title">Toast component</p>
+          <p class="hint">Polite announcements, pause-on-interaction, F8 access, and swipe.</p>
+        </div>
+        <button
+          data-jqs="button"
+          data-variant="outline"
+          type="button"
+          data-on:click="@ui.toast.show({ title: 'Build verified', description: 'All component checks passed.', variant: 'success', duration: 1600 })"
+        >
+          Show verified toast
+        </button>
+        <div
+          data-jqs="toast-viewport"
+          data-duration="5000"
+          aria-label="Proof notifications (F8)"
+        ></div>
+      </section>
+
+      <section class="card reporting-components-card" aria-labelledby="reporting-components-title">
+        <div>
+          <p class="label" id="reporting-components-title">Backend reporting primitives</p>
+          <p class="hint">
+            One native data source drives the chart, table, status, and static Pages fallback.
+          </p>
+        </div>
+
+        <div class="reporting-grid">
+          <figure
+            id="release-metrics-chart"
+            data-jqs="chart"
+            data-type="bar"
+            aria-labelledby="release-metrics-title"
+          >
+            <figcaption id="release-metrics-title">Weekly component adoption</figcaption>
+            <div data-part="toolbar" aria-label="Chart controls">
+              <button
+                data-jqs="button"
+                data-size="sm"
+                type="button"
+                data-on:click="@ui.chart.type('bar')"
+              >
+                Bar
+              </button>
+              <button
+                data-jqs="button"
+                data-size="sm"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.chart.type('line')"
+              >
+                Line
+              </button>
+              <button
+                id="refresh-release-metrics"
+                data-jqs="button"
+                data-size="sm"
+                data-variant="outline"
+                type="button"
+                data-on:click="@refreshMetrics"
+                data-prop:disabled="$metricsLoading"
+              >
+                Refresh from backend
+              </button>
+            </div>
+            <svg data-part="plot"></svg>
+            <div data-part="legend"></div>
+            <p data-part="status"></p>
+            <table data-part="data">
+              <caption>
+                Weekly component adoption by runtime
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Week</th>
+                  <th scope="col" data-series="jquery-star" data-color="#06704f">jQStar</th>
+                  <th scope="col" data-series="server-patches" data-color="#d07929">
+                    Server patches
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Week 1</th>
+                  <td>186</td>
+                  <td>80</td>
+                </tr>
+                <tr>
+                  <th scope="row">Week 2</th>
+                  <td>305</td>
+                  <td>200</td>
+                </tr>
+                <tr>
+                  <th scope="row">Week 3</th>
+                  <td>237</td>
+                  <td>120</td>
+                </tr>
+                <tr>
+                  <th scope="row">Week 4</th>
+                  <td>342</td>
+                  <td>250</td>
+                </tr>
+              </tbody>
+            </table>
+            <output class="metrics-message" data-text="$metricsMessage" aria-live="polite"></output>
+          </figure>
+
+          <article data-jqs="typography" class="reporting-notes">
+            <span id="metrics-status-marker" data-jqs="marker" data-variant="status">
+              <span data-part="icon" aria-hidden="true">✓</span>
+              Native data ready
+            </span>
+            <h2>Server-owned data, browser-owned presentation</h2>
+            <p class="lead">
+              The table remains the source of truth. jQStar reads it and draws a responsive SVG
+              without Recharts or a framework runtime.
+            </p>
+            <blockquote>
+              <p>Patch ordinary cells, then call <code>@ui.chart.refresh</code>.</p>
+            </blockquote>
+            <ul>
+              <li>Accessible data is present before JavaScript runs.</li>
+              <li>Bar and line modes share the same server response.</li>
+              <li>The static build exercises the same client contract.</li>
+            </ul>
+          </article>
+
+          <div data-jqs="aspect-ratio" data-ratio="video" class="release-aspect-proof">
+            <div data-part="media" role="img" aria-label="Abstract component release landscape">
+              <span>100</span>
+              <strong>source-owned components</strong>
+              <small>One compiled theme · real HTML</small>
+            </div>
+          </div>
+
+          <section
+            data-jqs="direction"
+            class="direction-proof"
+            dir="rtl"
+            lang="ar"
+            aria-labelledby="direction-proof-title"
+          >
+            <span data-jqs="marker" data-variant="border">RTL</span>
+            <h2 id="direction-proof-title">واجهة أصلية من اليمين إلى اليسار</h2>
+            <p>تنتقل سمة الاتجاه عبر العناصر الأصلية من دون وقت تشغيل إضافي.</p>
+            <button data-jqs="button" data-size="sm" type="button">متابعة</button>
+          </section>
+
+          <div data-jqs="table" class="release-table-proof">
+            <table>
+              <caption>
+                Release proof
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Layer</th>
+                  <th scope="col">Owner</th>
+                  <th scope="col" data-align="numeric">Proof</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Markup</th>
+                  <td>Browser</td>
+                  <td data-align="numeric">Native</td>
+                </tr>
+                <tr>
+                  <th scope="row">Behavior</th>
+                  <td>jQStar</td>
+                  <td data-align="numeric">Focused</td>
+                </tr>
+                <tr>
+                  <th scope="row">Data</th>
+                  <td>Backend</td>
+                  <td data-align="numeric">Patchable</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="marker-proof">
+            <span data-jqs="marker">HTML first</span>
+            <span data-jqs="marker" data-variant="separator">jQuery actions</span>
+            <span data-jqs="marker" data-variant="border">Backend ready</span>
+          </p>
+        </div>
+      </section>
+
+      <section
+        class="card operations-components-card"
+        aria-labelledby="operations-components-title"
+      >
+        <div class="operations-heading">
+          <div>
+            <p class="label" id="operations-components-title">Self-hosting operations console</p>
+            <p class="hint">
+              Backend health, deployment history, response payloads, and configuration comparison.
+            </p>
+          </div>
+          <button
+            id="refresh-operations"
+            data-jqs="button"
+            data-variant="outline"
+            type="button"
+            data-on:click="@refreshOperations"
+            data-prop:disabled="$operationsLoading"
+          >
+            Refresh operations
+          </button>
+        </div>
+
+        <div data-jqs="stat-group" aria-label="Service metrics">
+          <article data-jqs="stat" aria-labelledby="operations-requests-title">
+            <span data-part="figure" aria-hidden="true">↗</span>
+            <p id="operations-requests-title" data-part="title">Requests</p>
+            <strong id="operations-requests" data-part="value">12,840</strong>
+            <p data-part="description">Across the active release</p>
+          </article>
+          <article data-jqs="stat" aria-labelledby="operations-latency-title">
+            <p id="operations-latency-title" data-part="title">P95 latency</p>
+            <strong id="operations-latency" data-part="value">84 ms</strong>
+            <p data-part="description">120 ms service budget</p>
+          </article>
+          <article data-jqs="stat" aria-labelledby="operations-release-title">
+            <p id="operations-release-title" data-part="title">Release</p>
+            <strong id="operations-release" data-part="value">v0.6.0</strong>
+            <p data-part="description">
+              <span
+                id="operations-status-dot"
+                data-jqs="status"
+                data-variant="success"
+                data-live
+                aria-hidden="true"
+              ></span>
+              <span id="operations-status-label">Healthy</span>
+            </p>
+          </article>
+        </div>
+
+        <div class="operations-grid">
+          <section class="operations-timeline" aria-labelledby="operations-timeline-title">
+            <h2 id="operations-timeline-title">Deployment history</h2>
+            <ol id="operations-timeline" data-jqs="timeline">
+              <li data-part="item" data-state="complete">
+                <div data-part="marker" aria-hidden="true">✓</div>
+                <div data-part="content">
+                  <time datetime="2026-08-28T18:10:00Z">18:10</time>
+                  <strong>Build verified</strong>
+                  <p>All bounded checks passed.</p>
+                </div>
+              </li>
+              <li data-part="item" data-state="current" aria-current="step">
+                <div data-part="marker" aria-hidden="true"></div>
+                <div data-part="content">
+                  <time datetime="2026-08-28T18:12:00Z">18:12</time>
+                  <strong>Service healthy</strong>
+                  <p>The local backend is accepting requests.</p>
+                </div>
+              </li>
+              <li data-part="item">
+                <div data-part="marker" aria-hidden="true"></div>
+                <div data-part="content">
+                  <strong>Public deployment</strong>
+                  <p>Waiting for a hosting target.</p>
+                </div>
+              </li>
+            </ol>
+          </section>
+
+          <div id="operations-payload" data-jqs="code-block">
+            <header data-part="header">
+              <span data-part="language">GET /api/demo/operations</span>
+              <button
+                data-jqs="button"
+                data-part="copy"
+                data-size="sm"
+                data-variant="ghost"
+                type="button"
+                data-on:click="@ui.code-block.copy"
+              >
+                Copy JSON
+              </button>
+            </header>
+            <pre><code data-part="code">{
+  "status": "healthy",
+  "release": "v0.6.0",
+  "components": 100
+}</code></pre>
+            <p data-part="status"></p>
+          </div>
+
+          <figure data-jqs="browser-mockup" class="operations-browser">
+            <div data-part="toolbar">
+              <span data-part="controls" aria-hidden="true"><i></i><i></i><i></i></span>
+              <code data-part="address">http://localhost:4173/health</code>
+            </div>
+            <div data-part="content">
+              <p class="health-response">
+                <span data-jqs="status" data-variant="success" data-live aria-hidden="true"></span>
+                <strong>200 Healthy</strong>
+              </p>
+              <pre><code id="operations-health-response">{
+  "status": "healthy",
+  "service": "jqstar"
+}</code></pre>
+            </div>
+            <figcaption>Self-hosted health response</figcaption>
+          </figure>
+
+          <figure id="operations-diff" data-jqs="diff" style="--jqs-diff-position: 50%">
+            <div data-part="before">
+              <pre><code>BEFORE
+LOG_LEVEL=info
+CACHE_TTL=300</code></pre>
+            </div>
+            <div data-part="after" aria-hidden="true">
+              <pre><code>AFTER
+LOG_LEVEL=debug
+CACHE_TTL=60</code></pre>
+            </div>
+            <span data-part="handle" aria-hidden="true"></span>
+            <label>
+              <span>Compare configuration before and after</span>
+              <input
+                data-part="control"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+                data-on:input="$(el).closest('[data-jqs=diff]').css('--jqs-diff-position', el.value + '%')"
+              />
+            </label>
+            <figcaption>Configuration before and after deployment</figcaption>
+          </figure>
+        </div>
+
+        <output
+          class="operations-message"
+          data-text="$operationsMessage"
+          aria-live="polite"
+        ></output>
+      </section>
+
+      <section
+        class="card control-plane-card"
+        data-class:compact="$controlPlaneCompact"
+        aria-labelledby="control-plane-title"
+      >
+        <div class="control-plane-heading">
+          <div>
+            <p class="label" id="control-plane-title">Backend control plane</p>
+            <p class="hint">
+              A runtime snapshot plus SDK-streamed logs, composed from ten source-owned components.
+            </p>
+          </div>
+          <div class="control-plane-actions">
+            <button
+              data-jqs="button"
+              data-variant="outline"
+              type="button"
+              data-on:click="@refreshControlPlane"
+              data-prop:disabled="$controlPlaneLoading || $controlPlaneStreaming"
+            >
+              Refresh snapshot
+            </button>
+            <button
+              data-jqs="button"
+              type="button"
+              data-on:click="@streamControlPlane"
+              data-prop:disabled="$controlPlaneLoading || $controlPlaneStreaming"
+            >
+              Stream 3 logs
+            </button>
+          </div>
+        </div>
+
+        <div id="runtime-overview" class="runtime-overview">
+          <div
+            id="runtime-connection"
+            data-jqs="connection-status"
+            data-state="connected"
+            role="status"
+            aria-live="polite"
+          >
+            <span
+              data-part="indicator"
+              data-jqs="status"
+              data-variant="success"
+              data-live
+              aria-hidden="true"
+            ></span>
+            <span data-part="content">
+              <strong data-part="title">Connected</strong>
+              <span data-part="description">datastar-sse · local environment</span>
+            </span>
+            <time data-part="updated" datetime="2026-08-28T18:30:00Z">Revision 0</time>
+          </div>
+
+          <div class="runtime-capacity-card">
+            <span data-jqs="indicator" data-position="top-end">
+              <div
+                id="runtime-capacity"
+                data-jqs="radial-progress"
+                role="progressbar"
+                aria-label="Worker capacity"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="64"
+                style="--jqs-value: 64; --jqs-radial-size: 7rem"
+              >
+                <strong data-part="value">64%</strong>
+                <span data-part="label">Worker capacity</span>
+              </div>
+              <span data-part="indicator" data-jqs="badge" data-variant="success">live</span>
+            </span>
+          </div>
+
+          <div class="runtime-check-card">
+            <span>Next health check</span>
+            <div id="runtime-countdown" data-jqs="countdown" data-duration="30">
+              <span data-part="minutes">00</span>
+              <span aria-hidden="true">:</span>
+              <span data-part="seconds">30</span>
+              <output data-part="status"></output>
+            </div>
+            <label data-jqs="swap">
+              <input
+                type="checkbox"
+                aria-label="Use compact control-plane view"
+                data-bind:control-plane-compact
+              />
+              <span data-part="off" aria-hidden="true">Expanded view</span>
+              <span data-part="on" aria-hidden="true">Compact view</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-plane-grid">
+          <section
+            id="runtime-terminal"
+            data-jqs="terminal"
+            aria-labelledby="runtime-terminal-title"
+          >
+            <header data-part="header">
+              <span data-part="controls" aria-hidden="true"><i></i><i></i><i></i></span>
+              <h2 id="runtime-terminal-title" data-part="title">jqstar · live server log</h2>
+            </header>
+            <div data-part="content">
+              <section
+                id="runtime-log-viewer"
+                data-jqs="log-viewer"
+                data-level="all"
+                data-max="40"
+                aria-labelledby="runtime-log-title"
+              >
+                <header data-part="header">
+                  <h3 id="runtime-log-title">Event stream</h3>
+                  <label>
+                    <span>Level</span>
+                    <select data-part="filter">
+                      <option value="all">All levels</option>
+                      <option value="debug">Debug</option>
+                      <option value="info">Info</option>
+                      <option value="warn">Warning</option>
+                      <option value="error">Error</option>
+                    </select>
+                  </label>
+                  <button
+                    data-jqs="button"
+                    data-part="pause"
+                    data-size="sm"
+                    data-variant="ghost"
+                    type="button"
+                    data-on:click="@ui.log-viewer.toggle"
+                  >
+                    Pause logs
+                  </button>
+                  <button
+                    data-jqs="button"
+                    data-size="sm"
+                    data-variant="ghost"
+                    type="button"
+                    data-on:click="@ui.log-viewer.clear"
+                  >
+                    Clear
+                  </button>
+                </header>
+                <div data-part="viewport">
+                  <ol id="runtime-log-entries" data-part="entries">
+                    <li data-part="entry" data-level="info" data-value="initial-1">
+                      <time data-part="timestamp" datetime="2026-08-28T18:30:00Z">18:30:00</time>
+                      <span data-part="level">INFO</span>
+                      <span data-part="source">http</span>
+                      <span data-part="message">Self-hosted service is accepting requests.</span>
+                    </li>
+                    <li data-part="entry" data-level="debug" data-value="initial-2">
+                      <time data-part="timestamp" datetime="2026-08-28T18:30:01Z">18:30:01</time>
+                      <span data-part="level">DEBUG</span>
+                      <span data-part="source">registry</span>
+                      <span data-part="message">Registry manifest contains 102 components.</span>
+                    </li>
+                    <li data-part="entry" data-level="warn" data-value="initial-3">
+                      <time data-part="timestamp" datetime="2026-08-28T18:30:02Z">18:30:02</time>
+                      <span data-part="level">WARN</span>
+                      <span data-part="source">deploy</span>
+                      <span data-part="message">Public hosting is waiting on its target.</span>
+                    </li>
+                  </ol>
+                </div>
+                <p data-part="status"></p>
+              </section>
+            </div>
+          </section>
+
+          <section id="runtime-json" data-jqs="json-viewer" aria-labelledby="runtime-json-title">
+            <header data-part="header">
+              <h2 id="runtime-json-title">Runtime payload</h2>
+              <button
+                data-jqs="button"
+                data-size="sm"
+                data-variant="ghost"
+                type="button"
+                data-on:click="@ui.json-viewer.expand-all"
+              >
+                Expand all
+              </button>
+              <button
+                data-jqs="button"
+                data-size="sm"
+                data-variant="ghost"
+                type="button"
+                data-on:click="@ui.json-viewer.collapse-all"
+              >
+                Collapse all
+              </button>
+            </header>
+            <script type="application/json" data-part="source">
+              {
+                "service": "jqstar",
+                "connection": "connected",
+                "components": 100,
+                "runtime": {
+                  "process": "node-http",
+                  "transport": "datastar-sse"
+                }
+              }
+            </script>
+            <div data-part="tree"></div>
+            <p data-part="status"></p>
+          </section>
+        </div>
+
+        <dl data-jqs="key-value" aria-label="Runtime details">
+          <div data-part="item">
+            <dt>Region</dt>
+            <dd id="runtime-region">us-central</dd>
+          </div>
+          <div data-part="item">
+            <dt>Environment</dt>
+            <dd id="runtime-environment">local</dd>
+          </div>
+          <div data-part="item">
+            <dt>Transport</dt>
+            <dd id="runtime-transport"><code>datastar-sse</code></dd>
+          </div>
+          <div data-part="item">
+            <dt>Process</dt>
+            <dd id="runtime-process"><code>node-http</code></dd>
+          </div>
+        </dl>
+
+        <nav data-jqs="dock" aria-label="Control-plane sections">
+          <a data-part="item" href="#runtime-overview" data-active aria-current="page">
+            <span data-part="icon" aria-hidden="true">⌂</span>
+            <span data-part="label">Overview</span>
+          </a>
+          <a data-part="item" href="#runtime-log-viewer">
+            <span data-part="icon" aria-hidden="true">≡</span>
+            <span data-part="label">Logs</span>
+          </a>
+          <a data-part="item" href="#runtime-json">
+            <span data-part="icon" aria-hidden="true">{ }</span>
+            <span data-part="label">Payload</span>
+          </a>
+        </nav>
+
+        <p class="control-plane-message" data-text="$controlPlaneMessage" aria-live="polite"></p>
+      </section>
+
+      <section class="card source-actions-card" aria-labelledby="source-actions-title">
+        <div>
+          <p class="label" id="source-actions-title">Clipboard and Editable</p>
+          <p class="hint">
+            Text-only clipboard output and inline edits around one native form value.
+          </p>
+        </div>
+
+        <div class="source-actions-grid">
+          <article aria-labelledby="catalog-clipboard-title">
+            <h2 id="catalog-clipboard-title">Install command</h2>
+            <p>Clipboard reads the current source value at action time.</p>
+            <div
+              id="catalog-clipboard"
+              data-jqs="clipboard"
+              data-reset-delay="5000"
+              data-success-message="Install command copied."
+            >
+              <code data-part="value">npm install jquery jquery-star</code>
+              <button
+                data-jqs="button"
+                data-part="trigger"
+                data-size="sm"
+                data-variant="outline"
+                type="button"
+                data-on:click="@ui.clipboard.copy"
+              >
+                Copy command
+              </button>
+              <span data-part="status"></span>
+            </div>
+          </article>
+
+          <form aria-labelledby="catalog-editable-title">
+            <h2 id="catalog-editable-title">Catalog display name</h2>
+            <p>Enter commits a valid draft. Escape restores the committed value.</p>
+            <div id="catalog-editable" data-jqs="editable" data-select-on-edit>
+              <div data-part="display">
+                <span data-part="preview">Ada Lovelace</span>
+                <button
+                  data-jqs="button"
+                  data-part="edit"
+                  data-size="sm"
+                  data-variant="ghost"
+                  type="button"
+                  data-on:click="@ui.editable.edit"
+                >
+                  Edit display name
+                </button>
+              </div>
+              <div data-part="editor" hidden>
+                <label class="sr-only" for="catalog-editable-control">Catalog display name</label>
+                <input
+                  id="catalog-editable-control"
+                  data-jqs="input"
+                  data-part="control"
+                  type="text"
+                  name="catalogDisplayName"
+                  value="Ada Lovelace"
+                  required
+                />
+                <button
+                  data-jqs="button"
+                  data-size="sm"
+                  type="button"
+                  data-on:click="@ui.editable.commit"
+                >
+                  Apply
+                </button>
+                <button
+                  data-jqs="button"
+                  data-size="sm"
+                  data-variant="outline"
+                  type="button"
+                  data-on:click="@ui.editable.cancel"
+                >
+                  Cancel
+                </button>
+              </div>
+              <span data-part="status"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="card primitives-component-card" aria-labelledby="primitives-components-title">
+        <div>
+          <p class="label" id="primitives-components-title">Composition primitives</p>
+          <p class="hint">Zero-runtime building blocks compiled into the same theme.</p>
+        </div>
+
+        <article data-jqs="card" aria-labelledby="primitive-card-title">
+          <header data-part="header">
+            <div class="primitive-title-row">
+              <h2 data-part="title" id="primitive-card-title">Release candidate</h2>
+              <span data-jqs="badge" data-variant="success">Verified</span>
+            </div>
+            <p data-part="description">A composable card with semantic parts and no JavaScript.</p>
+          </header>
+          <div data-part="content">
+            <div class="avatar-row">
+              <span data-jqs="avatar" data-size="lg" role="img" aria-label="Chad Peppers">CP</span>
+              <span>
+                <strong>Component library</strong><br />Tailwind-authored, jQuery-powered
+              </span>
+            </div>
+            <hr data-jqs="separator" />
+            <div class="badge-showcase" aria-label="Badge variants">
+              <span data-jqs="badge">Primary</span>
+              <span data-jqs="badge" data-variant="secondary">Secondary</span>
+              <span data-jqs="badge" data-variant="outline">Outline</span>
+              <span data-jqs="badge" data-variant="danger">Blocked</span>
+            </div>
+          </div>
+          <footer data-part="footer">
+            <button data-jqs="button" data-size="sm" type="button">Review release</button>
+          </footer>
+        </article>
+
+        <div data-jqs="alert" data-variant="success" role="status">
+          <strong data-part="title">All checks passed</strong>
+          <span data-part="description">The component proof is ready for another layer.</span>
+        </div>
+
+        <div class="progress-proof">
+          <label id="progress-proof-label" for="progress-proof">Component coverage</label>
+          <progress
+            id="progress-proof"
+            data-jqs="progress"
+            value="100"
+            max="100"
+            aria-labelledby="progress-proof-label"
+          >
+            100 of 100
+          </progress>
+        </div>
+
+        <div class="skeleton-proof">
+          <span data-jqs="skeleton" aria-hidden="true"></span>
+          <span data-jqs="skeleton" aria-hidden="true"></span>
+        </div>
+      </section>
+
+      <section class="card counter-card" aria-labelledby="counter-title">
+        <div>
+          <p class="label" id="counter-title">The exact expression</p>
+          <p class="hint"><code>$count++</code> reacts. <code>$(el)</code> is jQuery.</p>
+        </div>
+        <div class="counter-controls">
+          <button class="disappear" type="button" data-on:click="$count++; $(el).fadeOut(180)">
+            Increment and disappear
+          </button>
+          <button
+            class="restore"
+            type="button"
+            data-on:click="$(el).siblings('.disappear').fadeIn(180)"
+          >
+            Bring it back
+          </button>
+          <output data-text="$count" data-attr:aria-label="'Current count: ' + $count">0</output>
+        </div>
+      </section>
+
+      <section class="card list-card" aria-labelledby="actions-title">
+        <div>
+          <p class="label" id="actions-title">Named actions</p>
+          <p class="hint"><code>data-on:click="@removeItem"</code></p>
+        </div>
+        <strong class="remaining" data-text="$itemCount + ' items remain'"></strong>
+        <ul>
+          <li>
+            <span>Write the markup</span
+            ><button type="button" data-on:click="@removeItem">Remove</button>
+          </li>
+          <li>
+            <span>Keep real jQuery</span
+            ><button type="button" data-on:click="@removeItem">Remove</button>
+          </li>
+          <li>
+            <span>Ship the proof</span
+            ><button type="button" data-on:click="@removeItem">Remove</button>
+          </li>
+        </ul>
+        <p class="empty" data-show="$itemCount === 0">Everything is gone.</p>
+      </section>
+
+      <section class="card model-card" aria-labelledby="model-title">
+        <div>
+          <p class="label" id="model-title">Two-way state</p>
+          <p class="hint"><code>data-bind:name</code> writes <code>$name</code>.</p>
+        </div>
+        <label>
+          Display name
+          <input name="displayName" type="text" data-bind:name autocomplete="off" />
+        </label>
+        <p class="preview" data-text="$greeting"></p>
+      </section>
+
+      <section class="card server-card" aria-labelledby="server-title">
+        <div>
+          <p class="label" id="server-title">Backend actions</p>
+          <p class="hint">
+            <code>@post</code> patches JSON. <code>@get</code> consumes the official Datastar SDK.
+          </p>
+        </div>
+        <output class="server-count" data-text="$serverCount">0</output>
+        <div class="server-controls">
+          <button
+            type="button"
+            data-on:click="@serverIncrement"
+            data-prop:disabled="$serverLoading"
+          >
+            Add 10 on the server
+          </button>
+          <button
+            class="restore"
+            type="button"
+            data-on:click="@serverStream"
+            data-prop:disabled="$serverLoading"
+          >
+            Stream from the Datastar SDK
+          </button>
+          <span class="request-state" data-show="$serverLoading">Request in progress…</span>
+        </div>
+        <p class="server-message" data-text="$serverMessage"></p>
+        <p class="server-error" data-show="$serverError" data-text="$serverError"></p>
+        <ul id="server-feed" aria-live="polite"></ul>
+      </section>
+
+      <pre><code>&lt;button
+  data-on:click="$count++; $(el).fadeOut()"
+&gt;
+  Increment and disappear
+&lt;/button&gt;
+
+&lt;button data-on:click="@removeItem"&gt;
+  Remove
+&lt;/button&gt;
+
+&lt;button data-on:click="@post('/items')"&gt;
+  Save on the server
+&lt;/button&gt;</code></pre>
+    </main>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>

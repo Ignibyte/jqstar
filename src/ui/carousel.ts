@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { CarouselTarget, StarCarouselStatic, StarContext } from "../types";
 
 type Orientation = "horizontal" | "vertical";
@@ -442,7 +442,7 @@ function enhanceCarousels(root: ParentNode): void {
   }
 }
 
-export function createCarousels(): CarouselCollection {
+export function createCarousels(registerAction: ActionRegistrar): CarouselCollection {
   const api: StarCarouselStatic = {
     next: (target) => {
       const root = resolveCarousel(target);

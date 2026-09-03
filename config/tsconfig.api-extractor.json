@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "jquery-star": ["dist/types/index.d.ts"],
+      "jquery-star/core": ["dist/types/core.d.ts"],
+      "jquery-star/testing": ["dist/types/testing/index.d.ts"],
+      "jquery-star/turbo": ["dist/types/turbo.d.ts"],
+      "jquery-star/datastar/testing": ["dist/types/datastar/testing.d.ts"]
+    }
+  }
+}

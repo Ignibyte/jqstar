@@ -1,0 +1,5 @@
+{
+  "$schema": "./deviations.schema.json",
+  "schemaVersion": "jqstar-quality-deviations/1",
+  "deviations": []
+}

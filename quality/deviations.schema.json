@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/quality-deviations.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "deviations"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": "jqstar-quality-deviations/1" },
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "rule",
+          "path",
+          "lineStart",
+          "lineEnd",
+          "reason",
+          "owner",
+          "approved",
+          "expires",
+          "removalCondition",
+          "evidence"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^JQS-[0-9]{4}$" },
+          "rule": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "lineStart": { "type": "integer", "minimum": 1 },
+          "lineEnd": { "type": "integer", "minimum": 1 },
+          "reason": { "type": "string", "minLength": 20 },
+          "owner": { "type": "string", "minLength": 1 },
+          "approved": { "type": "string", "format": "date" },
+          "expires": { "type": "string", "format": "date" },
+          "removalCondition": { "type": "string", "minLength": 10 },
+          "evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

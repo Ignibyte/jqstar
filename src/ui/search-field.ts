@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { SearchFieldTarget, StarContext, StarSearchFieldStatic } from "../types";
 
 interface SearchFieldRecord {
@@ -214,7 +214,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createSearchFields(): SearchFieldCollection {
+export function createSearchFields(registerAction: ActionRegistrar): SearchFieldCollection {
   const api: StarSearchFieldStatic = {
     set: (target, value) => {
       const root = resolve(target);

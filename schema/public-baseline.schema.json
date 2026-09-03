@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/public-baseline.schema.json",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schema",
+    "version",
+    "stability",
+    "runtime",
+    "declarative",
+    "backend",
+    "package",
+    "support",
+    "policy",
+    "deprecated",
+    "internal",
+    "evidence"
+  ],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schema": { "const": "jqstar-public-baseline/1" },
+    "version": { "const": "0.1.0" },
+    "stability": { "const": "stable-for-0.x" },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "rootExports",
+        "typeExports",
+        "jqueryInstanceMembers",
+        "jqueryStaticMembers",
+        "pluginCommands",
+        "starStaticMembers",
+        "uiMembers",
+        "registeredActions",
+        "autoInstall",
+        "umdGlobal"
+      ],
+      "properties": {
+        "rootExports": { "$ref": "#/$defs/names" },
+        "typeExports": { "$ref": "#/$defs/names" },
+        "jqueryInstanceMembers": { "$ref": "#/$defs/names" },
+        "jqueryStaticMembers": { "$ref": "#/$defs/names" },
+        "pluginCommands": { "$ref": "#/$defs/names" },
+        "starStaticMembers": { "$ref": "#/$defs/names" },
+        "uiMembers": { "$ref": "#/$defs/names" },
+        "registeredActions": { "$ref": "#/$defs/names" },
+        "autoInstall": { "const": true },
+        "umdGlobal": { "const": "jQueryStar" }
+      },
+      "additionalProperties": false
+    },
+    "declarative": {
+      "type": "object",
+      "required": [
+        "extensionDirectiveNamespace",
+        "extensionHelperNamespace",
+        "directiveForms",
+        "eventModifiers",
+        "expressionScope"
+      ],
+      "properties": {
+        "extensionDirectiveNamespace": { "const": "data-<plugin>:*" },
+        "extensionHelperNamespace": { "const": "<plugin>.<helper>" },
+        "directiveForms": { "$ref": "#/$defs/names" },
+        "eventModifiers": { "$ref": "#/$defs/names" },
+        "expressionScope": { "$ref": "#/$defs/names" }
+      },
+      "additionalProperties": false
+    },
+    "backend": {
+      "type": "object",
+      "required": ["methods", "request", "lifecycleEvents", "responseTypes"],
+      "properties": {
+        "methods": {
+          "type": "object",
+          "required": ["delete", "get", "patch", "post", "put"],
+          "properties": {
+            "delete": { "const": "DELETE" },
+            "get": { "const": "GET" },
+            "patch": { "const": "PATCH" },
+            "post": { "const": "POST" },
+            "put": { "const": "PUT" }
+          },
+          "additionalProperties": false
+        },
+        "request": {
+          "type": "object",
+          "required": [
+            "accept",
+            "datastarHeader",
+            "defaultCredentials",
+            "getEncoding",
+            "writeEncoding",
+            "deleteEncoding",
+            "defaultProfile",
+            "genericProfile",
+            "datastarProfile",
+            "profileSelection",
+            "responseBodyOwnership",
+            "middlewareStage",
+            "middlewareDescriptor",
+            "middlewarePolicy"
+          ],
+          "properties": {
+            "accept": { "const": "text/event-stream, text/html, application/json" },
+            "datastarHeader": { "const": "true" },
+            "defaultCredentials": { "const": "same-origin" },
+            "getEncoding": { "const": "datastar-query" },
+            "writeEncoding": { "const": "json-body" },
+            "deleteEncoding": { "const": "json-body-and-datastar-query" },
+            "defaultProfile": { "const": "core.datastar" },
+            "genericProfile": { "const": "explicit-json-html-without-datastar" },
+            "datastarProfile": { "const": "signal-json-html-sse-compatible" },
+            "profileSelection": { "const": "pre-middleware-immutable" },
+            "responseBodyOwnership": { "const": "one-profile-one-lease" },
+            "middlewareStage": { "const": "pre-dispatch-once-per-logical-request" },
+            "middlewareDescriptor": { "const": "frozen-data-only" },
+            "middlewarePolicy": {
+              "const": "same-origin-path-query-and-header-additions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "minItems": 4,
+          "items": { "$ref": "#/$defs/event" }
+        },
+        "responseTypes": { "$ref": "#/$defs/names" }
+      },
+      "additionalProperties": false
+    },
+    "package": {
+      "type": "object",
+      "required": ["exports", "formats", "observedArtifact", "bundleBytes", "releaseSha256"],
+      "properties": {
+        "exports": { "$ref": "#/$defs/names" },
+        "formats": { "$ref": "#/$defs/names" },
+        "observedArtifact": {
+          "type": "object",
+          "required": ["files", "packedBytes", "unpackedBytes"],
+          "properties": {
+            "files": { "type": "integer", "minimum": 1 },
+            "packedBytes": { "type": "integer", "minimum": 1 },
+            "unpackedBytes": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "bundleBytes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "releaseSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "support": {
+      "type": "object",
+      "required": [
+        "jquery",
+        "node",
+        "browsers",
+        "moduleFormats",
+        "documents",
+        "unsupportedDocuments"
+      ],
+      "properties": {
+        "jquery": { "const": ">=4.0.0 <5" },
+        "node": { "const": ">=24" },
+        "browsers": { "$ref": "#/$defs/names" },
+        "moduleFormats": { "$ref": "#/$defs/names" },
+        "documents": { "$ref": "#/$defs/names" },
+        "unsupportedDocuments": { "$ref": "#/$defs/names" }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["minimumDeprecationMinorReleases", "errorCodes", "pluginApi"],
+      "properties": {
+        "minimumDeprecationMinorReleases": { "type": "integer", "minimum": 1 },
+        "errorCodes": { "const": "not-published-in-0.1" },
+        "pluginApi": { "const": "0.1.0" }
+      },
+      "additionalProperties": false
+    },
+    "deprecated": { "type": "array", "maxItems": 0 },
+    "internal": { "$ref": "#/$defs/names" },
+    "evidence": {
+      "type": "object",
+      "required": ["deliveryRunId", "apiReport", "behaviorTests", "packageReport", "releaseReport"],
+      "properties": {
+        "deliveryRunId": { "type": "string", "minLength": 1 },
+        "apiReport": { "type": "string", "minLength": 1 },
+        "behaviorTests": { "$ref": "#/$defs/names" },
+        "packageReport": { "type": "string", "minLength": 1 },
+        "releaseReport": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "names": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "event": {
+      "type": "object",
+      "required": ["name", "target", "cancelable", "detail"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "cancelable": { "type": "boolean" },
+        "detail": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

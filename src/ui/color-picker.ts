@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { ColorPickerTarget, StarColorPickerStatic, StarContext } from "../types";
 
 interface ColorPickerRecord {
@@ -274,7 +274,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createColorPickers(): ColorPickerCollection {
+export function createColorPickers(registerAction: ActionRegistrar): ColorPickerCollection {
   const api: StarColorPickerStatic = {
     set: (target, value) => {
       const root = resolve(target);

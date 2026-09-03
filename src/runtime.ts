@@ -1,14 +1,22 @@
 import { effect, nextUpdate, reactive, stop, type ReactiveEffect } from "./reactivity";
 import { DeclarativeApplication } from "./declarative";
-import { clearExpressionCache } from "./expression";
+import { isElementNode, isInputElement, isSelectElement } from "./dom";
+import { attempt, throwCollectedErrors } from "./errors";
+import type { StarExpressionEngine } from "./expression-types";
 import {
   cancelElementRequests,
   cancelRequests,
   createBackendAction,
   dynamicBackendAction,
 } from "./fetch";
-import { registerAction, resolveAction } from "./registry";
-import { createUI } from "./ui";
+import { bindStarExpressionRuntime } from "./expression-runtime";
+import { Kernel, type ApplicationCapabilities, type ApplicationLifecycle } from "./kernel";
+import type { StarPlugin } from "./plugin";
+import type {
+  StarOperationObserver,
+  StarOperationSubscriptionOptions,
+  StarOperationUnsubscribe,
+} from "./observation";
 import type {
   ComputedRecord,
   EventBinding,
@@ -16,15 +24,17 @@ import type {
   StarAction,
   StarContext,
   StarDefinition,
+  StarCoreStatic,
+  StarInstalledJQuery,
   StarInstance,
-  StarStatic,
+  StarJQueryMethod,
   StateRecord,
   UIRule,
   Value,
 } from "./types";
+import { STAR_VERSION } from "./version";
 
 const INSTANCE_KEY = "jqueryStar.instance";
-let instanceId = 0;
 
 function cloneValue<T>(value: T): T {
   if (Array.isArray(value)) return value.map(cloneValue) as T;
@@ -82,7 +92,9 @@ function eventOptions<State extends StateRecord, Computed extends ComputedRecord
 class Application<
   State extends StateRecord = StateRecord,
   Computed extends ComputedRecord = ComputedRecord,
-> implements StarInstance<State, Computed> {
+>
+  implements StarInstance<State, Computed>, ApplicationLifecycle
+{
   readonly mode = "behavior" as const;
   readonly root: Element;
   readonly $root: JQuery<Element>;
@@ -90,6 +102,7 @@ class Application<
   readonly computed: Readonly<Computed>;
 
   private readonly $: JQueryStatic;
+  private readonly capabilities: ApplicationCapabilities;
   private readonly definition: StarDefinition<State, Computed>;
   private readonly namespace: string;
   private readonly effects = new Set<ReactiveEffect>();
@@ -103,41 +116,52 @@ class Application<
     WeakMap<Element, ReturnType<typeof setTimeout>>
   >();
   private readonly throttleTimes = new WeakMap<object, WeakMap<Element, number>>();
-  private readonly observer: MutationObserver;
+  private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+  private releaseExpressionRuntime: (() => void) | undefined;
+  private releaseObserver: (() => void) | undefined;
   private isDestroyed = false;
 
-  constructor($: JQueryStatic, root: Element, definition: StarDefinition<State, Computed>) {
+  constructor(
+    $: JQueryStatic,
+    root: Element,
+    definition: StarDefinition<State, Computed>,
+    capabilities: ApplicationCapabilities,
+  ) {
     this.$ = $;
+    this.capabilities = capabilities;
     this.root = root;
     this.$root = $(root);
     this.definition = definition;
-    this.namespace = `.jqueryStar${++instanceId}`;
+    this.namespace = `.jqueryStar${capabilities.nextApplicationId()}`;
     this.state = reactive(cloneValue((definition.state ?? {}) as State));
     this.computed = this.createComputed();
 
-    this.installRules();
-    this.mountTree(root);
+    try {
+      capabilities.applicationCreated(this);
+      this.releaseExpressionRuntime = bindStarExpressionRuntime(this, {
+        resolveAction: (name) =>
+          (this.definition.actions?.[name] as StarAction | undefined) ??
+          this.capabilities.resolveAction(name),
+        resolveHelper: (name) => this.capabilities.resolveHelper(name),
+        startAction: (label, action, context) =>
+          this.capabilities.startAction(this, label, action, context),
+      });
+      this.installRules();
+      this.mountTree(root);
 
-    this.observer = new MutationObserver((mutations) => {
-      let refresh = false;
-
-      for (const mutation of mutations) {
-        for (const node of Array.from(mutation.removedNodes)) {
-          if (node instanceof Element) this.unmountTree(node);
-        }
-
-        for (const node of Array.from(mutation.addedNodes)) {
-          if (node instanceof Element) {
-            this.mountTree(node);
-            refresh = true;
-          }
-        }
-      }
-
-      if (refresh) this.refresh();
-    });
-
-    this.observer.observe(root, { childList: true, subtree: true });
+      const ownedObserver = capabilities.observe(
+        `application:${this.namespace}:mutation`,
+        root,
+        (mutations) => this.handleMutations(mutations),
+        { childList: true, subtree: true },
+      );
+      this.releaseObserver = ownedObserver.release;
+    } catch (error) {
+      const errors = [error];
+      this.isDestroyed = true;
+      this.releaseOwnedResources(errors);
+      throwCollectedErrors(errors, "jQuery Star application setup rollback failed.");
+    }
   }
 
   get destroyed(): boolean {
@@ -152,29 +176,70 @@ class Application<
 
     const resolved =
       typeof action === "string"
-        ? (this.definition.actions?.[action] ?? resolveAction(action))
+        ? (this.definition.actions?.[action] ?? this.capabilities.resolveAction(action))
         : action;
 
     if (!resolved) throw new Error(`Unknown jQuery Star action: ${String(action)}`);
-    return resolved({ ...this.context(), ...overrides });
+    const context = { ...this.context(), ...overrides };
+    const label = typeof action === "string" ? action : resolved.name || "anonymous";
+    return this.capabilities.runAction(
+      this,
+      label,
+      resolved as unknown as StarAction,
+      context as unknown as StarContext,
+    );
+  }
+
+  observeOperations(
+    observer: StarOperationObserver,
+    options?: StarOperationSubscriptionOptions,
+  ): StarOperationUnsubscribe {
+    if (this.isDestroyed) throw new Error("This jQuery Star application has been destroyed.");
+    return this.capabilities.observeOperations(this, observer, options);
   }
 
   refresh(): void {
     if (this.isDestroyed) return;
-    for (const runner of this.effects) runner();
+    const errors: unknown[] = [];
+    for (const runner of this.effects) attempt(errors, runner);
+    throwCollectedErrors(errors, "jQuery Star application refresh failed.");
   }
 
   destroy(): void {
     if (this.isDestroyed) return;
     this.isDestroyed = true;
-    cancelRequests(this.root);
-    this.observer.disconnect();
-    this.$root.off(this.namespace);
+    const errors: unknown[] = [];
+    this.releaseOwnedResources(errors);
+    throwCollectedErrors(errors, "jQuery Star application destruction failed.");
+  }
 
-    for (const runner of this.effects) stop(runner);
-    this.effects.clear();
-    this.unmountTree(this.root);
-    this.$.removeData(this.root, INSTANCE_KEY);
+  releaseTree(tree: Element, preservedRoots: readonly Element[] = []): void {
+    const errors: unknown[] = [];
+    for (const element of [tree, ...Array.from(tree.querySelectorAll("*"))]) {
+      if (
+        preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
+      ) {
+        continue;
+      }
+      attempt(errors, () => cancelElementRequests(element));
+    }
+    for (const [element, rules] of Array.from(this.mounted)) {
+      if (!tree.contains(element)) continue;
+      if (
+        preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
+      ) {
+        continue;
+      }
+      this.mounted.delete(element);
+
+      for (const [rule, cleanup] of Array.from(rules)) {
+        if (cleanup) attempt(errors, cleanup);
+        if (rule.unmount) {
+          attempt(errors, () => rule.unmount!(this.elementContext(element)));
+        }
+      }
+    }
+    throwCollectedErrors(errors, "jQuery Star subtree cleanup failed.");
   }
 
   private createComputed(): Readonly<Computed> {
@@ -203,6 +268,7 @@ class Application<
       $: this.$,
       state: this.state,
       computed,
+      helpers: this.capabilities.helpers,
       root: this.root,
       $root: this.$root,
       instance: this,
@@ -253,11 +319,17 @@ class Application<
 
     if (!hasBindings) return;
 
-    const runner = effect(() => {
-      for (const element of this.elements(selector)) {
-        this.applyBindings(element, rule);
-      }
-    });
+    const runner = effect(
+      () => {
+        for (const element of this.elements(selector)) {
+          this.applyBindings(element, rule);
+        }
+      },
+      {
+        owner: this.namespace,
+        onError: (error) => this.$root.trigger("jquery-star:error", [error]),
+      },
+    );
     this.effects.add(runner);
   }
 
@@ -332,7 +404,7 @@ class Application<
   }
 
   private writeModel(element: Element, value: unknown): void {
-    if (element instanceof HTMLInputElement) {
+    if (isInputElement(element)) {
       if (element.type === "checkbox") {
         element.checked = Array.isArray(value)
           ? value.map(String).includes(element.value)
@@ -345,7 +417,7 @@ class Application<
       }
     }
 
-    if (element instanceof HTMLSelectElement && element.multiple) {
+    if (isSelectElement(element) && element.multiple) {
       const selected = new Set(Array.isArray(value) ? value.map(String) : []);
       for (const option of Array.from(element.options)) {
         option.selected = selected.has(option.value);
@@ -358,7 +430,7 @@ class Application<
   }
 
   private readModel(element: Element, current: unknown): unknown {
-    if (element instanceof HTMLInputElement) {
+    if (isInputElement(element)) {
       if (element.type === "checkbox") {
         if (Array.isArray(current)) {
           const values = current.map(String);
@@ -373,7 +445,7 @@ class Application<
       }
     }
 
-    if (element instanceof HTMLSelectElement && element.multiple) {
+    if (isSelectElement(element) && element.multiple) {
       return Array.from(element.selectedOptions, (option) => option.value);
     }
 
@@ -429,8 +501,10 @@ class Application<
         this.debounceTimers.set(identity, timers);
       }
       const previous = timers.get(element);
-      if (previous) clearTimeout(previous);
-      timers.set(element, setTimeout(invoke, options.debounce));
+      clearTimeout(previous);
+      const timer = setTimeout(invoke, options.debounce);
+      timers.set(element, timer);
+      this.timers.add(timer);
       return;
     }
 
@@ -449,10 +523,15 @@ class Application<
     invoke();
   }
 
-  private mountTree(tree: Element): void {
+  private mountTree(tree: Element, preservedRoots: readonly Element[] = []): void {
     for (const [selector, rule] of Object.entries(this.definition.ui ?? {})) {
       if (!rule.mount && !rule.unmount) continue;
       for (const element of this.elementsWithin(tree, selector)) {
+        if (
+          preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
+        ) {
+          continue;
+        }
         this.mountElement(element, rule);
       }
     }
@@ -466,43 +545,169 @@ class Application<
     }
     if (rules.has(rule)) return;
 
+    rules.set(rule, undefined);
     const cleanup = rule.mount?.(this.elementContext(element));
     rules.set(rule, cleanup || undefined);
   }
 
-  private unmountTree(tree: Element): void {
-    for (const element of [tree, ...Array.from(tree.querySelectorAll("*"))]) {
-      cancelElementRequests(element);
-    }
-    for (const [element, rules] of Array.from(this.mounted)) {
-      if (element !== tree && !tree.contains(element)) continue;
+  private handleMutations(mutations: MutationRecord[]): void {
+    let refresh = false;
+    const errors: unknown[] = [];
 
-      for (const [rule, cleanup] of rules) {
-        cleanup?.();
-        rule.unmount?.(this.elementContext(element));
+    for (const mutation of mutations) {
+      for (const node of Array.from(mutation.removedNodes)) {
+        if (isElementNode(node)) {
+          attempt(errors, () =>
+            this.releaseTree(node, this.capabilities.preservedRootsWithin(node)),
+          );
+        }
       }
-      this.mounted.delete(element);
+
+      for (const node of Array.from(mutation.addedNodes)) {
+        if (isElementNode(node)) {
+          attempt(errors, () => this.mountTree(node, this.capabilities.preservedRootsWithin(node)));
+          refresh = true;
+        }
+      }
     }
+
+    if (refresh) attempt(errors, () => this.refresh());
+    for (const error of errors) this.$root.trigger("jquery-star:error", [error]);
+  }
+
+  private releaseOwnedResources(errors: unknown[]): void {
+    const releaseExpressionRuntime = this.releaseExpressionRuntime;
+    this.releaseExpressionRuntime = undefined;
+    if (releaseExpressionRuntime) attempt(errors, releaseExpressionRuntime);
+
+    attempt(errors, () => cancelRequests(this.root));
+    const releaseObserver = this.releaseObserver;
+    this.releaseObserver = undefined;
+    if (releaseObserver) attempt(errors, releaseObserver);
+
+    attempt(errors, () => this.$root.off(this.namespace));
+    const timers = [...this.timers];
+    this.timers.clear();
+    for (const timer of timers) attempt(errors, () => clearTimeout(timer));
+    const effects = [...this.effects];
+    this.effects.clear();
+    for (const runner of effects) attempt(errors, () => stop(runner));
+    attempt(errors, () => this.releaseTree(this.root));
+    attempt(errors, () => this.$.removeData(this.root, INSTANCE_KEY));
+    attempt(errors, () => this.capabilities.applicationDestroyed(this));
   }
 }
 
 const SKIP_MODEL_WRITE = Symbol("skip-model-write");
 
-export function installStar($: JQueryStatic): StarStatic {
-  if ($.star) return $.star;
+export interface StarRuntimeInstallOptions {
+  readonly document?: Document;
+  readonly expressionEngine?: StarExpressionEngine;
+  readonly createExpressionEngine: () => StarExpressionEngine;
+}
 
-  const star: StarStatic = {
-    version: "0.1.0",
-    ui: createUI(),
+interface RuntimeInstallation {
+  readonly document: Document;
+  readonly expressionEngine: StarExpressionEngine;
+  readonly installed: StarInstalledJQuery;
+  readonly kernel: Kernel;
+}
+
+const runtimeInstallations = new WeakMap<JQueryStatic, RuntimeInstallation>();
+
+function installationDocument(options: StarRuntimeInstallOptions): Document {
+  if (options.document) return options.document;
+  if (typeof document === "undefined") {
+    throw new Error("jQuery Star needs an ambient Document.");
+  }
+  return document;
+}
+
+export function runtimeInstallationFor($: JQueryStatic): RuntimeInstallation | undefined {
+  return runtimeInstallations.get($);
+}
+
+export function installStarRuntime(
+  $: JQueryStatic,
+  options: StarRuntimeInstallOptions,
+): StarInstalledJQuery {
+  const existing = runtimeInstallations.get($);
+  if (existing) {
+    if (options.document && options.document !== existing.document) {
+      throw new Error("jQStar is already installed for a different Document.");
+    }
+    if (options.expressionEngine && options.expressionEngine !== existing.expressionEngine) {
+      throw new Error(
+        "jQStar is already installed. Select an expression engine during initial installation.",
+      );
+    }
+    return existing.installed;
+  }
+  const owner = installationDocument(options);
+  const existingStarMethod = ($.fn as unknown as { star?: unknown }).star;
+  if ((Object.prototype.hasOwnProperty.call($, "star") && $.star) || existingStarMethod) {
+    throw new Error("This jQuery instance already has a jQStar installation from another runtime.");
+  }
+  const ownsExpressionEngine = options.expressionEngine === undefined;
+  const expressionEngine = options.expressionEngine ?? options.createExpressionEngine();
+  let kernel: Kernel;
+  try {
+    kernel = new Kernel($, owner, expressionEngine);
+  } catch (error) {
+    if (ownsExpressionEngine) expressionEngine.dispose();
+    throw error;
+  }
+
+  const star: StarCoreStatic = {
+    version: STAR_VERSION,
+    dispose() {
+      try {
+        return kernel.dispose();
+      } finally {
+        finalizeDisposal();
+      }
+    },
+    use: ((plugin: StarPlugin | readonly StarPlugin[]) => {
+      if (Array.isArray(plugin)) {
+        const facades = kernel.plugins.useMany(plugin);
+        const uiIndex = plugin.findIndex(({ name }) => name === "ui");
+        if (uiIndex >= 0 && !("ui" in star)) {
+          Object.defineProperty(star, "ui", {
+            configurable: false,
+            enumerable: true,
+            value: facades[uiIndex],
+            writable: false,
+          });
+        }
+        return facades;
+      }
+      const official = plugin as StarPlugin;
+      const facade = kernel.plugins.use(official);
+      if (official.name === "ui" && !("ui" in star)) {
+        Object.defineProperty(star, "ui", {
+          configurable: false,
+          enumerable: true,
+          value: facade,
+          writable: false,
+        });
+      }
+      return facade;
+    }) as StarCoreStatic["use"],
     action(name, action) {
-      registerAction(name, action as unknown as StarAction);
+      kernel.registerAction(name, action as unknown as StarAction);
       return star;
     },
-    boot(root = document.documentElement) {
+    boot(root = owner.documentElement) {
+      kernel.assertActive("boot applications");
       if (typeof root === "string") return $(root).star();
       return $(root).star();
     },
-    clearExpressionCache,
+    clearExpressionCache: () => {
+      kernel.assertActive("clear expression caches");
+      kernel.expressions.clearCache();
+    },
+    observeOperations: (observer, subscriptionOptions) =>
+      kernel.observeOperations(observer, subscriptionOptions),
     get(url, options) {
       return createBackendAction("GET", url, options);
     },
@@ -519,16 +724,21 @@ export function installStar($: JQueryStatic): StarStatic {
       return createBackendAction("DELETE", url, options);
     },
     nextUpdate,
+    whenEnhanced: () => kernel.whenEnhanced(),
   };
 
-  $.star = star;
-  registerAction("get", dynamicBackendAction("GET"));
-  registerAction("post", dynamicBackendAction("POST"));
-  registerAction("put", dynamicBackendAction("PUT"));
-  registerAction("patch", dynamicBackendAction("PATCH"));
-  registerAction("delete", dynamicBackendAction("DELETE"));
+  const mutable = $ as unknown as {
+    star: StarCoreStatic;
+    fn: JQueryStatic["fn"] & { star?: StarJQueryMethod };
+  };
+  mutable.star = star;
+  kernel.registerAction("get", dynamicBackendAction("GET"));
+  kernel.registerAction("post", dynamicBackendAction("POST"));
+  kernel.registerAction("put", dynamicBackendAction("PUT"));
+  kernel.registerAction("patch", dynamicBackendAction("PATCH"));
+  kernel.registerAction("delete", dynamicBackendAction("DELETE"));
 
-  $.fn.star = function <State extends StateRecord, Computed extends ComputedRecord>(
+  const starMethod = function <State extends StateRecord, Computed extends ComputedRecord>(
     this: JQuery,
     input?: StarDefinition<State, Computed> | "destroy" | "refresh" | "instance" | "state",
   ): JQuery | StarInstance<State, Computed> | State | undefined {
@@ -552,6 +762,7 @@ export function installStar($: JQueryStatic): StarStatic {
     }
 
     this.each((_index: number, element: HTMLElement) => {
+      kernel.assertActive("boot applications");
       const existing = $.data(element, INSTANCE_KEY) as StarInstance | undefined;
       if (existing && !existing.destroyed) {
         throw new Error(
@@ -559,14 +770,47 @@ export function installStar($: JQueryStatic): StarStatic {
         );
       }
 
-      const instance =
-        input === undefined
-          ? new DeclarativeApplication($, element)
-          : new Application($, element, input);
-      $.data(element, INSTANCE_KEY, instance);
+      let instance: (StarInstance<State, Computed> & ApplicationLifecycle) | undefined;
+      try {
+        instance =
+          input === undefined
+            ? (new DeclarativeApplication(
+                $,
+                element,
+                kernel.applicationCapabilities,
+              ) as StarInstance<State, Computed> & ApplicationLifecycle)
+            : new Application($, element, input, kernel.applicationCapabilities);
+        kernel.trackApplication(instance, instance);
+        $.data(element, INSTANCE_KEY, instance);
+      } catch (error) {
+        const errors = [error];
+        if (instance && !instance.destroyed) attempt(errors, () => instance!.destroy());
+        attempt(errors, () => $.removeData(element, INSTANCE_KEY));
+        throwCollectedErrors(errors, "jQuery Star application commit failed.");
+      }
     });
     return this;
-  } as JQuery["star"];
+  } as StarJQueryMethod;
+  mutable.fn.star = starMethod;
 
-  return star;
+  const installed = $ as StarInstalledJQuery;
+  runtimeInstallations.set($, {
+    document: owner,
+    expressionEngine,
+    installed,
+    kernel,
+  });
+  function finalizeDisposal(): void {
+    if (!kernel.disposalSettled) return;
+    if (runtimeInstallations.get($)?.kernel === kernel) runtimeInstallations.delete($);
+    if (mutable.star === star) delete (mutable as { star?: StarCoreStatic }).star;
+    if (mutable.fn.star === starMethod) {
+      delete (mutable.fn as unknown as { star?: StarJQueryMethod }).star;
+    }
+  }
+  return installed;
+}
+
+export function runtimeExpressionEngineFor($: JQueryStatic): StarExpressionEngine | undefined {
+  return runtimeInstallations.get($)?.expressionEngine;
 }

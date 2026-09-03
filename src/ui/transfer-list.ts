@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTransferListStatic, TransferListTarget } from "../types";
 
 type TransferListReason = "add" | "remove" | "reorder" | "set";
@@ -463,7 +463,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createTransferLists(): TransferListCollection {
+export function createTransferLists(registerAction: ActionRegistrar): TransferListCollection {
   const record = (target: TransferListTarget): TransferListRecord => {
     const root = resolve(target);
     return records.get(root) ?? enhanceTransferList(root);
@@ -501,17 +501,33 @@ export function createTransferLists(): TransferListCollection {
     const target = actionTarget(context);
     return callback(target.root, actionValues(context, target.offset));
   };
-  registerAction("ui.transfer-list.add", (context) => action(context, api.add));
-  registerAction("ui.transfer-list.add-all", (context) => api.addAll(actionTarget(context).root));
-  registerAction("ui.transfer-list.remove", (context) => action(context, api.remove));
-  registerAction("ui.transfer-list.remove-all", (context) =>
-    api.removeAll(actionTarget(context).root),
-  );
-  registerAction("ui.transfer-list.set", (context) => {
-    const target = actionTarget(context);
-    return api.set(target.root, actionValues(context, target.offset) ?? []);
-  });
-  registerAction("ui.transfer-list.up", (context) => action(context, api.up));
-  registerAction("ui.transfer-list.down", (context) => action(context, api.down));
-  return { api, enhance: enhanceAll };
+  const registerActions = (): void => {
+    registerAction("ui.transfer-list.add", (context) =>
+      action(context, (root, values) => api.add(root, values)),
+    );
+    registerAction("ui.transfer-list.add-all", (context) => api.addAll(actionTarget(context).root));
+    registerAction("ui.transfer-list.remove", (context) =>
+      action(context, (root, values) => api.remove(root, values)),
+    );
+    registerAction("ui.transfer-list.remove-all", (context) =>
+      api.removeAll(actionTarget(context).root),
+    );
+    registerAction("ui.transfer-list.set", (context) => {
+      const target = actionTarget(context);
+      return api.set(target.root, actionValues(context, target.offset) ?? []);
+    });
+    registerAction("ui.transfer-list.up", (context) =>
+      action(context, (root, values) => api.up(root, values)),
+    );
+    registerAction("ui.transfer-list.down", (context) =>
+      action(context, (root, values) => api.down(root, values)),
+    );
+  };
+  registerActions();
+  return {
+    api,
+    enhance(root) {
+      enhanceAll(root);
+    },
+  };
 }

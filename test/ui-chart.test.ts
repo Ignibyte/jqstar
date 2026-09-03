@@ -56,6 +56,10 @@ describe("jQuery Star Chart", () => {
     expect(table().caption?.textContent).toBe("Monthly visitors by device");
     expect(plot().getAttribute("viewBox")).toBe("0 0 640 300");
     expect(plot().getAttribute("aria-hidden")).toBe("true");
+    expect(plot().querySelectorAll('[data-part="grid-line"]')).toHaveLength(5);
+    expect(plot().querySelectorAll('[data-part="grid"] > [data-part="axis-label"]')).toHaveLength(
+      5,
+    );
     expect(plot().querySelectorAll('[data-part="bar"]')).toHaveLength(6);
     expect(plot().querySelector('[data-part="bar"] title')?.textContent).toBe("Jan, Desktop: 186");
     expect(root().querySelector('[data-part="legend"]')?.textContent).toBe("DesktopMobile");

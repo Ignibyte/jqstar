@@ -1,7 +1,11 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { ComboboxTarget, StarComboboxStatic, StarContext } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
@@ -41,7 +45,6 @@ interface ComboboxCollection {
 const records = new WeakMap<HTMLElement, ComboboxRecord>();
 const activeRecords = new Set<ComboboxRecord>();
 let comboboxId = 0;
-let globalListenersInstalled = false;
 
 function comboboxRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="combobox"]') ? value : undefined;
@@ -599,42 +602,42 @@ function enhanceCombobox(root: HTMLElement): ComboboxRecord {
   }
   wire(record);
   if (notifyExternalValue) dispatchValue(record);
-  installGlobalListeners();
   return record;
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener(
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeCombobox(record.root, false);
       }
     },
     true,
   );
-  document.addEventListener(
+  host.listen(
+    document,
     "focusin",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.contains(event.target)) closeCombobox(record.root, false);
       }
     },
     true,
   );
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) positionCombobox(record);
       else activeRecords.delete(record);
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own("service", "ui:combobox:active-records", documentRecordCleanup(activeRecords, document));
 }
 
 function enhanceTree(root: ParentNode): void {
@@ -665,7 +668,7 @@ function controlledCombobox(context: StarContext, target?: unknown): HTMLElement
   throw new Error('Combobox action needs a selector or an element inside data-jqs="combobox".');
 }
 
-function registerActions(api: StarComboboxStatic): void {
+function registerActions(api: StarComboboxStatic, registerAction: ActionRegistrar): void {
   for (const operation of ["open", "close", "toggle", "clear"] as const) {
     registerAction(`ui.combobox.${operation}`, (context) => {
       const root = controlledCombobox(context, context.args?.[0]);
@@ -684,7 +687,11 @@ function registerActions(api: StarComboboxStatic): void {
   });
 }
 
-export function createComboboxes(): ComboboxCollection {
+export function createComboboxes(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): ComboboxCollection {
+  installGlobalListeners(host);
   const api: StarComboboxStatic = {
     select: (target, value) => {
       const root = resolveRoot(target);
@@ -711,6 +718,6 @@ export function createComboboxes(): ComboboxCollection {
       return (records.get(root) ?? enhanceCombobox(root)).control.value;
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

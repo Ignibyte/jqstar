@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent support · jQStar</title>
+    <meta
+      name="description"
+      content="Use one source-backed corpus through visible HTML, static files, or optional read-only WebMCP tools."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Agent support · jQStar" />
+    <meta
+      property="og:description"
+      content="Use one source-backed corpus through visible HTML, static files, or optional read-only WebMCP tools."
+    />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Agent support</h1>
+      <p class="docs-lede">
+        Use one source-backed corpus through visible HTML, static files, or optional read-only
+        WebMCP tools.
+      </p>
+
+      <div class="docs-callout">
+        <p>
+          <strong>Agent-first parity:</strong> agents can retrieve the same reviewed framework
+          facts, component contracts, and examples that the public site gives people. Every
+          structured result includes a canonical public citation.
+        </p>
+      </div>
+
+      <h2>Supported surfaces</h2>
+      <ul>
+        <li>
+          <a href="%BASE_URL%docs/agents/">Agent guide</a>: Human-readable agent support,
+          provenance, tools, limits, and reporting guidance.
+        </li>
+        <li>
+          <a href="%BASE_URL%llms.txt">LLM index</a>: A short map of the approved jQStar corpus and
+          canonical public pages.
+        </li>
+        <li>
+          <a href="%BASE_URL%llms-full.txt">Bounded full-text corpus</a>: Reviewed guide text,
+          component contracts, examples, and framework invariants.
+        </li>
+        <li>
+          <a href="%BASE_URL%jqstar-agent-index.json">Machine-readable agent index</a>: The
+          versioned corpus used by the website search and WebMCP tools.
+        </li>
+      </ul>
+
+      <h2>Read-only WebMCP tools</h2>
+      <p>
+        When an origin-keyed secure browser exposes the 2026-08-26 Community Group draft through
+        <code>document.modelContext</code>, every public route registers these optional tools:
+      </p>
+      <div class="api-table-wrap" role="region" aria-label="WebMCP tools" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>get_jqstar_page</code></td>
+              <td>Inspect the current approved public route.</td>
+            </tr>
+            <tr>
+              <td><code>search_jqstar_docs</code></td>
+              <td>Search the bounded local corpus.</td>
+            </tr>
+            <tr>
+              <td><code>read_jqstar_guide</code></td>
+              <td>Read one guide by stable ID.</td>
+            </tr>
+            <tr>
+              <td><code>get_jqstar_component</code></td>
+              <td>Retrieve one registry contract by name.</td>
+            </tr>
+            <tr>
+              <td><code>get_jqstar_example</code></td>
+              <td>Retrieve one verified source example by stable ID.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Each tool has a bounded JSON Schema, returns reviewed local content, honors cancellation,
+        and is annotated read-only. Tool output is data, not instructions. No tool accepts a URL,
+        file path, DOM selector, or code string.
+      </p>
+
+      <h2>Version and provenance</h2>
+      <p>
+        This page and every agent artifact are generated from corpus version 3 for
+        <code>jquery-star@0.1.0</code>. The reviewed manifest joins package metadata, registry
+        metadata, and the public HTML sources. Deterministic drift checks reject conflicting names,
+        versions, attributes, component anatomy, routes, and examples.
+      </p>
+
+      <h2>Limits</h2>
+      <ul>
+        <li>
+          WebMCP is an optional Community Group draft and is not a W3C Standard or a cross-browser
+          baseline.
+        </li>
+        <li>
+          The site does not provide a remote MCP server, chatbot, hosted model, embeddings endpoint,
+          or generated-answer API.
+        </li>
+        <li>
+          Tools are anonymous and read-only. They do not write files, install packages, submit
+          forms, run code, call arbitrary URLs, or read credentials and user-specific state.
+        </li>
+        <li>
+          The corpus covers reviewed, shipped public behavior. Roadmap plans and private deployment
+          data are excluded.
+        </li>
+        <li>
+          Headless agents should use llms.txt, llms-full.txt, or jqstar-agent-index.json because
+          WebMCP requires a browsing context.
+        </li>
+      </ul>
+
+      <h2>Report a contract problem</h2>
+      <p>
+        Report stale, missing, unsafe, or ambiguous agent content in the
+        <a href="https://github.com/Ignibyte/jqstar/issues/new">jQStar issue tracker</a>. Include
+        the stable record or tool ID, the public URL, the expected contract, and the observed
+        result. Do not include credentials or private application data.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

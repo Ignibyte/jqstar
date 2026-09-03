@@ -1,0 +1,791 @@
+{
+  "$schema": "../schema/external-bridge-contract.schema.json",
+  "schema": "jqstar-external-bridge-contract/1",
+  "ownerTicket": "0016",
+  "contractVersion": 1,
+  "publicBoundary": {
+    "allowedImports": ["jquery-star/core", "jquery-star/testing"],
+    "forbiddenImports": [
+      "src/*",
+      "kernelForDocument",
+      "application collections",
+      "patch coordinator",
+      "MutationObserver lifecycle inference"
+    ],
+    "renderAdapterSha256": "780f853e2728ec9a2e08a9aa0e08be44396f6fceb919c3639784498b916e0b53"
+  },
+  "stateMachine": {
+    "phases": ["idle", "prepared", "removing", "externally-mutated", "enhancing", "committed"],
+    "terminal": ["canceled", "failed"],
+    "requiredOrder": [
+      "intent",
+      "begin",
+      "beforeRemove",
+      "hostMutation",
+      "commit",
+      "whenEnhanced",
+      "hostComplete"
+    ],
+    "preMutationCancellation": "no-render-transaction"
+  },
+  "overlapPolicy": {
+    "disjoint": "parallel-distinct-operation-ids",
+    "same": "reject-before-begin",
+    "ancestor": "reject-before-begin",
+    "descendant": "reject-before-begin",
+    "nestedCleanup": "deduplicate-deepest-first"
+  },
+  "observation": {
+    "schema": "jqstar-external-render-observation/1",
+    "allowedFields": [
+      "sequence",
+      "bridgeOperationId",
+      "renderOperationId",
+      "host",
+      "version",
+      "flowId",
+      "boundaryCategory",
+      "phase",
+      "outcome",
+      "removalCount"
+    ],
+    "redactedFields": [
+      "url",
+      "query",
+      "formValues",
+      "headers",
+      "requestBody",
+      "responseBody",
+      "html",
+      "error",
+      "dom",
+      "state",
+      "signals",
+      "historyValue"
+    ],
+    "terminalOutcomes": [
+      "completed",
+      "canceled-before-mutation",
+      "failed-before-mutation",
+      "failed-after-removal",
+      "failed-after-mutation"
+    ]
+  },
+  "libraries": {
+    "turbo": {
+      "package": "@hotwired/turbo",
+      "stableChannel": "8.0.x",
+      "approvedRange": ">=8.0.21 <8.1.0",
+      "browserProjects": ["desktop-chromium", "desktop-firefox", "desktop-webkit"],
+      "fixtureTest": "e2e/interoperability-baseline.spec.ts",
+      "versionDetection": {
+        "source": "explicit caller-supplied package version because Turbo exports no documented runtime version field",
+        "required": true
+      },
+      "unsupportedVersionPolicy": {
+        "missing": "reject-before-listeners",
+        "unknown": "reject-before-listeners",
+        "prerelease": "reject-before-listeners",
+        "outOfRange": "reject-before-listeners"
+      },
+      "dependencyPolicy": "development-fixture-alias-and-optional-peer-only",
+      "boundaries": [
+        {
+          "role": "oldest",
+          "version": "8.0.21",
+          "alias": "turbo-8-0-21",
+          "tarball": "https://registry.npmjs.org/@hotwired/turbo/-/turbo-8.0.21.tgz",
+          "integrity": "sha512-fJTv3JnzFHeDxBb23esZSOhT4r142xf5o3lKMFMvzPC6AllkqbBKk5Yb31UZhtIsKQCwmO/pUQrtTUlYl5CHAQ==",
+          "sha1": "a3e80c01d70048200f64bbe3582b84f9bfac034e"
+        },
+        {
+          "role": "newest",
+          "version": "8.0.23",
+          "alias": "turbo-8-0-23",
+          "tarball": "https://registry.npmjs.org/@hotwired/turbo/-/turbo-8.0.23.tgz",
+          "integrity": "sha512-GZ7cijxEZ6Ig71u7rD6LHaRv/wcE/hNsc+nEfiWOkLNqUgLOwo5MNGWOy5ZV9ZUDSiQx1no7YxjTNnT4O6//cQ==",
+          "sha1": "a6eebc9ab4a5faadae265a4cbec8cfcb5731e77c"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "turbo.security",
+          "url": "https://github.com/advisories/GHSA-qppm-g56g-fpvp",
+          "contract": "Turbo versions through 8.0.20 are affected; 8.0.21 is the first patched release."
+        },
+        {
+          "id": "turbo.events",
+          "url": "https://turbo.hotwired.dev/reference/events",
+          "contract": "Public Drive and Frame intent, render, completion, cache, request, and error events."
+        },
+        {
+          "id": "turbo.drive",
+          "url": "https://turbo.hotwired.dev/handbook/drive",
+          "contract": "Pausable document rendering, visits, forms, caching, and host-owned navigation behavior."
+        },
+        {
+          "id": "turbo.frames",
+          "url": "https://turbo.hotwired.dev/handbook/frames",
+          "contract": "Pausable Frame rendering and frame-scoped navigation behavior."
+        },
+        {
+          "id": "turbo.attributes",
+          "url": "https://turbo.hotwired.dev/reference/attributes",
+          "contract": "data-turbo-permanent requires a unique id and remains a Turbo-owned concept."
+        }
+      ],
+      "preservation": {
+        "marker": "data-turbo-permanent",
+        "key": "unique-id-with-incoming-match",
+        "checks": [
+          "old-connected",
+          "old-inside-boundary",
+          "old-marker",
+          "unique-old-id",
+          "unique-incoming-id",
+          "same-document",
+          "retained-after-mutation"
+        ],
+        "mismatch": "destroy-and-record-diagnostic"
+      },
+      "mappings": [
+        {
+          "id": "turbo.document.visit",
+          "flow": "Drive advance, replace, or redirect visit",
+          "mutation": true,
+          "intentEvents": ["turbo:before-visit", "turbo:visit"],
+          "mutationEvent": "turbo:before-render detail.render wrapper",
+          "removalBoundary": "currentBody child removal boundaries",
+          "postMutationEvent": "turbo:render",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "turbo:load",
+          "cancelEvents": ["canceled turbo:before-visit", "canceled turbo:before-render"],
+          "errorEvents": ["turbo:fetch-request-error", "turbo:reload"],
+          "requiredOrder": [
+            "before-render",
+            "beforeRemove",
+            "detail.render",
+            "commit",
+            "render",
+            "load"
+          ]
+        },
+        {
+          "id": "turbo.form.visit",
+          "flow": "GET or non-GET form submission followed by a Drive visit",
+          "mutation": true,
+          "intentEvents": ["turbo:submit-start", "turbo:submit-end", "turbo:before-visit"],
+          "mutationEvent": "turbo:before-render detail.render wrapper for the follow-up visit",
+          "removalBoundary": "currentBody child removal boundaries",
+          "postMutationEvent": "turbo:render",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "turbo:load",
+          "cancelEvents": ["canceled turbo:submit-start", "canceled turbo:before-render"],
+          "errorEvents": ["turbo:fetch-request-error", "turbo:submit-end success=false"],
+          "requiredOrder": [
+            "submit-start",
+            "submit-end and before-visit in browser-dependent relative order",
+            "both submit-end and before-visit precede before-render",
+            "before-render",
+            "beforeRemove",
+            "detail.render",
+            "commit",
+            "render",
+            "load"
+          ]
+        },
+        {
+          "id": "turbo.document.restore",
+          "flow": "Drive history restoration including cached preview and fresh render",
+          "mutation": true,
+          "intentEvents": ["turbo:visit action=restore", "turbo:before-cache"],
+          "mutationEvent": "each turbo:before-render detail.render wrapper",
+          "removalBoundary": "currentBody child removal boundaries",
+          "postMutationEvent": "each turbo:render",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "turbo:load",
+          "cancelEvents": [],
+          "errorEvents": ["turbo:reload"],
+          "requiredOrder": ["visit", "before-render", "render", "load"]
+        },
+        {
+          "id": "turbo.frame.replace",
+          "flow": "Turbo Frame replacement",
+          "mutation": true,
+          "intentEvents": ["turbo:before-fetch-request"],
+          "mutationEvent": "turbo:before-frame-render detail.render wrapper",
+          "removalBoundary": "currentFrame child removal boundaries",
+          "postMutationEvent": "turbo:frame-render",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "turbo:frame-load",
+          "cancelEvents": ["canceled turbo:before-frame-render"],
+          "errorEvents": ["turbo:frame-missing", "turbo:fetch-request-error"],
+          "requiredOrder": [
+            "before-frame-render",
+            "beforeRemove",
+            "detail.render",
+            "commit",
+            "frame-render",
+            "frame-load"
+          ]
+        },
+        {
+          "id": "turbo.cache.snapshot",
+          "flow": "Drive cache snapshot",
+          "mutation": false,
+          "intentEvents": ["turbo:before-cache"],
+          "mutationEvent": null,
+          "removalBoundary": null,
+          "postMutationEvent": null,
+          "barrier": "none",
+          "terminalEvent": "turbo:before-cache",
+          "cancelEvents": [],
+          "errorEvents": [],
+          "requiredOrder": ["before-cache"]
+        },
+        {
+          "id": "turbo.document.no-render",
+          "flow": "204, empty, or native reload response without Turbo render",
+          "mutation": false,
+          "intentEvents": ["turbo:before-fetch-request", "turbo:before-fetch-response"],
+          "mutationEvent": null,
+          "removalBoundary": null,
+          "postMutationEvent": null,
+          "barrier": "none",
+          "terminalEvent": "turbo:submit-end or native completion",
+          "cancelEvents": [],
+          "errorEvents": [],
+          "requiredOrder": ["before-fetch-request", "before-fetch-response"]
+        },
+        {
+          "id": "turbo.document.canceled",
+          "flow": "Canceled Drive visit before mutation",
+          "mutation": false,
+          "intentEvents": ["turbo:before-visit"],
+          "mutationEvent": null,
+          "removalBoundary": null,
+          "postMutationEvent": null,
+          "barrier": "none",
+          "terminalEvent": "canceled turbo:before-visit",
+          "cancelEvents": ["canceled turbo:before-visit"],
+          "errorEvents": [],
+          "requiredOrder": ["before-visit", "canceled"]
+        },
+        {
+          "id": "turbo.document.error",
+          "flow": "Drive or Frame request/render failure before mutation",
+          "mutation": false,
+          "intentEvents": ["turbo:before-fetch-request"],
+          "mutationEvent": null,
+          "removalBoundary": null,
+          "postMutationEvent": null,
+          "barrier": "none",
+          "terminalEvent": "turbo:fetch-request-error or turbo:frame-missing",
+          "cancelEvents": [],
+          "errorEvents": ["turbo:fetch-request-error", "turbo:frame-missing", "turbo:reload"],
+          "requiredOrder": ["before-fetch-request", "error"]
+        }
+      ],
+      "traceCases": [
+        {
+          "id": "turbo.trace.document-visit",
+          "mappingId": "turbo.document.visit",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": [
+            "turbo:before-visit",
+            "turbo:before-render",
+            "turbo:render",
+            "turbo:load"
+          ],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "turbo.trace.forms",
+          "mappingId": "turbo.form.visit",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": [
+            "turbo:submit-start",
+            "turbo:submit-end",
+            "turbo:before-visit",
+            "turbo:before-render",
+            "turbo:render",
+            "turbo:load"
+          ],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "turbo.trace.frame-replace",
+          "mappingId": "turbo.frame.replace",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": ["turbo:before-frame-render", "turbo:frame-render", "turbo:frame-load"],
+          "forbiddenEvents": ["turbo:before-render"]
+        },
+        {
+          "id": "turbo.trace.canceled",
+          "mappingId": "turbo.document.canceled",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": ["turbo:before-visit"],
+          "forbiddenEvents": ["turbo:before-render", "turbo:render"]
+        },
+        {
+          "id": "turbo.trace.no-render",
+          "mappingId": "turbo.document.no-render",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": ["turbo:before-fetch-request", "turbo:before-fetch-response"],
+          "forbiddenEvents": ["turbo:before-render", "turbo:render"]
+        },
+        {
+          "id": "turbo.trace.frame-error",
+          "mappingId": "turbo.document.error",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": ["turbo:before-fetch-request", "turbo:frame-missing"],
+          "forbiddenEvents": ["turbo:before-frame-render", "turbo:frame-render"]
+        },
+        {
+          "id": "turbo.trace.cache",
+          "mappingId": "turbo.cache.snapshot",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": ["turbo:before-cache"],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "turbo.trace.restore",
+          "mappingId": "turbo.document.restore",
+          "versions": ["8.0.21", "8.0.23"],
+          "requiredEvents": ["turbo:visit", "turbo:before-render", "turbo:render", "turbo:load"],
+          "forbiddenEvents": []
+        }
+      ],
+      "unsupportedFlows": [
+        "Turbo Streams",
+        "custom renderers",
+        "morph refresh",
+        "cross-document Frames",
+        "third-party lifecycle extensions"
+      ]
+    },
+    "htmx": {
+      "package": "htmx.org",
+      "stableChannel": "2.0.x",
+      "approvedRange": ">=2.0.0 <2.1.0",
+      "browserProjects": ["desktop-chromium", "desktop-firefox", "desktop-webkit"],
+      "fixtureTest": "e2e/interoperability-baseline.spec.ts",
+      "versionDetection": {
+        "source": "documented read-only htmx.version plus explicit capability injection",
+        "required": true
+      },
+      "unsupportedVersionPolicy": {
+        "missing": "reject-before-listeners",
+        "unknown": "reject-before-listeners",
+        "prerelease": "reject-before-listeners",
+        "outOfRange": "reject-before-listeners"
+      },
+      "dependencyPolicy": "development-fixture-alias-and-optional-peer-only",
+      "boundaries": [
+        {
+          "role": "oldest",
+          "version": "2.0.0",
+          "alias": "htmx-2-0-0",
+          "tarball": "https://registry.npmjs.org/htmx.org/-/htmx.org-2.0.0.tgz",
+          "integrity": "sha512-N0r1VjrqeCpig0mTi2/sooDZBeQlp1RBohnWQ/ufqc7ICaI0yjs04fNGhawm6+/HWhJFlcXn8MqOjWI9QGG2lQ==",
+          "sha1": "709dc3de877d93da5df1ab28d22c5b8d29a907f1"
+        },
+        {
+          "role": "newest",
+          "version": "2.0.10",
+          "alias": "htmx-2-0-10",
+          "tarball": "https://registry.npmjs.org/htmx.org/-/htmx.org-2.0.10.tgz",
+          "integrity": "sha512-kdeJe7ZVwaS6QMz/ebBIVtZdpwen6L0OQ5GOhPV9MKBb196TCZeZu4yA7ZIQsaLKv7EpXz+So7KSXNuHXhj7Cw==",
+          "sha1": "62442b0e2952a885ae2e50a7654b8b20d0981134"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "htmx.events",
+          "url": "https://htmx.org/events/",
+          "contract": "Public request, swap, cleanup, settle, history, cancellation, and error events."
+        },
+        {
+          "id": "htmx.swap",
+          "url": "https://htmx.org/attributes/hx-swap/",
+          "contract": "Built-in inner, outer, adjacent, append, prepend, delete, and no-swap modes."
+        },
+        {
+          "id": "htmx.preserve",
+          "url": "https://htmx.org/attributes/hx-preserve/",
+          "contract": "hx-preserve matches by id and can relocate preserved nodes during a swap."
+        },
+        {
+          "id": "htmx.reference",
+          "url": "https://htmx.org/reference/",
+          "contract": "Core attributes, headers, public API, configuration, and supported event reference."
+        }
+      ],
+      "preservation": {
+        "marker": "hx-preserve",
+        "key": "unique-id-with-incoming-match",
+        "checks": [
+          "old-connected",
+          "old-inside-boundary",
+          "old-marker",
+          "unique-old-id",
+          "unique-incoming-id",
+          "same-document",
+          "retained-after-mutation"
+        ],
+        "mismatch": "destroy-and-record-diagnostic"
+      },
+      "mappings": [
+        {
+          "id": "htmx.swap.inner",
+          "flow": "innerHTML region swap",
+          "mutation": true,
+          "intentEvents": ["htmx:beforeRequest", "htmx:beforeSwap"],
+          "mutationEvent": "first htmx:beforeCleanupElement for the approved target",
+          "removalBoundary": "target child removal boundaries",
+          "postMutationEvent": "htmx:afterSwap",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:afterSettle",
+          "cancelEvents": ["canceled htmx:beforeRequest", "canceled htmx:beforeSwap"],
+          "errorEvents": ["htmx:responseError", "htmx:sendError", "htmx:swapError", "htmx:timeout"],
+          "requiredOrder": [
+            "beforeSwap",
+            "beforeCleanupElement",
+            "host swap",
+            "afterSwap",
+            "commit",
+            "afterSettle"
+          ]
+        },
+        {
+          "id": "htmx.swap.outer",
+          "flow": "outerHTML target replacement",
+          "mutation": true,
+          "intentEvents": ["htmx:beforeRequest", "htmx:beforeSwap"],
+          "mutationEvent": "htmx:beforeCleanupElement for the target",
+          "removalBoundary": "target",
+          "postMutationEvent": "htmx:afterSwap",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:afterSettle",
+          "cancelEvents": ["canceled htmx:beforeSwap"],
+          "errorEvents": ["htmx:swapError"],
+          "requiredOrder": [
+            "beforeSwap",
+            "beforeCleanupElement",
+            "host swap",
+            "afterSwap",
+            "commit",
+            "afterSettle"
+          ]
+        },
+        {
+          "id": "htmx.swap.delete",
+          "flow": "delete target swap",
+          "mutation": true,
+          "intentEvents": ["htmx:beforeRequest", "htmx:beforeSwap"],
+          "mutationEvent": "htmx:beforeCleanupElement for the target",
+          "removalBoundary": "target",
+          "postMutationEvent": "htmx:afterRequest because delete emits no afterSwap or afterSettle",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:afterRequest",
+          "cancelEvents": ["canceled htmx:beforeSwap"],
+          "errorEvents": ["htmx:swapError"],
+          "requiredOrder": [
+            "beforeSwap",
+            "beforeCleanupElement",
+            "host delete",
+            "commit",
+            "afterRequest"
+          ]
+        },
+        {
+          "id": "htmx.swap.adjacent",
+          "flow": "beforebegin, afterbegin, beforeend, or afterend insertion",
+          "mutation": true,
+          "intentEvents": ["htmx:beforeRequest", "htmx:beforeSwap"],
+          "mutationEvent": "htmx:beforeSwap after shouldSwap is true",
+          "removalBoundary": "none for insertion-only swap",
+          "postMutationEvent": "htmx:afterSwap",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:afterSettle",
+          "cancelEvents": ["canceled htmx:beforeSwap"],
+          "errorEvents": ["htmx:swapError"],
+          "requiredOrder": ["beforeSwap", "host insertion", "afterSwap", "commit", "afterSettle"]
+        },
+        {
+          "id": "htmx.swap.oob",
+          "flow": "one or more out-of-band boundaries",
+          "mutation": true,
+          "intentEvents": ["htmx:oobBeforeSwap"],
+          "mutationEvent": "htmx:oobBeforeSwap after shouldSwap is true",
+          "removalBoundary": "each disjoint OOB target under its own transaction",
+          "postMutationEvent": "htmx:oobAfterSwap",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:afterSettle",
+          "cancelEvents": ["canceled htmx:oobBeforeSwap"],
+          "errorEvents": ["htmx:oobErrorNoTarget", "htmx:swapError"],
+          "requiredOrder": [
+            "oobBeforeSwap",
+            "beforeRemove",
+            "host swap",
+            "oobAfterSwap",
+            "commit",
+            "afterSettle"
+          ]
+        },
+        {
+          "id": "htmx.document.boost",
+          "flow": "boosted document body swap with optional history update",
+          "mutation": true,
+          "intentEvents": ["htmx:beforeRequest boosted=true", "htmx:beforeSwap boosted=true"],
+          "mutationEvent": "first htmx:beforeCleanupElement inside body",
+          "removalBoundary": "body child removal boundaries",
+          "postMutationEvent": "htmx:afterSwap",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:afterSettle",
+          "cancelEvents": ["canceled htmx:beforeRequest", "canceled htmx:beforeSwap"],
+          "errorEvents": ["htmx:responseError", "htmx:sendError", "htmx:swapError"],
+          "requiredOrder": [
+            "beforeSwap",
+            "beforeCleanupElement",
+            "host swap",
+            "afterSwap",
+            "commit",
+            "afterSettle"
+          ]
+        },
+        {
+          "id": "htmx.history.restore",
+          "flow": "history cache hit or miss restoration",
+          "mutation": true,
+          "intentEvents": ["htmx:historyCacheHit", "htmx:historyCacheMissLoad"],
+          "mutationEvent": "history restoration through the standard swap path",
+          "removalBoundary": "history element child removal boundaries",
+          "postMutationEvent": "htmx:afterSwap",
+          "barrier": "jquery-star.whenEnhanced",
+          "terminalEvent": "htmx:historyRestore",
+          "cancelEvents": ["canceled htmx:historyCacheHit"],
+          "errorEvents": ["htmx:historyCacheError", "htmx:historyCacheMissLoadError"],
+          "requiredOrder": [
+            "history source",
+            "beforeCleanupElement",
+            "afterSwap",
+            "commit",
+            "historyRestore"
+          ]
+        },
+        {
+          "id": "htmx.swap.none",
+          "flow": "shouldSwap false, hx-swap none, or 204 response",
+          "mutation": false,
+          "intentEvents": ["htmx:beforeRequest", "htmx:beforeSwap"],
+          "mutationEvent": null,
+          "removalBoundary": null,
+          "postMutationEvent": "htmx:afterSwap may fire even though hx-swap none performs no DOM mutation",
+          "barrier": "none",
+          "terminalEvent": "htmx:afterRequest",
+          "cancelEvents": ["canceled htmx:beforeSwap"],
+          "errorEvents": [],
+          "requiredOrder": ["beforeRequest", "beforeSwap", "optional afterSwap", "afterRequest"]
+        },
+        {
+          "id": "htmx.request.error",
+          "flow": "target, abort, timeout, network, response, or swap failure before mutation",
+          "mutation": false,
+          "intentEvents": ["htmx:beforeRequest"],
+          "mutationEvent": null,
+          "removalBoundary": null,
+          "postMutationEvent": null,
+          "barrier": "none",
+          "terminalEvent": "host error event",
+          "cancelEvents": ["htmx:sendAbort"],
+          "errorEvents": [
+            "htmx:targetError",
+            "htmx:responseError",
+            "htmx:sendError",
+            "htmx:swapError",
+            "htmx:timeout"
+          ],
+          "requiredOrder": [
+            "beforeRequest",
+            "responseError then afterRequest, or afterRequest then sendError",
+            "no cleanup or swap"
+          ]
+        }
+      ],
+      "traceCases": [
+        {
+          "id": "htmx.trace.inner",
+          "mappingId": "htmx.swap.inner",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": [
+            "htmx:beforeSwap",
+            "htmx:beforeCleanupElement",
+            "htmx:afterSwap",
+            "htmx:afterSettle"
+          ],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "htmx.trace.outer",
+          "mappingId": "htmx.swap.outer",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": [
+            "htmx:beforeSwap",
+            "htmx:beforeCleanupElement",
+            "htmx:afterSwap",
+            "htmx:afterSettle"
+          ],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "htmx.trace.delete",
+          "mappingId": "htmx.swap.delete",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:beforeSwap", "htmx:beforeCleanupElement", "htmx:afterRequest"],
+          "forbiddenEvents": ["htmx:afterSwap", "htmx:afterSettle"]
+        },
+        {
+          "id": "htmx.trace.adjacent",
+          "mappingId": "htmx.swap.adjacent",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:beforeSwap", "htmx:afterSwap", "htmx:afterSettle"],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "htmx.trace.oob",
+          "mappingId": "htmx.swap.oob",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": [
+            "htmx:oobBeforeSwap",
+            "htmx:oobAfterSwap",
+            "htmx:afterSwap",
+            "htmx:afterSettle"
+          ],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "htmx.trace.boost",
+          "mappingId": "htmx.document.boost",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": [
+            "htmx:beforeSwap",
+            "htmx:beforeHistorySave",
+            "htmx:beforeCleanupElement",
+            "htmx:afterSwap",
+            "htmx:afterSettle"
+          ],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "htmx.trace.history",
+          "mappingId": "htmx.history.restore",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:historyRestore"],
+          "forbiddenEvents": []
+        },
+        {
+          "id": "htmx.trace.canceled",
+          "mappingId": "htmx.swap.none",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:beforeSwap", "htmx:afterRequest"],
+          "forbiddenEvents": ["htmx:beforeCleanupElement"]
+        },
+        {
+          "id": "htmx.trace.no-content",
+          "mappingId": "htmx.swap.none",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:beforeSwap", "htmx:afterRequest"],
+          "forbiddenEvents": ["htmx:beforeCleanupElement", "htmx:afterSwap"]
+        },
+        {
+          "id": "htmx.trace.error",
+          "mappingId": "htmx.request.error",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:responseError", "htmx:afterRequest"],
+          "forbiddenEvents": ["htmx:beforeCleanupElement", "htmx:afterSwap"]
+        },
+        {
+          "id": "htmx.trace.network-error",
+          "mappingId": "htmx.request.error",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:beforeRequest", "htmx:afterRequest", "htmx:sendError"],
+          "forbiddenEvents": ["htmx:beforeCleanupElement", "htmx:afterSwap"]
+        },
+        {
+          "id": "htmx.trace.swap-error",
+          "mappingId": "htmx.request.error",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:beforeSwap", "htmx:swapError"],
+          "forbiddenEvents": ["htmx:afterSwap", "htmx:afterSettle"]
+        },
+        {
+          "id": "htmx.trace.target-error",
+          "mappingId": "htmx.request.error",
+          "versions": ["2.0.0", "2.0.10"],
+          "requiredEvents": ["htmx:targetError"],
+          "forbiddenEvents": ["htmx:beforeRequest", "htmx:beforeCleanupElement", "htmx:afterSwap"]
+        }
+      ],
+      "unsupportedFlows": [
+        "custom swap extensions",
+        "View Transition replacement",
+        "cross-document targets",
+        "shadow targets",
+        "script evaluation guarantees"
+      ]
+    }
+  },
+  "downstreamTickets": {
+    "0036": {
+      "host": "turbo",
+      "mappingIds": [
+        "turbo.document.visit",
+        "turbo.form.visit",
+        "turbo.document.restore",
+        "turbo.frame.replace",
+        "turbo.cache.snapshot",
+        "turbo.document.no-render",
+        "turbo.document.canceled",
+        "turbo.document.error"
+      ],
+      "requiredAcceptance": [
+        "side-effect-free explicit factory",
+        "version rejection before listeners",
+        "render callback wrapping",
+        "exact permanent identity",
+        "overlap rejection",
+        "redacted observations",
+        "idempotent disposal",
+        "oldest/newest three-browser matrix",
+        "exact package graph and sizes"
+      ]
+    },
+    "0037": {
+      "host": "htmx",
+      "mappingIds": [
+        "htmx.swap.inner",
+        "htmx.swap.outer",
+        "htmx.swap.delete",
+        "htmx.swap.adjacent",
+        "htmx.swap.oob",
+        "htmx.document.boost",
+        "htmx.history.restore",
+        "htmx.swap.none",
+        "htmx.request.error"
+      ],
+      "requiredAcceptance": [
+        "side-effect-free explicit factory",
+        "version rejection before listeners",
+        "cleanup correlation and deduplication",
+        "main and OOB boundary separation",
+        "exact preserved identity",
+        "overlap rejection",
+        "redacted observations",
+        "idempotent disposal",
+        "oldest/newest three-browser matrix",
+        "exact package graph and sizes"
+      ]
+    }
+  }
+}

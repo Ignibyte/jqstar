@@ -1,9 +1,16 @@
 type Key = string | symbol;
 
+export interface EffectOptions {
+  owner?: string;
+  onError?: (error: unknown, effect: ReactiveEffect) => void;
+}
+
 export interface ReactiveEffect {
   (): void;
   active: boolean;
   dependencies: Set<ReactiveEffect>[];
+  owner: string | undefined;
+  onError: EffectOptions["onError"];
 }
 
 const dependencies = new WeakMap<object, Map<Key, Set<ReactiveEffect>>>();
@@ -13,6 +20,7 @@ const rawValues = new WeakMap<object, object>();
 let currentEffect: ReactiveEffect | undefined;
 
 const pendingEffects = new Set<ReactiveEffect>();
+const pendingErrors: unknown[] = [];
 let flushPending = false;
 
 function schedule(effect: ReactiveEffect): void {
@@ -32,7 +40,19 @@ function flushEffects(): void {
   pendingEffects.clear();
 
   for (const effect of effects) {
-    if (effect.active) effect();
+    try {
+      effect();
+    } catch (error) {
+      if (effect.onError) {
+        try {
+          effect.onError(error, effect);
+        } catch (reportingError) {
+          pendingErrors.push(error, reportingError);
+        }
+      } else {
+        pendingErrors.push(error);
+      }
+    }
   }
 
   if (pendingEffects.size > 0 && !flushPending) {
@@ -97,7 +117,8 @@ export function reactive<T extends object>(target: T): T {
 
     set(source, key, value, receiver) {
       const oldValue = Reflect.get(source, key, receiver) as unknown;
-      const rawValue = isObject(value) ? (rawValues.get(value) ?? value) : value;
+      const candidate = value as unknown;
+      const rawValue = isObject(candidate) ? (rawValues.get(candidate) ?? candidate) : candidate;
       const changed = !Object.is(oldValue, rawValue);
       const updated = Reflect.set(source, key, rawValue, receiver);
 
@@ -118,7 +139,7 @@ export function reactive<T extends object>(target: T): T {
   return proxy;
 }
 
-export function effect(fn: () => void): ReactiveEffect {
+export function effect(fn: () => void, options: EffectOptions = {}): ReactiveEffect {
   const runner = (() => {
     if (!runner.active) return;
 
@@ -135,7 +156,14 @@ export function effect(fn: () => void): ReactiveEffect {
 
   runner.active = true;
   runner.dependencies = [];
-  runner();
+  runner.owner = options.owner;
+  runner.onError = options.onError;
+  try {
+    runner();
+  } catch (error) {
+    stop(runner);
+    throw error;
+  }
   return runner;
 }
 
@@ -150,5 +178,11 @@ export async function nextUpdate(): Promise<void> {
   await new Promise<void>((resolve) => queueMicrotask(resolve));
   if (flushPending || pendingEffects.size > 0) {
     await new Promise<void>((resolve) => queueMicrotask(resolve));
+  }
+  if (pendingErrors.length > 0) {
+    const errors = pendingErrors.splice(0);
+    throw errors.length === 1
+      ? errors[0]
+      : new AggregateError(errors, "Reactive effect updates failed.");
   }
 }

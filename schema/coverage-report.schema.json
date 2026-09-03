@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/coverage-report.schema.json",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "mode",
+    "status",
+    "censusExitCode",
+    "testExitCode",
+    "scope",
+    "failures"
+  ],
+  "properties": {
+    "schema": { "const": "jqstar-coverage-report/1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["delivery", "stabilization"] },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "censusExitCode": { "type": "integer" },
+    "testExitCode": { "type": "integer" },
+    "testSignal": { "type": ["string", "null"] },
+    "scope": {
+      "type": "object",
+      "required": ["schema", "changedPaths"],
+      "properties": {
+        "schema": { "type": "string", "minLength": 1 },
+        "changedPaths": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "denominator": { "type": "object" },
+    "thresholds": { "type": "object" },
+    "thresholdRatchet": { "$ref": "#/$defs/ratchet" },
+    "executedEvidence": { "$ref": "#/$defs/executedEvidence" },
+    "changed": { "$ref": "#/$defs/changed" },
+    "stabilization": { "type": "boolean" },
+    "failures": { "type": "array", "items": { "type": "string" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+      "then": {
+        "required": [
+          "denominator",
+          "thresholds",
+          "thresholdRatchet",
+          "executedEvidence",
+          "changed"
+        ],
+        "properties": {
+          "censusExitCode": { "const": 0 },
+          "testExitCode": { "const": 0 },
+          "denominator": {},
+          "thresholds": {},
+          "thresholdRatchet": {
+            "type": "object",
+            "properties": {
+              "status": { "enum": ["pass", "first-baseline", "not-applicable"] }
+            }
+          },
+          "executedEvidence": {
+            "type": "object",
+            "properties": { "status": { "const": "pass" } }
+          },
+          "changed": {
+            "type": "object",
+            "properties": { "status": { "enum": ["pass", "not-measured"] } }
+          },
+          "failures": { "type": "array", "maxItems": 0 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "ratchet": {
+      "type": "object",
+      "required": ["status", "baseRevision", "reason", "failures"],
+      "properties": {
+        "status": { "enum": ["pass", "fail", "first-baseline", "not-applicable"] },
+        "baseRevision": { "type": ["string", "null"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "failures": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "executedEvidence": {
+      "type": "object",
+      "required": [
+        "status",
+        "runnerSuccess",
+        "totalRequirements",
+        "matchedRequirements",
+        "mappings",
+        "failures"
+      ],
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "runnerSuccess": { "type": "boolean" },
+        "totalRequirements": { "type": "integer", "minimum": 0 },
+        "matchedRequirements": { "type": "integer", "minimum": 0 },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "file", "test", "matches", "passed"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "file": { "type": "string", "minLength": 1 },
+              "test": { "type": "string", "minLength": 1 },
+              "matches": { "type": "integer", "minimum": 0 },
+              "passed": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "failures": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "changed": {
+      "type": "object",
+      "required": ["status", "files", "failures"],
+      "properties": {
+        "status": { "enum": ["pass", "fail", "not-measured"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "changedLines",
+              "executableLines",
+              "coverageMappedLines",
+              "coverageMapExemptEvidence",
+              "typeOrFormatOnlyLines",
+              "typeOrFormatEvidence",
+              "unexplainedLines",
+              "uncoveredLines",
+              "changedFunctions",
+              "uncoveredFunctions"
+            ],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "changedLines": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+              "executableLines": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+              "coverageMappedLines": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 1 }
+              },
+              "coverageMapExemptEvidence": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/lineEvidence" }
+              },
+              "typeOrFormatOnlyLines": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 1 }
+              },
+              "typeOrFormatEvidence": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/lineEvidence" }
+              },
+              "unexplainedLines": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+              "uncoveredLines": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+              "changedFunctions": { "type": "integer", "minimum": 0 },
+              "uncoveredFunctions": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "failures": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "lineEvidence": {
+      "type": "object",
+      "required": ["line", "reason"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

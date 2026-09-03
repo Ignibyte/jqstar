@@ -1,0 +1,29 @@
+{
+  "$schema": "jqstar-coverage-thresholds/1",
+  "ratchet": {
+    "comparison": "immutable-delivery-base",
+    "firstBaseline": "establish-when-base-has-no-thresholds"
+  },
+  "global": {
+    "lines": 89,
+    "functions": 88,
+    "branches": 75,
+    "statements": 89
+  },
+  "subsystems": {
+    "src/declarative.ts": { "lines": 96, "functions": 94, "branches": 84 },
+    "src/expression.ts": { "lines": 92, "functions": 91, "branches": 82 },
+    "src/fetch.ts": { "lines": 86, "functions": 96, "branches": 76 },
+    "src/patch.ts": { "lines": 97, "functions": 100, "branches": 87 },
+    "src/runtime.ts": { "lines": 94, "functions": 84, "branches": 81 },
+    "src/sse.ts": { "lines": 100, "functions": 100, "branches": 86 }
+  },
+  "stabilizationTargets": {
+    "src/expression.ts": { "lines": 100, "functions": 100, "branches": 95 },
+    "src/fetch.ts": { "lines": 100, "functions": 100, "branches": 95 },
+    "src/patch.ts": { "lines": 100, "functions": 100, "branches": 95 },
+    "src/runtime.ts": { "lines": 100, "functions": 100, "branches": 95 },
+    "src/declarative.ts": { "lines": 100, "functions": 100, "branches": 95 },
+    "src/sse.ts": { "lines": 100, "functions": 100, "branches": 95 }
+  }
+}

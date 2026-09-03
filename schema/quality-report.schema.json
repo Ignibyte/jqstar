@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/quality-report.schema.json",
+  "title": "jQuery Star quality report",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "mode",
+    "status",
+    "startedAt",
+    "endedAt",
+    "startFingerprint",
+    "endFingerprint",
+    "base",
+    "head",
+    "scopePath",
+    "changedPaths",
+    "interruption",
+    "gates",
+    "environment",
+    "receipt"
+  ],
+  "properties": {
+    "schema": { "const": "jqstar-quality-report/1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["fast", "delivery", "full-audit"] },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "startFingerprint": { "$ref": "#/$defs/fingerprint" },
+    "endFingerprint": { "$ref": "#/$defs/fingerprint" },
+    "base": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{40}([a-f0-9]{24})?$"
+    },
+    "changedPaths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "head": { "type": ["string", "null"] },
+    "scopePath": { "type": "string" },
+    "interruption": { "type": ["string", "null"] },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/gate" }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["node", "npm", "platform", "arch", "release"],
+      "properties": {
+        "node": { "type": "string" },
+        "npm": { "type": "string" },
+        "platform": { "type": "string" },
+        "arch": { "type": "string" },
+        "release": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "receipt": {
+      "type": ["object", "null"],
+      "properties": {
+        "eligible": { "type": "boolean" },
+        "path": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "required": ["eligible"],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "interruption": { "type": "null" },
+          "gates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": { "status": { "enum": ["pass", "skip"] } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "pass" },
+          "mode": { "enum": ["delivery", "full-audit"] }
+        },
+        "required": ["status", "mode"]
+      },
+      "then": {
+        "properties": {
+          "receipt": {
+            "type": "object",
+            "required": ["eligible"],
+            "properties": { "eligible": { "const": true } }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "fingerprint": {
+      "type": "object",
+      "required": ["algorithm", "digest", "fileCount"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "fileCount": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "command",
+        "timeoutMs",
+        "selection",
+        "status",
+        "enforced",
+        "startedAt",
+        "endedAt",
+        "durationMs"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "minLength": 1 },
+        "command": {
+          "type": "object",
+          "required": ["executable", "args"],
+          "properties": {
+            "executable": { "type": "string", "minLength": 1 },
+            "args": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "selection": {
+          "type": "object",
+          "required": ["selected", "reason"],
+          "properties": {
+            "selected": { "type": "boolean" },
+            "reason": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "status": { "enum": ["pass", "fail", "error", "skip"] },
+        "enforced": { "type": "boolean" },
+        "reason": { "type": "string" },
+        "exitCode": { "type": ["integer", "null"] },
+        "signal": { "type": ["string", "null"] },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": "string", "format": "date-time" },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "log": { "type": "string" },
+        "toolVersion": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -115,6 +115,46 @@ describe("jQuery Star Menubar", () => {
     expect(document.activeElement).toBe(item("edit", "undo"));
   });
 
+  it("closes only for vertical ArrowLeft or Escape at a top-level trigger", () => {
+    root().dataset.orientation = "vertical";
+    $.star.ui.enhance(root());
+    $.star.ui.menubar.open(root(), "edit");
+    trigger("edit").focus();
+
+    const ignored = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "PageDown",
+    });
+    trigger("edit").dispatchEvent(ignored);
+    expect(ignored.defaultPrevented).toBe(false);
+    expect(root().dataset.state).toBe("open");
+
+    const left = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ArrowLeft",
+    });
+    trigger("edit").dispatchEvent(left);
+    expect(left.defaultPrevented).toBe(true);
+    expect(root().dataset.state).toBe("closed");
+    expect(document.activeElement).toBe(trigger("edit"));
+
+    root().dataset.orientation = "horizontal";
+    $.star.ui.enhance(root());
+    $.star.ui.menubar.open(root(), "file");
+    trigger("file").focus();
+    const escape = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "Escape",
+    });
+    trigger("file").dispatchEvent(escape);
+    expect(escape.defaultPrevented).toBe(true);
+    expect(root().dataset.state).toBe("closed");
+    expect(document.activeElement).toBe(trigger("file"));
+  });
+
   it("supports APIs, named actions, item selection, and re-enhancement", () => {
     $.star.ui.menubar.open("#menubar", "file");
     expect(document.activeElement).toBe(item("file", "new"));

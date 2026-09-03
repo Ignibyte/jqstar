@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   FeedCompleteOptions,
   FeedResetOptions,
@@ -307,7 +307,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createFeeds(): FeedCollection {
+export function createFeeds(registerAction: ActionRegistrar): FeedCollection {
   const api: StarFeedStatic = {
     load: (target) => {
       const root = resolve(target);

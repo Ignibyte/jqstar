@@ -1,4 +1,5 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { SidebarTarget, StarContext, StarSidebarStatic } from "../types";
 
 type SidebarCollapsible = "icon" | "none" | "offcanvas";
@@ -29,7 +30,6 @@ interface SidebarCollection {
 }
 
 const records = new WeakMap<HTMLElement, SidebarRecord>();
-const shortcutDocuments = new WeakSet<Document>();
 let sidebarId = 0;
 
 function sidebarRoot(value: Element | null): HTMLElement | undefined {
@@ -206,9 +206,9 @@ function wire(record: SidebarRecord): () => void {
   return () => cleanups.forEach((cleanup) => cleanup());
 }
 
-function installShortcutHandler(owner: Document): void {
-  if (shortcutDocuments.has(owner)) return;
-  owner.addEventListener("keydown", (event) => {
+function installShortcutHandler(host: DocumentHost): void {
+  const owner = host.document;
+  host.listen(owner, "keydown", (event: KeyboardEvent) => {
     const root = sidebarRoot(owner.querySelector('[data-jqs="sidebar"]'));
     if (!root) return;
     const shortcut = root.dataset.shortcut ?? "b";
@@ -223,11 +223,9 @@ function installShortcutHandler(owner: Document): void {
     const record = records.get(root) ?? enhanceSidebar(root);
     setExpanded(record, !record.expanded, record.activeTrigger);
   });
-  shortcutDocuments.add(owner);
 }
 
 function enhanceSidebar(root: HTMLElement): SidebarRecord {
-  installShortcutHandler(root.ownerDocument);
   root.id ||= `jqs-sidebar-${++sidebarId}`;
   const panel = scopedParts(root, "panel")[0];
   if (!panel) throw new Error(`Sidebar #${root.id} needs data-part="panel".`);
@@ -292,7 +290,11 @@ function enhanceSidebars(root: ParentNode): void {
   }
 }
 
-export function createSidebars(): SidebarCollection {
+export function createSidebars(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): SidebarCollection {
+  installShortcutHandler(host);
   const api: StarSidebarStatic = {
     open: (target) => {
       const root = resolveSidebar(target);

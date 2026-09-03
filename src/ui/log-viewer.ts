@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   LogEntryInput,
   LogFilter,
@@ -334,7 +334,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createLogViewers(): LogViewerCollection {
+export function createLogViewers(registerAction: ActionRegistrar): LogViewerCollection {
   const api: StarLogViewerStatic = {
     append: (target, entry) => append(recordFor(target), entry),
     clear: (target) => clear(recordFor(target)),

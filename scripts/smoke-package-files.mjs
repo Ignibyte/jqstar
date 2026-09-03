@@ -1,24 +1,71 @@
 import { spawnSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import { brotliDecompressSync } from "node:zlib";
+
+import { assertExactPackageDocumentationPaths } from "./quality/package-release-contracts.mjs";
 
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-const result = spawnSync(npm, ["pack", "--dry-run", "--json"], {
+// test:package completes the mandatory build before this smoke. Avoid a redundant prepack writing
+// build logs into npm's JSON stdout; installed and release gates still pack the real artifact.
+const result = spawnSync(npm, ["pack", "--ignore-scripts", "--dry-run", "--json"], {
   cwd: process.cwd(),
   encoding: "utf8",
 });
 
 if (result.status !== 0) {
-  throw new Error(`npm pack --dry-run failed:\n${result.stderr}`);
+  throw new Error(`npm pack --ignore-scripts --dry-run failed:\n${result.stderr}`);
 }
 
 const report = JSON.parse(result.stdout);
 const files = new Set(report[0]?.files?.map((file) => file.path));
+assertExactPackageDocumentationPaths([...files]);
 const required = [
   "bin/jqstar.mjs",
+  "demo-dist/site.br",
   "deploy/jqstar.env.example",
   "deploy/jqstar.service",
+  "dist/core.cjs",
+  "dist/core.d.cts",
+  "dist/core.d.ts",
+  "dist/core.js",
+  "dist/csp.cjs",
+  "dist/csp.d.cts",
+  "dist/csp.d.ts",
+  "dist/csp.js",
+  "dist/datastar.cjs",
+  "dist/datastar.d.cts",
+  "dist/datastar.d.ts",
+  "dist/datastar.js",
+  "dist/datastar-testing.cjs",
+  "dist/datastar-testing.d.cts",
+  "dist/datastar-testing.d.ts",
+  "dist/datastar-testing.js",
+  "dist/index.d.cts",
+  "dist/index.d.ts",
+  "dist/jquery-star.cjs",
   "dist/jquery-star.js",
+  "dist/jquery-star.umd.cjs",
   "dist/jquery-star-ui.css",
+  "dist/testing.cjs",
+  "dist/testing.d.cts",
+  "dist/testing.d.ts",
+  "dist/testing.js",
+  "dist/turbo.cjs",
+  "dist/turbo.d.cts",
+  "dist/turbo.d.ts",
+  "dist/turbo.js",
+  "dist/ui.cjs",
+  "dist/ui.d.cts",
+  "dist/ui.d.ts",
+  "dist/ui.js",
+  "docs/BACKEND.md",
+  "docs/COMPONENT_ARCHITECTURE.md",
+  "docs/COMPONENT_RESEARCH.md",
+  "docs/CSP_EXPRESSIONS.md",
+  "docs/INTEROPERABILITY.md",
   "docs/SELF_HOSTING.md",
+  "docs/security/CSP_THREAT_MODEL.md",
+  "SECURITY.md",
   "registry.json",
   "registry/blocks/operations-dashboard.html",
   "registry/blocks/operations-dashboard.ts",
@@ -97,5 +144,33 @@ const missing = required.filter((path) => !files.has(path));
 if (missing.length > 0) {
   throw new Error(`The npm package is missing distribution files:\n${missing.join("\n")}`);
 }
+if ([...files].some((path) => path.startsWith("dist/types/"))) {
+  throw new Error("The npm package contains intermediate declaration files.");
+}
 
-process.stdout.write(`package contents proof: ${files.size} files, registry and CLI passed\n`);
+const siteBundle = JSON.parse(
+  brotliDecompressSync(await readFile("demo-dist/site.br")).toString("utf8"),
+);
+const bundledFiles = new Map(siteBundle.files);
+for (const path of [
+  "docs/agents/index.html",
+  "docs/ecosystem/index.html",
+  "llms.txt",
+  "llms-full.txt",
+  "jqstar-agent-index.json",
+]) {
+  if (!bundledFiles.has(path)) throw new Error(`The packaged site bundle is missing ${path}.`);
+}
+const bundledIndexValue = bundledFiles.get("jqstar-agent-index.json");
+const bundledIndex = JSON.parse(bundledIndexValue.slice(1));
+if (
+  siteBundle.schema !== "jqstar-site-bundle/2" ||
+  !bundledIndexValue.startsWith("u") ||
+  bundledIndex.schema !== "jqstar-agent-index/1"
+) {
+  throw new Error("The packaged site bundle contains an invalid agent index.");
+}
+
+process.stdout.write(
+  `package contents proof: ${files.size} files, registry, CLI, and agent corpus passed\n`,
+);

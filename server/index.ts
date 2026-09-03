@@ -1,7 +1,8 @@
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, resolve, sep } from "node:path";
+import { brotliDecompressSync } from "node:zlib";
 import { createProofApi } from "./api";
 
 const host = process.env.JQS_HOST ?? "127.0.0.1";
@@ -13,7 +14,9 @@ if (!Number.isInteger(requestedPort) || requestedPort < 0 || requestedPort > 65_
 const staticRoot = resolve(
   process.env.JQS_STATIC_DIR ?? resolve(import.meta.dirname, "../demo-dist"),
 );
-const api = createProofApi({ environment: "self-hosted" });
+const databasePath =
+  process.env.JQS_DATABASE_PATH ?? resolve(process.cwd(), "data/projects.sqlite");
+const api = createProofApi({ databasePath, environment: "self-hosted" });
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -25,8 +28,93 @@ const contentTypes: Record<string, string> = {
   ".map": "application/json; charset=utf-8",
   ".png": "image/png",
   ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
   ".webp": "image/webp",
 };
+const bundledSitePath = resolve(staticRoot, "site.br");
+let bundledSite: Promise<Map<string, Buffer>> | undefined;
+
+function loadBundledSite(): Promise<Map<string, Buffer>> {
+  bundledSite ??= readFile(bundledSitePath)
+    .then((archive) => brotliDecompressSync(archive))
+    .then((source) => JSON.parse(source.toString("utf8")) as unknown)
+    .then((document) => {
+      if (
+        !document ||
+        typeof document !== "object" ||
+        !("schema" in document) ||
+        document.schema !== "jqstar-site-bundle/2" ||
+        !("files" in document) ||
+        !Array.isArray(document.files)
+      ) {
+        throw new Error("The packaged site bundle is invalid.");
+      }
+      const files = new Map<string, Buffer>();
+      for (const entry of document.files) {
+        if (
+          !Array.isArray(entry) ||
+          entry.length !== 2 ||
+          typeof entry[0] !== "string" ||
+          typeof entry[1] !== "string" ||
+          !/^[bu]/u.test(entry[1]) ||
+          entry[0].startsWith("/") ||
+          entry[0].split("/").includes("..")
+        ) {
+          throw new Error("The packaged site bundle contains an invalid entry.");
+        }
+        if (files.has(entry[0])) {
+          throw new Error(`The packaged site bundle repeats ${entry[0]}.`);
+        }
+        const encoding = entry[1].startsWith("u") ? "utf8" : "base64";
+        files.set(entry[0], Buffer.from(entry[1].slice(1), encoding));
+      }
+      return files;
+    });
+  return bundledSite;
+}
+
+function bundledKey(pathname: string): string | undefined {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return undefined;
+  }
+  const relative = decoded === "/" ? "index.html" : decoded.replace(/^\/+/, "");
+  if (relative.split("/").includes("..")) return undefined;
+  return relative.endsWith("/") ? `${relative}index.html` : relative;
+}
+
+async function serveBundledFile(
+  request: IncomingMessage,
+  response: ServerResponse,
+  pathname: string,
+): Promise<boolean> {
+  const key = bundledKey(pathname);
+  if (!key) return false;
+  let files: Map<string, Buffer>;
+  try {
+    files = await loadBundledSite();
+  } catch {
+    return false;
+  }
+  const selectedKey = files.has(key)
+    ? key
+    : request.headers.accept?.includes("text/html")
+      ? "index.html"
+      : undefined;
+  const selected = selectedKey ? files.get(selectedKey) : undefined;
+  if (!selected || !selectedKey) return false;
+  const type = contentTypes[extname(selectedKey).toLocaleLowerCase()] ?? "application/octet-stream";
+  response.writeHead(200, {
+    "Content-Type": type,
+    "Content-Length": selected.length,
+    "Cache-Control": key.startsWith("assets/") ? "public, max-age=31536000, immutable" : "no-cache",
+  });
+  if (request.method === "HEAD") response.end();
+  else response.end(selected);
+  return true;
+}
 
 function securityHeaders(response: ServerResponse): void {
   response.setHeader(
@@ -34,6 +122,7 @@ function securityHeaders(response: ServerResponse): void {
     "default-src 'self'; script-src 'self' 'unsafe-eval'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
   );
   response.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  response.setHeader("Origin-Agent-Cluster", "?1");
   response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   response.setHeader("X-Content-Type-Options", "nosniff");
   response.setHeader("X-Frame-Options", "DENY");
@@ -67,6 +156,7 @@ async function serveFile(
     if (details.isDirectory()) file = resolve(file, "index.html");
     else if (!details.isFile()) throw new Error("Not a file");
   } catch {
+    if (await serveBundledFile(request, response, pathname)) return;
     if (request.headers.accept?.includes("text/html")) file = resolve(staticRoot, "index.html");
     else {
       response.writeHead(404).end("Not found");
@@ -117,6 +207,7 @@ server.listen(requestedPort, host, () => {
 
 function shutdown(): void {
   server.close((error) => {
+    api.close();
     process.exitCode = error ? 1 : 0;
   });
 }

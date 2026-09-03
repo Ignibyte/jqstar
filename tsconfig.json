@@ -4,9 +4,15 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "jquery-star": ["./src/index.ts"]
+      "jquery-star": ["./src/index.ts"],
+      "jquery-star/core": ["./src/core.ts"],
+      "jquery-star/datastar": ["./src/datastar.ts"],
+      "jquery-star/testing": ["./src/testing/index.ts"],
+      "jquery-star/datastar/testing": ["./src/datastar/testing.ts"],
+      "jquery-star/ui": ["./src/ui.ts"]
     },
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -18,5 +24,5 @@
     "outDir": "dist",
     "types": ["jquery", "node", "vitest/globals"]
   },
-  "include": ["src", "server", "test", "e2e", "example", "*.config.ts"]
+  "include": ["src", "server", "test", "e2e", "example", "scripts/**/*.d.mts", "*.config.ts"]
 }

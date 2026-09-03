@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toast · jQStar Components</title>
+    <meta
+      name="description"
+      content="Show accessible jQStar toast notifications with pausable timers, actions, focus, and swipe dismissal."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Toast</h1>
+      <p class="docs-lede">
+        A temporary, non-modal notification with accessible announcements, optional actions,
+        pausable duration, keyboard access, and pointer swipe dismissal.
+      </p>
+
+      <div class="component-preview" data-jqs="tabs" data-value="preview">
+        <div data-part="list" aria-label="Toast example">
+          <button data-part="trigger" data-value="preview" type="button">Preview</button>
+          <button data-part="trigger" data-value="code" type="button">Code</button>
+        </div>
+        <section data-part="panel" data-value="preview">
+          <div class="preview-stage">
+            <button
+              data-jqs="button"
+              type="button"
+              data-on:click="@ui.toast.show({ title: 'Build verified', description: 'All component checks passed.', variant: 'success', duration: 5000 })"
+            >
+              Show notification
+            </button>
+            <div data-jqs="toast-viewport" aria-label="Documentation notifications (F8)"></div>
+          </div>
+        </section>
+        <section data-part="panel" data-value="code">
+          <div class="code-block">
+            <div class="code-heading">
+              <span>toast.html</span
+              ><button type="button" data-on:click="@site.copyCode">Copy</button>
+            </div>
+            <pre><code>&lt;button
+  data-jqs="button"
+  data-on:click="@ui.toast.show({
+    title: 'Saved',
+    description: 'Your changes are live.',
+    variant: 'success'
+  })"
+&gt;
+  Save changes
+&lt;/button&gt;
+
+&lt;div
+  data-jqs="toast-viewport"
+  aria-label="Notifications (F8)"
+&gt;&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+      </div>
+
+      <h2>API Reference</h2>
+      <div class="api-table-wrap" role="region" aria-label="Toast options" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>title</code></td>
+              <td>Required concise notification heading.</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>Optional supporting detail.</td>
+            </tr>
+            <tr>
+              <td><code>variant</code></td>
+              <td>
+                <code>default</code>, <code>success</code>, <code>warning</code>, or
+                <code>danger</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>duration</code></td>
+              <td>Dismissal delay in milliseconds. Passive toasts default to five seconds.</td>
+            </tr>
+            <tr>
+              <td><code>action</code></td>
+              <td>
+                An optional authored action; action toasts remain until dismissed unless duration is
+                explicit.
+              </td>
+            </tr>
+            <tr>
+              <td><code>data-jqs="toast-viewport"</code></td>
+              <td>The page-level notification and keyboard-focus owner.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Keyboard Interactions</h2>
+      <ul class="keyboard-list">
+        <li><kbd>F8</kbd><span>Moves focus to the notification viewport.</span></li>
+        <li><kbd>Tab</kbd><span>Moves among toast actions and close controls.</span></li>
+        <li><kbd>Escape</kbd><span>Dismisses the currently focused toast.</span></li>
+        <li>
+          <kbd>Hover / Focus</kbd
+          ><span>Pauses the active timer; it also pauses on window blur and hidden tabs.</span>
+        </li>
+      </ul>
+      <p>
+        <code>$.star.ui.toast.show()</code> returns the created toast. Use <code>dismiss()</code> or
+        <code>clear()</code> to remove notifications programmatically. The equivalent named actions
+        are <code>@ui.toast.show</code>, <code>@ui.toast.dismiss</code>, and
+        <code>@ui.toast.clear</code>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

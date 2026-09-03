@@ -6,5 +6,7 @@ playwright-report/
 registry-dist/
 server-dist/
 test-results/
+.quality-reports/
+data/
 *.tgz
 .DS_Store

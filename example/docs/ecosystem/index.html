@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jQuery ecosystem · jQStar</title>
+    <meta
+      name="description"
+      content="How jQStar relates to jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>jQuery ecosystem</h1>
+      <p class="docs-lede">
+        jQStar builds on the real jQuery peer while keeping the roles of Migrate, UI, Mobile,
+        Sizzle, and QUnit explicit. These decisions were reviewed against primary project sources on
+        3 September 2026 and expire on 3 March 2027.
+      </p>
+      <div class="docs-callout">
+        <p>
+          <strong>Independent project:</strong> jQStar is an independent project. It is not
+          affiliated with, sponsored by, endorsed by, or an official successor to the jQuery project
+          or the OpenJS Foundation.
+        </p>
+      </div>
+
+      <h2>Current decisions</h2>
+      <div class="api-table-wrap" role="region" aria-label="jQuery project decisions" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Reviewed release</th>
+              <th>jQStar role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>jQuery Core</td>
+              <td>4.0.0</td>
+              <td>The application-owned peer and runtime foundation.</td>
+            </tr>
+            <tr>
+              <td>jQuery Migrate</td>
+              <td>4.0.2</td>
+              <td>Temporary, application-owned upgrade diagnostics. Never bundled.</td>
+            </tr>
+            <tr>
+              <td>jQuery UI</td>
+              <td>1.14.2</td>
+              <td>External coexistence and migration source, not a foundation.</td>
+            </tr>
+            <tr>
+              <td>jQuery Mobile</td>
+              <td>1.4.1 last stable</td>
+              <td>Design lessons and route-by-route migration. No runtime.</td>
+            </tr>
+            <tr>
+              <td>Sizzle</td>
+              <td>2.3.10 last stable</td>
+              <td>No standalone integration. Selector behavior belongs to jQuery.</td>
+            </tr>
+            <tr>
+              <td>QUnit</td>
+              <td>2.26.0</td>
+              <td>Exact installed-package test consumer. No runtime dependency.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Boundaries</h2>
+      <p>
+        <code>jquery</code> is the sole peer at <code>&gt;=4.0.0 &lt;5</code>. <code>$</code> is
+        real jQuery and <code>$name</code> is a reactive signal. Similar component names do not
+        promise Widget Factory, plugin, event, option, styling, or method compatibility. For the
+        staged Migrate workflow, complete UI capability map, Mobile migration rules, naming,
+        sources, and review process, read the
+        <a href="https://github.com/Ignibyte/jqstar/blob/main/docs/JQUERY_ECOSYSTEM.md"
+          >repository policy</a
+        >.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

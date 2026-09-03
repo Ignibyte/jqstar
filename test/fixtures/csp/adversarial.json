@@ -1,0 +1,911 @@
+{
+  "$schema": "../../../schema/csp-expression-contract.schema.json",
+  "schema": "jqstar-csp-adversarial/1",
+  "grammarVersion": "jqstar-csp-expression/1",
+  "ownerTicket": "0034",
+  "cases": [
+    {
+      "id": "eval-call",
+      "entryKind": "value",
+      "source": "eval('1')",
+      "category": "dynamic-code",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 9,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 10
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "function-constructor",
+      "entryKind": "value",
+      "source": "Function('return 1')",
+      "category": "dynamic-code",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 20,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 21
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "string-timeout",
+      "entryKind": "value",
+      "source": "setTimeout('run()', 0)",
+      "category": "dynamic-code",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 22,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 23
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "dynamic-import-payload",
+      "entryKind": "value",
+      "source": "import('data:text/javascript,1')",
+      "category": "dynamic-code",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 32,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 33
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "global-this",
+      "entryKind": "value",
+      "source": "globalThis",
+      "category": "ambient-global",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 10,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 11
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "window-global",
+      "entryKind": "value",
+      "source": "window",
+      "category": "ambient-global",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 6,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 7
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "document-global",
+      "entryKind": "value",
+      "source": "document",
+      "category": "ambient-global",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 8,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 9
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "self-global",
+      "entryKind": "value",
+      "source": "self",
+      "category": "ambient-global",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 4,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 5
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "top-global",
+      "entryKind": "value",
+      "source": "top",
+      "category": "ambient-global",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 3,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 4
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "parent-global",
+      "entryKind": "value",
+      "source": "parent",
+      "category": "ambient-global",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 6,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 7
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "object-global",
+      "entryKind": "value",
+      "source": "Object",
+      "category": "reflective-access",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 6,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 7
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "reflect-global",
+      "entryKind": "value",
+      "source": "Reflect",
+      "category": "reflective-access",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 7,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 8
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "proxy-global",
+      "entryKind": "value",
+      "source": "Proxy",
+      "category": "reflective-access",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 5,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 6
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "webassembly-global",
+      "entryKind": "value",
+      "source": "WebAssembly",
+      "category": "dynamic-code",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 11,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 12
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "constructor-dot",
+      "entryKind": "value",
+      "source": "state.value.constructor",
+      "category": "prototype-constructor",
+      "fixture": "state-value",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 23,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 24
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "constructor-bracket",
+      "entryKind": "value",
+      "source": "state.value['constructor']",
+      "category": "prototype-constructor",
+      "fixture": "state-value",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "constructor-escaped",
+      "entryKind": "value",
+      "source": "state.value['\\u0063onstructor']",
+      "category": "prototype-constructor",
+      "fixture": "state-value",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 31,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 32
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "constructor-concatenated",
+      "entryKind": "value",
+      "source": "state.value['con' + 'structor']",
+      "category": "prototype-constructor",
+      "fixture": "state-value",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 31,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 32
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "constructor-optional",
+      "entryKind": "value",
+      "source": "state.value?.constructor",
+      "category": "prototype-constructor",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 24,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 25
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "prototype-bracket",
+      "entryKind": "value",
+      "source": "state.value['prototype']",
+      "category": "prototype-constructor",
+      "fixture": "state-value",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 24,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 25
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "proto-bracket",
+      "entryKind": "value",
+      "source": "state.value['__proto__']",
+      "category": "prototype-constructor",
+      "fixture": "state-value",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 24,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 25
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "array-constructor-chain",
+      "entryKind": "value",
+      "source": "[].constructor.constructor",
+      "category": "prototype-constructor",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "string-constructor-chain",
+      "entryKind": "value",
+      "source": "''.constructor.constructor",
+      "category": "prototype-constructor",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "jquery-constructor-chain",
+      "entryKind": "value",
+      "source": "$(el).constructor.constructor",
+      "category": "prototype-constructor",
+      "fixture": "jquery-tree",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 29,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 30
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "helper-result-constructor",
+      "entryKind": "value",
+      "source": "acme.tools.value().constructor",
+      "category": "prototype-constructor",
+      "fixture": "helper-data-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 30,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 31
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "action-result-prototype",
+      "entryKind": "value",
+      "source": "action('value').prototype",
+      "category": "prototype-constructor",
+      "fixture": "action-data-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 25,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 26
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "call-property",
+      "entryKind": "value",
+      "source": "state.fn.call(null)",
+      "category": "callable-escalation",
+      "fixture": "state-function",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 19,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 20
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "apply-property",
+      "entryKind": "value",
+      "source": "state.fn.apply(null, [])",
+      "category": "callable-escalation",
+      "fixture": "state-function",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 24,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 25
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "bind-property",
+      "entryKind": "value",
+      "source": "state.fn.bind(null)",
+      "category": "callable-escalation",
+      "fixture": "state-function",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 19,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 20
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "result-call",
+      "entryKind": "value",
+      "source": "acme.tools.functionValue()()",
+      "category": "callable-escalation",
+      "fixture": "helper-function-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 28,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 29
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "getter-member",
+      "entryKind": "value",
+      "source": "state.secret",
+      "category": "accessor-proxy",
+      "fixture": "state-accessor",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_ACCESSOR",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 12,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 13
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "proxy-member",
+      "entryKind": "value",
+      "source": "state.proxy.secret",
+      "category": "accessor-proxy",
+      "fixture": "state-proxy",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_ACCESSOR",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 18,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 19
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "cyclic-data",
+      "entryKind": "value",
+      "source": "state.self.self",
+      "category": "cycle",
+      "fixture": "state-cycle",
+      "diagnostic": {
+        "code": "CSP_EVALUATE_CYCLE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 15,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 16
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "dynamic-selector",
+      "entryKind": "value",
+      "source": "$(state.selector)",
+      "category": "selector-html",
+      "fixture": "state-selector",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 17,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 18
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "dynamic-html",
+      "entryKind": "value",
+      "source": "$(el).html(state.html)",
+      "category": "selector-html",
+      "fixture": "state-html",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 22,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 23
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "action-returned-function",
+      "entryKind": "value",
+      "source": "action('functionValue')",
+      "category": "action-helper",
+      "fixture": "action-function-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 23,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 24
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "helper-returned-function",
+      "entryKind": "value",
+      "source": "acme.tools.functionValue()",
+      "category": "action-helper",
+      "fixture": "helper-function-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "plugin-returned-jquery",
+      "entryKind": "value",
+      "source": "acme.tools.jquery()",
+      "category": "plugin-authority",
+      "fixture": "helper-jquery-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 19,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 20
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "request-data-call",
+      "entryKind": "value",
+      "source": "state.response.callback()",
+      "category": "request-patch",
+      "fixture": "response-function-shape",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 25,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 26
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "event-data-call",
+      "entryKind": "value",
+      "source": "evt.detail.callback()",
+      "category": "data-to-code",
+      "fixture": "event-function-shape",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 21,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 22
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "foreign-element",
+      "entryKind": "value",
+      "source": "$(state.foreignElement)",
+      "category": "cross-realm",
+      "fixture": "foreign-element",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 23,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 24
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "foreign-jquery",
+      "entryKind": "value",
+      "source": "state.foreignJQuery.text()",
+      "category": "cross-realm",
+      "fixture": "foreign-jquery",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "jquery-event-registration",
+      "entryKind": "value",
+      "source": "$(el).on('click',state.fn)",
+      "category": "jquery-dom",
+      "fixture": "state-function",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "diagnostic-secret",
+      "entryKind": "value",
+      "source": "state.secret.deep",
+      "category": "diagnostic-disclosure",
+      "fixture": "state-secret-accessor",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_ACCESSOR",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 17,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 18
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "deep-input",
+      "entryKind": "value",
+      "source": "(((((((((((((((((0)))))))))))))))))",
+      "category": "resource-exhaustion",
+      "limit": { "name": "nesting", "relation": "above", "value": 17 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_NESTING",
+        "phase": "compile",
+        "span": {
+          "startOffset": 16,
+          "endOffset": 17,
+          "startLine": 1,
+          "startColumn": 17,
+          "endLine": 1,
+          "endColumn": 18
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "wide-input",
+      "entryKind": "value",
+      "source": "[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]",
+      "category": "resource-exhaustion",
+      "limit": { "name": "literalEntries", "relation": "above", "value": 65 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_LITERAL_ENTRIES",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 131,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 132
+        },
+        "partialEffects": false
+      }
+    }
+  ]
+}

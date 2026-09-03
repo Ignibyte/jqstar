@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { SortableTarget, StarContext, StarSortableStatic } from "../types";
 
 interface SortableRecord {
@@ -424,7 +424,7 @@ function enhanceSortables(root: ParentNode): void {
   }
 }
 
-export function createSortables(): SortableCollection {
+export function createSortables(registerAction: ActionRegistrar): SortableCollection {
   const api: StarSortableStatic = {
     move: (target, value, index) => {
       const root = resolveSortable(target);

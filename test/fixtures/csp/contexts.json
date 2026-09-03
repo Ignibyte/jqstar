@@ -1,0 +1,393 @@
+{
+  "$schema": "../../../schema/csp-expression-contract.schema.json",
+  "schema": "jqstar-csp-contexts/1",
+  "grammarVersion": "jqstar-csp-expression/1",
+  "ownerTicket": "0034",
+  "fixtures": [
+    {
+      "id": "action-data-result",
+      "description": "An action returns inert plain data.",
+      "steps": [
+        {
+          "operation": "registered-action",
+          "name": "value",
+          "recordCalls": true,
+          "behavior": { "kind": "return-data", "value": { "safe": true } }
+        }
+      ]
+    },
+    {
+      "id": "action-function-result",
+      "description": "An action returns a callable value.",
+      "steps": [
+        {
+          "operation": "registered-action",
+          "name": "functionValue",
+          "recordCalls": true,
+          "behavior": { "kind": "return-function", "returnValue": null }
+        }
+      ]
+    },
+    {
+      "id": "actions",
+      "description": "State, arguments, and tracked actions for ordering and async cases.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "count": 2 } },
+        { "operation": "data-binding", "target": "args", "value": ["input"] },
+        {
+          "operation": "registered-action",
+          "name": "save",
+          "recordCalls": true,
+          "behavior": { "kind": "return-approved-async", "fulfillment": "saved" }
+        },
+        {
+          "operation": "registered-action",
+          "name": "load",
+          "recordCalls": true,
+          "behavior": { "kind": "return-approved-async", "fulfillment": null }
+        },
+        {
+          "operation": "registered-action",
+          "name": "never",
+          "recordCalls": true,
+          "behavior": { "kind": "return-data", "value": null }
+        }
+      ]
+    },
+    {
+      "id": "all-bindings",
+      "description": "Every fixed evaluator binding has one deterministic value.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "count": 2 } },
+        { "operation": "data-binding", "target": "computed", "value": { "double": 4 } },
+        { "operation": "data-binding", "target": "args", "value": ["input"] },
+        { "operation": "event", "type": "click", "cancelable": false, "detail": null },
+        {
+          "operation": "dom-tree",
+          "markup": "<main id=\"app\" data-jqs><input data-role=\"save\" value=\"save\"></main>",
+          "rootSelector": "[data-jqs]",
+          "elementSelector": "[data-role=\"save\"]"
+        }
+      ]
+    },
+    {
+      "id": "array-arguments",
+      "description": "Two string arguments back the bounded arguments view.",
+      "steps": [{ "operation": "data-binding", "target": "args", "value": ["a", "b"] }]
+    },
+    {
+      "id": "async-ticks",
+      "description": "A tracked action returns one approved async value per call.",
+      "steps": [
+        {
+          "operation": "registered-action",
+          "name": "tick",
+          "recordCalls": true,
+          "behavior": { "kind": "return-approved-async", "fulfillment": null }
+        }
+      ]
+    },
+    {
+      "id": "cancelable-event",
+      "description": "A cancelable click event exposes default-prevention state.",
+      "steps": [{ "operation": "event", "type": "click", "cancelable": true, "detail": null }]
+    },
+    {
+      "id": "collection-128",
+      "description": "A scoped DOM tree contains exactly 128 matching elements.",
+      "steps": [{ "operation": "dom-collection", "selector": ".item", "count": 128 }]
+    },
+    {
+      "id": "collection-129",
+      "description": "A scoped DOM tree contains exactly 129 matching elements.",
+      "steps": [{ "operation": "dom-collection", "selector": ".item", "count": 129 }]
+    },
+    {
+      "id": "deep-state",
+      "description": "State has an eight-segment path ending in inert data.",
+      "steps": [
+        {
+          "operation": "data-binding",
+          "target": "state",
+          "value": { "a": { "b": { "c": { "d": { "e": { "f": { "g": { "h": "end" } } } } } } } }
+        }
+      ]
+    },
+    {
+      "id": "disposed-engine",
+      "description": "A compiled evaluator is retained and its engine is disposed.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "count": 2 } },
+        { "operation": "engine-lifecycle", "transition": "dispose-before-evaluation" }
+      ]
+    },
+    {
+      "id": "event-function-shape",
+      "description": "Event detail contains a function-shaped data member.",
+      "steps": [
+        { "operation": "event", "type": "click", "cancelable": true, "detail": {} },
+        {
+          "operation": "special-value",
+          "target": "evt.detail.callback",
+          "kind": "function",
+          "returnValue": "event-callback"
+        }
+      ]
+    },
+    {
+      "id": "foreign-element",
+      "description": "State contains an element created by an isolated DOM realm.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.foreignElement",
+          "kind": "foreign-dom-element",
+          "markup": "<main><button data-foreign=\"element\">Foreign</button></main>",
+          "selector": "[data-foreign=\"element\"]"
+        }
+      ]
+    },
+    {
+      "id": "foreign-jquery",
+      "description": "State contains a jQuery value created by an isolated DOM realm.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.foreignJQuery",
+          "kind": "foreign-jquery",
+          "markup": "<main><span data-foreign=\"jquery\">Foreign</span></main>",
+          "selector": "[data-foreign=\"jquery\"]"
+        }
+      ]
+    },
+    {
+      "id": "helper-data-result",
+      "description": "A committed helper returns inert plain data.",
+      "steps": [
+        {
+          "operation": "registered-helper",
+          "path": "acme.tools.value",
+          "recordCalls": true,
+          "behavior": { "kind": "return-data", "value": { "safe": true } }
+        }
+      ]
+    },
+    {
+      "id": "helper-function-result",
+      "description": "A committed helper returns a callable value.",
+      "steps": [
+        {
+          "operation": "registered-helper",
+          "path": "acme.tools.functionValue",
+          "recordCalls": true,
+          "behavior": { "kind": "return-function", "returnValue": null }
+        }
+      ]
+    },
+    {
+      "id": "helper-jquery-result",
+      "description": "A committed helper returns canonical-realm jQuery.",
+      "steps": [
+        {
+          "operation": "dom-tree",
+          "markup": "<main data-jqs><span data-part=\"label\">Ready</span></main>",
+          "rootSelector": "[data-jqs]",
+          "elementSelector": "[data-part=\"label\"]"
+        },
+        {
+          "operation": "registered-helper",
+          "path": "acme.tools.jquery",
+          "recordCalls": true,
+          "behavior": { "kind": "return-canonical-jquery", "selector": "[data-part=\"label\"]" }
+        }
+      ]
+    },
+    {
+      "id": "helper-thenable-result",
+      "description": "A committed helper returns an unapproved thenable.",
+      "steps": [
+        {
+          "operation": "registered-helper",
+          "path": "acme.tools.thenable",
+          "recordCalls": true,
+          "behavior": { "kind": "return-thenable", "fulfillment": "unsafe" }
+        }
+      ]
+    },
+    {
+      "id": "helpers",
+      "description": "State and a committed numeric sum helper have tracked calls.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "count": 2 } },
+        {
+          "operation": "registered-helper",
+          "path": "acme.math.sum",
+          "recordCalls": true,
+          "behavior": { "kind": "sum-numbers" }
+        }
+      ]
+    },
+    {
+      "id": "jquery-tree",
+      "description": "A scoped tree supplies the canonical root, element, and jQuery peer.",
+      "steps": [
+        {
+          "operation": "dom-tree",
+          "markup": "<main id=\"app\" data-jqs><span data-part=\"label\">Ready</span><button data-role=\"save\">Save</button></main>",
+          "rootSelector": "[data-jqs]",
+          "elementSelector": "[data-role=\"save\"]"
+        }
+      ]
+    },
+    {
+      "id": "name",
+      "description": "State contains a padded name string.",
+      "steps": [{ "operation": "data-binding", "target": "state", "value": { "name": " Ada " } }]
+    },
+    {
+      "id": "profile",
+      "description": "State contains a nested profile name.",
+      "steps": [
+        {
+          "operation": "data-binding",
+          "target": "state",
+          "value": { "profile": { "name": "Ada" } }
+        }
+      ]
+    },
+    {
+      "id": "rejecting-action",
+      "description": "A tracked action returns an approved rejected async value.",
+      "steps": [
+        {
+          "operation": "registered-action",
+          "name": "reject",
+          "recordCalls": true,
+          "behavior": {
+            "kind": "return-approved-async-rejection",
+            "rejectionLabel": "fixture-rejection"
+          }
+        }
+      ]
+    },
+    {
+      "id": "response-function-shape",
+      "description": "Response-shaped state data contains a callable member.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "response": {} } },
+        {
+          "operation": "special-value",
+          "target": "state.response.callback",
+          "kind": "function",
+          "returnValue": "response-callback"
+        }
+      ]
+    },
+    {
+      "id": "state-accessor",
+      "description": "State has an own getter that must not be invoked.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.secret",
+          "kind": "accessor",
+          "getterValue": { "deep": "fixture-secret" },
+          "expectedReads": 0
+        }
+      ]
+    },
+    {
+      "id": "state-count",
+      "description": "State begins with a finite count of two.",
+      "steps": [{ "operation": "data-binding", "target": "state", "value": { "count": 2 } }]
+    },
+    {
+      "id": "state-cycle",
+      "description": "The state self property points back to the state object.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.self",
+          "kind": "self-cycle",
+          "referenceTarget": "state"
+        }
+      ]
+    },
+    {
+      "id": "state-function",
+      "description": "State contains a callable member that returns inert data.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.fn",
+          "kind": "function",
+          "returnValue": null
+        },
+        {
+          "operation": "dom-tree",
+          "markup": "<main data-jqs><button>Save</button></main>",
+          "rootSelector": "[data-jqs]",
+          "elementSelector": "button"
+        }
+      ]
+    },
+    {
+      "id": "state-html",
+      "description": "State contains markup-shaped text that remains data.",
+      "steps": [
+        {
+          "operation": "data-binding",
+          "target": "state",
+          "value": { "html": "<strong>unsafe</strong>" }
+        },
+        {
+          "operation": "dom-tree",
+          "markup": "<main data-jqs><div data-part=\"target\"></div></main>",
+          "rootSelector": "[data-jqs]",
+          "elementSelector": "[data-part]"
+        }
+      ]
+    },
+    {
+      "id": "state-proxy",
+      "description": "State contains a proxy whose descriptor trap throws.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.proxy",
+          "kind": "throwing-descriptor-proxy",
+          "trap": "getOwnPropertyDescriptor",
+          "thrownLabel": "fixture-proxy-trap",
+          "expectedTrapCalls": 1
+        }
+      ]
+    },
+    {
+      "id": "state-secret-accessor",
+      "description": "A secret-shaped state getter must not reach diagnostics.",
+      "steps": [
+        {
+          "operation": "special-value",
+          "target": "state.secret",
+          "kind": "accessor",
+          "getterValue": { "deep": "do-not-disclose" },
+          "expectedReads": 0
+        }
+      ]
+    },
+    {
+      "id": "state-selector",
+      "description": "State contains selector-shaped text that remains data.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "selector": ".item" } }
+      ]
+    },
+    {
+      "id": "state-value",
+      "description": "State contains an ordinary plain-data value.",
+      "steps": [
+        { "operation": "data-binding", "target": "state", "value": { "value": { "safe": true } } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/quality-budgets.schema.json",
+  "type": "object",
+  "required": [
+    "$schema",
+    "ratchet",
+    "package",
+    "cspPackage",
+    "turboPackage",
+    "bundles",
+    "consumerBundles",
+    "browser",
+    "generatedOutputs"
+  ],
+  "properties": {
+    "$schema": { "const": "jqstar-quality-budgets/1" },
+    "ratchet": {
+      "type": "object",
+      "required": ["comparison", "firstBaseline"],
+      "properties": {
+        "comparison": { "const": "immutable-delivery-base" },
+        "firstBaseline": { "const": "establish-when-base-has-no-budgets" }
+      },
+      "additionalProperties": false
+    },
+    "package": {
+      "type": "object",
+      "required": ["packedBytes", "unpackedBytes", "files"],
+      "properties": {
+        "packedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "unpackedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "files": { "$ref": "#/$defs/positiveBudget" }
+      },
+      "additionalProperties": false
+    },
+    "cspPackage": {
+      "type": "object",
+      "required": ["packedBytes", "unpackedBytes"],
+      "properties": {
+        "packedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "unpackedBytes": { "$ref": "#/$defs/positiveBudget" }
+      },
+      "additionalProperties": false
+    },
+    "turboPackage": {
+      "type": "object",
+      "required": ["packedBytes", "unpackedBytes"],
+      "properties": {
+        "packedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "unpackedBytes": { "$ref": "#/$defs/positiveBudget" }
+      },
+      "additionalProperties": false
+    },
+    "bundles": { "$ref": "#/$defs/namedPositiveBudgets" },
+    "consumerBundles": {
+      "type": "object",
+      "required": [
+        "rootImportBytes",
+        "coreImportBytes",
+        "coreImportGzipBytes",
+        "cspImportBytes",
+        "cspImportGzipBytes",
+        "cspImportBrotliBytes",
+        "testingImportBytes",
+        "testingImportGzipBytes",
+        "datastarTestingImportBytes",
+        "datastarTestingImportGzipBytes",
+        "turboImportBytes",
+        "turboImportGzipBytes"
+      ],
+      "properties": {
+        "coreImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "coreImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "cspImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "cspImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "cspImportBrotliBytes": { "$ref": "#/$defs/positiveBudget" },
+        "rootImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "testingImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "testingImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "datastarTestingImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "datastarTestingImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "turboImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "turboImportGzipBytes": { "$ref": "#/$defs/positiveBudget" }
+      },
+      "additionalProperties": false
+    },
+    "browser": {
+      "type": "object",
+      "required": [
+        "domNodes",
+        "activeMutationObservers",
+        "eventListeners",
+        "pendingTimers",
+        "requests",
+        "queries",
+        "patchMutations"
+      ],
+      "properties": {
+        "domNodes": { "$ref": "#/$defs/nonnegativeBudget" },
+        "activeMutationObservers": { "$ref": "#/$defs/nonnegativeBudget" },
+        "eventListeners": { "$ref": "#/$defs/nonnegativeBudget" },
+        "pendingTimers": { "$ref": "#/$defs/nonnegativeBudget" },
+        "requests": { "$ref": "#/$defs/nonnegativeBudget" },
+        "queries": { "$ref": "#/$defs/nonnegativeBudget" },
+        "patchMutations": { "$ref": "#/$defs/nonnegativeBudget" }
+      },
+      "additionalProperties": false
+    },
+    "generatedOutputs": {
+      "type": "object",
+      "required": ["changedFiles"],
+      "properties": {
+        "changedFiles": { "$ref": "#/$defs/nonnegativeBudget" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "positiveBudget": { "type": "integer", "minimum": 1 },
+    "nonnegativeBudget": { "type": "integer", "minimum": 0 },
+    "namedPositiveBudgets": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "type": "string", "minLength": 1 },
+      "additionalProperties": { "$ref": "#/$defs/positiveBudget" }
+    }
+  },
+  "additionalProperties": false
+}

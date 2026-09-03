@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { DisclosureTarget, StarContext, StarDisclosureStatic } from "../types";
 
 type DisclosureKind = "collapsible" | "accordion";
@@ -299,7 +299,11 @@ function createStatic(): StarDisclosureStatic {
   };
 }
 
-function registerActions(name: DisclosureKind, api: StarDisclosureStatic): void {
+function registerActions(
+  name: DisclosureKind,
+  api: StarDisclosureStatic,
+  registerAction: ActionRegistrar,
+): void {
   for (const action of ["open", "close", "toggle"] as const) {
     registerAction(`ui.${name}.${action}`, (context) => {
       const details = controlledDetails(context, context.args?.[0]);
@@ -308,10 +312,10 @@ function registerActions(name: DisclosureKind, api: StarDisclosureStatic): void 
   }
 }
 
-export function createDisclosures(): DisclosureCollection {
+export function createDisclosures(registerAction: ActionRegistrar): DisclosureCollection {
   const collapsible = createStatic();
   const accordion = createStatic();
-  registerActions("collapsible", collapsible);
-  registerActions("accordion", accordion);
+  registerActions("collapsible", collapsible, registerAction);
+  registerActions("accordion", accordion, registerAction);
   return { accordion, collapsible, enhance: enhanceTree };
 }

@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { FileUploadTarget, StarContext, StarFileUploadStatic } from "../types";
 
 interface FileUploadRecord {
@@ -352,7 +352,7 @@ function enhanceFileUploads(root: ParentNode): void {
   }
 }
 
-export function createFileUploads(): FileUploadCollection {
+export function createFileUploads(registerAction: ActionRegistrar): FileUploadCollection {
   const api: StarFileUploadStatic = {
     clear: (target) => {
       const root = resolveUpload(target);

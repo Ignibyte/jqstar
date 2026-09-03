@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { InputOTPTarget, StarContext, StarInputOTPStatic } from "../types";
 
 interface InputOTPRecord {
@@ -283,7 +283,7 @@ function controlledInputOTP(context: StarContext, target?: unknown): HTMLElement
   return resolveInputOTP(closest instanceof HTMLElement ? closest : String(target));
 }
 
-function registerActions(api: StarInputOTPStatic): void {
+function registerActions(api: StarInputOTPStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.input-otp.set", (context) => {
     const first = context.args?.[0];
     const explicit = typeof first === "string" && first.startsWith("#");
@@ -311,7 +311,7 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-export function createInputOTPs(): InputOTPCollection {
+export function createInputOTPs(registerAction: ActionRegistrar): InputOTPCollection {
   const api: StarInputOTPStatic = {
     set: (target, value) => requestValue(resolveInputOTP(target), value),
     clear: (target) => requestValue(resolveInputOTP(target), ""),
@@ -330,6 +330,6 @@ export function createInputOTPs(): InputOTPCollection {
       return complete(records.get(root) ?? enhanceInputOTP(root));
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

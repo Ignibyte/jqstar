@@ -1,0 +1,1055 @@
+{
+  "$schema": "../../../schema/csp-expression-contract.schema.json",
+  "schema": "jqstar-csp-denied/1",
+  "grammarVersion": "jqstar-csp-expression/1",
+  "ownerTicket": "0034",
+  "cases": [
+    {
+      "id": "non-string-source",
+      "entryKind": "value",
+      "source": null,
+      "diagnostic": {
+        "code": "CSP_SOURCE_TYPE",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 0,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 1
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "source-length-above",
+      "entryKind": "value",
+      "source": "0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ",
+      "limit": { "name": "sourceLength", "relation": "above", "value": 2049 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_SOURCE_LENGTH",
+        "phase": "compile",
+        "span": {
+          "startOffset": 2048,
+          "endOffset": 2049,
+          "startLine": 1,
+          "startColumn": 2049,
+          "endLine": 1,
+          "endColumn": 2050
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "invalid-character",
+      "entryKind": "value",
+      "source": "#",
+      "diagnostic": {
+        "code": "CSP_TOKEN_INVALID_CHARACTER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 1,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 2
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "invalid-escape",
+      "entryKind": "value",
+      "source": "'\\x41'",
+      "diagnostic": {
+        "code": "CSP_TOKEN_INVALID_ESCAPE",
+        "phase": "compile",
+        "span": {
+          "startOffset": 1,
+          "endOffset": 3,
+          "startLine": 1,
+          "startColumn": 2,
+          "endLine": 1,
+          "endColumn": 4
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "invalid-number",
+      "entryKind": "value",
+      "source": "01",
+      "diagnostic": {
+        "code": "CSP_TOKEN_NUMBER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 2,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 3
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "unterminated-string",
+      "entryKind": "value",
+      "source": "'abc",
+      "diagnostic": {
+        "code": "CSP_TOKEN_UNTERMINATED_STRING",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 4,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 5
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "unexpected-token",
+      "entryKind": "value",
+      "source": "]",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNEXPECTED_TOKEN",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 1,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 2
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "expected-token",
+      "entryKind": "value",
+      "source": "state[",
+      "diagnostic": {
+        "code": "CSP_PARSE_EXPECTED_TOKEN",
+        "phase": "compile",
+        "span": {
+          "startOffset": 6,
+          "endOffset": 6,
+          "startLine": 1,
+          "startColumn": 7,
+          "endLine": 1,
+          "endColumn": 7
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "trailing-input",
+      "entryKind": "value",
+      "source": "true false",
+      "diagnostic": {
+        "code": "CSP_PARSE_TRAILING_INPUT",
+        "phase": "compile",
+        "span": {
+          "startOffset": 5,
+          "endOffset": 10,
+          "startLine": 1,
+          "startColumn": 6,
+          "endLine": 1,
+          "endColumn": 11
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "duplicate-object-key",
+      "entryKind": "value",
+      "source": "{a:1,'a':2}",
+      "diagnostic": {
+        "code": "CSP_PARSE_DUPLICATE_KEY",
+        "phase": "compile",
+        "span": {
+          "startOffset": 5,
+          "endOffset": 8,
+          "startLine": 1,
+          "startColumn": 6,
+          "endLine": 1,
+          "endColumn": 9
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "ambient-identifier",
+      "entryKind": "value",
+      "source": "globalThis",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 10,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 11
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "eval-identifier",
+      "entryKind": "value",
+      "source": "eval('1')",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 9,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 10
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "function-identifier",
+      "entryKind": "value",
+      "source": "Function('return 1')",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 20,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 21
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "string-timer-identifier",
+      "entryKind": "value",
+      "source": "setTimeout('run()', 0)",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_IDENTIFIER",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 22,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 23
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "invalid-lvalue",
+      "entryKind": "statement",
+      "source": "computed.total = 1",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_LVALUE",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 14,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 15
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "denied-property",
+      "entryKind": "value",
+      "source": "state['constructor']",
+      "fixture": "state-count",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_PROPERTY",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 6,
+          "endOffset": 19,
+          "startLine": 1,
+          "startColumn": 7,
+          "endLine": 1,
+          "endColumn": 20
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "denied-call",
+      "entryKind": "value",
+      "source": "state.fn()",
+      "fixture": "state-function",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_CALL",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 6,
+          "endOffset": 8,
+          "startLine": 1,
+          "startColumn": 7,
+          "endLine": 1,
+          "endColumn": 9
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "denied-accessor",
+      "entryKind": "value",
+      "source": "state.secret",
+      "fixture": "state-accessor",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_ACCESSOR",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 12,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 13
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "denied-function-value",
+      "entryKind": "value",
+      "source": "acme.tools.functionValue()",
+      "fixture": "helper-function-result",
+      "diagnostic": {
+        "code": "CSP_CAPABILITY_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "missing-path",
+      "entryKind": "value",
+      "source": "state.missing.name",
+      "fixture": "state-count",
+      "diagnostic": {
+        "code": "CSP_PROPERTY_ABSENT",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 14,
+          "endOffset": 18,
+          "startLine": 1,
+          "startColumn": 15,
+          "endLine": 1,
+          "endColumn": 19
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "non-finite-number",
+      "entryKind": "value",
+      "source": "1 / 0",
+      "diagnostic": {
+        "code": "CSP_EVALUATE_NUMBER",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 5,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 6
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "mixed-relational-types",
+      "entryKind": "value",
+      "source": "1 < '2'",
+      "diagnostic": {
+        "code": "CSP_EVALUATE_TYPE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 7,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 8
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "cyclic-path",
+      "entryKind": "value",
+      "source": "state.self.self",
+      "fixture": "state-cycle",
+      "diagnostic": {
+        "code": "CSP_EVALUATE_CYCLE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 15,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 16
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "arbitrary-thenable",
+      "entryKind": "value",
+      "source": "acme.tools.thenable()",
+      "fixture": "helper-thenable-result",
+      "diagnostic": {
+        "code": "CSP_ASYNC_VALUE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 21,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 22
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "async-rejection",
+      "entryKind": "statement",
+      "source": "await action('reject')",
+      "fixture": "rejecting-action",
+      "diagnostic": {
+        "code": "CSP_ASYNC_REJECTION",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 22,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 23
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "disposed-evaluator",
+      "entryKind": "value",
+      "source": "$count",
+      "fixture": "disposed-engine",
+      "diagnostic": {
+        "code": "CSP_ENGINE_DISPOSED",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 6,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 7
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "token-limit-above",
+      "entryKind": "value",
+      "source": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!![(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([]))]",
+      "limit": { "name": "tokens", "relation": "above", "value": 513 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_TOKENS",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 1,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 2
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "nesting-limit-above",
+      "entryKind": "value",
+      "source": "(((((((((((((((((0)))))))))))))))))",
+      "limit": { "name": "nesting", "relation": "above", "value": 17 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_NESTING",
+        "phase": "compile",
+        "span": {
+          "startOffset": 16,
+          "endOffset": 17,
+          "startLine": 1,
+          "startColumn": 17,
+          "endLine": 1,
+          "endColumn": 18
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "ast-node-limit-above",
+      "entryKind": "value",
+      "source": "[[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0]]",
+      "limit": { "name": "astNodes", "relation": "above", "value": 257 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_AST_NODES",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 449,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 450
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "literal-entry-limit-above",
+      "entryKind": "value",
+      "source": "[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]",
+      "limit": { "name": "literalEntries", "relation": "above", "value": 65 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_LITERAL_ENTRIES",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 131,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 132
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "path-limit-above",
+      "entryKind": "value",
+      "source": "state.a.b.c.d.e.f.g.h.i",
+      "limit": { "name": "pathSegments", "relation": "above", "value": 9 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_PATH_SEGMENTS",
+        "phase": "compile",
+        "span": {
+          "startOffset": 21,
+          "endOffset": 23,
+          "startLine": 1,
+          "startColumn": 22,
+          "endLine": 1,
+          "endColumn": 24
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "argument-limit-above",
+      "entryKind": "value",
+      "source": "action('save',0,1,2,3,4,5,6,7)",
+      "limit": { "name": "callArguments", "relation": "above", "value": 9 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_CALL_ARGUMENTS",
+        "phase": "compile",
+        "span": {
+          "startOffset": 27,
+          "endOffset": 29,
+          "startLine": 1,
+          "startColumn": 28,
+          "endLine": 1,
+          "endColumn": 30
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "step-limit-above",
+      "entryKind": "value",
+      "source": "[[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],-0]",
+      "limit": { "name": "evaluationSteps", "relation": "above", "value": 129 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_EVALUATION_STEPS",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 256,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 257
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "collection-limit-above",
+      "entryKind": "value",
+      "source": "$('.item').length",
+      "fixture": "collection-129",
+      "limit": { "name": "collectionSize", "relation": "above", "value": 129 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_COLLECTION_SIZE",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 17,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 18
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "async-limit-above",
+      "entryKind": "statement",
+      "source": "await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');return 9",
+      "fixture": "async-ticks",
+      "limit": { "name": "asyncChain", "relation": "above", "value": 9 },
+      "diagnostic": {
+        "code": "CSP_LIMIT_ASYNC_CHAIN",
+        "phase": "evaluate",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 197,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 198
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "comment-line",
+      "entryKind": "statement",
+      "source": "true // comment",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 15,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 16
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "comment-block",
+      "entryKind": "statement",
+      "source": "true /* comment */",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 18,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 19
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "template-literal",
+      "entryKind": "statement",
+      "source": "`value`",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 7,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 8
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "regular-expression",
+      "entryKind": "statement",
+      "source": "/value/",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 7,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 8
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "variable-declaration",
+      "entryKind": "statement",
+      "source": "let value = 1",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 13,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 14
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "arrow-function",
+      "entryKind": "statement",
+      "source": "() => 1",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 7,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 8
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "function-expression",
+      "entryKind": "statement",
+      "source": "function () {}",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 14,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 15
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "class-expression",
+      "entryKind": "statement",
+      "source": "class Value {}",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 14,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 15
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "new-expression",
+      "entryKind": "statement",
+      "source": "new Date()",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 10,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 11
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "this-expression",
+      "entryKind": "statement",
+      "source": "this",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 4,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 5
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "if-statement",
+      "entryKind": "statement",
+      "source": "if (true) $count = 1",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 20,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 21
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "loop-statement",
+      "entryKind": "statement",
+      "source": "while (true) {}",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 15,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 16
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "switch-statement",
+      "entryKind": "statement",
+      "source": "switch ($count) {}",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 18,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 19
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "try-statement",
+      "entryKind": "statement",
+      "source": "try {} catch (error) {}",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 23,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 24
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "throw-statement",
+      "entryKind": "statement",
+      "source": "throw 'no'",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 10,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 11
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "dynamic-import",
+      "entryKind": "statement",
+      "source": "import('module')",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 16,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 17
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "static-import",
+      "entryKind": "statement",
+      "source": "import value from 'module'",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 26,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 27
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "optional-chain",
+      "entryKind": "statement",
+      "source": "state?.value",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 12,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 13
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "nullish-assignment",
+      "entryKind": "statement",
+      "source": "$count ??= 1",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 12,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 13
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "prefix-update",
+      "entryKind": "statement",
+      "source": "++$count",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 8,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 9
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "spread",
+      "entryKind": "statement",
+      "source": "[...args]",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 9,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 10
+        },
+        "partialEffects": false
+      }
+    },
+    {
+      "id": "destructure",
+      "entryKind": "statement",
+      "source": "[$count] = args",
+      "diagnostic": {
+        "code": "CSP_PARSE_UNSUPPORTED_SYNTAX",
+        "phase": "compile",
+        "span": {
+          "startOffset": 0,
+          "endOffset": 15,
+          "startLine": 1,
+          "startColumn": 1,
+          "endLine": 1,
+          "endColumn": 16
+        },
+        "partialEffects": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,479 @@
+{
+  "$schema": "../../../schema/csp-expression-contract.schema.json",
+  "schema": "jqstar-csp-accepted/1",
+  "grammarVersion": "jqstar-csp-expression/1",
+  "ownerTicket": "0034",
+  "cases": [
+    {
+      "id": "literal-array",
+      "entryKind": "value",
+      "source": "[null, true, false, 0, 1.5, \"ok\"]",
+      "covers": {
+        "productions": [
+          "value-input",
+          "assignment-expression",
+          "conditional-expression",
+          "nullish-expression",
+          "logical-or-expression",
+          "logical-and-expression",
+          "equality-expression",
+          "relational-expression",
+          "additive-expression",
+          "multiplicative-expression",
+          "unary-expression",
+          "update-expression",
+          "member-expression",
+          "primary-expression",
+          "literal",
+          "array-literal"
+        ],
+        "nodes": ["array-literal", "literal"],
+        "capabilities": ["primitive", "array"],
+        "operators": []
+      },
+      "expected": { "outcome": "value", "value": [null, true, false, 0, 1.5, "ok"] }
+    },
+    {
+      "id": "object-literal",
+      "entryKind": "value",
+      "source": "{ name: 'Ada', \"count\": 2 }",
+      "covers": {
+        "productions": ["object-literal", "object-property"],
+        "nodes": ["object-literal", "object-property"],
+        "capabilities": ["plain-data"],
+        "operators": []
+      },
+      "expected": { "outcome": "value", "value": { "name": "Ada", "count": 2 } }
+    },
+    {
+      "id": "all-bindings",
+      "entryKind": "value",
+      "source": "[$count,state.count,signals.count,computed.double,args[0],evt.type,el.value,root.id,$el.length,$root.length]",
+      "covers": {
+        "productions": [
+          "binding-reference",
+          "signal-reference",
+          "member-expression",
+          "computed-member"
+        ],
+        "nodes": ["binding", "signal", "member"],
+        "capabilities": ["state", "computed", "arguments", "event", "dom-element", "jquery"],
+        "operators": []
+      },
+      "fixture": "all-bindings",
+      "expected": {
+        "outcome": "value",
+        "value": [2, 2, 2, 4, "input", "click", "save", "app", 1, 1]
+      }
+    },
+    {
+      "id": "unary-operators",
+      "entryKind": "value",
+      "source": "[-2,+2,!false]",
+      "covers": {
+        "productions": ["unary-expression"],
+        "nodes": ["unary"],
+        "capabilities": ["primitive"],
+        "operators": ["unary"]
+      },
+      "expected": { "outcome": "value", "value": [-2, 2, true] }
+    },
+    {
+      "id": "arithmetic-precedence",
+      "entryKind": "value",
+      "source": "1 + 2 * 3 - 4 / 2 % 2",
+      "covers": {
+        "productions": ["additive-expression", "multiplicative-expression"],
+        "nodes": ["binary"],
+        "capabilities": ["primitive"],
+        "operators": ["additive", "multiplicative"]
+      },
+      "expected": { "outcome": "value", "value": 7 }
+    },
+    {
+      "id": "relational-equality",
+      "entryKind": "value",
+      "source": "1 + 2 === 3 && 'b' > 'a' && 2 !== 3",
+      "covers": {
+        "productions": ["equality-expression", "relational-expression", "logical-and-expression"],
+        "nodes": ["binary", "logical"],
+        "capabilities": ["primitive"],
+        "operators": ["equality", "relational", "logical-and"]
+      },
+      "expected": { "outcome": "value", "value": true }
+    },
+    {
+      "id": "short-circuit",
+      "entryKind": "value",
+      "source": "false && action('never') || true",
+      "covers": {
+        "productions": ["logical-and-expression", "logical-or-expression"],
+        "nodes": ["logical"],
+        "capabilities": ["action"],
+        "operators": ["logical-and", "logical-or"]
+      },
+      "fixture": "actions",
+      "expected": { "outcome": "value", "value": true, "calls": [] }
+    },
+    {
+      "id": "nullish-conditional",
+      "entryKind": "value",
+      "source": "state.missing ?? ($count > 0 ? 'yes' : 'no')",
+      "covers": {
+        "productions": ["nullish-expression", "conditional-expression"],
+        "nodes": ["logical", "conditional"],
+        "capabilities": ["state", "primitive"],
+        "operators": ["nullish", "conditional"]
+      },
+      "fixture": "state-count",
+      "expected": { "outcome": "value", "value": "yes" }
+    },
+    {
+      "id": "computed-member",
+      "entryKind": "value",
+      "source": "state['pro' + 'file'].name",
+      "covers": {
+        "productions": ["computed-member", "member-expression"],
+        "nodes": ["member", "binary"],
+        "capabilities": ["state", "plain-data"],
+        "operators": []
+      },
+      "fixture": "profile",
+      "expected": { "outcome": "value", "value": "Ada" }
+    },
+    {
+      "id": "signal-state-assignment",
+      "entryKind": "statement",
+      "source": "$count = 2; state.total = $count * 2; return state.total",
+      "covers": {
+        "productions": [
+          "statement-input",
+          "statement-list",
+          "expression-statement",
+          "return-statement",
+          "assignment-expression"
+        ],
+        "nodes": ["program", "expression-statement", "return-statement", "assignment"],
+        "capabilities": ["state"],
+        "operators": ["assignment"]
+      },
+      "fixture": "state-count",
+      "expected": { "outcome": "state", "value": 4, "state": { "count": 2, "total": 4 } }
+    },
+    {
+      "id": "compound-assignment",
+      "entryKind": "statement",
+      "source": "$count += 5; $count -= 1; $count *= 2; $count /= 3; $count %= 4; return $count",
+      "covers": {
+        "productions": ["assignment-expression"],
+        "nodes": ["assignment"],
+        "capabilities": ["state"],
+        "operators": ["assignment"]
+      },
+      "fixture": "state-count",
+      "expected": { "outcome": "state", "value": 0, "state": { "count": 0 } }
+    },
+    {
+      "id": "postfix-update",
+      "entryKind": "statement",
+      "source": "$count++; $count--; return $count",
+      "covers": {
+        "productions": ["update-expression"],
+        "nodes": ["update"],
+        "capabilities": ["state"],
+        "operators": ["postfix"]
+      },
+      "fixture": "state-count",
+      "expected": { "outcome": "state", "value": 2, "state": { "count": 2 } }
+    },
+    {
+      "id": "empty-return",
+      "entryKind": "statement",
+      "source": "return",
+      "covers": {
+        "productions": ["return-statement"],
+        "nodes": ["program", "return-statement"],
+        "capabilities": ["primitive"],
+        "operators": []
+      },
+      "expected": { "outcome": "undefined" }
+    },
+    {
+      "id": "action-shorthand",
+      "entryKind": "statement",
+      "source": "@save($count,args[0])",
+      "covers": {
+        "productions": ["action-shorthand", "argument-list"],
+        "nodes": ["program", "action-call"],
+        "capabilities": ["action", "approved-async", "call-result"],
+        "operators": []
+      },
+      "fixture": "actions",
+      "expected": {
+        "outcome": "async-value",
+        "value": "saved",
+        "calls": [{ "target": "save", "arguments": [2, "input"] }]
+      }
+    },
+    {
+      "id": "action-call",
+      "entryKind": "value",
+      "source": "action('save',$count)",
+      "covers": {
+        "productions": ["action-call", "argument-list"],
+        "nodes": ["action-call"],
+        "capabilities": ["action", "approved-async", "call-result"],
+        "operators": []
+      },
+      "fixture": "actions",
+      "expected": {
+        "outcome": "async-value",
+        "value": "saved",
+        "calls": [{ "target": "save", "arguments": [2] }]
+      }
+    },
+    {
+      "id": "helper-call",
+      "entryKind": "value",
+      "source": "acme.math.sum($count,2)",
+      "covers": {
+        "productions": ["helper-call", "argument-list"],
+        "nodes": ["helper-call"],
+        "capabilities": ["helper", "call-result"],
+        "operators": []
+      },
+      "fixture": "helpers",
+      "expected": {
+        "outcome": "value",
+        "value": 4,
+        "calls": [{ "target": "acme.math.sum", "arguments": [2, 2] }]
+      }
+    },
+    {
+      "id": "jquery-chain",
+      "entryKind": "statement",
+      "source": "$(el).closest('[data-jqs]').find('[data-part=label]').text('Saved')",
+      "covers": {
+        "productions": ["jquery-call", "method-call", "argument-list"],
+        "nodes": ["jquery-call", "method-call"],
+        "capabilities": ["jquery", "dom-element"],
+        "operators": ["member-call"]
+      },
+      "fixture": "jquery-tree",
+      "expected": { "outcome": "effect" }
+    },
+    {
+      "id": "jquery-read",
+      "entryKind": "value",
+      "source": "$(el).attr('data-role')",
+      "covers": {
+        "productions": ["jquery-call", "method-call"],
+        "nodes": ["jquery-call", "method-call"],
+        "capabilities": ["jquery", "dom-element"],
+        "operators": []
+      },
+      "fixture": "jquery-tree",
+      "expected": { "outcome": "value", "value": "save" }
+    },
+    {
+      "id": "string-method",
+      "entryKind": "value",
+      "source": "$name.trim().toUpperCase()",
+      "covers": {
+        "productions": ["method-call"],
+        "nodes": ["method-call"],
+        "capabilities": ["state", "string"],
+        "operators": []
+      },
+      "fixture": "name",
+      "expected": { "outcome": "value", "value": "ADA" }
+    },
+    {
+      "id": "array-method",
+      "entryKind": "value",
+      "source": "args.slice(0,2).join('-')",
+      "covers": {
+        "productions": ["method-call"],
+        "nodes": ["method-call"],
+        "capabilities": ["arguments", "array", "string"],
+        "operators": []
+      },
+      "fixture": "array-arguments",
+      "expected": { "outcome": "value", "value": "a-b" }
+    },
+    {
+      "id": "event-method",
+      "entryKind": "statement",
+      "source": "evt.preventDefault(); return evt.defaultPrevented",
+      "covers": {
+        "productions": ["method-call"],
+        "nodes": ["program", "method-call", "return-statement"],
+        "capabilities": ["event"],
+        "operators": []
+      },
+      "fixture": "cancelable-event",
+      "expected": { "outcome": "value", "value": true }
+    },
+    {
+      "id": "approved-async",
+      "entryKind": "statement",
+      "source": "await action('load'); $count += 1; return $count",
+      "covers": {
+        "productions": ["await-expression"],
+        "nodes": ["program", "await", "action-call", "assignment"],
+        "capabilities": ["action", "approved-async", "state"],
+        "operators": []
+      },
+      "fixture": "actions",
+      "expected": { "outcome": "async-value", "value": 3, "state": { "count": 3 } }
+    },
+    {
+      "id": "property-absence",
+      "entryKind": "value",
+      "source": "state.missing",
+      "covers": {
+        "productions": ["member-expression"],
+        "nodes": ["member"],
+        "capabilities": ["state", "plain-data"],
+        "operators": []
+      },
+      "fixture": "state-count",
+      "expected": { "outcome": "undefined" }
+    },
+    {
+      "id": "multiline-span",
+      "entryKind": "value",
+      "source": "(\n  $count +\n  2\n)",
+      "covers": {
+        "productions": ["value-input", "additive-expression"],
+        "nodes": ["binary", "signal", "literal"],
+        "capabilities": ["state", "primitive"],
+        "operators": []
+      },
+      "fixture": "state-count",
+      "ast": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "binary",
+            "span": {
+              "startOffset": 4,
+              "endOffset": 16,
+              "startLine": 2,
+              "startColumn": 3,
+              "endLine": 3,
+              "endColumn": 4
+            },
+            "children": [1, 2]
+          },
+          {
+            "kind": "signal",
+            "span": {
+              "startOffset": 4,
+              "endOffset": 10,
+              "startLine": 2,
+              "startColumn": 3,
+              "endLine": 2,
+              "endColumn": 9
+            }
+          },
+          {
+            "kind": "literal",
+            "span": {
+              "startOffset": 15,
+              "endOffset": 16,
+              "startLine": 3,
+              "startColumn": 3,
+              "endLine": 3,
+              "endColumn": 4
+            }
+          }
+        ]
+      },
+      "expected": { "outcome": "value", "value": 4 }
+    },
+    {
+      "id": "limit-source-length",
+      "entryKind": "value",
+      "source": "0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "sourceLength", "relation": "at", "value": 2048 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-tokens",
+      "entryKind": "value",
+      "source": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!![(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([])),(([]))]",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "tokens", "relation": "at", "value": 512 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-nesting",
+      "entryKind": "value",
+      "source": "((((((((((((((((0))))))))))))))))",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "nesting", "relation": "at", "value": 16 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-ast-nodes",
+      "entryKind": "value",
+      "source": "[[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[-0,0],[0,0]]",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "astNodes", "relation": "at", "value": 256 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-literal-entries",
+      "entryKind": "value",
+      "source": "[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "literalEntries", "relation": "at", "value": 64 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-path-segments",
+      "entryKind": "value",
+      "source": "state.a.b.c.d.e.f.g.h",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "fixture": "deep-state",
+      "limit": { "name": "pathSegments", "relation": "at", "value": 8 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-call-arguments",
+      "entryKind": "value",
+      "source": "action('save',0,1,2,3,4,5,6)",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "callArguments", "relation": "at", "value": 8 },
+      "expected": { "outcome": "compiled" }
+    },
+    {
+      "id": "limit-evaluation-steps",
+      "entryKind": "value",
+      "source": "[[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],0]",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "limit": { "name": "evaluationSteps", "relation": "at", "value": 128 },
+      "expected": { "outcome": "value" }
+    },
+    {
+      "id": "limit-collection-size",
+      "entryKind": "value",
+      "source": "$('.item').length",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "fixture": "collection-128",
+      "limit": { "name": "collectionSize", "relation": "at", "value": 128 },
+      "expected": { "outcome": "value", "value": 128 }
+    },
+    {
+      "id": "limit-async-chain",
+      "entryKind": "statement",
+      "source": "await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');await action('tick');return 8",
+      "covers": { "productions": [], "nodes": [], "capabilities": [], "operators": [] },
+      "fixture": "async-ticks",
+      "limit": { "name": "asyncChain", "relation": "at", "value": 8 },
+      "expected": { "outcome": "async-value", "value": 8 }
+    }
+  ]
+}

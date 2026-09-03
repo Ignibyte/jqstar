@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Turbo and htmx interoperability · jQStar</title>
+    <meta
+      name="description"
+      content="Install the jQStar Turbo bridge and review the tested Turbo and htmx lifecycle, version, preservation, and ownership contract."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Turbo and htmx interoperability</h1>
+      <p class="docs-lede">
+        jQStar has a tested contract for wrapping external DOM renders without taking over the host
+        library. The <code>jquery-star/turbo</code> preview ships now. The htmx bridge remains
+        planned.
+      </p>
+      <div class="docs-callout">
+        <p>
+          <strong>One ownership seam:</strong> the host sends requests and mutates the DOM. A bridge
+          uses <code>createRenderAdapter()</code> only to release outgoing jQStar roots, preserve
+          exact approved identities, enhance incoming roots, and await the barrier.
+        </p>
+      </div>
+      <h2>Tested version boundaries</h2>
+      <div class="api-table-wrap" role="region" aria-label="Host version boundaries" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Approved evidence range</th>
+              <th>Tested packages</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Turbo</td>
+              <td><code>&gt;=8.0.21 &lt;8.1.0</code></td>
+              <td>8.0.21 and 8.0.23</td>
+            </tr>
+            <tr>
+              <td>htmx</td>
+              <td><code>&gt;=2.0.0 &lt;2.1.0</code></td>
+              <td>2.0.0 and 2.0.10</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Missing, prerelease, unknown, and out-of-range versions fail before the Turbo bridge
+        installs listeners. jQStar does not auto-detect or load either host.
+      </p>
+
+      <h2>Install the Turbo bridge</h2>
+      <div class="code-block">
+        <div class="code-heading"><span>Explicit Turbo capability and version</span></div>
+        <pre><code>import * as Turbo from "@hotwired/turbo";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createTurboBridge } from "jquery-star/turbo";
+
+const { star } = installStarCore($);
+const bridge = star.use(
+  createTurboBridge({ $, Turbo, version: "8.0.23" }),
+);
+
+await bridge.whenIdle();</code></pre>
+      </div>
+      <p>
+        Use the exact installed Turbo package version. Importing the bridge is inert. Installing it
+        registers document-scoped public event listeners but never calls Turbo start or navigation
+        APIs. <code>bridge.dispose()</code> removes those listeners without disposing Turbo or the
+        jQStar kernel.
+      </p>
+
+      <h2>Lifecycle</h2>
+      <div class="code-block">
+        <div class="code-heading"><span>External render state machine</span></div>
+        <pre><code>prepared
+  -&gt; removing
+  -&gt; externally-mutated
+  -&gt; enhancing
+  -&gt; committed
+
+Terminal alternatives: canceled or failed</code></pre>
+      </div>
+      <p>
+        Cancellable intent creates no render transaction. A real mutation starts at Turbo's pausable
+        document or Frame render callback, or at the approved htmx swap and cleanup seam. Every
+        opened transaction commits or fails once.
+      </p>
+
+      <h2>Host-specific differences</h2>
+      <div
+        class="api-table-wrap"
+        role="region"
+        aria-label="Host lifecycle differences"
+        tabindex="0"
+      >
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Flow</th>
+              <th>Observed contract</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Turbo document or Frame</td>
+              <td>Wrap <code>detail.render</code>, then commit before host completion.</td>
+            </tr>
+            <tr>
+              <td>Turbo form</td>
+              <td>
+                <code>submit-end</code> and <code>before-visit</code> can reverse across browsers.
+                Both precede render.
+              </td>
+            </tr>
+            <tr>
+              <td>htmx replacement</td>
+              <td>Deduplicate nested cleanup, commit after the host swap, and finish at settle.</td>
+            </tr>
+            <tr>
+              <td>htmx delete</td>
+              <td>
+                Cleanup and <code>afterRequest</code> occur without <code>afterSwap</code> or
+                <code>afterSettle</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>htmx no-swap</td>
+              <td><code>afterSwap</code> may fire even when no target mutation occurs.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Preservation and focus</h2>
+      <p>
+        <code>data-jqs-preserve</code> remains the core marker. The Turbo bridge also passes an
+        exact old <code>data-turbo-permanent</code> element when it is connected, inside the
+        outgoing boundary, uniquely identified, matched once in the incoming content, and retained
+        after mutation. A future htmx bridge may do the same for <code>hx-preserve</code>.
+        Duplicate, missing, disconnected, moved, or cross-document candidates are cleaned and
+        diagnosed.
+      </p>
+      <p>
+        The tested hosts retain DOM and control-value identity for valid permanent elements but can
+        move focus to the activated control. Focus remains host-owned. A bridge must not add a focus
+        correction unless a later contract explicitly approves and tests one.
+      </p>
+
+      <h2>Proof and limits</h2>
+      <p>
+        Actual boundary packages run in Chromium, Firefox, and WebKit against native links and
+        forms, document and region changes, history, cache, preservation, cancellation, no-content
+        responses, and failures. Semantic traces omit URLs, form values, headers, bodies, HTML, DOM
+        objects, signal values, and raw errors.
+      </p>
+      <p>
+        Turbo Streams, morph refresh, custom Turbo renderers, custom htmx swap extensions, shadow or
+        cross-document targets, and script execution guarantees are outside this contract. Read the
+        complete
+        <a href="https://github.com/Ignibyte/jqstar/blob/main/docs/INTEROPERABILITY.md"
+          >repository contract</a
+        >
+        for every stable mapping ID and update rule.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

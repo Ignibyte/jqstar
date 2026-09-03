@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { RatingTarget, StarContext, StarRatingStatic } from "../types";
 
 interface RatingRecord {
@@ -243,7 +243,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createRatings(): RatingCollection {
+export function createRatings(registerAction: ActionRegistrar): RatingCollection {
   const api: StarRatingStatic = {
     set: (target, value) => {
       const root = resolve(target);

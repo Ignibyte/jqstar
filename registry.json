@@ -202,7 +202,7 @@
       "name": "data-table",
       "type": "registry:item",
       "title": "Data Table",
-      "description": "Native table sorting, filtering, pagination, and stable selection.",
+      "description": "Native ordered multi-sort, filtering, pagination, and stable selection.",
       "files": [
         {
           "path": "registry/components/data-table.html",
@@ -1428,7 +1428,7 @@
       "name": "project-browser",
       "type": "registry:block",
       "title": "Project Browser",
-      "description": "A server-driven project directory with search, sortable native table rows, stable selection, and Pagination patched through the Datastar SDK.",
+      "description": "A persistent server-driven data explorer with multi-sort, groups, inline conflict-safe editing, page and virtual windows, durable column layouts, stable selection, and Datastar SDK patches.",
       "registryDependencies": [
         "button",
         "card",

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/quality-receipt.schema.json",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "mode",
+    "fingerprint",
+    "head",
+    "reportPath",
+    "reportSha256",
+    "createdAt"
+  ],
+  "properties": {
+    "schema": { "const": "jqstar-quality-receipt/1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["delivery", "full-audit"] },
+    "fingerprint": {
+      "type": "object",
+      "required": ["algorithm", "digest", "fileCount"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "fileCount": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "head": { "type": ["string", "null"] },
+    "reportPath": { "type": "string", "minLength": 1 },
+    "reportSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "createdAt": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

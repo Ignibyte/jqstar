@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   FormTarget,
   StarContext,
@@ -343,7 +343,7 @@ function controlledForm(context: StarContext, target?: unknown): HTMLFormElement
   throw new Error('Form action needs a selector or an element inside form[data-jqs="form"].');
 }
 
-export function createForms(): FormCollection {
+export function createForms(registerAction: ActionRegistrar): FormCollection {
   const api: StarFormStatic = {
     validate: (target, options) => validateForm(resolveForm(target), options),
     valid: (target) => invalidControls(resolveForm(target)).length === 0,

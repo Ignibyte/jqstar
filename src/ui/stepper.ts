@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarStepperStatic, StepperTarget } from "../types";
 
 type Orientation = "horizontal" | "vertical";
@@ -415,7 +415,7 @@ function enhanceSteppers(root: ParentNode): void {
   }
 }
 
-export function createSteppers(): StepperCollection {
+export function createSteppers(registerAction: ActionRegistrar): StepperCollection {
   const api: StarStepperStatic = {
     next: (target) => {
       const root = resolveStepper(target);

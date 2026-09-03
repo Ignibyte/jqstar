@@ -1,0 +1,733 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/package-report.schema.json",
+  "type": "object",
+  "required": ["schema", "runId", "mode", "status", "package", "checks", "futureContracts"],
+  "properties": {
+    "schema": { "const": "jqstar-package-quality/1" },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "maxLength": 160
+    },
+    "mode": { "const": "package" },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "package": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["filename", "files", "packedBytes", "unpackedBytes"],
+          "properties": {
+            "filename": { "type": "string", "pattern": "\\.tgz$" },
+            "files": { "type": "integer", "minimum": 1 },
+            "packedBytes": { "type": "integer", "minimum": 1 },
+            "unpackedBytes": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 13,
+      "maxItems": 13,
+      "prefixItems": [
+        { "$ref": "#/$defs/buildCheck" },
+        { "$ref": "#/$defs/apiReportCheck" },
+        { "$ref": "#/$defs/packCheck" },
+        { "$ref": "#/$defs/packageBudgetsCheck" },
+        { "$ref": "#/$defs/exportsAndFilesCheck" },
+        { "$ref": "#/$defs/publintCheck" },
+        { "$ref": "#/$defs/areTheTypesWrongCheck" },
+        { "$ref": "#/$defs/refreshPackageSubjectCheck" },
+        { "$ref": "#/$defs/installedConsumerCheck" },
+        { "$ref": "#/$defs/qunitConsumerCheck" },
+        { "$ref": "#/$defs/browserConsumersCheck" },
+        { "$ref": "#/$defs/bundleSentinelCheck" },
+        { "$ref": "#/$defs/copyInRegistryCheck" }
+      ],
+      "items": false
+    },
+    "futureContracts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/futureContract" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "pass" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "package": { "type": "object" },
+          "checks": {
+            "type": "array",
+            "not": {
+              "type": "array",
+              "contains": {
+                "type": "object",
+                "properties": { "status": { "enum": ["fail", "error"] } },
+                "required": ["status"]
+              }
+            }
+          },
+          "futureContracts": {
+            "type": "array",
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "fail" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": { "status": { "const": "fail" } },
+              "required": ["status"]
+            },
+            "not": {
+              "type": "array",
+              "contains": {
+                "type": "object",
+                "properties": { "status": { "const": "error" } },
+                "required": ["status"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "error" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": { "status": { "const": "error" } },
+              "required": ["status"]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["name", "status", "detail"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["pass", "fail", "error"] },
+        "detail": {}
+      },
+      "additionalProperties": false
+    },
+    "buildCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "build" } } }
+      ]
+    },
+    "apiReportCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "api-report" } } }
+      ]
+    },
+    "packCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "pack" } } }
+      ]
+    },
+    "packageBudgetsCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "package-budgets" } },
+          "allOf": [
+            {
+              "if": {
+                "properties": { "status": { "const": "pass" } },
+                "required": ["status"]
+              },
+              "then": {
+                "properties": { "detail": { "$ref": "#/$defs/packageBudgetEvidence" } }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "exportsAndFilesCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "exports-and-files" } },
+          "allOf": [
+            {
+              "if": {
+                "properties": { "status": { "const": "pass" } },
+                "required": ["status"]
+              },
+              "then": {
+                "properties": { "detail": { "$ref": "#/$defs/exportsAndFilesEvidence" } }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "publintCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "publint" } } }
+      ]
+    },
+    "areTheTypesWrongCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "are-the-types-wrong" } } }
+      ]
+    },
+    "refreshPackageSubjectCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "refresh-package-subject" } }
+        }
+      ]
+    },
+    "installedConsumerCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "installed-consumer" } },
+          "allOf": [
+            {
+              "if": {
+                "properties": { "status": { "const": "pass" } },
+                "required": ["status"]
+              },
+              "then": {
+                "properties": { "detail": { "$ref": "#/$defs/installedConsumerEvidence" } }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "qunitConsumerCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "qunit-consumer" } } }
+      ]
+    },
+    "browserConsumersCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "browser-consumers" } },
+          "allOf": [
+            {
+              "if": {
+                "type": "object",
+                "properties": { "status": { "const": "pass" } }
+              },
+              "then": {
+                "type": "object",
+                "properties": {
+                  "detail": { "$ref": "#/$defs/browserConsumerEvidence" }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "bundleSentinelCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "bundle-sentinel" } },
+          "allOf": [
+            {
+              "if": {
+                "properties": { "status": { "const": "pass" } },
+                "required": ["status"]
+              },
+              "then": {
+                "properties": { "detail": { "$ref": "#/$defs/bundleSentinelEvidence" } }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "copyInRegistryCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "name": { "const": "copy-in-registry" } } }
+      ]
+    },
+    "browserConsumerEvidence": {
+      "type": "object",
+      "required": ["subject", "consumers", "lifecycle", "engines", "csp"],
+      "properties": {
+        "subject": { "const": "installed-tarball" },
+        "consumers": { "const": ["module", "umd", "testing", "csp"] },
+        "lifecycle": { "const": "boot-and-dispose" },
+        "engines": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "$ref": "#/$defs/chromiumEvidence" },
+            { "$ref": "#/$defs/firefoxEvidence" },
+            { "$ref": "#/$defs/webkitEvidence" }
+          ],
+          "items": false
+        },
+        "csp": { "$ref": "#/$defs/cspBrowserEvidence" }
+      },
+      "additionalProperties": false
+    },
+    "installedConsumerEvidence": {
+      "type": "object",
+      "required": ["consumers", "peerDependencies"],
+      "properties": {
+        "consumers": {
+          "const": [
+            "esm",
+            "commonjs",
+            "core-only-esm",
+            "modular-esm",
+            "modular-commonjs",
+            "testing-esm",
+            "testing-commonjs",
+            "csp-esm-corpus",
+            "csp-commonjs-corpus",
+            "private-path",
+            "typescript-nodenext",
+            "typescript-bundler",
+            "typescript-modular-nodenext",
+            "typescript-modular-bundler",
+            "typescript-testing-nodenext",
+            "typescript-testing-bundler",
+            "typescript-csp-nodenext",
+            "typescript-csp-bundler"
+          ]
+        },
+        "peerDependencies": {
+          "type": "object",
+          "required": ["jqueryRange", "turboRange", "turboOptional", "missing", "incompatible"],
+          "properties": {
+            "jqueryRange": { "const": ">=4.0.0 <5" },
+            "turboRange": { "const": ">=8.0.21 <8.1.0" },
+            "turboOptional": { "const": true },
+            "missing": {
+              "allOf": [
+                { "$ref": "#/$defs/expectedFailureEvidence" },
+                { "type": "object", "properties": { "markers": { "const": ["jquery"] } } }
+              ]
+            },
+            "incompatible": {
+              "allOf": [
+                { "$ref": "#/$defs/expectedFailureEvidence" },
+                {
+                  "type": "object",
+                  "properties": { "markers": { "const": ["ERESOLVE", "jquery"] } }
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "expectedFailureEvidence": {
+      "type": "object",
+      "required": ["exitCode", "markers"],
+      "properties": {
+        "exitCode": { "type": "integer", "minimum": 1 },
+        "markers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "budgetRatchet": {
+      "type": "object",
+      "required": ["status", "baseRevision", "reason", "failures"],
+      "properties": {
+        "status": { "enum": ["pass", "first-baseline", "not-applicable"] },
+        "baseRevision": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$" }
+          ]
+        },
+        "reason": { "type": "string", "minLength": 1 },
+        "failures": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "packageBudgetEvidence": {
+      "type": "object",
+      "required": ["ratchet", "measurements"],
+      "properties": {
+        "ratchet": { "$ref": "#/$defs/budgetRatchet" },
+        "measurements": {
+          "type": "object",
+          "required": ["files", "packedBytes", "unpackedBytes", "bundles"],
+          "properties": {
+            "files": { "type": "integer", "minimum": 1 },
+            "packedBytes": { "type": "integer", "minimum": 1 },
+            "unpackedBytes": { "type": "integer", "minimum": 1 },
+            "bundles": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "exportsAndFilesEvidence": {
+      "type": "object",
+      "required": ["exports", "version", "documentation"],
+      "properties": {
+        "exports": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "prefixItems": [
+            { "const": "." },
+            { "const": "./core" },
+            { "const": "./csp" },
+            { "const": "./ui" },
+            { "const": "./datastar" },
+            { "const": "./testing" },
+            { "const": "./turbo" },
+            { "const": "./datastar/testing" },
+            { "const": "./ui.css" }
+          ],
+          "items": false
+        },
+        "version": { "type": "string", "minLength": 1 },
+        "documentation": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "prefixItems": [
+            { "const": "docs/BACKEND.md" },
+            { "const": "docs/COMPONENT_ARCHITECTURE.md" },
+            { "const": "docs/COMPONENT_RESEARCH.md" },
+            { "const": "docs/CSP_EXPRESSIONS.md" },
+            { "const": "docs/INTEROPERABILITY.md" },
+            { "const": "docs/SELF_HOSTING.md" },
+            { "const": "docs/security/CSP_THREAT_MODEL.md" }
+          ],
+          "items": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "bundleSentinelEvidence": {
+      "type": "object",
+      "required": ["root", "core", "csp", "testing", "datastarTesting", "turbo"],
+      "properties": {
+        "root": {
+          "type": "object",
+          "required": ["bytes", "budget"],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "core": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "forbiddenOptionalModules"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "forbiddenOptionalModules": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "csp": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "brotliBytes",
+            "brotliBudget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "trustedCompiler",
+            "dynamicCode"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "brotliBytes": { "type": "integer", "minimum": 1 },
+            "brotliBudget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "trustedCompiler": { "const": "absent" },
+            "dynamicCode": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "testing": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "datastarSDK",
+            "externalDOMAndRunners"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "datastarSDK": { "const": "absent" },
+            "externalDOMAndRunners": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "datastarTesting": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "externalDOMAndRunners"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "externalDOMAndRunners": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "turbo": {
+          "type": "object",
+          "required": ["bytes", "budget", "gzipBytes", "gzipBudget", "modules", "hostPackage"],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "hostPackage": { "const": "absent" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "browserEvidence": {
+      "type": "object",
+      "required": ["name", "status", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "const": "pass" },
+        "version": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "cspBrowserEvidence": {
+      "type": "object",
+      "required": [
+        "schema",
+        "policy",
+        "packageVersion",
+        "grammarVersion",
+        "corpusDigest",
+        "sourceDigest",
+        "tarballDigest",
+        "bundleDigests",
+        "formats",
+        "engines"
+      ],
+      "properties": {
+        "schema": { "const": "jqstar-csp-browser/1" },
+        "policy": { "type": "string", "minLength": 1 },
+        "packageVersion": { "type": "string", "minLength": 1 },
+        "grammarVersion": { "const": "jqstar-csp-expression/1" },
+        "corpusDigest": { "$ref": "#/$defs/sha256" },
+        "sourceDigest": { "$ref": "#/$defs/sha256" },
+        "tarballDigest": { "$ref": "#/$defs/sha256" },
+        "bundleDigests": {
+          "type": "object",
+          "required": ["esm", "commonjs"],
+          "properties": {
+            "esm": { "$ref": "#/$defs/sha256" },
+            "commonjs": { "$ref": "#/$defs/sha256" }
+          },
+          "additionalProperties": false
+        },
+        "formats": { "const": ["esm", "commonjs"] },
+        "engines": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "$ref": "#/$defs/cspChromiumEvidence" },
+            { "$ref": "#/$defs/cspFirefoxEvidence" },
+            { "$ref": "#/$defs/cspWebkitEvidence" }
+          ],
+          "items": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cspBrowserEngineEvidence": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "status",
+        "headerResponses",
+        "policyEvents",
+        "policyReports",
+        "expectedCanaryConsoleMessages",
+        "unexpectedPolicyEvents",
+        "unexpectedPolicyReports",
+        "operationCount",
+        "disposal",
+        "noJavaScript"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string", "minLength": 1 },
+        "status": { "const": "pass" },
+        "headerResponses": { "type": "integer", "minimum": 1 },
+        "policyEvents": { "type": "integer", "minimum": 0 },
+        "policyReports": { "type": "integer", "minimum": 0 },
+        "expectedCanaryConsoleMessages": { "type": "integer", "minimum": 0 },
+        "unexpectedPolicyEvents": { "const": 0 },
+        "unexpectedPolicyReports": { "const": 0 },
+        "operationCount": { "type": "integer", "minimum": 1 },
+        "disposal": {
+          "type": "object",
+          "required": ["attempted", "failed", "released", "remaining"],
+          "properties": {
+            "attempted": { "type": "integer", "minimum": 1 },
+            "failed": { "const": 0 },
+            "released": { "type": "integer", "minimum": 1 },
+            "remaining": { "const": 0 }
+          },
+          "additionalProperties": false
+        },
+        "noJavaScript": { "const": "native-link-and-form" }
+      },
+      "additionalProperties": false
+    },
+    "cspChromiumEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/cspBrowserEngineEvidence" },
+        { "type": "object", "properties": { "name": { "const": "chromium" } } }
+      ]
+    },
+    "cspFirefoxEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/cspBrowserEngineEvidence" },
+        { "type": "object", "properties": { "name": { "const": "firefox" } } }
+      ]
+    },
+    "cspWebkitEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/cspBrowserEngineEvidence" },
+        { "type": "object", "properties": { "name": { "const": "webkit" } } }
+      ]
+    },
+    "chromiumEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/browserEvidence" },
+        { "type": "object", "properties": { "name": { "const": "chromium" } } }
+      ]
+    },
+    "firefoxEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/browserEvidence" },
+        { "type": "object", "properties": { "name": { "const": "firefox" } } }
+      ]
+    },
+    "webkitEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/browserEvidence" },
+        { "type": "object", "properties": { "name": { "const": "webkit" } } }
+      ]
+    },
+    "futureContract": {
+      "type": "object",
+      "required": ["name", "status", "reason"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "const": "not-applicable" },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

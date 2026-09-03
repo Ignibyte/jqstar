@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 import { afterEach, describe, expect, it } from "vitest";
+import manifest from "../package.json";
 
 const cli = resolve("bin/jqstar.mjs");
 const temporaryDirectories: string[] = [];
@@ -25,6 +26,15 @@ afterEach(async () => {
 });
 
 describe("jqstar CLI", () => {
+  it("prints the package version from the manifest", () => {
+    for (const option of ["--version", "-v"]) {
+      const result = run(option);
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(result.stdout).toBe(`${manifest.version}\n`);
+    }
+  });
+
   it("lists the complete registry as structured data", () => {
     const result = run("list", "--json");
 

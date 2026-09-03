@@ -1,0 +1,19 @@
+{
+  "name": "@jqstar-fixtures/mock-navigation-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  },
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "peerDependencies": {
+    "jquery": ">=4.0.0 <5",
+    "jquery-star": "^0.1.0"
+  }
+}

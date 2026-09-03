@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dialog · jQStar Components</title>
+    <meta
+      name="description"
+      content="Use jQStar Dialog with the native dialog element, managed focus, lifecycle events, and named actions."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Dialog</h1>
+      <p class="docs-lede">
+        A modal window that interrupts the user with important content and expects a response.
+      </p>
+
+      <div class="component-preview" data-jqs="tabs" data-value="preview">
+        <div data-part="list" aria-label="Dialog example">
+          <button data-part="trigger" data-value="preview" type="button">Preview</button>
+          <button data-part="trigger" data-value="code" type="button">Code</button>
+        </div>
+        <section data-part="panel" data-value="preview">
+          <div class="preview-stage">
+            <button
+              data-jqs="button"
+              type="button"
+              aria-haspopup="dialog"
+              data-on:click="@ui.dialog.open('#docs-profile-dialog', '#docs-profile-cancel')"
+            >
+              Edit Profile
+            </button>
+            <dialog id="docs-profile-dialog" data-jqs="dialog" data-close-on-backdrop>
+              <div data-part="content">
+                <header data-part="header">
+                  <h2 data-part="title">Edit profile</h2>
+                  <p data-part="description">Review the profile before saving your changes.</p>
+                </header>
+                <div data-jqs="field">
+                  <label data-part="label" for="docs-profile-name">Display name</label>
+                  <input id="docs-profile-name" data-jqs="input" type="text" value="Ada Lovelace" />
+                </div>
+                <footer data-part="footer">
+                  <button
+                    id="docs-profile-cancel"
+                    data-jqs="button"
+                    data-variant="outline"
+                    type="button"
+                    data-on:click="@ui.dialog.close('cancelled')"
+                  >
+                    Cancel
+                  </button>
+                  <button data-jqs="button" type="button" data-on:click="@ui.dialog.close('saved')">
+                    Save changes
+                  </button>
+                </footer>
+              </div>
+            </dialog>
+          </div>
+        </section>
+        <section data-part="panel" data-value="code">
+          <div class="code-block">
+            <div class="code-heading">
+              <span>dialog.html</span
+              ><button type="button" data-on:click="@site.copyCode">Copy</button>
+            </div>
+            <pre><code>&lt;button
+  data-jqs="button"
+  aria-haspopup="dialog"
+  data-on:click="@ui.dialog.open('#account-dialog', '#dialog-cancel')"
+&gt;
+  Edit account
+&lt;/button&gt;
+
+&lt;dialog id="account-dialog" data-jqs="dialog" data-close-on-backdrop&gt;
+  &lt;div data-part="content"&gt;
+    &lt;header data-part="header"&gt;
+      &lt;h2 data-part="title"&gt;Edit account&lt;/h2&gt;
+      &lt;p data-part="description"&gt;Review changes before saving.&lt;/p&gt;
+    &lt;/header&gt;
+    &lt;footer data-part="footer"&gt;
+      &lt;button id="dialog-cancel" data-on:click="@ui.dialog.close('cancelled')"&gt;
+        Cancel
+      &lt;/button&gt;
+      &lt;button data-on:click="@ui.dialog.close('saved')"&gt;Save&lt;/button&gt;
+    &lt;/footer&gt;
+  &lt;/div&gt;
+&lt;/dialog&gt;</code></pre>
+          </div>
+        </section>
+      </div>
+
+      <h2>API Reference</h2>
+      <div class="api-table-wrap" role="region" aria-label="Dialog anatomy" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Element</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&lt;dialog data-jqs="dialog"&gt;</code></td>
+              <td>Dialog</td>
+              <td>The native modal owner and component root.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="content"</code></td>
+              <td>Container</td>
+              <td>The styled surface inside the browser top layer.</td>
+            </tr>
+            <tr>
+              <td><code>title</code> / <code>description</code></td>
+              <td>Heading and text</td>
+              <td>Parts used to establish accessible dialog relationships.</td>
+            </tr>
+            <tr>
+              <td><code>data-part="footer"</code></td>
+              <td>Container</td>
+              <td>Optional action layout.</td>
+            </tr>
+            <tr>
+              <td><code>data-close-on-backdrop</code></td>
+              <td>Dialog</td>
+              <td>Opts into dismissal when the native backdrop is pressed.</td>
+            </tr>
+            <tr>
+              <td><code>data-variant="sheet"</code></td>
+              <td>Dialog</td>
+              <td>Uses the same dialog behavior in a side-docked composition.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Keyboard Interactions</h2>
+      <ul class="keyboard-list">
+        <li><kbd>Enter / Space</kbd><span>Activates the ordinary trigger button.</span></li>
+        <li>
+          <kbd>Tab / Shift+Tab</kbd
+          ><span>Moves through focusable controls while native modality contains focus.</span>
+        </li>
+        <li>
+          <kbd>Escape</kbd
+          ><span
+            >Closes the dialog unless the cancel event is prevented, then restores trigger
+            focus.</span
+          >
+        </li>
+      </ul>
+      <p>
+        Opening emits cancelable <code>jquery-star:dialog:before-open</code> and final open events;
+        closing follows the same before/final pattern. JavaScript can call
+        <code>$.star.ui.dialog.open()</code> and <code>close()</code> directly.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

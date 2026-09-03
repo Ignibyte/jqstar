@@ -98,6 +98,29 @@ describe("jQuery Star Transfer List", () => {
     expect($.star.ui.transferList.value(root())).toEqual(["review", "read"]);
   });
 
+  it("routes add, remove, up, and down through their named actions", async () => {
+    const instance = $("#app").star("instance")!;
+    await instance.run("ui.transfer-list.add", { args: [root(), ["read"]] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review", "read"]);
+
+    await instance.run("ui.transfer-list.up", { args: [root(), ["read"]] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "read", "review"]);
+    await instance.run("ui.transfer-list.down", { args: [root(), ["read"]] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review", "read"]);
+
+    await instance.run("ui.transfer-list.remove", { args: [root(), ["read"]] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review"]);
+
+    await instance.run("ui.transfer-list.add-all", { args: [root()] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review", "read"]);
+    await instance.run("ui.transfer-list.remove-all", { args: [root()] });
+    expect($.star.ui.transferList.value(root())).toEqual([]);
+
+    $.star.ui.transferList.set(root(), ["write"]);
+    await instance.run("ui.transfer-list.set", { args: [root()] });
+    expect($.star.ui.transferList.value(root())).toEqual([]);
+  });
+
   it("emits detailed cancelable changes and accepts server-patched membership", () => {
     const before = vi.fn((event: Event) => event.preventDefault());
     const changed = vi.fn();

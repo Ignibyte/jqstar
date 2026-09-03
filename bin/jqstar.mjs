@@ -42,6 +42,14 @@ async function readJson(path, label) {
   }
 }
 
+async function packageVersion() {
+  const manifest = await readJson(join(packageRoot, "package.json"), "Package manifest");
+  if (typeof manifest.version !== "string" || !manifest.version) {
+    fail("Package manifest needs a non-empty string version.");
+  }
+  return manifest.version;
+}
+
 function parseArguments(argv) {
   const positionals = [];
   const options = {
@@ -75,6 +83,8 @@ function parseArguments(argv) {
       index += 1;
     } else if (argument === "--help" || argument === "-h") {
       options.help = true;
+    } else if (argument === "--version" || argument === "-v") {
+      options.version = true;
     } else if (argument?.startsWith("-")) {
       fail(`Unknown option: ${argument}`);
     } else if (argument) {
@@ -147,6 +157,7 @@ function help() {
   return `jQuery Star source registry
 
 Usage:
+  jqstar --version
   jqstar init [--cwd <directory>]
   jqstar list [--type <all|component|block>] [--json] [--cwd <directory>]
   jqstar add <item...> [--no-deps] [--dry-run] [--force] [--cwd <directory>]
@@ -372,6 +383,10 @@ function printResult(command, result, options) {
 
 async function main() {
   const { options, positionals } = parseArguments(process.argv.slice(2));
+  if (options.version) {
+    process.stdout.write(`${await packageVersion()}\n`);
+    return;
+  }
   const command = positionals.shift();
   if (options.help || !command || command === "help") {
     process.stdout.write(help());

@@ -1,13 +1,35 @@
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/web";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import {
+  createSqliteProjectStore,
+  projectGroupKeys,
+  projectSortDirections,
+  projectSortKeys,
+  projectStatuses,
+  type ProjectGroupKey,
+  type ProjectRecord,
+  type ProjectSeed,
+  type ProjectSort,
+  type ProjectStore,
+  type ProjectUpdate,
+} from "./project-store";
 
 export interface ProofApi {
+  close(): void;
   handle(request: IncomingMessage, response: ServerResponse): Promise<boolean>;
 }
 
 export interface ProofApiOptions {
+  authorizeProjectWrite?: (
+    request: IncomingMessage,
+    current: ProjectRecord,
+    update: ProjectUpdate,
+  ) => boolean | Promise<boolean>;
+  databasePath?: string;
   environment?: "local" | "self-hosted" | "test";
   maxBodyBytes?: number;
+  projectSeedCount?: number;
+  projectStore?: ProjectStore;
 }
 
 const componentSystems = [
@@ -96,85 +118,247 @@ const feedItems = [
 ] as const;
 
 const projectItems = [
-  { id: "jqstar", name: "jqstar", owner: "Platform", status: "active", updated: "2026-08-28" },
+  {
+    id: "jqstar",
+    name: "jQuery Star",
+    owner: "Platform",
+    status: "active",
+    updated: "2026-08-30",
+    description: "Reactive jQuery runtime and source-owned component system.",
+  },
   {
     id: "registry-cli",
     name: "Registry CLI",
     owner: "Developer Experience",
     status: "active",
-    updated: "2026-08-27",
+    updated: "2026-08-29",
+    description: "Copy-in installer for components and composed blocks.",
   },
   {
     id: "datastar-bridge",
     name: "Datastar Bridge",
     owner: "Runtime",
     status: "active",
-    updated: "2026-08-26",
+    updated: "2026-08-28",
+    description: "Official SDK request and server-patch integration.",
   },
   {
     id: "theme-lab",
     name: "Theme Lab",
     owner: "Design Systems",
     status: "planning",
-    updated: "2026-08-25",
+    updated: "2026-08-27",
+    description: "Compiled theme tokens and component visual states.",
   },
   {
     id: "catalog-site",
     name: "Catalog Site",
     owner: "Developer Experience",
     status: "active",
-    updated: "2026-08-24",
+    updated: "2026-08-26",
+    description: "Interactive component catalog and integration proof.",
   },
   {
     id: "accessibility-lab",
     name: "Accessibility Lab",
     owner: "Quality",
     status: "active",
-    updated: "2026-08-23",
+    updated: "2026-08-25",
+    description: "Keyboard, focus, semantics, and axe verification.",
   },
   {
     id: "server-runtime",
     name: "Server Runtime",
     owner: "Platform",
     status: "planning",
-    updated: "2026-08-22",
+    updated: "2026-08-24",
+    description: "Standalone Node host for static assets and proof routes.",
   },
   {
     id: "migration-kit",
     name: "Migration Kit",
     owner: "Developer Experience",
     status: "paused",
-    updated: "2026-08-21",
+    updated: "2026-08-23",
+    description: "Guides and adapters for existing jQuery applications.",
   },
   {
     id: "component-proof",
     name: "Component Proof",
     owner: "Quality",
     status: "active",
-    updated: "2026-08-20",
+    updated: "2026-08-22",
+    description: "Browser behavior suite for the component catalog.",
   },
   {
     id: "theme-tokens",
     name: "Theme Tokens",
     owner: "Design Systems",
     status: "active",
-    updated: "2026-08-19",
+    updated: "2026-08-21",
+    description: "Color, spacing, radius, and typography primitives.",
   },
   {
     id: "deployment-kit",
     name: "Deployment Kit",
     owner: "Platform",
     status: "planning",
-    updated: "2026-08-18",
+    updated: "2026-08-20",
+    description: "Hardened service files and release smoke checks.",
   },
   {
     id: "legacy-adapter",
     name: "Legacy Adapter",
     owner: "Runtime",
     status: "paused",
-    updated: "2026-08-17",
+    updated: "2026-08-19",
+    description: "Compatibility helpers for incremental adoption.",
   },
-] as const;
+  {
+    id: "request-cancellation",
+    name: "Request Cancellation",
+    owner: "Runtime",
+    status: "active",
+    updated: "2026-08-18",
+    description: "Element-scoped abort and stale-response protection.",
+  },
+  {
+    id: "registry-doctor",
+    name: "Registry Doctor",
+    owner: "Developer Experience",
+    status: "active",
+    updated: "2026-08-17",
+    description: "Configuration and installed-recipe diagnostics.",
+  },
+  {
+    id: "security-headers",
+    name: "Security Headers",
+    owner: "Security",
+    status: "active",
+    updated: "2026-08-16",
+    description: "CSP and browser isolation policy for self-hosting.",
+  },
+  {
+    id: "table-query-engine",
+    name: "Table Query Engine",
+    owner: "Data",
+    status: "active",
+    updated: "2026-08-15",
+    description: "Server-side search, facets, sorting, and pagination.",
+  },
+  {
+    id: "form-errors",
+    name: "Form Error Bridge",
+    owner: "Runtime",
+    status: "active",
+    updated: "2026-08-14",
+    description: "Maps backend field errors into native validation.",
+  },
+  {
+    id: "release-automation",
+    name: "Release Automation",
+    owner: "Operations",
+    status: "planning",
+    updated: "2026-08-13",
+    description: "Repeatable package, pages, and server releases.",
+  },
+  {
+    id: "registry-schema",
+    name: "Registry Schema",
+    owner: "Developer Experience",
+    status: "active",
+    updated: "2026-08-12",
+    description: "Project configuration validation and editor hints.",
+  },
+  {
+    id: "patch-inspector",
+    name: "Patch Inspector",
+    owner: "Quality",
+    status: "planning",
+    updated: "2026-08-11",
+    description: "Diagnostics for signal and element patch streams.",
+  },
+  {
+    id: "event-contracts",
+    name: "Event Contracts",
+    owner: "Runtime",
+    status: "active",
+    updated: "2026-08-10",
+    description: "Cancelable lifecycle events and typed detail objects.",
+  },
+  {
+    id: "mobile-catalog",
+    name: "Mobile Catalog",
+    owner: "Design Systems",
+    status: "planning",
+    updated: "2026-08-09",
+    description: "Responsive navigation and dense control layouts.",
+  },
+  {
+    id: "performance-budget",
+    name: "Performance Budget",
+    owner: "Quality",
+    status: "planning",
+    updated: "2026-08-08",
+    description: "Bundle, rendering, and request performance thresholds.",
+  },
+  {
+    id: "audit-stream",
+    name: "Audit Stream",
+    owner: "Security",
+    status: "active",
+    updated: "2026-08-07",
+    description: "Server-owned access history delivered through Datastar.",
+  },
+  {
+    id: "component-generator",
+    name: "Component Generator",
+    owner: "Developer Experience",
+    status: "paused",
+    updated: "2026-08-06",
+    description: "Scaffolding for new component contracts and tests.",
+  },
+  {
+    id: "stream-reconnect",
+    name: "Stream Reconnect",
+    owner: "Runtime",
+    status: "planning",
+    updated: "2026-08-05",
+    description: "Reconnect and event-ID behavior for long-lived streams.",
+  },
+  {
+    id: "docs-search",
+    name: "Documentation Search",
+    owner: "Developer Experience",
+    status: "planning",
+    updated: "2026-08-04",
+    description: "Searchable runtime, registry, and backend references.",
+  },
+  {
+    id: "contrast-audit",
+    name: "Contrast Audit",
+    owner: "Design Systems",
+    status: "active",
+    updated: "2026-08-03",
+    description: "Theme contrast verification across component states.",
+  },
+  {
+    id: "load-test",
+    name: "Backend Load Test",
+    owner: "Operations",
+    status: "paused",
+    updated: "2026-08-02",
+    description: "Capacity checks for static and SSE proof routes.",
+  },
+  {
+    id: "dependency-policy",
+    name: "Dependency Policy",
+    owner: "Security",
+    status: "active",
+    updated: "2026-08-01",
+    description: "Runtime dependency review and update boundaries.",
+  },
+] as const satisfies readonly ProjectSeed[];
 
 const accessMembers = [
   { id: "maya", name: "Maya Chen" },
@@ -251,6 +435,15 @@ const runtimeLogs = [
 
 class BodyLimitError extends Error {}
 
+class ApiInputError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 function escapeHtml(value: string): string {
   return value.replace(
     /[&<>"']/g,
@@ -276,7 +469,7 @@ function logEntryHtml(entry: {
   return `<li data-part="entry" data-level="${entry.level}" data-value="${escapeHtml(entry.id)}"><time data-part="timestamp" datetime="${escapeHtml(entry.timestamp)}">${escapeHtml(time)}</time><span data-part="level">${entry.level.toLocaleUpperCase()}</span><span data-part="source">${escapeHtml(entry.source)}</span><span data-part="message">${escapeHtml(entry.message)}</span></li>`;
 }
 
-function projectRowHtml(project: (typeof projectItems)[number]): string {
+function projectRowHtml(project: ProjectRecord, owners: readonly string[]): string {
   const status = project.status[0]!.toLocaleUpperCase() + project.status.slice(1);
   const variant =
     project.status === "active"
@@ -290,19 +483,57 @@ function projectRowHtml(project: (typeof projectItems)[number]): string {
     timeZone: "UTC",
     year: "numeric",
   });
-  return `<tr data-row-id="${escapeHtml(project.id)}"><td><input data-part="row-select" type="checkbox" aria-label="Select ${escapeHtml(project.name)}"></td><th scope="row" data-key="name">${escapeHtml(project.name)}</th><td data-key="owner">${escapeHtml(project.owner)}</td><td data-key="status" data-value="${escapeHtml(project.status)}"><span data-jqs="badge" data-variant="${variant}">${status}</span></td><td data-key="updated" data-value="${project.updated}">${updated}</td></tr>`;
+  const detailsId = `project-browser-details-${project.id}`;
+  const ownerOptions = owners
+    .map(
+      (owner) =>
+        `<option value="${escapeHtml(owner)}"${owner === project.owner ? " selected" : ""}>${escapeHtml(owner)}</option>`,
+    )
+    .join("");
+  const statusOptions = projectStatuses
+    .map(
+      (value) =>
+        `<option value="${value}"${value === project.status ? " selected" : ""}>${value[0]!.toLocaleUpperCase()}${value.slice(1)}</option>`,
+    )
+    .join("");
+  return `<tr data-row-id="${escapeHtml(project.id)}" data-project-version="${project.version}" data-group-key="${escapeHtml(project.owner)}:${project.status}"><td><input data-part="row-select" type="checkbox" aria-label="Select ${escapeHtml(project.name)}"></td><th scope="row" data-key="name" data-column="name"><button data-project-browser-expand data-project-id="${escapeHtml(project.id)}" data-on:click="@projectBrowser.expand" type="button" aria-expanded="false" aria-controls="${escapeHtml(detailsId)}"><span aria-hidden="true">›</span><span class="sr-only">Show details for </span>${escapeHtml(project.name)}</button></th><td data-key="owner" data-column="owner">${escapeHtml(project.owner)}</td><td data-key="status" data-column="status" data-value="${escapeHtml(project.status)}"><span data-jqs="badge" data-variant="${variant}">${status}</span></td><td data-key="updated" data-column="updated" data-value="${project.updated}">${updated}</td></tr><tr id="${escapeHtml(detailsId)}" data-project-browser-details="${escapeHtml(project.id)}" data-project-version="${project.version}" hidden><td colspan="5"><div data-project-browser-part="row-details"><div><strong>${escapeHtml(project.name)}</strong><p>${escapeHtml(project.description)}</p><small>Stored version ${project.version}</small></div><form data-project-browser-edit="${escapeHtml(project.id)}" data-on:submit__prevent="@projectBrowser.save"><label>Project name<input name="name" value="${escapeHtml(project.name)}" required minlength="1" maxlength="120"></label><label>Owner<select name="owner" required>${ownerOptions}</select></label><label>Status<select name="status" required>${statusOptions}</select></label><input name="version" type="hidden" value="${project.version}"><button data-jqs="button" data-variant="primary" type="submit">Save changes</button><button data-jqs="button" data-variant="ghost" data-project-id="${escapeHtml(project.id)}" data-on:click="@projectBrowser.expand" type="button">Close</button></form></div></td></tr>`;
 }
 
 function projectPaginationHtml(page: number, pageCount: number): string {
   const previous = Math.max(1, page - 1);
   const next = Math.min(pageCount, page + 1);
-  const pages = Array.from({ length: pageCount }, (_, index) => index + 1)
-    .map(
-      (value) =>
-        `<li><a data-part="page" data-page="${value}" href="?page=${value}"${value === page ? ' aria-current="page"' : ""}>${value}</a></li>`,
-    )
+  const candidates = new Set([1, page - 2, page - 1, page, page + 1, page + 2, pageCount]);
+  const visible = [...candidates].filter((value) => value >= 1 && value <= pageCount);
+  let last = 0;
+  const pages = visible
+    .map((value) => {
+      const gap =
+        value - last > 1 ? '<li><span data-part="ellipsis" aria-hidden="true">…</span></li>' : "";
+      last = value;
+      return `${gap}<li><a data-part="page" data-page="${value}" href="?page=${value}"${value === page ? ' aria-current="page"' : ""}>${value}</a></li>`;
+    })
     .join("");
   return `<nav id="project-browser-pagination" data-jqs="pagination" data-navigation="manual" data-page="${page}" data-page-count="${pageCount}" data-on:jquery-star:pagination:change="@projectBrowser.page" aria-label="Project results pages"><ul><li><a data-part="previous" href="?page=${previous}"${page <= 1 ? ' aria-disabled="true"' : ""}>Previous</a></li>${pages}<li><a data-part="next" href="?page=${next}"${page >= pageCount ? ' aria-disabled="true"' : ""}>Next</a></li></ul><p data-part="status" aria-live="polite">Page ${page} of ${pageCount}</p></nav>`;
+}
+
+function projectRowsHtml(
+  projects: readonly ProjectRecord[],
+  owners: readonly string[],
+  groupBy: ProjectGroupKey,
+  groups: ReadonlyMap<string, number>,
+): string {
+  let previousGroup: string | undefined;
+  return projects
+    .map((project) => {
+      const group = groupBy === "none" ? undefined : project[groupBy];
+      const header =
+        group !== undefined && group !== previousGroup
+          ? `<tr data-project-browser-group="${escapeHtml(group)}"><th colspan="5" scope="rowgroup"><button data-project-browser-group-toggle="${escapeHtml(group)}" data-on:click="@projectBrowser.groupToggle" type="button" aria-expanded="true"><span aria-hidden="true">⌄</span>${escapeHtml(group)} <span>${groups.get(group) ?? 0} projects</span></button></th></tr>`
+          : "";
+      previousGroup = group;
+      return `${header}${projectRowHtml(project, owners)}`;
+    })
+    .join("");
 }
 
 function accessTransferHtml(permissions: readonly string[]): string {
@@ -442,6 +673,27 @@ async function requestBody(
   }
 }
 
+async function strictRequestBody(
+  request: IncomingMessage,
+  maximum: number,
+): Promise<Record<string, unknown>> {
+  const contentType = request.headers["content-type"]?.split(";", 1)[0]?.trim().toLowerCase();
+  if (contentType !== "application/json") {
+    throw new ApiInputError("Content-Type must be application/json.", 415);
+  }
+  const source = await requestText(request, maximum);
+  let value: unknown;
+  try {
+    value = JSON.parse(source) as unknown;
+  } catch {
+    throw new ApiInputError("Request body must contain valid JSON.", 400);
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ApiInputError("Request body must be a JSON object.", 400);
+  }
+  return value as Record<string, unknown>;
+}
+
 async function sendWebResponse(source: Response, destination: ServerResponse): Promise<void> {
   destination.writeHead(source.status, Object.fromEntries(source.headers));
   const reader = source.body?.getReader();
@@ -461,9 +713,41 @@ function webRequest(request: IncomingMessage): Request {
   return new Request(new URL(request.url ?? "/", "http://localhost"));
 }
 
+function projectSorts(signals: Record<string, unknown>): ProjectSort[] {
+  const sorts: ProjectSort[] = [];
+  const seen = new Set<string>();
+  const requested = signals.projectBrowserSorts;
+  if (Array.isArray(requested)) {
+    for (const value of requested) {
+      const source = Object(value) as Record<string, unknown>;
+      const key = projectSortKeys.find((candidate) => candidate === source.key);
+      const direction = projectSortDirections.find((candidate) => candidate === source.direction);
+      if (!key || !direction || seen.has(key)) continue;
+      seen.add(key);
+      sorts.push({ direction, key });
+    }
+  }
+  if (sorts.length > 0) return sorts;
+  const legacyKey = projectSortKeys.find(
+    (candidate) => candidate === String(signals.projectBrowserSort ?? "name"),
+  );
+  const legacyDirection = projectSortDirections.find(
+    (candidate) => candidate === String(signals.projectBrowserDirection ?? "ascending"),
+  );
+  return legacyKey && legacyDirection ? [{ direction: legacyDirection, key: legacyKey }] : [];
+}
+
 export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   const environment = options.environment ?? "local";
   const maximum = options.maxBodyBytes ?? 10 * 1024 * 1024;
+  const ownsProjectStore = options.projectStore === undefined;
+  const projectStore =
+    options.projectStore ??
+    createSqliteProjectStore({
+      path: options.databasePath ?? ":memory:",
+      seed: projectItems,
+      seedCount: options.projectSeedCount ?? 2_500,
+    });
   let metricsRevision = 0;
   let operationsRevision = 0;
   let runtimeRevision = 0;
@@ -491,7 +775,23 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
 
     if (url.pathname === "/health") {
       if (!method(request, response, "GET")) return true;
-      json(response, 200, { components: 102, environment, service: "jqstar", status: "healthy" });
+      const projects = projectStore.list({
+        groupBy: "none",
+        limit: 1,
+        offset: 0,
+        owner: "all",
+        query: "",
+        sorts: [],
+        status: "all",
+      }).total;
+      json(response, 200, {
+        components: 102,
+        database: "ready",
+        environment,
+        projects,
+        service: "jqstar",
+        status: "healthy",
+      });
       return true;
     }
 
@@ -631,6 +931,81 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       return true;
     }
 
+    const projectMutation = /^\/api\/demo\/projects\/([^/]+)$/.exec(url.pathname);
+    if (projectMutation) {
+      if (!method(request, response, "PATCH")) return true;
+      let id: string;
+      try {
+        id = decodeURIComponent(projectMutation[1]!);
+      } catch {
+        throw new ApiInputError("Project ID is invalid.", 400);
+      }
+      const current = projectStore.get(id);
+      if (!current) {
+        json(response, 404, { error: "Project was not found." });
+        return true;
+      }
+      const body = await strictRequestBody(request, maximum);
+      const nameInput = body.name;
+      const owner = body.owner;
+      const status = projectStatuses.find((candidate) => candidate === body.status);
+      const version = Number(body.version);
+      if (typeof nameInput !== "string") {
+        json(response, 422, { error: "Project name must contain 1 to 120 characters." });
+        return true;
+      }
+      const name = nameInput.trim();
+      if (name.length < 1 || name.length > 120) {
+        json(response, 422, { error: "Project name must contain 1 to 120 characters." });
+        return true;
+      }
+      if (typeof owner !== "string" || !projectStore.owners().includes(owner)) {
+        json(response, 422, { error: "Choose a known project owner." });
+        return true;
+      }
+      if (!status) {
+        json(response, 422, { error: "Choose active, planning, or paused status." });
+        return true;
+      }
+      if (!Number.isInteger(version) || version < 1) {
+        json(response, 422, { error: "Project version must be a positive integer." });
+        return true;
+      }
+      const update: ProjectUpdate = {
+        name,
+        owner,
+        status,
+        updated: new Date().toISOString().slice(0, 10),
+        version,
+      };
+      if (options.authorizeProjectWrite) {
+        const allowed = await options.authorizeProjectWrite(request, current, update);
+        if (!allowed) {
+          json(response, 403, { error: "Project update is not allowed." });
+          return true;
+        }
+      }
+      const result = projectStore.update(id, update);
+      if (result.status === "conflict") {
+        json(response, 409, {
+          error: "This project changed after the editor was opened. Reload it and try again.",
+          project: result.project,
+          status: result.status,
+        });
+        return true;
+      }
+      if (result.status === "missing") {
+        json(response, 404, { error: "Project was not found." });
+        return true;
+      }
+      json(response, 200, {
+        message: `${result.project.name} saved at version ${result.project.version}.`,
+        project: result.project,
+        status: result.status,
+      });
+      return true;
+    }
+
     if (url.pathname === "/api/demo/projects") {
       if (!method(request, response, "GET")) return true;
       const read = await ServerSentEventGenerator.readSignals(webRequest(request));
@@ -639,65 +1014,125 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
         response.end(read.error);
         return true;
       }
-      const query = String(read.signals.projectBrowserQuery ?? "")
-        .trim()
-        .toLocaleLowerCase();
+      const query = String(read.signals.projectBrowserQuery ?? "").trim();
+      const projectOwners = projectStore.owners();
+      const owner = projectOwners.includes(String(read.signals.projectBrowserOwner))
+        ? String(read.signals.projectBrowserOwner)
+        : "all";
+      const status =
+        projectStatuses.find((value) => value === read.signals.projectBrowserStatus) ?? "all";
       const requestedPage = Number(read.signals.projectBrowserPage ?? 1);
-      const requestedSort = String(read.signals.projectBrowserSort ?? "name");
-      const sort = (["name", "owner", "status", "updated"] as const).find(
-        (key) => key === requestedSort,
+      const requestedPageSize = Number(read.signals.projectBrowserPageSize ?? 5);
+      const pageSize =
+        ([5, 10, 20, 50, 100, 200] as const).find((size) => size === requestedPageSize) ?? 5;
+      const sorts = projectSorts(read.signals);
+      const requestedGroupBy =
+        projectGroupKeys.find((candidate) => candidate === read.signals.projectBrowserGroupBy) ??
+        "none";
+      const mode = read.signals.projectBrowserMode === "virtual" ? "virtual" : "page";
+      const groupBy = mode === "virtual" ? "none" : requestedGroupBy;
+      const requestedWindowSize = Number(read.signals.projectBrowserWindowSize ?? 40);
+      const windowSize = Math.min(
+        Math.max(Number.isFinite(requestedWindowSize) ? Math.floor(requestedWindowSize) : 40, 20),
+        80,
       );
-      const requestedDirection = String(read.signals.projectBrowserDirection ?? "ascending");
-      const direction =
-        requestedDirection === "descending" || requestedDirection === "none"
-          ? requestedDirection
-          : "ascending";
-      const matches = projectItems.filter((project) =>
-        `${project.name} ${project.owner} ${project.status}`.toLocaleLowerCase().includes(query),
+      const rawPage = Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1);
+      const requestedWindowStart = Number(read.signals.projectBrowserWindowStart ?? 0);
+      const rawWindowStart = Math.max(
+        Number.isFinite(requestedWindowStart) ? Math.floor(requestedWindowStart) : 0,
+        0,
       );
-      const sorted = [...matches];
-      if (sort && direction !== "none") {
-        sorted.sort((left, right) => {
-          const result = left[sort].localeCompare(right[sort], undefined, {
-            numeric: true,
-            sensitivity: "base",
-          });
-          return direction === "descending" ? -result : result;
+      const initialOffset = mode === "virtual" ? rawWindowStart : (rawPage - 1) * pageSize;
+      const initialLimit = mode === "virtual" ? windowSize : pageSize;
+      let result = projectStore.list({
+        groupBy,
+        limit: initialLimit,
+        offset: initialOffset,
+        owner,
+        query,
+        sorts,
+        status,
+      });
+      const pageCount = Math.max(1, Math.ceil(result.total / pageSize));
+      const page = Math.min(rawPage, pageCount);
+      const maximumWindowStart = Math.max(result.total - windowSize, 0);
+      const windowStart = Math.min(rawWindowStart, maximumWindowStart);
+      const offset = mode === "virtual" ? windowStart : (page - 1) * pageSize;
+      if (offset !== initialOffset) {
+        result = projectStore.list({
+          groupBy,
+          limit: initialLimit,
+          offset,
+          owner,
+          query,
+          sorts,
+          status,
         });
       }
-      const pageSize = 4;
-      const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
-      const page = Math.min(
-        Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1),
-        pageCount,
+      const rangeStart = result.total === 0 ? 0 : offset + 1;
+      const rangeEnd = Math.min(offset + result.items.length, result.total);
+      const requestId = Math.max(
+        Number.isFinite(Number(read.signals.projectBrowserRequestId))
+          ? Math.floor(Number(read.signals.projectBrowserRequestId))
+          : 0,
+        0,
       );
-      const pageItems = sorted.slice((page - 1) * pageSize, page * pageSize);
+      const groups = new Map(result.groups.map((group) => [group.key, group.count]));
       projectBrowserRevision += 1;
       const revision = projectBrowserRevision;
       const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
         stream.patchSignals(
           JSON.stringify({
-            projectBrowserCount: matches.length,
-            projectBrowserMessage: `${matches.length} matching project${matches.length === 1 ? "" : "s"}. Page ${page} of ${pageCount}.`,
+            projectBrowserCount: result.total,
+            projectBrowserActiveFilters:
+              Number(Boolean(query)) + Number(owner !== "all") + Number(status !== "all"),
+            projectBrowserMessage:
+              result.total === 0
+                ? "No projects match the current query."
+                : `Showing ${rangeStart}–${rangeEnd} of ${result.total} matching projects.`,
+            projectBrowserDirection: sorts[0]?.direction ?? "none",
+            projectBrowserGroupBy: groupBy,
+            projectBrowserMode: mode,
+            projectBrowserOwner: owner,
             projectBrowserPage: page,
+            projectBrowserPageSize: pageSize,
+            projectBrowserRangeEnd: rangeEnd,
+            projectBrowserRangeStart: rangeStart,
+            projectBrowserRequestId: requestId,
+            projectBrowserSort: sorts[0]?.key ?? "",
+            projectBrowserSorts: sorts,
+            projectBrowserStatus: status,
+            projectBrowserWindowSize: windowSize,
+            projectBrowserWindowStart: windowStart,
           }),
           { eventId: `project-browser-${revision}-signals` },
         );
+        let rowElements = projectRowsHtml(result.items, projectOwners, groupBy, groups);
+        if (mode === "virtual" && windowStart > 0) {
+          rowElements = `<tr data-project-browser-spacer="top" aria-hidden="true" style="height:${windowStart * 52}px"><td colspan="5"></td></tr>${rowElements}`;
+        }
+        if (mode === "virtual" && rangeEnd < result.total) {
+          rowElements += `<tr data-project-browser-spacer="bottom" aria-hidden="true" style="height:${(result.total - rangeEnd) * 52}px"><td colspan="5"></td></tr>`;
+        }
         stream.patchElements(
-          pageItems.length
-            ? pageItems.map(projectRowHtml).join("")
-            : '<tr><td colspan="5">No projects match this search.</td></tr>',
+          result.items.length
+            ? rowElements
+            : '<tr><td colspan="5" data-part="empty">No projects match the current search and filters.</td></tr>',
           {
             selector: "#project-browser-rows",
             mode: "inner",
             eventId: `project-browser-${revision}-rows`,
           },
         );
-        stream.patchElements(projectPaginationHtml(page, pageCount), {
-          selector: "#project-browser-pagination",
-          mode: "outer",
-          eventId: `project-browser-${revision}-pagination`,
-        });
+        const pagination = projectPaginationHtml(page, pageCount);
+        stream.patchElements(
+          mode === "virtual" ? pagination.replace("<nav ", "<nav hidden ") : pagination,
+          {
+            selector: "#project-browser-pagination",
+            mode: "outer",
+            eventId: `project-browser-${revision}-pagination`,
+          },
+        );
       });
       await sendWebResponse(sdkResponse, response);
       return true;
@@ -751,7 +1186,7 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
           return true;
         }
         const previous = accessAssignments.get(member) ?? [];
-        const permissions = [...requested];
+        const permissions = requested as string[];
         const previousSet = new Set(previous);
         const nextSet = new Set(permissions);
         accessAssignments.set(member, permissions);
@@ -1000,6 +1435,10 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
   }
 
   return {
+    close() {
+      if (ownsProjectStore) projectStore.close();
+    },
+
     async handle(request, response) {
       try {
         return await route(request, response);
@@ -1007,6 +1446,10 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
         if (response.headersSent) throw error;
         if (error instanceof BodyLimitError) {
           json(response, 413, { error: error.message });
+          return true;
+        }
+        if (error instanceof ApiInputError) {
+          json(response, error.status, { error: error.message });
           return true;
         }
         json(response, 500, { error: "Unexpected backend error." });

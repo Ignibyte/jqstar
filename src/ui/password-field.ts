@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { PasswordFieldTarget, StarContext, StarPasswordFieldStatic } from "../types";
 
 interface PasswordFieldRecord {
@@ -200,7 +200,7 @@ function controlledPasswordField(context: StarContext, target?: unknown): HTMLEl
   return resolvePasswordField(closest instanceof HTMLElement ? closest : String(target));
 }
 
-function registerActions(api: StarPasswordFieldStatic): void {
+function registerActions(api: StarPasswordFieldStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.password-field.show", (context) =>
     api.show(controlledPasswordField(context, context.args?.[0])),
   );
@@ -221,7 +221,7 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-export function createPasswordFields(): PasswordFieldCollection {
+export function createPasswordFields(registerAction: ActionRegistrar): PasswordFieldCollection {
   const api: StarPasswordFieldStatic = {
     show: (target) => requestVisibility(resolvePasswordField(target), true),
     hide: (target) => requestVisibility(resolvePasswordField(target), false),
@@ -235,6 +235,6 @@ export function createPasswordFields(): PasswordFieldCollection {
       return (records.get(root) ?? enhancePasswordField(root)).visible;
     },
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

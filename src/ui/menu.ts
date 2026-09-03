@@ -1,4 +1,5 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type {
   ContextMenuTarget,
   MenuTarget,
@@ -7,7 +8,10 @@ import type {
   StarMenuStatic,
 } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   positionFloatingAtPoint,
   prepareFloating,
@@ -53,7 +57,6 @@ interface MenuCollection {
 const records = new WeakMap<HTMLElement, MenuRecord>();
 const activeRecords = new Set<MenuRecord>();
 let menuId = 0;
-let globalListenersInstalled = false;
 
 function menuRoot(value: Element | null, kind?: MenuKind): HTMLElement | undefined {
   if (!(value instanceof HTMLElement)) return undefined;
@@ -382,13 +385,14 @@ function wire(record: MenuRecord): void {
   }
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener(
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeMenu(record.root, false);
       }
@@ -396,7 +400,7 @@ function installGlobalListeners(): void {
     true,
   );
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) {
         positionMenu(record);
       } else {
@@ -404,9 +408,8 @@ function installGlobalListeners(): void {
       }
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own("service", "ui:menu:active-records", documentRecordCleanup(activeRecords, document));
 }
 
 function prepareItems(record: MenuRecord): void {
@@ -484,10 +487,9 @@ function enhanceMenu(root: HTMLElement): MenuRecord {
   prepareItems(record);
   syncState(record, record.open);
   wire(record);
-  installGlobalListeners();
   if (record.open) {
     positionMenu(record);
-    if (!record.content.contains(document.activeElement)) focusItem(record, "first");
+    if (!record.content.contains(root.ownerDocument.activeElement)) focusItem(record, "first");
   }
   return record;
 }
@@ -530,7 +532,7 @@ function controlledMenu(context: StarContext, target?: unknown): HTMLElement {
   throw new Error('Menu action needs a root selector or an element inside data-jqs="menu".');
 }
 
-function registerActions(api: StarMenuStatic): void {
+function registerActions(api: StarMenuStatic, registerAction: ActionRegistrar): void {
   for (const operation of ["open", "close", "toggle"] as const) {
     registerAction(`ui.menu.${operation}`, (context) => {
       const root = controlledMenu(context, context.args?.[0]);
@@ -555,7 +557,7 @@ function controlledContextMenu(context: StarContext, target?: unknown): HTMLElem
   );
 }
 
-function registerContextActions(api: StarContextMenuStatic): void {
+function registerContextActions(api: StarContextMenuStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.context-menu.open", (context) => {
     const first = context.args?.[0];
     const explicit = typeof first === "string" && first.startsWith("#");
@@ -569,7 +571,8 @@ function registerContextActions(api: StarContextMenuStatic): void {
   );
 }
 
-export function createMenus(): MenuCollection {
+export function createMenus(host: DocumentHost, registerAction: ActionRegistrar): MenuCollection {
+  installGlobalListeners(host);
   const api: StarMenuStatic = {
     open: (target) => openMenu(resolveRoot(target)),
     close: (target) => closeMenu(resolveRoot(target)),
@@ -584,7 +587,7 @@ export function createMenus(): MenuCollection {
       ),
     close: (target) => closeMenu(resolveRoot(target, document, "context-menu")),
   };
-  registerActions(api);
-  registerContextActions(contextApi);
+  registerActions(api, registerAction);
+  registerContextActions(contextApi, registerAction);
   return { api, contextApi, enhance: enhanceTree };
 }

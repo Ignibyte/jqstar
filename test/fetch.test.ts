@@ -110,7 +110,7 @@ describe("backend actions", () => {
         payload: ({ state }: StarContext<TestState>) => ({ count: state.count, source: "test" }),
       }),
     );
-    await settled();
+    await $.star.whenEnhanced();
 
     expect(response).toBeInstanceOf(Response);
     const [requestURL, requestInit] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
@@ -124,6 +124,142 @@ describe("backend actions", () => {
     $(".inserted").trigger("click");
     await settled();
     expect($("#target output").text()).toBe("3");
+  });
+
+  it("preserves request bytes and lifecycle ordering for every named backend action", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 3, _private: 'omit', loading: false, requestError: null }"></section>
+    `;
+    const requests: Array<[URL, RequestInit]> = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: URL, init: RequestInit) => {
+        requests.push([url, init]);
+        return new Response(null, { status: 204 });
+      }),
+    );
+    const datastarLifecycle: FetchLifecycleDetail[] = [];
+    const jqueryStarLifecycle: FetchLifecycleDetail[] = [];
+
+    $("#app").star();
+    $("#app").on("datastar-fetch", (event) => {
+      expect(event.target).toBe($("#app").get(0));
+      datastarLifecycle.push((event as unknown as { detail: FetchLifecycleDetail }).detail);
+    });
+    $("#app").on("jquery-star:fetch", (event) => {
+      expect(event.target).toBe($("#app").get(0));
+      jqueryStarLifecycle.push((event as unknown as { detail: FetchLifecycleDetail }).detail);
+    });
+
+    const methods = [
+      ["get", "GET"],
+      ["post", "POST"],
+      ["put", "PUT"],
+      ["patch", "PATCH"],
+      ["delete", "DELETE"],
+    ] as const;
+    for (const [action] of methods) {
+      await instance().run(action, {
+        args: [
+          `/contract/${action}`,
+          {
+            credentials: "include",
+            headers: { "X-Contract": action },
+            payload: { count: 3, action },
+          },
+        ],
+      });
+    }
+
+    expect(requests).toHaveLength(methods.length);
+    for (const [[action, method], [url, init]] of methods.map((entry, index) => [
+      entry,
+      requests[index]!,
+    ]) as Array<[(typeof methods)[number], [URL, RequestInit]]>) {
+      const headers = new Headers(init.headers);
+      expect(url.pathname).toBe(`/contract/${action}`);
+      expect(init.method).toBe(method);
+      expect(init.credentials).toBe("include");
+      expect(headers.get("Datastar-Request")).toBe("true");
+      expect(headers.get("Accept")).toBe("text/event-stream, text/html, application/json");
+      expect(headers.get("X-Contract")).toBe(action);
+
+      if (method === "GET") {
+        expect(init.body).toBeUndefined();
+        expect(JSON.parse(url.searchParams.get("datastar") ?? "")).toEqual({
+          count: 3,
+          action,
+        });
+      } else {
+        expect(headers.get("Content-Type")).toBe("application/json");
+        expect(JSON.parse(String(init.body))).toEqual({ count: 3, action });
+        expect(url.searchParams.has("datastar")).toBe(method === "DELETE");
+      }
+    }
+
+    const expectedLifecycle = methods.flatMap(([, method]) => [
+      `started:${method}`,
+      `finished:${method}`,
+    ]);
+    expect(datastarLifecycle.map(({ type, method }) => `${type}:${method}`)).toEqual(
+      expectedLifecycle,
+    );
+    expect(jqueryStarLifecycle).toEqual(datastarLifecycle);
+  });
+
+  it("submits URL-encoded and multipart form bodies without exposing either body to policy", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0, loading: false, requestError: null }">
+        <form id="encoded"><input name="query" value="jquery star"></form>
+        <form id="multipart" enctype="multipart/form-data"><input name="title" value="upload"></form>
+      </section>
+    `;
+    const requests: RequestInit[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: URL, init: RequestInit) => {
+        requests.push(init);
+        return new Response(null, { status: 204 });
+      }),
+    );
+
+    $("#app").star();
+    await instance().run($.star.post("/encoded", { contentType: "form", selector: "#encoded" }));
+    await instance().run(
+      $.star.post("/multipart", { contentType: "form", selector: "#multipart" }),
+    );
+
+    expect(requests[0]?.body).toBeInstanceOf(URLSearchParams);
+    expect(String(requests[0]?.body)).toBe("query=jquery+star");
+    expect(new Headers(requests[0]?.headers).get("Content-Type")).toBe(
+      "application/x-www-form-urlencoded;charset=UTF-8",
+    );
+    expect(requests[1]?.body).toBeInstanceOf(FormData);
+    expect((requests[1]?.body as FormData).get("title")).toBe("upload");
+    expect(new Headers(requests[1]?.headers).has("Content-Type")).toBe(false);
+  });
+
+  it("retries successful non-204 responses only when explicitly configured", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0, loading: false, requestError: null }"></section>
+    `;
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ count: 1 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    $("#app").star();
+    await instance().run(
+      $.star.get("/retry-completed", {
+        retry: "always",
+        retryInterval: 0,
+        retryMaxCount: 1,
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(instance().state.count).toBe(1);
   });
 
   it("applies Datastar signal and element patches from a chunked SSE stream", async () => {
@@ -155,7 +291,7 @@ describe("backend actions", () => {
 
     $("#app").star();
     await instance().run("get", { args: ["/stream"] });
-    await settled();
+    await $.star.whenEnhanced();
 
     expect(instance().state.count).toBe(5);
     expect($("#feed .streamed")).toHaveLength(1);
@@ -163,6 +299,31 @@ describe("backend actions", () => {
     $(".streamed").trigger("click");
     await settled();
     expect($("output").text()).toBe("6");
+  });
+
+  it("forwards unknown SSE messages with their public event payload", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0, loading: false, requestError: null }"></section>
+    `;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response("event: application-notice\nid: event-7\ndata: ready\n\n", {
+            headers: { "Content-Type": "text/event-stream" },
+          }),
+      ),
+    );
+    const messages: unknown[] = [];
+
+    $("#app").star();
+    $("#app").on("jquery-star:sse", (event) => {
+      expect(event.target).toBe($("#app").get(0));
+      messages.push((event as unknown as { detail: unknown }).detail);
+    });
+    await instance().run("get", { args: ["/events"] });
+
+    expect(messages).toEqual([{ event: "application-notice", data: "ready", id: "event-7" }]);
   });
 
   it("cancels an older matching request when a newer request starts", async () => {

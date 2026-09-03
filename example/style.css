@@ -42,10 +42,55 @@ h1 {
 
 .lede {
   max-width: 590px;
-  margin: 28px 0 48px;
+  margin: 28px 0 32px;
   color: #655e55;
   font-size: 1.18rem;
   line-height: 1.65;
+}
+
+.framework-promise {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 16px;
+}
+
+.card.promise-panel {
+  grid-template-columns: 1fr;
+  align-content: start;
+  margin-top: 0;
+}
+
+.promise-panel h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.promise-panel ul,
+.promise-panel ol {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #655e55;
+  line-height: 1.5;
+}
+
+.promise-panel li::marker {
+  color: #06704f;
+  font-weight: 800;
+}
+
+.syntax-rule {
+  margin: 20px 0 40px;
+  padding: 14px 18px;
+  border-left: 4px solid #06704f;
+  color: #504940;
+  background: rgb(255 255 255 / 0.45);
+  line-height: 1.6;
 }
 
 .card {
@@ -57,8 +102,8 @@ h1 {
   padding: 24px;
   border: 1px solid #d8d1c4;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 0 12px 40px rgba(78, 65, 49, 0.07);
+  background: rgb(255 255 255 / 0.65);
+  box-shadow: 0 12px 40px rgb(78 65 49 / 0.07);
 }
 
 .hint {
@@ -1225,7 +1270,7 @@ h1 {
   padding: 2rem;
   color: white;
   background:
-    radial-gradient(circle at 78% 18%, rgba(255, 222, 161, 0.9), transparent 23%),
+    radial-gradient(circle at 78% 18%, rgb(255 222 161 / 0.9), transparent 23%),
     linear-gradient(135deg, #083f32, #06704f 56%, #1aa37a);
   text-align: center;
 }
@@ -1249,7 +1294,7 @@ h1 {
 
 .release-aspect-proof small {
   margin-top: 0.35rem;
-  color: rgba(255, 255, 255, 0.76);
+  color: rgb(255 255 255 / 0.76);
 }
 
 .direction-proof {
@@ -1560,7 +1605,7 @@ pre {
   }
 }
 
-@media (max-width: 620px) {
+@media (width <= 620px) {
   main {
     padding-top: 40px;
   }

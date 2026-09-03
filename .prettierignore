@@ -1,6 +1,14 @@
 coverage
 demo-dist
 dist
+etc/jquery-star.api.md
+etc/jquery-star-core.api.md
+etc/jquery-star-csp.api.md
+etc/jquery-star-datastar.api.md
+etc/jquery-star-datastar-testing.api.md
+etc/jquery-star-testing.api.md
+etc/jquery-star-turbo.api.md
+etc/jquery-star-ui.api.md
 node_modules
 package-lock.json
 playwright-report

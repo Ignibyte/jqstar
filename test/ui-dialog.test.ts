@@ -26,6 +26,8 @@ describe("jQuery Star dialog", () => {
     document.body.innerHTML = `
       <main id="app">
         <button id="open" data-on:click="@ui.dialog.open('#dialog', '#cancel')">Open</button>
+        <button id="controlled" aria-controls="dialog" data-on:click="@ui.dialog.open()">Controlled</button>
+        <button id="invalid" data-on:click="@ui.dialog.open()">Invalid</button>
         <dialog id="dialog" data-jqs="dialog" data-close-on-backdrop>
           <div data-part="content">
             <h2 data-part="title">Confirm action</h2>
@@ -40,6 +42,7 @@ describe("jQuery Star dialog", () => {
 
   afterEach(() => {
     $("#app").star("destroy");
+    vi.unstubAllGlobals();
   });
 
   it("opens through a named action and wires accessible relationships", () => {
@@ -68,6 +71,33 @@ describe("jQuery Star dialog", () => {
     expect(dialog.dataset.state).toBe("closed");
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it("resolves aria-controls actions and uses an empty default close value", () => {
+    vi.stubGlobal("CSS", { escape: (value: string) => value });
+    $("#controlled").trigger("click");
+    const dialog = document.querySelector<HTMLDialogElement>("#dialog")!;
+
+    expect(dialog.open).toBe(true);
+    $.star.ui.dialog.close(dialog);
+    expect(dialog.open).toBe(false);
+    expect(dialog.returnValue).toBe("");
+  });
+
+  it("reports a useful error when an action has no dialog target", async () => {
+    const reported = new Promise<unknown>((resolve) => {
+      $("#app").one("jquery-star:error", (_event, error) => resolve(error));
+    });
+
+    $("#invalid").trigger("click");
+
+    const detail = await reported;
+    expect(detail).toHaveProperty(
+      "error.message",
+      expect.stringMatching(
+        /target selector, an aria-controls value, or a containing data-jqs dialog/,
+      ),
+    );
   });
 
   it("allows applications to prevent a close", () => {

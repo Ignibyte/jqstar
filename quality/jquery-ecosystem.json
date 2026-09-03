@@ -1,0 +1,687 @@
+{
+  "$schema": "../schema/jquery-ecosystem.schema.json",
+  "schema": "jqstar-jquery-ecosystem/1",
+  "reviewedAt": "2026-09-03T12:50:48Z",
+  "expiresAt": "2027-03-03T12:50:48Z",
+  "reviewPolicy": {
+    "maximumAgeDays": 183,
+    "triggers": [
+      "Before a stable jQStar major release",
+      "When an OpenJS project status changes",
+      "When a reviewed project publishes a stable release or changes support policy",
+      "When the OpenJS trademark policy or written permission changes"
+    ],
+    "changeProcess": "Recheck primary sources, update this matrix and its downstream digest through a ticket, then rerun static, package, and delivery gates."
+  },
+  "product": {
+    "names": {
+      "product": "jQStar",
+      "package": "jquery-star",
+      "cli": "jqstar",
+      "markup": "data-jqs",
+      "site": "jqstar.com",
+      "legacyCheckout": "jqdatastar"
+    },
+    "positioning": "An independent HTML-first UI and application library for jQuery.",
+    "disclaimer": "jQStar is not affiliated with, sponsored by, endorsed by, or an official successor to the jQuery project or the OpenJS Foundation.",
+    "trademarkPolicy": "https://trademark-policy.openjsf.org/",
+    "attribution": "jQuery and related project names are trademarks of the OpenJS Foundation or their respective owners and are used here only for factual compatibility and migration statements.",
+    "allowedUses": [
+      "Factual compatibility statements backed by current tests",
+      "Migration guidance that identifies the source and destination products",
+      "Ownership attribution and links to official project sources"
+    ],
+    "forbiddenClaims": [
+      "jQuery UI 2",
+      "the new jQuery UI",
+      "official jQuery successor",
+      "OpenJS sponsored",
+      "jQuery endorsed"
+    ],
+    "surfaceReview": [
+      {
+        "surface": "package-metadata",
+        "evidence": ["package.json"],
+        "result": "The package uses the independent jquery-star name and factual powered-by-jQuery wording; it declares jQuery only as a peer."
+      },
+      {
+        "surface": "readme",
+        "evidence": ["README.md"],
+        "result": "The README describes real-jQuery compatibility and migration without an official-project, endorsement, or drop-in jQuery UI claim."
+      },
+      {
+        "surface": "website-titles-copy",
+        "evidence": ["example/index.html", "example/docs/ecosystem/index.html"],
+        "result": "Titles lead with jQStar; ecosystem names appear only in status, compatibility, attribution, and migration copy."
+      },
+      {
+        "surface": "social-image-assets",
+        "evidence": ["example/public/favicon.svg", "example/public/og-jqstar.png"],
+        "result": "The custom jQStar mark and social card contain no copied jQuery or OpenJS logo or trade dress."
+      },
+      {
+        "surface": "repository-metadata-topics",
+        "evidence": ["https://github.com/Ignibyte/jqstar", "package.json"],
+        "result": "The public repository and package keywords make no official, successor, stewardship, sponsorship, or endorsement claim."
+      },
+      {
+        "surface": "examples",
+        "evidence": ["example/", "registry/"],
+        "result": "Examples use jQStar markup and APIs; no archived project runtime, logo, theme, or Widget Factory implementation is copied."
+      },
+      {
+        "surface": "migration-guides",
+        "evidence": [
+          "docs/JQUERY_ECOSYSTEM.md",
+          "docs/tickets/0039-publish-jquery-ui-migration.md",
+          "docs/tickets/0040-publish-jquery-mobile-migration.md"
+        ],
+        "result": "Guides distinguish factual source-project status from jQStar policy and assign executable migration claims to downstream tickets."
+      },
+      {
+        "surface": "release-notes",
+        "evidence": [
+          "README.md",
+          "docs/PROJECT.md",
+          "docs/tickets/0017-prepare-stable-platform-release.md"
+        ],
+        "result": "Current release surfaces make no third-party ownership claim; ticket 0017 must recheck this matrix before stable-major wording."
+      }
+    ],
+    "futureProposalPrerequisites": [
+      "Shipped migration evidence",
+      "Sustained independent adoption",
+      "Upstream contributions and participation",
+      "A concrete governance, security, maintenance, and funding plan",
+      "Documented community consultation",
+      "Explicit written agreement from the jQuery project and OpenJS Foundation"
+    ]
+  },
+  "projects": [
+    {
+      "id": "jquery-core",
+      "name": "jQuery Core",
+      "package": "jquery",
+      "officialStatus": "impact",
+      "reviewedRelease": "4.0.0",
+      "releaseKind": "current-stable",
+      "maintenanceStatement": "jQuery 4.x is current and only the latest jQuery release is fully supported; 3.x receives critical security patches and bug fixes.",
+      "disposition": "integrate",
+      "runtimePolicy": "peer-foundation",
+      "jqstarRole": "The application-owned real jQuery instance is jQStar's sole selector, event, collection, and plugin foundation.",
+      "testedVersions": ["4.0.0"],
+      "supportedRange": ">=4.0.0 <5",
+      "ownerTickets": ["0003", "0004"],
+      "nonGoals": [
+        "Vendoring or forking jQuery",
+        "Publishing a jQuery-compatible replacement",
+        "Changing the invariant that $ is jQuery while $name is a signal"
+      ],
+      "recheckTriggers": [
+        "A jQuery stable release inside or outside the peer range",
+        "A jQuery support-policy or OpenJS status change"
+      ],
+      "sources": [
+        {
+          "id": "jquery-core.openjs-status",
+          "kind": "status",
+          "url": "https://github.com/openjs-foundation/cross-project-council",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-core.release-4.0.0",
+          "kind": "release",
+          "url": "https://blog.jquery.com/2026/01/17/jquery-4-0-0/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-core.support",
+          "kind": "support",
+          "url": "https://jquery.com/support/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-core.upgrade-4.0",
+          "kind": "migration",
+          "url": "https://jquery.com/upgrade-guide/4.0/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        }
+      ]
+    },
+    {
+      "id": "jquery-migrate",
+      "name": "jQuery Migrate",
+      "package": "jquery-migrate",
+      "officialStatus": "jquery-companion",
+      "reviewedRelease": "4.0.2",
+      "releaseKind": "current-stable",
+      "maintenanceStatement": "The official upgrade guide presents Migrate as a temporary development aid whose uncompressed build reports compatibility warnings during staged upgrades.",
+      "disposition": "integrate",
+      "runtimePolicy": "application-opt-in",
+      "jqstarRole": "Application owners may use the matching Migrate release while upgrading jQuery, preserve its warnings, fix each finding, and remove it when the stage is complete.",
+      "testedVersions": [],
+      "supportedRange": null,
+      "ownerTickets": ["0032"],
+      "nonGoals": [
+        "Bundling, injecting, or auto-loading Migrate",
+        "Suppressing warnings",
+        "Treating warnings as universally safe automatic rewrites"
+      ],
+      "recheckTriggers": ["A Migrate stable release", "A jQuery upgrade-guide workflow change"],
+      "sources": [
+        {
+          "id": "jquery-migrate.upgrade-workflow",
+          "kind": "migration",
+          "url": "https://jquery.com/upgrade-guide/4.0/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-migrate.release",
+          "kind": "release",
+          "url": "https://releases.jquery.com/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        }
+      ]
+    },
+    {
+      "id": "jquery-ui",
+      "name": "jQuery UI",
+      "package": "jquery-ui",
+      "officialStatus": "archived",
+      "reviewedRelease": "1.14.2",
+      "releaseKind": "current-stable",
+      "maintenanceStatement": "jQuery UI receives compatibility, security, and important-regression maintenance, with no significant new feature work planned; OpenJS still classifies the project as Archived.",
+      "disposition": "coexist-and-migrate",
+      "runtimePolicy": "external-only",
+      "jqstarRole": "Existing applications may keep isolated jQuery UI regions during measured migration; new work uses jQStar's native semantic components.",
+      "testedVersions": [],
+      "supportedRange": null,
+      "ownerTickets": ["0039"],
+      "nonGoals": [
+        "A runtime dependency or source fork",
+        "Widget Factory, Widget Plugin Bridge, or third-party extension compatibility",
+        "ThemeRoller, effects, or imperative plugin API compatibility"
+      ],
+      "recheckTriggers": [
+        "A jQuery UI stable release or maintenance statement change",
+        "An OpenJS status change"
+      ],
+      "sources": [
+        {
+          "id": "jquery-ui.openjs-status",
+          "kind": "status",
+          "url": "https://github.com/openjs-foundation/cross-project-council",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-ui.release-maintenance",
+          "kind": "maintenance",
+          "url": "https://blog.jqueryui.com/2026/01/jquery-ui-1-14-2-released/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-ui.catalog",
+          "kind": "catalog",
+          "url": "https://api.jqueryui.com/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        }
+      ]
+    },
+    {
+      "id": "jquery-mobile",
+      "name": "jQuery Mobile",
+      "package": "jquery-mobile",
+      "officialStatus": "archived",
+      "reviewedRelease": "1.4.1",
+      "releaseKind": "last-stable",
+      "maintenanceStatement": "The official archived repository is read-only, states that jQuery Mobile is no longer maintained, and documents its old 1.4.x jQuery compatibility range.",
+      "disposition": "migrate-only",
+      "runtimePolicy": "absent",
+      "jqstarRole": "Preserve semantic HTML, direct URLs, native links and forms, responsive layout, touch and keyboard access, progressive enhancement, and graceful degradation while migrating route by route without the Mobile runtime.",
+      "testedVersions": [],
+      "supportedRange": null,
+      "ownerTickets": ["0040"],
+      "nonGoals": [
+        "Loading, wrapping, forking, or emulating the archived runtime",
+        "Recreating its router, page model, virtual mouse, themes, widgets, or transition catalog",
+        "Running jQuery Mobile beside jQuery 4 in a modern document"
+      ],
+      "recheckTriggers": [
+        "An OpenJS status change",
+        "A change to the official archived repository statement"
+      ],
+      "sources": [
+        {
+          "id": "jquery-mobile.openjs-status",
+          "kind": "status",
+          "url": "https://github.com/openjs-foundation/cross-project-council",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "jquery-mobile.archive",
+          "kind": "maintenance",
+          "url": "https://github.com/jquery-archive/jquery-mobile",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        }
+      ]
+    },
+    {
+      "id": "sizzle",
+      "name": "Sizzle",
+      "package": "sizzle",
+      "officialStatus": "archived",
+      "reviewedRelease": "2.3.10",
+      "releaseKind": "last-stable",
+      "maintenanceStatement": "OpenJS classifies standalone Sizzle as Archived; selector behavior for jQStar comes from the application-owned jQuery peer regardless of jQuery's internal selector implementation.",
+      "disposition": "ignore",
+      "runtimePolicy": "absent",
+      "jqstarRole": "No separate role. Real jQuery owns selector semantics.",
+      "testedVersions": [],
+      "supportedRange": null,
+      "ownerTickets": ["0038"],
+      "nonGoals": [
+        "A standalone dependency, fork, or selector-engine swap",
+        "Sizzle extension or API compatibility",
+        "Treating transitive TypeScript declarations as runtime integration"
+      ],
+      "recheckTriggers": ["An OpenJS status change", "A jQuery selector support-policy change"],
+      "sources": [
+        {
+          "id": "sizzle.openjs-status",
+          "kind": "status",
+          "url": "https://github.com/openjs-foundation/cross-project-council",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "sizzle.repository",
+          "kind": "maintenance",
+          "url": "https://github.com/jquery/sizzle",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        }
+      ]
+    },
+    {
+      "id": "qunit",
+      "name": "QUnit",
+      "package": "qunit",
+      "officialStatus": "at-large",
+      "reviewedRelease": "2.26.0",
+      "releaseKind": "current-stable",
+      "maintenanceStatement": "QUnit remains an active OpenJS At-Large project with current Node and browser releases.",
+      "disposition": "integrate",
+      "runtimePolicy": "development-test-only",
+      "jqstarRole": "An exact installed QUnit consumer runs jquery-star/testing conformance without changing the repository's Vitest, property, static, or Playwright quality stack.",
+      "testedVersions": ["2.26.0"],
+      "supportedRange": "2.26.0",
+      "ownerTickets": ["0014"],
+      "nonGoals": [
+        "A runtime or root-bundle dependency",
+        "Runner-specific branches in jquery-star/testing",
+        "Replacing the repository quality stack with QUnit"
+      ],
+      "recheckTriggers": [
+        "A QUnit stable release or support-policy change",
+        "An OpenJS status change"
+      ],
+      "sources": [
+        {
+          "id": "qunit.openjs-status",
+          "kind": "status",
+          "url": "https://github.com/openjs-foundation/cross-project-council",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "qunit.release",
+          "kind": "release",
+          "url": "https://qunitjs.com/",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        },
+        {
+          "id": "qunit.history",
+          "kind": "maintenance",
+          "url": "https://github.com/qunitjs/qunit/blob/main/History.md",
+          "reviewedAt": "2026-09-03T12:50:48Z"
+        }
+      ]
+    }
+  ],
+  "uiCapabilityMap": [
+    {
+      "id": "jquery-ui.widget.accordion",
+      "category": "widget",
+      "legacyCapability": "Accordion",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/accordion.html"],
+      "contractDifference": "Semantic headings and disclosure buttons replace Widget Factory methods, options, events, data instances, and theme classes.",
+      "sourceUrl": "https://api.jqueryui.com/accordion/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.autocomplete",
+      "category": "widget",
+      "legacyCapability": "Autocomplete",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/combobox.html"],
+      "contractDifference": "The jQStar combobox uses native input and listbox semantics, source-owned markup, named actions, and a different data/request contract.",
+      "sourceUrl": "https://api.jqueryui.com/autocomplete/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.button",
+      "category": "widget",
+      "legacyCapability": "Button",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/button.html"],
+      "contractDifference": "jQStar keeps native button semantics and does not expose the jQuery UI button plugin or theme classes.",
+      "sourceUrl": "https://api.jqueryui.com/button/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.buttonset",
+      "category": "widget",
+      "legacyCapability": "Buttonset",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": [
+        "registry/components/button-group.html",
+        "registry/components/toggle-group.html"
+      ],
+      "contractDifference": "Native buttons or pressed controls replace the retired imperative buttonset contract.",
+      "sourceUrl": "https://api.jqueryui.com/buttonset/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.checkboxradio",
+      "category": "widget",
+      "legacyCapability": "Checkboxradio",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": [
+        "registry/components/checkbox.html",
+        "registry/components/radio-group.html"
+      ],
+      "contractDifference": "Native checkbox and radio inputs remain the submitted and accessible controls; no themeable-button plugin contract is reproduced.",
+      "sourceUrl": "https://api.jqueryui.com/checkboxradio/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.controlgroup",
+      "category": "widget",
+      "legacyCapability": "Controlgroup",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": [
+        "registry/components/button-group.html",
+        "registry/components/input-group.html"
+      ],
+      "contractDifference": "Source-owned composition replaces automatic child-widget discovery, refresh, and corner-class management.",
+      "sourceUrl": "https://api.jqueryui.com/controlgroup/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.datepicker",
+      "category": "widget",
+      "legacyCapability": "Datepicker",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/date-picker.html"],
+      "contractDifference": "A labelled native input remains the form value while calendar and popover behavior use jQStar's documented component contracts.",
+      "sourceUrl": "https://api.jqueryui.com/datepicker/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.dialog",
+      "category": "widget",
+      "legacyCapability": "Dialog",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/dialog.html"],
+      "contractDifference": "The native dialog element and jQStar focus lifecycle replace the imperative dialog instance, option, event, overlay, and theme contracts.",
+      "sourceUrl": "https://api.jqueryui.com/dialog/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.menu",
+      "category": "widget",
+      "legacyCapability": "Menu",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": [
+        "registry/components/dropdown-menu.html",
+        "registry/components/context-menu.html"
+      ],
+      "contractDifference": "Explicit menu-button or context-menu markup replaces automatic plugin initialization and jQuery UI event payloads.",
+      "sourceUrl": "https://api.jqueryui.com/menu/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.progressbar",
+      "category": "widget",
+      "legacyCapability": "Progressbar",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/progress.html"],
+      "contractDifference": "Native progress semantics and documented state replace the themeable progressbar plugin.",
+      "sourceUrl": "https://api.jqueryui.com/progressbar/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.selectmenu",
+      "category": "widget",
+      "legacyCapability": "Selectmenu",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": [
+        "registry/components/select.html",
+        "registry/components/native-select.html"
+      ],
+      "contractDifference": "The application chooses a native select or explicit listbox composition; no selectmenu method or theme contract is preserved.",
+      "sourceUrl": "https://api.jqueryui.com/selectmenu/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.slider",
+      "category": "widget",
+      "legacyCapability": "Slider",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/slider.html"],
+      "contractDifference": "A native range input remains authoritative and jQStar does not emulate the jQuery UI slider instance or events.",
+      "sourceUrl": "https://api.jqueryui.com/slider/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.spinner",
+      "category": "widget",
+      "legacyCapability": "Spinner",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/number-field.html"],
+      "contractDifference": "A native number input with explicit step controls replaces the spinner plugin API.",
+      "sourceUrl": "https://api.jqueryui.com/spinner/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.tabs",
+      "category": "widget",
+      "legacyCapability": "Tabs",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/tabs.html"],
+      "contractDifference": "ARIA tabs and source-owned panels replace Widget Factory options, remote-loading behavior, and callback events.",
+      "sourceUrl": "https://api.jqueryui.com/tabs/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.widget.tooltip",
+      "category": "widget",
+      "legacyCapability": "Tooltip",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/tooltip.html"],
+      "contractDifference": "The jQStar tooltip owns documented hover and focus semantics but does not preserve the jQuery UI tooltip API or theme.",
+      "sourceUrl": "https://api.jqueryui.com/tooltip/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.interaction.draggable",
+      "category": "interaction",
+      "legacyCapability": "Generic draggable interaction",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar has no generic arbitrary-element draggable API; specific components may own bounded pointer and keyboard behavior.",
+      "sourceUrl": "https://api.jqueryui.com/draggable/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.interaction.droppable",
+      "category": "interaction",
+      "legacyCapability": "Generic droppable interaction",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar has no generic drop-target manager or draggable/droppable coordination contract.",
+      "sourceUrl": "https://api.jqueryui.com/droppable/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.interaction.mouse",
+      "category": "interaction",
+      "legacyCapability": "Mouse interaction base",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar component controllers use native pointer and keyboard events and do not publish the jQuery UI mouse abstraction.",
+      "sourceUrl": "https://api.jqueryui.com/mouse/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.interaction.resizable",
+      "category": "interaction",
+      "legacyCapability": "Generic resizable interaction",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/resizable.html"],
+      "contractDifference": "The recipe exposes a bounded panel layout with named actions; it is not an arbitrary-element resizable plugin.",
+      "sourceUrl": "https://api.jqueryui.com/resizable/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.interaction.selectable",
+      "category": "interaction",
+      "legacyCapability": "Generic pointer selectable interaction",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "Semantic list, table, and form selections use their own native controls; no generic lasso selection API ships.",
+      "sourceUrl": "https://api.jqueryui.com/selectable/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.interaction.sortable",
+      "category": "interaction",
+      "legacyCapability": "Sortable interaction",
+      "classification": "catalog-counterpart",
+      "jqstarCounterparts": ["registry/components/sortable.html"],
+      "contractDifference": "The source-owned sortable recipe includes keyboard movement and named actions and does not emulate connectWith, helper, or plugin event payloads.",
+      "sourceUrl": "https://api.jqueryui.com/sortable/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.utility.form-reset",
+      "category": "utility",
+      "legacyCapability": "Form Reset Mixin",
+      "classification": "semantic-api-migration",
+      "jqstarCounterparts": ["native form reset", "registry/components/form.html"],
+      "contractDifference": "Native reset behavior and component-owned listeners replace Widget Factory refresh callbacks.",
+      "sourceUrl": "https://api.jqueryui.com/jQuery.widget/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.utility.position",
+      "category": "utility",
+      "legacyCapability": "Public Position utility",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar components share internal floating placement but publish no general jQuery UI Position-compatible API.",
+      "sourceUrl": "https://api.jqueryui.com/position/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.effects.catalog",
+      "category": "effects",
+      "legacyCapability": "Effects, easings, class animation, and color animation",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar does not ship the jQuery UI effects catalog or its overloaded jQuery animation methods; application CSS must honor reduced motion.",
+      "sourceUrl": "https://api.jqueryui.com/category/effects/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.theme.themeroller",
+      "category": "theme",
+      "legacyCapability": "ThemeRoller and jQuery UI CSS class contract",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar uses its own CSS variables and source-owned component markup and does not consume or generate ThemeRoller classes.",
+      "sourceUrl": "https://jqueryui.com/themeroller/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.contract.widget-factory",
+      "category": "contract",
+      "legacyCapability": "Widget Factory lifecycle, inheritance, options, methods, events, and data instances",
+      "classification": "no-equivalent",
+      "jqstarCounterparts": [],
+      "contractDifference": "jQStar's application, plugin, directive, action, and UI contracts are separate APIs and do not implement $.widget or Widget Factory inheritance.",
+      "sourceUrl": "https://api.jqueryui.com/jQuery.widget/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.contract.plugin-bridge",
+      "category": "contract",
+      "legacyCapability": "Widget Plugin Bridge and imperative jQuery plugin dispatch",
+      "classification": "semantic-api-migration",
+      "jqstarCounterparts": ["data-jqs roots", "named actions", "$.star.ui methods"],
+      "contractDifference": "Migration replaces string method dispatch, option bags, callback payloads, and jQuery data instances with semantic markup and documented jQStar APIs.",
+      "sourceUrl": "https://api.jqueryui.com/jQuery.widget.bridge/",
+      "ownerTicket": "0039"
+    },
+    {
+      "id": "jquery-ui.extension.third-party-widgets",
+      "category": "extension",
+      "legacyCapability": "Third-party Widget Factory extensions and application plugins",
+      "classification": "external-coexistence",
+      "jqstarCounterparts": [],
+      "contractDifference": "Legacy extensions remain application-owned during migration; compatibility is application-specific and never inferred from the official catalog.",
+      "sourceUrl": "https://api.jqueryui.com/jQuery.widget/",
+      "ownerTicket": "0039"
+    }
+  ],
+  "downstream": [
+    {
+      "id": "jquery-ecosystem.qunit.testing-consumer",
+      "projectId": "qunit",
+      "ticket": "0014",
+      "requirements": [
+        "Run exact installed QUnit conformance through jquery-star/testing",
+        "Keep QUnit out of runtime and testing bundle graphs",
+        "Keep Vitest, property, static, and Playwright gates authoritative"
+      ]
+    },
+    {
+      "id": "jquery-ecosystem.migrate.doctor-input",
+      "projectId": "jquery-migrate",
+      "ticket": "0032",
+      "requirements": [
+        "Detect only bounded declared metadata or schema-validated user summaries",
+        "Never inject Migrate, suppress warnings, or rewrite application code",
+        "Link to the official staged upgrade workflow"
+      ]
+    },
+    {
+      "id": "jquery-ecosystem.ui.coexistence-migration",
+      "projectId": "jquery-ui",
+      "ticket": "0039",
+      "requirements": [
+        "Build exact-package coexistence and representative migration evidence",
+        "Complete the catalog and API gap map without presuming an adapter",
+        "Keep jQuery UI absent from jQStar runtime, bundles, and source"
+      ]
+    },
+    {
+      "id": "jquery-ecosystem.mobile.no-runtime-migration",
+      "projectId": "jquery-mobile",
+      "ticket": "0040",
+      "requirements": [
+        "Preserve progressive-enhancement needs in a modern route-level migration",
+        "Keep the archived runtime, router, page model, virtual mouse, themes, and widgets absent",
+        "Separate the jQuery Core upgrade from UI and navigation migration"
+      ]
+    }
+  ]
+}

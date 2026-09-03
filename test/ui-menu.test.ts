@@ -56,6 +56,7 @@ describe("jQuery Star Dropdown Menu", () => {
     expect(content().getAttribute("role")).toBe("menu");
     expect(content().getAttribute("aria-labelledby")).toBe(trigger().id);
     expect(content().hidden).toBe(true);
+    expect(document.activeElement).toBe(document.body);
     expect(item("alpha").getAttribute("role")).toBe("menuitem");
     expect(item("persistent").getAttribute("role")).toBe("menuitemcheckbox");
     expect(item("persistent").getAttribute("aria-checked")).toBe("true");
@@ -111,6 +112,23 @@ describe("jQuery Star Dropdown Menu", () => {
     item("omega").dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
     expect(menu().dataset.state).toBe("closed");
     expect(document.activeElement).toBe(trigger());
+  });
+
+  it("preserves focus inside an open menu during re-enhancement", () => {
+    trigger().click();
+    item("omega").focus();
+    content().style.removeProperty("left");
+    content().style.removeProperty("top");
+    delete content().dataset.side;
+    delete content().dataset.align;
+
+    $.star.ui.enhance(menu());
+
+    expect(document.activeElement).toBe(item("omega"));
+    expect(content().style.left).not.toBe("");
+    expect(content().style.top).not.toBe("");
+    expect(content().dataset.side).toMatch(/^(top|bottom)$/);
+    expect(content().dataset.align).toBe("start");
   });
 
   it("supports named actions, APIs, and re-enhancement after a server morph", () => {

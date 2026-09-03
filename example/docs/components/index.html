@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Components · jQStar</title>
+    <meta
+      name="description"
+      content="Accessible, source-owned jQStar component recipes for server-rendered applications."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Components</h1>
+      <p class="docs-lede">
+        jQStar ships 102 source-owned component recipes and seven composed application blocks.
+        Native semantics do the platform work; <code>data-jqs</code> roots and
+        <code>data-part</code> slots add consistent behavior, state, and styling hooks.
+      </p>
+
+      <div class="component-grid">
+        <a class="component-link" href="%BASE_URL%docs/components/dialog/">
+          <h2>Dialog</h2>
+          <p>Native modality, focus containment and return, lifecycle events, and sheets.</p>
+          <span>Read Dialog →</span>
+        </a>
+        <a class="component-link" href="%BASE_URL%docs/components/dropdown/">
+          <h2>Dropdown</h2>
+          <p>Roving focus, typeahead, checkbox/radio items, positioning, and dismissal.</p>
+          <span>Read Dropdown →</span>
+        </a>
+        <a class="component-link" href="%BASE_URL%docs/components/tabs/">
+          <h2>Tabs</h2>
+          <p>Automatic or manual activation, stable values, orientation, and keyboard movement.</p>
+          <span>Read Tabs →</span>
+        </a>
+        <a class="component-link" href="%BASE_URL%docs/components/toast/">
+          <h2>Toast</h2>
+          <p>Accessible announcements, pausable timers, actions, keyboard focus, and swipe.</p>
+          <span>Read Toast →</span>
+        </a>
+      </div>
+
+      <h2>The component contract</h2>
+      <ul>
+        <li>
+          <strong>Native elements first:</strong> buttons, forms, details, dialog, tables, links,
+          progress, and other platform semantics remain real.
+        </li>
+        <li>
+          <strong>Stable anatomy:</strong> <code>data-part</code> identifies structural slots
+          without coupling behavior to decorative classes.
+        </li>
+        <li>
+          <strong>Visible state:</strong> documented attributes such as <code>data-state</code>,
+          <code>data-value</code>, and ARIA state remain inspectable.
+        </li>
+        <li>
+          <strong>Keyboard and focus:</strong> composite widgets implement their documented WAI-ARIA
+          interaction model and focus ownership.
+        </li>
+        <li>
+          <strong>Server replacement:</strong> newly patched roots enhance automatically and removed
+          roots release owned behavior.
+        </li>
+        <li>
+          <strong>Source ownership:</strong> the CLI copies ordinary HTML that applications can
+          edit; jQStar supplies the reusable runtime.
+        </li>
+      </ul>
+
+      <h2>Install recipes</h2>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>Terminal</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>npx jqstar list --type component
+npx jqstar add dialog dropdown-menu tabs toast
+npx jqstar list --type block</code></pre>
+      </div>
+
+      <h2>Explore the complete system</h2>
+      <p>
+        The first hand-authored guides establish the documentation pattern. The
+        <a href="%BASE_URL%components/lab/">Component Lab</a> remains the exhaustive live proof for
+        all recipes, composed blocks, forms, data tables, backend requests, and Datastar streams.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

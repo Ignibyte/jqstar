@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/quality-0044-self-test-report.schema.json",
+  "type": "object",
+  "required": ["schema", "runId", "mode", "status", "checks"],
+  "properties": {
+    "schema": { "const": "jqstar-quality-0044-self-test/1" },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "maxLength": 160
+    },
+    "mode": { "const": "self-test" },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "checks": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "prefixItems": [
+        { "$ref": "#/$defs/browserShardRefusal" },
+        { "$ref": "#/$defs/browserEmptySelection" },
+        { "$ref": "#/$defs/retryPassIsRed" },
+        { "$ref": "#/$defs/accessibility" },
+        { "$ref": "#/$defs/ownershipBudget" },
+        { "$ref": "#/$defs/networkFixture" },
+        { "$ref": "#/$defs/mobileTarget" },
+        { "$ref": "#/$defs/reducedMotion" },
+        { "$ref": "#/$defs/forcedColors" },
+        { "$ref": "#/$defs/zoomReflow" },
+        { "$ref": "#/$defs/noJavascript" },
+        { "$ref": "#/$defs/packageBudget" },
+        { "$ref": "#/$defs/apiReportDrift" },
+        { "$ref": "#/$defs/artifactManifestDrift" },
+        { "$ref": "#/$defs/packageReleaseContractHardening" },
+        { "$ref": "#/$defs/browserSelectionGreenControl" }
+      ],
+      "items": false
+    }
+  },
+  "allOf": [
+    {
+      "type": "object",
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "pass" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "not": {
+              "type": "array",
+              "contains": {
+                "type": "object",
+                "properties": { "status": { "const": "fail" } },
+                "required": ["status"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "if": {
+        "type": "object",
+        "properties": { "status": { "const": "fail" } },
+        "required": ["status"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": { "status": { "const": "fail" } },
+              "required": ["status"]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": [
+        "name",
+        "expected",
+        "exitCode",
+        "status",
+        "detector",
+        "detectorMatched",
+        "evidenceMatched",
+        "evidenceFailure",
+        "artifactDirectory",
+        "output"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "expected": { "enum": ["red", "green"] },
+        "exitCode": { "type": ["integer", "null"] },
+        "status": { "enum": ["pass", "fail"] },
+        "detector": { "type": "string", "minLength": 1 },
+        "detectorMatched": { "type": "boolean" },
+        "evidenceMatched": { "type": "boolean" },
+        "evidenceFailure": { "type": ["string", "null"] },
+        "artifactDirectory": { "type": ["string", "null"] },
+        "output": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": { "status": { "const": "pass" } },
+            "required": ["status"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "detectorMatched": { "const": true },
+              "evidenceMatched": { "const": true },
+              "evidenceFailure": { "type": "null" }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "redCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "expected": { "const": "red" } } }
+      ]
+    },
+    "greenCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        { "type": "object", "properties": { "expected": { "const": "green" } } }
+      ]
+    },
+    "browserShardRefusal": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "browser-shard-refusal" } }
+        }
+      ]
+    },
+    "browserEmptySelection": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "browser-empty-selection" } }
+        }
+      ]
+    },
+    "retryPassIsRed": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "retry-pass-is-red" } }
+        }
+      ]
+    },
+    "accessibility": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "accessibility" } } }
+      ]
+    },
+    "ownershipBudget": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "ownership-budget" } } }
+      ]
+    },
+    "networkFixture": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "network-fixture" } } }
+      ]
+    },
+    "mobileTarget": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "mobile-target" } } }
+      ]
+    },
+    "reducedMotion": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "reduced-motion" } } }
+      ]
+    },
+    "forcedColors": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "forced-colors" } } }
+      ]
+    },
+    "zoomReflow": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "zoom-reflow" } } }
+      ]
+    },
+    "noJavascript": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "no-javascript" } } }
+      ]
+    },
+    "packageBudget": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "package-budget" } } }
+      ]
+    },
+    "apiReportDrift": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        { "type": "object", "properties": { "name": { "const": "api-report-drift" } } }
+      ]
+    },
+    "artifactManifestDrift": {
+      "allOf": [
+        { "$ref": "#/$defs/redCheck" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "artifact-manifest-drift" } }
+        }
+      ]
+    },
+    "packageReleaseContractHardening": {
+      "allOf": [
+        { "$ref": "#/$defs/greenCheck" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "package-release-contract-hardening" } }
+        }
+      ]
+    },
+    "browserSelectionGreenControl": {
+      "allOf": [
+        { "$ref": "#/$defs/greenCheck" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "browser-selection-green-control" } }
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

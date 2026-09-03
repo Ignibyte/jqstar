@@ -1,0 +1,25 @@
+{
+  "threshold": 2.99,
+  "minLines": 8,
+  "minTokens": 70,
+  "maxLines": 1000,
+  "maxSize": "200kb",
+  "reporters": ["console", "json"],
+  "output": ".quality-reports/jscpd",
+  "gitignore": true,
+  "ignore": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/demo-dist/**",
+    "**/server-dist/**",
+    "**/coverage/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
+    "**/package-lock.json",
+    "**/*.d.ts",
+    "**/*.map",
+    "**/*.min.*",
+    "**/example/public/**"
+  ]
+}

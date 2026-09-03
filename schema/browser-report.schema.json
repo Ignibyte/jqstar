@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/browser-report.schema.json",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "mode",
+    "status",
+    "seed",
+    "shard",
+    "workers",
+    "repeatEach",
+    "trace",
+    "listOnly",
+    "projects"
+  ],
+  "properties": {
+    "schema": { "const": "jqstar-browser-quality/1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["selection", "execution", "repeated-audit"] },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "seed": { "type": "string", "minLength": 1 },
+    "shard": { "type": "null" },
+    "workers": { "type": "integer", "minimum": 1 },
+    "repeatEach": { "type": "integer", "minimum": 1 },
+    "trace": { "const": "retain-on-failure" },
+    "listOnly": { "type": "boolean" },
+    "projects": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": [
+          "project",
+          "selectedTests",
+          "listExitCode",
+          "runExitCode",
+          "executedTests",
+          "passedTests",
+          "failedTests",
+          "flakyTests",
+          "skippedTests",
+          "artifacts"
+        ],
+        "properties": {
+          "project": {
+            "enum": [
+              "desktop-chromium",
+              "desktop-firefox",
+              "desktop-webkit",
+              "mobile-touch",
+              "reduced-motion",
+              "forced-colors",
+              "zoom-reflow",
+              "javascript-disabled"
+            ]
+          },
+          "selectedTests": { "type": "integer", "minimum": 0 },
+          "listExitCode": { "type": ["integer", "null"] },
+          "runExitCode": { "type": ["integer", "null"] },
+          "executedTests": { "type": ["integer", "null"], "minimum": 0 },
+          "passedTests": { "type": ["integer", "null"], "minimum": 0 },
+          "failedTests": { "type": ["integer", "null"], "minimum": 0 },
+          "flakyTests": { "type": ["integer", "null"], "minimum": 0 },
+          "skippedTests": { "type": ["integer", "null"], "minimum": 0 },
+          "artifacts": {
+            "type": "object",
+            "required": ["root", "testResults", "htmlReport", "jsonReport"],
+            "properties": {
+              "root": { "type": "string", "minLength": 1 },
+              "testResults": { "type": "string", "minLength": 1 },
+              "htmlReport": { "type": "string", "minLength": 1 },
+              "jsonReport": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "desktop-chromium" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "desktop-firefox" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "desktop-webkit" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "mobile-touch" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "reduced-motion" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "forced-colors" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "zoom-reflow" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "properties": {
+        "projects": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": { "project": { "const": "javascript-disabled" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "selectedTests": { "type": "integer", "minimum": 1 },
+                "listExitCode": { "type": "integer", "const": 0 },
+                "failedTests": { "enum": [0, null] },
+                "flakyTests": { "enum": [0, null] },
+                "skippedTests": { "enum": [0, null] }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "pass" },
+          "listOnly": { "const": false }
+        },
+        "required": ["status", "listOnly"]
+      },
+      "then": {
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "runExitCode": { "type": "integer", "const": 0 },
+                "executedTests": { "type": "integer", "minimum": 1 },
+                "passedTests": { "type": "integer", "minimum": 1 },
+                "failedTests": { "const": 0 },
+                "flakyTests": { "const": 0 },
+                "skippedTests": { "const": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "mode": { "const": "selection" } },
+        "required": ["mode"]
+      },
+      "then": { "properties": { "listOnly": { "const": true } } }
+    },
+    {
+      "if": {
+        "properties": { "mode": { "const": "execution" } },
+        "required": ["mode"]
+      },
+      "then": { "properties": { "listOnly": { "const": false } } }
+    },
+    {
+      "if": {
+        "properties": { "mode": { "const": "repeated-audit" } },
+        "required": ["mode"]
+      },
+      "then": {
+        "properties": {
+          "listOnly": { "const": false },
+          "repeatEach": { "type": "integer", "minimum": 2 }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

@@ -3,7 +3,12 @@ import { chromium } from "@playwright/test";
 
 const child = spawn(process.execPath, ["server-dist/index.mjs"], {
   cwd: process.cwd(),
-  env: { ...process.env, JQS_HOST: "127.0.0.1", JQS_PORT: "0" },
+  env: {
+    ...process.env,
+    JQS_DATABASE_PATH: ":memory:",
+    JQS_HOST: "127.0.0.1",
+    JQS_PORT: "0",
+  },
   stdio: ["ignore", "pipe", "pipe"],
 });
 
@@ -36,14 +41,55 @@ try {
   const html = await page.text();
   if (
     !page.ok ||
-    !html.includes("Self-hosting operations console") ||
-    !html.includes("Backend control plane")
+    !html.includes("Polished UI behavior for") ||
+    !html.includes("Datastar applications.")
   ) {
-    throw new Error("The self-hosted server did not serve the production demo.");
+    throw new Error("The self-hosted server did not serve the framework home page.");
+  }
+  const docsResponse = await fetch(`${origin}/docs/components/dialog/`);
+  const docs = await docsResponse.text();
+  if (!docsResponse.ok || !docs.includes("Dialog · jQStar Components")) {
+    throw new Error("The self-hosted server did not serve a direct documentation route.");
+  }
+  const docsHead = await fetch(`${origin}/docs/components/toast/`, { method: "HEAD" });
+  if (!docsHead.ok || docsHead.headers.get("content-type") !== "text/html; charset=utf-8") {
+    throw new Error("The self-hosted documentation HEAD contract failed.");
+  }
+  const agentResources = [
+    ["/docs/agents/", "text/html; charset=utf-8", "Agent-first parity:"],
+    ["/llms.txt", "text/plain; charset=utf-8", "# jQStar"],
+    ["/llms-full.txt", "text/plain; charset=utf-8", "@starfederation/datastar-sdk"],
+    ["/jqstar-agent-index.json", "application/json; charset=utf-8", '"jqstar-agent-index/1"'],
+  ];
+  for (const [path, contentType, marker] of agentResources) {
+    const response = await fetch(`${origin}${path}`);
+    const body = await response.text();
+    const head = await fetch(`${origin}${path}`, { method: "HEAD" });
+    if (
+      !response.ok ||
+      response.headers.get("content-type") !== contentType ||
+      !body.includes(marker) ||
+      !head.ok ||
+      head.headers.get("content-type") !== contentType ||
+      Number(head.headers.get("content-length")) <= 0
+    ) {
+      throw new Error(`The self-hosted agent resource contract failed for ${path}.`);
+    }
+  }
+  const labResponse = await fetch(`${origin}/components/lab/`);
+  const lab = await labResponse.text();
+  if (!labResponse.ok || !lab.includes("Self-hosting operations console")) {
+    throw new Error("The self-hosted server did not preserve the Component Lab.");
   }
   const healthResponse = await fetch(`${origin}/health`);
   const health = await healthResponse.json();
-  if (!healthResponse.ok || health.status !== "healthy" || health.components !== 102) {
+  if (
+    !healthResponse.ok ||
+    health.status !== "healthy" ||
+    health.database !== "ready" ||
+    health.projects !== 2500 ||
+    health.components !== 102
+  ) {
     throw new Error("The self-hosted health contract failed.");
   }
   const operationsResponse = await fetch(`${origin}/api/demo/operations`);
@@ -78,9 +124,12 @@ try {
   const projectSignals = encodeURIComponent(
     JSON.stringify({
       projectBrowserDirection: "ascending",
+      projectBrowserOwner: "all",
       projectBrowserPage: 2,
+      projectBrowserPageSize: 5,
       projectBrowserQuery: "",
       projectBrowserSort: "name",
+      projectBrowserStatus: "all",
     }),
   );
   const projectsResponse = await fetch(`${origin}/api/demo/projects?datastar=${projectSignals}`);
@@ -132,7 +181,8 @@ try {
   const policy = page.headers.get("content-security-policy");
   if (
     !policy?.includes("script-src 'self' 'unsafe-eval'") ||
-    !page.headers.get("x-content-type-options")
+    !page.headers.get("x-content-type-options") ||
+    page.headers.get("origin-agent-cluster") !== "?1"
   ) {
     throw new Error("The self-hosted server is missing security headers.");
   }
@@ -143,7 +193,20 @@ try {
   const browser = await chromium.launch();
   try {
     const browserPage = await browser.newPage();
+    const pageErrors = [];
+    browserPage.on("pageerror", (error) => pageErrors.push(error));
     await browserPage.goto(`${origin}/`);
+    await browserPage
+      .getByRole("heading", { name: "Polished UI behavior for Datastar applications." })
+      .waitFor({ state: "visible" });
+    if (pageErrors.length > 0) {
+      throw new Error(
+        `The framework home page failed during initialization:\n${pageErrors
+          .map((error) => error.stack ?? error.message)
+          .join("\n")}`,
+      );
+    }
+    await browserPage.goto(`${origin}/components/lab/`);
     await browserPage.getByRole("button", { name: "Increment and disappear" }).click();
     await browserPage.getByRole("button", { name: "Refresh operations" }).click();
     await browserPage.getByRole("button", { name: "Refresh snapshot" }).click();
@@ -167,8 +230,15 @@ try {
     if ((await browserPage.locator("#runtime-log-viewer [data-part='entry']").count()) !== 6) {
       throw new Error("The self-hosted browser did not apply the Datastar log stream.");
     }
+    if (pageErrors.length > 0) {
+      throw new Error(
+        `The self-hosted browser emitted page errors:\n${pageErrors
+          .map((error) => error.stack ?? error.message)
+          .join("\n")}`,
+      );
+    }
     await browserPage
-      .locator('[data-block="project-browser"] [data-row-id="deployment-kit"]')
+      .locator('[data-block="project-browser"] [data-row-id="accessibility-lab"]')
       .waitFor({ state: "visible" });
     const accessManager = browserPage.locator('[data-block="access-manager"]');
     await accessManager.getByRole("combobox", { name: "Team member" }).selectOption("luis");
@@ -197,7 +267,7 @@ try {
     await browser.close();
   }
   process.stdout.write(
-    "self-hosted proof: page=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, access-manager-sse=passed, audit-log-sse=passed, datastar-log-stream=passed, browser-runtime=passed, browser-project-browser=passed, browser-access-manager=passed, browser-audit-log=passed, security-headers=passed\n",
+    "self-hosted proof: home=passed, docs-route=passed, docs-head=passed, agent-resources=passed, component-lab=passed, health=passed, operations=passed, runtime-snapshot=passed, profile-persistence=passed, invite-rotation=passed, project-browser-sse=passed, access-manager-sse=passed, audit-log-sse=passed, datastar-log-stream=passed, runtime-install=passed, browser-runtime=passed, browser-project-browser=passed, browser-access-manager=passed, browser-audit-log=passed, browser-page-errors=passed, security-headers=passed\n",
   );
 } finally {
   child.kill("SIGTERM");

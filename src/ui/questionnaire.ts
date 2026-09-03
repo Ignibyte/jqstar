@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   QuestionnaireAnswer,
   QuestionnaireAnswers,
@@ -718,7 +718,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createQuestionnaires(): QuestionnaireCollection {
+export function createQuestionnaires(registerAction: ActionRegistrar): QuestionnaireCollection {
   const api: StarQuestionnaireStatic = {
     next: (target) => {
       const root = resolve(target);

@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { MenubarTarget, StarContext, StarMenuStatic, StarMenubarStatic } from "../types";
 
 interface MenubarRecord {
@@ -168,7 +168,7 @@ function wire(record: MenubarRecord, menuApi: StarMenuStatic): () => void {
     } else if (vertical && event.key === "ArrowRight") {
       event.preventDefault();
       openIndex(record, menuApi, index);
-    } else if (vertical && event.key === "ArrowLeft") {
+    } else if ((vertical && event.key === "ArrowLeft") || event.key === "Escape") {
       event.preventDefault();
       closeAll(record, menuApi);
       trigger.focus();
@@ -176,10 +176,6 @@ function wire(record: MenubarRecord, menuApi: StarMenuStatic): () => void {
       event.preventDefault();
       const indexes = availableIndexes(record);
       switchMenu(record, menuApi, event.key === "Home" ? (indexes[0] ?? 0) : (indexes.at(-1) ?? 0));
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      closeAll(record, menuApi);
-      trigger.focus();
     } else if (event.key.length === 1 && /\S/.test(event.key)) {
       typeahead(record, event.key);
     }
@@ -298,7 +294,10 @@ function enhanceTree(root: ParentNode, menuApi: StarMenuStatic): void {
   }
 }
 
-export function createMenubars(menuApi: StarMenuStatic): MenubarCollection {
+export function createMenubars(
+  menuApi: StarMenuStatic,
+  registerAction: ActionRegistrar,
+): MenubarCollection {
   const api: StarMenubarStatic = {
     open: (target, value) => {
       const root = resolveMenubar(target);

@@ -1,7 +1,11 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { MultiSelectTarget, StarContext, StarMultiSelectStatic } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
@@ -41,7 +45,6 @@ interface MultiSelectEventDetail {
 const records = new WeakMap<HTMLElement, MultiSelectRecord>();
 const activeRecords = new Set<MultiSelectRecord>();
 let multiSelectId = 0;
-let globalListenersInstalled = false;
 
 function multiSelectRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="multi-select"]')
@@ -628,7 +631,6 @@ function enhanceMultiSelect(root: HTMLElement): MultiSelectRecord {
     );
     position(record);
   }
-  installGlobalListeners();
   return record;
 }
 
@@ -637,13 +639,14 @@ function position(record: MultiSelectRecord): void {
   positionFloating(record.root, record.trigger, record.content, { align: "start", side: "bottom" });
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener(
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeMultiSelect(record.root, false);
       }
@@ -651,14 +654,17 @@ function installGlobalListeners(): void {
     true,
   );
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) position(record);
       else activeRecords.delete(record);
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own(
+    "service",
+    "ui:multi-select:active-records",
+    documentRecordCleanup(activeRecords, document),
+  );
 }
 
 function resolve(target: MultiSelectTarget, root: ParentNode = document): HTMLElement {
@@ -686,7 +692,11 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createMultiSelects(): MultiSelectCollection {
+export function createMultiSelects(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): MultiSelectCollection {
+  installGlobalListeners(host);
   const api: StarMultiSelectStatic = {
     open: (target) => openMultiSelect(resolve(target)),
     close: (target) => closeMultiSelect(resolve(target)),

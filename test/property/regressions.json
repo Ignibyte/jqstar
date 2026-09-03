@@ -1,0 +1,25 @@
+{
+  "$schema": "jqstar-property-regressions/1",
+  "sse-crlf-boundary": {
+    "source": "event: update\r\ndata: first\r\ndata: second\r\n\r\n",
+    "chunks": [15, 1, 11, 1, 14, 1, 1]
+  },
+  "expression-reserved-context-domain": {
+    "seed": -98656747,
+    "path": "32:3:3",
+    "counterexample": ["el", 0, 0],
+    "excluded": ["el", "root"]
+  },
+  "request-filter-empty-object": {
+    "seed": 430043,
+    "path": "3:1:0:1:1:1:1",
+    "counterexample": { "a": {} },
+    "encoded": {}
+  },
+  "request-filter-dotted-public-name": {
+    "seed": 1727711309,
+    "path": "13:2:1:2:3:2:2:4:18:15:15:15",
+    "counterexample": { "a": { "._": "" } },
+    "encoded": { "a": { "._": "" } }
+  }
+}

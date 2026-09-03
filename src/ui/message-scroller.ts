@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   MessageScrollerLatestOptions,
   MessageScrollerTarget,
@@ -288,7 +288,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createMessageScrollers(): MessageScrollerCollection {
+export function createMessageScrollers(registerAction: ActionRegistrar): MessageScrollerCollection {
   const api: StarMessageScrollerStatic = {
     latest: (target, options) => {
       const root = resolve(target);

@@ -1,13 +1,25 @@
-import JSON5 from "json5";
 import { patchElements, patchSignals } from "./patch";
-import { SSEParser, sseDataFields } from "./sse";
+import {
+  beginRequestOperation,
+  operationCancellationReason,
+  type StarOperationCancellationReason,
+} from "./observation";
+import { executeRequestMiddleware } from "./request-middleware";
+import { genericProtocolProfile } from "./protocol-generic";
+import {
+  executeProtocolResponse,
+  prepareProtocolRequest,
+  selectProtocolProfile,
+  type ProtocolRequestFormSource,
+  type StarProtocolProfileDefinition,
+  type StarProtocolResponseCapabilities,
+  type StarProtocolSerializedPayload,
+} from "./protocol";
 import type {
   BackendActionOptions,
   BackendMethod,
   ComputedRecord,
   FetchLifecycleDetail,
-  PatchMode,
-  PatchNamespace,
   SSEMessage,
   SignalFilter,
   StarAction,
@@ -19,6 +31,22 @@ interface ActiveRequest {
   controller: AbortController;
   cancelOnCleanup: boolean;
 }
+
+const officialProtocolProfiles = Object.freeze([genericProtocolProfile]);
+
+type RequestTerminal =
+  | { readonly phase: "completed"; readonly attempt: number; readonly status?: number }
+  | {
+      readonly phase: "cancelled";
+      readonly attempt: number;
+      readonly reason: StarOperationCancellationReason;
+    }
+  | {
+      readonly phase: "failed";
+      readonly attempt: number;
+      readonly error: unknown;
+      readonly status?: number;
+    };
 
 const activeByElement = new WeakMap<Element, Map<string, ActiveRequest>>();
 const activeByRoot = new WeakMap<Element, Set<AbortController>>();
@@ -44,7 +72,7 @@ function filteredSignals(
 
   for (const [key, value] of Object.entries(state)) {
     const path = parentPath ? `${parentPath}.${key}` : key;
-    if (matches(filter.exclude, path, /(^_|\._)/.test(path))) continue;
+    if (matches(filter.exclude, path, key.startsWith("_"))) continue;
 
     if (isPlainObject(value)) {
       const nested = filteredSignals(value, filter, path);
@@ -81,9 +109,12 @@ function lifecycleEvent(
   (context.$element ?? context.$root).trigger(event, [detail]);
 }
 
-function emitLifecycle(context: StarContext, detail: FetchLifecycleDetail): void {
-  lifecycleEvent(context, "datastar-fetch", detail);
-  lifecycleEvent(context, "jquery-star:fetch", detail);
+function emitLifecycle(
+  profile: StarProtocolProfileDefinition,
+  context: StarContext,
+  detail: FetchLifecycleDetail,
+): void {
+  for (const name of profile.compatibilityEvents) lifecycleEvent(context, name, detail);
 }
 
 function emitSSE(context: StarContext, message: SSEMessage): void {
@@ -104,57 +135,48 @@ function formFor(context: StarContext, selector: string | null | undefined): HTM
   return candidate;
 }
 
-function appendFormToURL(url: URL, formData: FormData): void {
-  for (const [key, value] of formData.entries()) {
-    url.searchParams.append(key, typeof value === "string" ? value : value.name);
-  }
-}
-
-function requestBody(
-  method: BackendMethod,
-  url: URL,
-  headers: Headers,
+function requestForm(
   context: StarContext,
   options: BackendActionOptions,
-): BodyInit | undefined {
-  for (const [key, value] of Object.entries(options.params ?? {})) {
-    if (value !== null && value !== undefined) url.searchParams.set(key, String(value));
+): ProtocolRequestFormSource | undefined {
+  if (options.contentType !== "form") return undefined;
+  const form = formFor(context, options.selector);
+  return {
+    data: new FormData(form),
+    encoding: form.enctype === "multipart/form-data" ? "multipart" : "urlencoded",
+  };
+}
+
+function requestPayload(
+  context: StarContext,
+  options: BackendActionOptions,
+  form: ProtocolRequestFormSource | undefined,
+): { readonly payload: StarProtocolSerializedPayload; readonly signalsJSON: string } {
+  if (form) {
+    return {
+      payload: Object.freeze({ explicit: false, json: "null" }),
+      signalsJSON: "{}",
+    };
   }
-
-  if (options.contentType === "form") {
-    const form = formFor(context, options.selector);
-    const formData = new FormData(form);
-    if (method === "GET") {
-      appendFormToURL(url, formData);
-      return undefined;
-    }
-    if (form.enctype === "multipart/form-data") return formData;
-
-    const encoded = new URLSearchParams();
-    for (const [key, value] of formData.entries()) {
-      encoded.append(key, typeof value === "string" ? value : value.name);
-    }
-    headers.set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-    return encoded;
-  }
-
-  const payload =
-    typeof options.payload === "function"
+  const signals = filteredSignals(context.state, options.filterSignals);
+  const explicit = options.payload !== undefined;
+  const value = explicit
+    ? typeof options.payload === "function"
       ? options.payload(context)
-      : (options.payload ?? filteredSignals(context.state, options.filterSignals));
-  const serialized = JSON.stringify(payload);
-  if (method === "GET") {
-    url.searchParams.set("datastar", serialized);
-    return undefined;
-  }
+      : options.payload
+    : signals;
+  return {
+    payload: Object.freeze({ explicit, json: JSON.stringify(value) }),
+    signalsJSON: JSON.stringify(signals),
+  };
+}
 
-  // The TypeScript SDK reads DELETE signals from the query string while other
-  // Datastar SDKs follow the JSON-body convention. Sending both keeps the
-  // request readable by either implementation.
-  if (method === "DELETE") url.searchParams.set("datastar", serialized);
-
-  headers.set("Content-Type", "application/json");
-  return serialized;
+function requestParams(options: BackendActionOptions): readonly (readonly [string, string])[] {
+  return Object.freeze(
+    Object.entries(options.params ?? {}).flatMap(([name, value]) =>
+      value === null || value === undefined ? [] : [Object.freeze([name, String(value)] as const)],
+    ),
+  );
 }
 
 function controllerFor(
@@ -278,289 +300,272 @@ async function waitUntilVisible(signal: AbortSignal): Promise<void> {
   });
 }
 
-async function readText(
-  response: Response,
-  context: StarContext,
-  detail: Omit<FetchLifecycleDetail, "type">,
-): Promise<string> {
-  if (!response.body) return response.text();
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  const totalHeader = response.headers.get("Content-Length");
-  const total = totalHeader ? Number(totalHeader) : undefined;
-  let loaded = 0;
-  let text = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    loaded += value.byteLength;
-    text += decoder.decode(value, { stream: true });
-    emitLifecycle(context, {
-      ...detail,
-      type: "progress",
-      loaded,
-      ...(total !== undefined && Number.isFinite(total) ? { total } : {}),
-      response,
-    });
-  }
-  return text + decoder.decode();
-}
-
-function first(fields: Map<string, string[]>, key: string): string | undefined {
-  return fields.get(key)?.[0];
-}
-
-function booleanField(fields: Map<string, string[]>, key: string): boolean {
-  return first(fields, key) === "true";
-}
-
-function handleSSEMessage(context: StarContext, message: SSEMessage): void {
-  if (
-    message.event === "datastar-patch-elements" ||
-    message.event === "jquery-star-patch-elements"
-  ) {
-    const fields = sseDataFields(message.data);
-    const elements = fields.get("elements")?.join("\n") ?? "";
-    const selector = first(fields, "selector");
-    const mode = first(fields, "mode");
-    const namespace = first(fields, "namespace");
-    const viewTransitionSelector = first(fields, "viewTransitionSelector");
-    patchElements(context.root, elements, {
-      ...(selector ? { selector } : {}),
-      ...(mode ? { mode: mode as PatchMode } : {}),
-      ...(namespace ? { namespace: namespace as PatchNamespace } : {}),
-      useViewTransition: booleanField(fields, "useViewTransition"),
-      ...(viewTransitionSelector ? { viewTransitionSelector } : {}),
-    });
-    return;
-  }
-
-  if (message.event === "datastar-patch-signals" || message.event === "jquery-star-patch-signals") {
-    const fields = sseDataFields(message.data);
-    const source = fields.get("signals")?.join("\n");
-    if (!source) throw new Error("A signal patch event did not include signals.");
-    const signals = JSON5.parse(source) as unknown;
-    if (!isPlainObject(signals)) throw new Error("A signal patch must contain an object.");
-    patchSignals(context.state, signals, {
-      onlyIfMissing: booleanField(fields, "onlyIfMissing"),
-    });
-    return;
-  }
-
-  emitSSE(context, message);
-}
-
-async function readSSE(
-  response: Response,
-  context: StarContext,
-  detail: Omit<FetchLifecycleDetail, "type">,
-): Promise<void> {
-  if (!response.body) {
-    const parser = new SSEParser();
-    for (const message of [...parser.feed(await response.text()), ...parser.finish()]) {
-      handleSSEMessage(context, message);
-    }
-    return;
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  const parser = new SSEParser();
-  const totalHeader = response.headers.get("Content-Length");
-  const total = totalHeader ? Number(totalHeader) : undefined;
-  let loaded = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    loaded += value.byteLength;
-    for (const message of parser.feed(decoder.decode(value, { stream: true }))) {
-      handleSSEMessage(context, message);
-    }
-    emitLifecycle(context, {
-      ...detail,
-      type: "progress",
-      loaded,
-      ...(total !== undefined && Number.isFinite(total) ? { total } : {}),
-      response,
-    });
-  }
-
-  for (const message of [...parser.feed(decoder.decode()), ...parser.finish()]) {
-    handleSSEMessage(context, message);
-  }
-}
-
-async function handleResponse(
-  response: Response,
-  context: StarContext,
-  options: BackendActionOptions,
-  detail: Omit<FetchLifecycleDetail, "type">,
-): Promise<void> {
-  if (response.status === 204) return;
-  const contentType =
-    response.headers.get("Content-Type")?.split(";", 1)[0]?.trim().toLowerCase() ?? "";
-
-  if (contentType === "text/event-stream") {
-    await readSSE(response, context, detail);
-    return;
-  }
-
-  const source = await readText(response, context, detail);
-  if (contentType === "application/json" || contentType.endsWith("+json")) {
-    const patch = JSON.parse(source) as unknown;
-    if (!isPlainObject(patch)) throw new Error("A JSON response must contain a signal object.");
-    patchSignals(context.state, patch, {
-      onlyIfMissing: response.headers.get("datastar-only-if-missing") === "true",
-    });
-    return;
-  }
-
-  if (contentType === "text/html" || contentType === "application/xhtml+xml") {
-    const selector = options.target ?? response.headers.get("datastar-selector") ?? undefined;
-    const headerMode = response.headers.get("datastar-mode") as PatchMode | null;
-    const mode = options.mode ?? headerMode ?? undefined;
-    patchElements(context.root, source, {
-      ...(selector ? { selector } : {}),
-      ...(mode ? { mode } : {}),
-      useViewTransition: response.headers.get("datastar-use-view-transition") === "true",
-    });
-    return;
-  }
-
-  if (source.trim() !== "") {
-    throw new Error(`Unsupported backend response content type: ${contentType || "missing"}.`);
-  }
-}
-
 export async function executeBackendRequest(
   method: BackendMethod,
   inputURL: string,
   options: BackendActionOptions,
   context: StarContext,
 ): Promise<Response | undefined> {
-  const url = new URL(inputURL, document.baseURI);
-  const headers = new Headers(options.headers);
-  headers.set("Datastar-Request", "true");
-  if (!headers.has("Accept")) {
-    headers.set("Accept", "text/event-stream, text/html, application/json");
+  const authoredURL = new URL(inputURL, document.baseURI);
+  const profile = selectProtocolProfile(
+    context.instance,
+    options.profile,
+    officialProtocolProfiles,
+  );
+  const form = requestForm(context, options);
+  const { payload, signalsJSON } = requestPayload(context, options, form);
+  const operation = beginRequestOperation(context, method, authoredURL);
+  let prepared: ReturnType<typeof prepareProtocolRequest>;
+  try {
+    prepared = prepareProtocolRequest(profile, {
+      operationId: operation.id,
+      method,
+      url: authoredURL.href,
+      headers: options.headers ?? {},
+      credentials: options.credentials ?? "same-origin",
+      params: requestParams(options),
+      payload,
+      signalsJSON,
+      ...(form ? { form } : {}),
+      ...(options.target === undefined ? {} : { target: options.target }),
+      ...(options.selector === undefined ? {} : { selector: options.selector }),
+      ...(options.mode === undefined ? {} : { mode: options.mode }),
+    });
+  } catch (error) {
+    if (options.error) {
+      writePath(
+        context.state,
+        options.error,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+    operation.failed(0, error);
+    throw error;
   }
-  const body = requestBody(method, url, headers, context, options);
-  const key = `${method} ${url.href}`;
+  const { body, descriptor } = prepared;
+  const key = `${method} ${descriptor.url}`;
   const controller = controllerFor(context, key, options.requestCancellation ?? "auto");
   const maxRetries = Math.max(0, options.retryMaxCount ?? 10);
   const baseInterval = Math.max(0, options.retryInterval ?? 1_000);
   const scaler = Math.max(1, options.retryScaler ?? 2);
   const maxWait = Math.max(0, options.retryMaxWait ?? 30_000);
-
-  if (options.pending) writePath(context.state, options.pending, true);
-  if (options.error) writePath(context.state, options.error, null);
+  const externalController = options.requestCancellation instanceof AbortController;
 
   let attempt = 0;
   let finalError: unknown;
+  let finalResponse: Response | undefined;
+  let terminal: RequestTerminal | undefined;
 
   try {
-    if (method === "GET" && options.openWhenHidden !== true) {
-      try {
-        await waitUntilVisible(controller.signal);
-      } catch (error) {
-        if (!isAbort(error, controller.signal)) throw error;
-        emitLifecycle(context, {
-          method,
-          url: url.href,
-          attempt: 0,
-          type: "finished",
-          aborted: true,
-        });
-        return undefined;
-      }
-    }
+    if (options.pending) writePath(context.state, options.pending, true);
+    if (options.error) writePath(context.state, options.error, null);
+    const execution = await executeRequestMiddleware(
+      context,
+      descriptor,
+      controller.signal,
+      () => operationCancellationReason(controller.signal, externalController),
+      async (finalDescriptor) => {
+        const dispatchURL = new URL(finalDescriptor.url);
+        const dispatchHeaders = new Headers(
+          finalDescriptor.headers.map(([name, value]) => [name, value]),
+        );
 
-    while (attempt <= maxRetries) {
-      attempt += 1;
-      const baseDetail = { method, url: url.href, attempt } as const;
-      emitLifecycle(context, { ...baseDetail, type: "started" });
-      let response: Response | undefined;
-      let requestError: unknown;
-
-      try {
-        response = await fetch(url, {
-          method,
-          headers,
-          ...(body !== undefined ? { body } : {}),
-          signal: controller.signal,
-          credentials: options.credentials ?? "same-origin",
-        });
-
-        if (response.ok) {
-          await handleResponse(response, context, options, baseDetail);
-          if (!retryable(options.retry, response, undefined)) {
-            emitLifecycle(context, { ...baseDetail, type: "finished", response });
-            return response;
+        if (method === "GET" && options.openWhenHidden !== true) {
+          try {
+            await waitUntilVisible(controller.signal);
+          } catch (error) {
+            if (!isAbort(error, controller.signal)) throw error;
+            emitLifecycle(profile, context, {
+              method,
+              url: dispatchURL.href,
+              attempt: 0,
+              type: "finished",
+              aborted: true,
+            });
+            return {
+              phase: "cancelled",
+              reason: operationCancellationReason(controller.signal, externalController),
+            };
           }
-          requestError = new Error(
-            "The backend action is configured to retry completed responses.",
-          );
-        } else {
-          requestError = new Error(
-            `Backend request failed with ${response.status} ${response.statusText}.`,
+        }
+
+        while (attempt <= maxRetries) {
+          attempt += 1;
+          const baseDetail = { method, url: dispatchURL.href, attempt } as const;
+          emitLifecycle(profile, context, { ...baseDetail, type: "started" });
+          let response: Response | undefined;
+          let requestError: unknown;
+          let profileOwnedBody = false;
+
+          try {
+            response = await fetch(dispatchURL, {
+              method,
+              headers: dispatchHeaders,
+              ...(body !== undefined ? { body } : {}),
+              signal: controller.signal,
+              credentials: finalDescriptor.credentials,
+            });
+            finalResponse = response;
+
+            if (response.ok) {
+              const ownedResponse = response;
+              profileOwnedBody = true;
+              const capabilities = Object.freeze<StarProtocolResponseCapabilities>({
+                request: finalDescriptor,
+                signal: controller.signal,
+                patchSignals: (source, patchOptions) =>
+                  patchSignals(context.state, source as Record<string, unknown>, patchOptions),
+                patchElements: (source, patchOptions) =>
+                  patchElements(context.root, source, patchOptions),
+                emitSSE: (message) => emitSSE(context, message),
+              });
+              await executeProtocolResponse(
+                context.instance,
+                profile,
+                ownedResponse,
+                finalDescriptor,
+                controller.signal,
+                capabilities,
+                (loaded, total) => {
+                  emitLifecycle(profile, context, {
+                    ...baseDetail,
+                    type: "progress",
+                    loaded,
+                    ...(total === undefined ? {} : { total }),
+                    response: ownedResponse,
+                  });
+                  operation.progress(baseDetail.attempt, loaded, total);
+                },
+              );
+              if (!retryable(options.retry, response, undefined)) {
+                emitLifecycle(profile, context, { ...baseDetail, type: "finished", response });
+                return { phase: "completed", value: response, status: response.status };
+              }
+              requestError = new Error(
+                "The backend action is configured to retry completed responses.",
+              );
+            } else {
+              requestError = new Error(
+                `Backend request failed with ${response.status} ${response.statusText}.`,
+              );
+            }
+          } catch (error) {
+            requestError = error;
+          }
+
+          if (isAbort(requestError, controller.signal)) {
+            emitLifecycle(profile, context, {
+              ...baseDetail,
+              type: "finished",
+              ...(response ? { response } : {}),
+              aborted: true,
+            });
+            return {
+              phase: "cancelled",
+              reason: operationCancellationReason(controller.signal, externalController),
+            };
+          }
+
+          finalError = requestError;
+          const willRetry =
+            attempt <= maxRetries && retryable(options.retry, response, requestError);
+          if (!profileOwnedBody) await cancelBody(response);
+          if (!willRetry) break;
+
+          emitLifecycle(profile, context, {
+            ...baseDetail,
+            type: "retrying",
+            ...(response ? { response } : {}),
+            error: requestError,
+          });
+          operation.retrying(attempt, response?.status);
+          try {
+            await wait(
+              Math.min(maxWait, baseInterval * scaler ** (attempt - 1)),
+              controller.signal,
+            );
+          } catch (error) {
+            if (!isAbort(error, controller.signal)) throw error;
+            emitLifecycle(profile, context, {
+              ...baseDetail,
+              type: "finished",
+              ...(response ? { response } : {}),
+              aborted: true,
+            });
+            return {
+              phase: "cancelled",
+              reason: operationCancellationReason(controller.signal, externalController),
+            };
+          }
+        }
+
+        const failedDetail = {
+          method,
+          url: dispatchURL.href,
+          attempt,
+          error: finalError,
+        } as const;
+        emitLifecycle(profile, context, { ...failedDetail, type: "retries-failed" });
+        emitLifecycle(profile, context, { ...failedDetail, type: "error" });
+        if (options.error) {
+          writePath(
+            context.state,
+            options.error,
+            finalError instanceof Error ? finalError.message : String(finalError),
           );
         }
-      } catch (error) {
-        requestError = error;
-      }
+        throw finalError;
+      },
+    );
 
-      if (isAbort(requestError, controller.signal)) {
-        emitLifecycle(context, {
-          ...baseDetail,
-          type: "finished",
-          ...(response ? { response } : {}),
-          aborted: true,
-        });
-        return undefined;
-      }
-
-      finalError = requestError;
-      const willRetry = attempt <= maxRetries && retryable(options.retry, response, requestError);
-      await cancelBody(response);
-      if (!willRetry) break;
-
-      emitLifecycle(context, {
-        ...baseDetail,
-        type: "retrying",
-        ...(response ? { response } : {}),
-        error: requestError,
-      });
-      try {
-        await wait(Math.min(maxWait, baseInterval * scaler ** (attempt - 1)), controller.signal);
-      } catch (error) {
-        if (!isAbort(error, controller.signal)) throw error;
-        emitLifecycle(context, {
-          ...baseDetail,
-          type: "finished",
-          ...(response ? { response } : {}),
-          aborted: true,
-        });
-        return undefined;
-      }
+    if (execution.phase === "cancelled") {
+      terminal = { phase: "cancelled", attempt, reason: execution.reason };
+      return undefined;
     }
-
-    const failedDetail = { method, url: url.href, attempt, error: finalError } as const;
-    emitLifecycle(context, { ...failedDetail, type: "retries-failed" });
-    emitLifecycle(context, { ...failedDetail, type: "error" });
-    if (options.error) {
+    if (execution.source === "middleware") {
+      terminal = { phase: "completed", attempt: 0 };
+      return undefined;
+    }
+    terminal = {
+      phase: "completed",
+      attempt,
+      status: execution.status,
+    };
+    return execution.value;
+  } catch (error) {
+    terminal ??= isAbort(error, controller.signal)
+      ? {
+          phase: "cancelled",
+          attempt,
+          reason: operationCancellationReason(controller.signal, externalController),
+        }
+      : {
+          phase: "failed",
+          attempt,
+          error,
+          ...(finalResponse ? { status: finalResponse.status } : {}),
+        };
+    if (terminal.phase === "failed" && options.error && attempt === 0) {
       writePath(
         context.state,
         options.error,
-        finalError instanceof Error ? finalError.message : String(finalError),
+        error instanceof Error ? error.message : String(error),
       );
     }
-    throw finalError;
+    throw error;
   } finally {
-    if (options.pending) writePath(context.state, options.pending, false);
-    releaseController(context, key, controller);
+    try {
+      if (options.pending) writePath(context.state, options.pending, false);
+    } finally {
+      releaseController(context, key, controller);
+      if (terminal?.phase === "completed") {
+        operation.completed(terminal.attempt, terminal.status);
+      } else if (terminal?.phase === "cancelled") {
+        operation.cancelled(terminal.attempt, terminal.reason);
+      } else if (terminal?.phase === "failed") {
+        operation.failed(terminal.attempt, terminal.error, terminal.status);
+      }
+    }
   }
 }
 

@@ -1,5 +1,33 @@
-export type FloatingSide = "top" | "right" | "bottom" | "left";
-export type FloatingAlignment = "start" | "center" | "end";
+import type { DocumentHost } from "../kernel";
+
+interface DocumentRecord {
+  readonly root: Element;
+}
+
+export function listenToViewportChanges(host: DocumentHost, listener: () => void): void {
+  host.listen(host.window, "resize", listener);
+  host.listen(host.window, "scroll", listener, true);
+}
+
+export function documentRecords<Record extends DocumentRecord>(
+  records: ReadonlySet<Record>,
+  document: Document,
+): Record[] {
+  return [...records].filter((record) => record.root.ownerDocument === document);
+}
+
+export function documentRecordCleanup<Record extends DocumentRecord>(
+  records: Set<Record>,
+  document: Document,
+  cleanup: (record: Record) => void = (record) => records.delete(record),
+): () => void {
+  return () => {
+    for (const record of documentRecords(records, document)) cleanup(record);
+  };
+}
+
+type FloatingSide = "top" | "right" | "bottom" | "left";
+type FloatingAlignment = "start" | "center" | "end";
 
 interface NativePopoverElement extends HTMLElement {
   hidePopover(): void;

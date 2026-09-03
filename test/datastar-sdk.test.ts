@@ -94,7 +94,7 @@ describe("official Datastar TypeScript SDK compatibility", () => {
 
     $("#app").star();
     await instance().run($.star.get("/sdk", { retry: "never" }));
-    await settled();
+    await $.star.whenEnhanced();
 
     expect(requestSignals).toEqual({ count: 1, removeMe: "delete me" });
     expect(instance().state).toMatchObject({

@@ -79,6 +79,12 @@ describe("jQuery Star Calendar and Date Picker", () => {
     expect(calendar().querySelector('[role="columnheader"]')?.getAttribute("aria-label")).toBe(
       "Monday",
     );
+    expect(calendar().querySelector('[role="columnheader"]')?.textContent).toBe("Mo");
+    const weeks = calendar().querySelectorAll<HTMLElement>(
+      '[data-part="grid"] > [data-part="week"]',
+    );
+    expect(weeks).toHaveLength(6);
+    expect(Array.from(weeks, (week) => week.getAttribute("role"))).toEqual(Array(6).fill("row"));
   });
 
   it("supports cancelable selection, named actions, API value, and server-patched state", () => {

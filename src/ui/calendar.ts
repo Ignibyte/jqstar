@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type {
   CalendarTarget,
   DateRangePickerTarget,
@@ -378,7 +378,7 @@ function renderCalendar(root: HTMLElement, record: CalendarRecord): void {
   header.dataset.part = "weekdays";
   header.setAttribute("role", "row");
   const base = new Date(Date.UTC(2026, 7, 2 + weekStart(root)));
-  for (let index = 0; index < 7; index += 1) {
+  for (const index of [0, 1, 2, 3, 4, 5, 6]) {
     const weekday = document.createElement("span");
     weekday.setAttribute("role", "columnheader");
     weekday.setAttribute("aria-label", dayFormatter.format(addDays(base, index)).split(",")[0]!);
@@ -389,11 +389,11 @@ function renderCalendar(root: HTMLElement, record: CalendarRecord): void {
 
   const first = firstGridDate(root, record.view);
   const buttons: HTMLButtonElement[] = [];
-  for (let rowIndex = 0; rowIndex < 6; rowIndex += 1) {
+  for (const rowIndex of [0, 1, 2, 3, 4, 5]) {
     const row = document.createElement("div");
     row.dataset.part = "week";
     row.setAttribute("role", "row");
-    for (let column = 0; column < 7; column += 1) {
+    for (const column of [0, 1, 2, 3, 4, 5, 6]) {
       const date = addDays(first, rowIndex * 7 + column);
       const cell = document.createElement("span");
       cell.setAttribute("role", "gridcell");
@@ -1021,7 +1021,10 @@ function controlledRangePicker(context: StarContext, target?: unknown): HTMLElem
   return resolveRangePicker(closest instanceof HTMLElement ? closest : String(target));
 }
 
-export function createCalendars(popovers: StarPopoverStatic): CalendarCollection {
+export function createCalendars(
+  popovers: StarPopoverStatic,
+  registerAction: ActionRegistrar,
+): CalendarCollection {
   const calendar: StarCalendarStatic = {
     select: (target, date) => requestSelection(resolveCalendar(target), parseDate(date)),
     month: (target, date) => requestView(resolveCalendar(target), parseDate(date)),

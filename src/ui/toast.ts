@@ -1,5 +1,7 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { StarContext, StarToastStatic, ToastOptions, ToastTarget } from "../types";
+import { documentRecordCleanup, documentRecords } from "./floating";
 
 interface ToastRecord {
   cleanups: Array<() => void>;
@@ -29,7 +31,6 @@ const records = new WeakMap<HTMLElement, ToastRecord>();
 const activeRecords = new Set<ToastRecord>();
 let toastId = 0;
 let viewportId = 0;
-let globalListenersInstalled = false;
 
 function toastRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="toast"]') ? value : undefined;
@@ -393,38 +394,48 @@ function controlledToast(context: StarContext, target?: unknown): HTMLElement {
   throw new Error('Toast dismiss action needs a selector or an element inside data-jqs="toast".');
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener("keydown", (event) => {
+function installGlobalListeners(host: DocumentHost): void {
+  const { document, window } = host;
+  host.listen(document, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "F8") return;
     const viewport = viewportRoot(document.querySelector('[data-jqs="toast-viewport"]'));
     if (!viewport) return;
     event.preventDefault();
     enhanceViewport(viewport).focus();
   });
-  window.addEventListener("blur", () => {
-    for (const record of activeRecords) pause(record);
+  host.listen(window, "blur", () => {
+    for (const record of documentRecords(activeRecords, document)) pause(record);
   });
-  window.addEventListener("focus", () => {
-    for (const record of activeRecords) {
-      if (!record.pointed && !record.focused) resume(record);
+  host.listen(window, "focus", () => {
+    for (const record of documentRecords(activeRecords, document)) {
+      if (!record.pointed && !record.focused) {
+        resume(record);
+      }
     }
   });
-  document.addEventListener("visibilitychange", () => {
-    for (const record of activeRecords) {
+  host.listen(document, "visibilitychange", () => {
+    for (const record of documentRecords(activeRecords, document)) {
       if (document.hidden) pause(record);
       else if (!record.pointed && !record.focused) resume(record);
     }
   });
-  new MutationObserver(() => {
-    for (const record of [...activeRecords]) {
-      if (!record.root.isConnected) cleanupRecord(record);
-    }
-  }).observe(document.documentElement, { childList: true, subtree: true });
-  globalListenersInstalled = true;
+  host.observe(
+    document.documentElement,
+    () => {
+      for (const record of documentRecords(activeRecords, document)) {
+        if (!record.root.isConnected) cleanupRecord(record);
+      }
+    },
+    { childList: true, subtree: true },
+  );
+  host.own(
+    "service",
+    "ui:toast:active-records",
+    documentRecordCleanup(activeRecords, document, cleanupRecord),
+  );
 }
 
-function registerActions(api: StarToastStatic): void {
+function registerActions(api: StarToastStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.toast.show", (context) => {
     const value = context.args?.[0];
     if (typeof value !== "string" && (typeof value !== "object" || value === null)) {
@@ -438,15 +449,16 @@ function registerActions(api: StarToastStatic): void {
   registerAction("ui.toast.clear", () => api.clear());
 }
 
-export function createToasts(): ToastCollection {
+export function createToasts(host: DocumentHost, registerAction: ActionRegistrar): ToastCollection {
+  const { document } = host;
   const api: StarToastStatic = {
     show: showToast,
     dismiss: (target) => dismissToast(resolveToast(target)),
     clear: () => {
-      for (const record of [...activeRecords]) dismissToast(record.root);
+      for (const record of documentRecords(activeRecords, document)) dismissToast(record.root);
     },
   };
-  registerActions(api);
-  installGlobalListeners();
+  registerActions(api, registerAction);
+  installGlobalListeners(host);
   return { api, enhance: enhanceTree };
 }

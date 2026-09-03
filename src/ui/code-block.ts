@@ -1,4 +1,4 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
 import type { CodeBlockTarget, StarCodeBlockStatic, StarContext } from "../types";
 import { writeClipboard } from "./clipboard-write";
 
@@ -123,7 +123,7 @@ function enhanceAll(root: ParentNode): void {
   }
 }
 
-export function createCodeBlocks(): CodeBlockCollection {
+export function createCodeBlocks(registerAction: ActionRegistrar): CodeBlockCollection {
   const api: StarCodeBlockStatic = {
     copy: (target) => copy(recordFor(resolve(target))),
     text: (target) => recordFor(resolve(target)).code.textContent ?? "",

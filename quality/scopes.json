@@ -1,0 +1,144 @@
+{
+  "$schema": "./scopes.schema.json",
+  "schemaVersion": "jqstar-quality-scopes/1",
+  "scopes": [
+    {
+      "id": "runtime-typescript",
+      "match": "^src/(?!.*\\.d\\.ts$).*\\.ts$",
+      "required": true,
+      "validators": ["typescript-production", "eslint-production", "dependency-cruiser", "knip"]
+    },
+    {
+      "id": "declarations",
+      "match": "^src/.*\\.d\\.ts$",
+      "required": true,
+      "validators": ["typescript-production", "package-contract"]
+    },
+    {
+      "id": "server-typescript",
+      "match": "^server/.*\\.ts$",
+      "required": true,
+      "validators": ["typescript-server", "eslint-production", "dependency-cruiser", "knip"]
+    },
+    {
+      "id": "registry-typescript",
+      "match": "^registry/blocks/.*\\.ts$",
+      "required": true,
+      "validators": ["typescript-registry", "eslint-registry", "dependency-cruiser", "knip"]
+    },
+    {
+      "id": "test-typescript",
+      "match": "^(test|e2e)/.*\\.ts$",
+      "required": true,
+      "validators": ["typescript-test", "eslint-test", "dependency-cruiser"]
+    },
+    {
+      "id": "test-declarations",
+      "match": "^(test|e2e)/.*\\.d\\.mts$",
+      "required": false,
+      "validators": ["typescript-test"]
+    },
+    {
+      "id": "example-typescript",
+      "match": "^example/.*\\.(ts|d\\.ts)$",
+      "required": true,
+      "validators": ["typescript-test", "eslint-example", "dependency-cruiser"]
+    },
+    {
+      "id": "automation-declarations",
+      "match": "^(bin|scripts)/.*\\.d\\.mts$",
+      "required": true,
+      "validators": ["typescript-test"]
+    },
+    {
+      "id": "javascript-automation",
+      "match": "^(bin|scripts)/.*\\.(mjs|cjs|js)$",
+      "required": true,
+      "validators": ["eslint-automation", "dependency-cruiser", "knip"]
+    },
+    {
+      "id": "javascript-test",
+      "match": "^(test|e2e)/.*\\.(mjs|cjs|js)$",
+      "required": true,
+      "validators": ["eslint-test", "dependency-cruiser"]
+    },
+    {
+      "id": "quality-configuration",
+      "match": "^quality/.*\\.(mjs|cjs|js)$",
+      "required": true,
+      "validators": ["eslint-configuration", "source-policy"]
+    },
+    {
+      "id": "typescript-configuration",
+      "match": "^[^/]+\\.config\\.ts$",
+      "required": true,
+      "validators": ["typescript-test", "eslint-configuration"]
+    },
+    {
+      "id": "javascript-configuration",
+      "match": "^(eslint|stylelint)\\.config\\.(js|mjs|cjs)$|^\\.dependency-cruiser\\.cjs$",
+      "required": false,
+      "validators": ["eslint-configuration", "source-policy"]
+    },
+    {
+      "id": "css",
+      "match": "\\.css$",
+      "required": true,
+      "validators": ["stylelint"]
+    },
+    {
+      "id": "html",
+      "match": "\\.html$",
+      "required": true,
+      "validators": ["html-validate", "link-check"]
+    },
+    {
+      "id": "markdown-documents",
+      "match": "\\.md$|^AGENTS\\.md$|^README\\.md$",
+      "required": true,
+      "validators": ["markdownlint", "cspell", "link-check", "source-policy"]
+    },
+    {
+      "id": "json-metadata",
+      "match": "\\.json$|\\.jsonc$",
+      "required": true,
+      "validators": ["json-schema", "lockfile", "source-policy"]
+    },
+    {
+      "id": "yaml-configuration",
+      "match": "\\.ya?ml$",
+      "required": false,
+      "validators": ["workflow-validation", "source-policy"]
+    },
+    {
+      "id": "toml-configuration",
+      "match": "\\.toml$",
+      "required": false,
+      "validators": ["source-policy"]
+    },
+    {
+      "id": "shell",
+      "match": "\\.(sh|bash|zsh)$|^\\.githooks/",
+      "required": false,
+      "validators": ["shellcheck", "source-policy"]
+    },
+    {
+      "id": "operations",
+      "match": "^deploy/.*\\.(service|example)$",
+      "required": true,
+      "validators": ["deployment-smoke", "source-policy"]
+    },
+    {
+      "id": "binary-assets",
+      "match": "\\.(png|jpg|jpeg|gif|webp|ico|woff2?|svg|txt)$",
+      "required": true,
+      "validators": ["package-contract"]
+    },
+    {
+      "id": "repository-policy",
+      "match": "^(LICENSE|\\.(?:gitignore|gitattributes|prettierignore))$",
+      "required": true,
+      "validators": ["repository-policy"]
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSP expressions · jQStar</title>
+    <meta
+      name="description"
+      content="The frozen jQStar CSP expression grammar, compatibility profile, limits, migrations, and security boundary."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>CSP expressions</h1>
+      <p class="docs-lede">
+        <code>jqstar-csp-expression/1</code> is the shipped finite language contract for the
+        <code>jquery-star/csp</code> expression engine. The package provides an explicit installer,
+        ESM and CommonJS formats, matched declarations, and a strict-policy browser proof.
+      </p>
+
+      <div class="docs-callout">
+        <p>
+          CSP compatibility means <strong>no dynamic code construction</strong> in the CSP engine or
+          its package entry graph. It requires trusted markup and trusted installed extensions. It
+          is not a sandbox and does not make attacker-authored expressions safe.
+        </p>
+      </div>
+
+      <p>
+        The page policy—not jQStar—governs inline scripts, styles, network endpoints, third-party
+        jQuery plugins, and application code. Applications still own authorization, CSRF protection,
+        output encoding, HTML sanitization, Trusted Types, and server validation.
+      </p>
+
+      <h2>Two engine profiles</h2>
+      <div
+        class="api-table-wrap"
+        role="region"
+        aria-label="Expression engine comparison"
+        tabindex="0"
+      >
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Language</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Trusted JavaScript</td>
+              <td>Current JavaScript expressions and statements, including real jQuery.</td>
+              <td>Shipped; requires <code>unsafe-eval</code>.</td>
+            </tr>
+            <tr>
+              <td>CSP</td>
+              <td>Closed finite grammar with capability-specific reads, writes, and calls.</td>
+              <td>Shipped as an explicit optional entry.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        CSP selection is explicit. It does not weaken or silently replace the trusted engine, and
+        the compatibility root never auto-selects it.
+      </p>
+
+      <h2>Install the CSP runtime</h2>
+      <p>
+        Import the CSP entry directly and call <code>installStarCSP()</code> before installing
+        plugins or booting applications. Do not import the compatibility root on the same jQuery
+        instance because that root retains the trusted JavaScript engine.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>app.ts</span>
+          <button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>import $ from "jquery";
+import { installStarCSP } from "jquery-star/csp";
+import { datastarPlugin } from "jquery-star/datastar";
+import { uiPlugin } from "jquery-star/ui";
+
+const installed = installStarCSP($);
+installed.star.use([datastarPlugin, uiPlugin]);
+installed.star.boot(document);</code></pre>
+      </div>
+      <p>
+        Repeated CSP installation returns the same owner. A live incompatible engine is rejected.
+        Advanced hosts can pass <code>createCSPExpressionEngine()</code> through the explicit
+        <code>jquery-star/core</code> engine seam. Separate jQuery/kernel owners can select
+        different engines.
+      </p>
+
+      <h2>Server policy</h2>
+      <p>
+        Importing the entry does not add response headers. The installed-package proof starts from
+        this policy and serves scripts and styles as external same-origin assets:
+      </p>
+      <div class="code-block">
+        <div class="code-heading"><span>Content-Security-Policy</span></div>
+        <pre
+          tabindex="0"
+        ><code>default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'</code></pre>
+      </div>
+      <p>
+        Adapt allowed origins to the application. If a report names <code>unsafe-eval</code>, verify
+        that the page did not import the package root and that another script or jQuery plugin did
+        not construct code.
+      </p>
+
+      <h2>Supported expression shape</h2>
+      <p>
+        The finite profile keeps the framework meanings stable: <code>$</code> is real jQuery and a
+        name such as <code>$count</code> is a reactive signal. It supports bounded literals, arrays,
+        plain objects, reviewed operators, conditionals, state reads and writes, event and argument
+        data, named actions, committed helpers, and a closed jQuery method table.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>finite-profile.html</span>
+          <button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>&lt;section data-signals="{ count: 0, saved: false }"&gt;
+  &lt;button data-on:click="$count += 1; return action('save', $count)"&gt;
+    Save
+  &lt;/button&gt;
+  &lt;output data-text="$saved ? 'Saved' : $count"&gt;&lt;/output&gt;
+&lt;/section&gt;</code></pre>
+      </div>
+      <p>
+        Functions, classes, declarations, loops, exceptions, modules, arbitrary calls, ambient
+        globals, callbacks, and automatic semicolon insertion are not part of the language.
+        <code>return</code> and <code>await</code> are available only in the statement entry point.
+      </p>
+
+      <h2>Capability boundary</h2>
+      <div
+        class="api-table-wrap"
+        role="region"
+        aria-label="CSP expression capabilities"
+        tabindex="0"
+      >
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Origin</th>
+              <th>Allowed authority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>$name</code>, <code>state</code>, <code>signals</code></td>
+              <td>Read safe paths; write only approved state paths.</td>
+            </tr>
+            <tr>
+              <td><code>computed</code>, <code>args</code>, <code>evt</code></td>
+              <td>
+                Read reviewed data; event calls are limited to default and propagation control.
+              </td>
+            </tr>
+            <tr>
+              <td><code>el</code>, <code>root</code>, <code>$el</code>, <code>$root</code></td>
+              <td>
+                Read same-realm values and use the reviewed jQuery table within the application
+                root.
+              </td>
+            </tr>
+            <tr>
+              <td><code>action('name')</code>, <code>@name</code></td>
+              <td>Invoke a source-literal registered action with bounded arguments.</td>
+            </tr>
+            <tr>
+              <td>Committed helper path</td>
+              <td>Invoke only that exact installed helper leaf.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The evaluator rejects <code>constructor</code>, <code>prototype</code>,
+        <code>__proto__</code>, <code>call</code>, <code>apply</code>, <code>bind</code>, reflective
+        lookup, accessors, inherited properties, arbitrary thenables, and any function obtained as
+        data. Escaped, computed, concatenated, or result-derived spellings do not bypass the check.
+      </p>
+
+      <h2>jQuery and trusted HTML</h2>
+      <p>
+        Selectors, HTML passed to <code>html()</code>, class names, attribute/property names, and
+        CSS property names must be source string literals. Selectors are scoped to
+        <code>root</code> and collections are bounded. Callback-taking methods, event registration,
+        queue control, jQuery network helpers, script evaluation, and arbitrary plugin methods are
+        excluded.
+      </p>
+      <p>
+        A CSP expression may deliberately select elements, mutate DOM and state, insert
+        application-trusted literal HTML, invoke an authorized action or helper, and initiate a
+        request through that capability. HTML responses that can add expression-bearing attributes
+        are therefore trusted markup. JSON signal patches, form values, events, and return data stay
+        data and are never reparsed as expressions.
+      </p>
+
+      <h2>Deterministic limits</h2>
+      <div class="api-table-wrap" role="region" aria-label="CSP expression limits" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Resource</th>
+              <th>Maximum</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Source length</td>
+              <td>2,048 UTF-16 code units</td>
+            </tr>
+            <tr>
+              <td>Tokens / AST nodes / evaluation steps</td>
+              <td>512 / 256 / 128</td>
+            </tr>
+            <tr>
+              <td>Nesting / path segments / call arguments</td>
+              <td>16 / 8 / 8</td>
+            </tr>
+            <tr>
+              <td>Literal entries / collection size</td>
+              <td>64 / 128</td>
+            </tr>
+            <tr>
+              <td>Approved asynchronous chain</td>
+              <td>8</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Errors carry a stable <code>CSP_*</code> code, compile or evaluate phase, grammar version,
+        authored attribute and source, zero-based UTF-16 offsets, and 1-based line and column spans.
+        Diagnostics do not serialize state, DOM, credentials, response values, arguments, or
+        rejection causes.
+      </p>
+
+      <h2>Migration from trusted JavaScript</h2>
+      <p>
+        Most current public expressions are exact finite-profile matches. Ambient JavaScript and
+        arbitrary jQuery extensions move behind registered, application-owned actions or helpers.
+      </p>
+      <div class="api-table-wrap" role="region" aria-label="CSP migration examples" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Trusted expression</th>
+              <th>CSP migration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>console.log($count)</code></td>
+              <td>Register and call an application diagnostic action or helper.</td>
+            </tr>
+            <tr>
+              <td><code>$(el).datepicker()</code></td>
+              <td>Register an integration action that owns the plugin call.</td>
+            </tr>
+            <tr>
+              <td><code>Promise.resolve($count)</code></td>
+              <td>Return an approved asynchronous result from an action or helper and await it.</td>
+            </tr>
+            <tr>
+              <td><code>this</code></td>
+              <td>Use the explicit <code>el</code> binding.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Version and verification</h2>
+      <p>
+        The versioned contract combines the grammar, capabilities, limits, diagnostics, accepted and
+        denied source, adversarial payloads, executable-context recipes, shared-engine mapping, and
+        public-example inventory. Raising a limit or changing accepted source requires a new grammar
+        version and review. The repository command <code>npm run test:csp-contract</code> validates
+        the frozen inputs and prints their combined SHA-256 digest.
+      </p>
+      <p>
+        Package quality runs the exact ESM and CommonJS artifacts plus this public interaction shape
+        in Chromium, Firefox, and WebKit. Continue with the
+        <a href="%BASE_URL%docs/api/">Core API</a>,
+        <a href="%BASE_URL%docs/plugins/">plugin boundary</a>, or
+        <a href="%BASE_URL%docs/testing/">testing harness</a>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

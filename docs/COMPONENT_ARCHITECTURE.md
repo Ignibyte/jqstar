@@ -1,4 +1,4 @@
-# jQuery Star component architecture
+# jQStar component architecture
 
 ## Public contract
 
@@ -27,6 +27,12 @@ Application behavior remains in the existing expression language:
 
 Component actions use the `ui.` namespace. Component events use the `jquery-star:component:event`
 namespace. Dialog currently provides:
+
+The 0.1 `$.star.ui` member names, registered `ui.*` actions, and documented component event
+contracts are part of the stable-for-0.x baseline. `quality/public-baseline.json` freezes the member
+and action census; component semantic tests remain authoritative for targets, cancellation,
+payloads, keyboard behavior, and state transitions. `jquery-star:model-write` is an internal
+synchronization event and is not a public application event.
 
 - `@ui.dialog.open('#selector', '#initial-focus-selector')`
 - `@ui.dialog.close('return-value')`
@@ -285,12 +291,14 @@ Data Table provides:
 
 - Native `table`, `caption`, `thead`, `tbody`, `th`, and `td` semantics without applying
   `role="grid"`
-- Column sorting through `data-key`, optional string/number/date comparison, and `aria-sort` on only
-  the active column
+- Ordered column sorting through `data-key`, optional string/number/date comparison, Shift-click
+  composition, primary-column `aria-sort`, announced sort priorities, `data-sort-order`, and a
+  complete `sorts` event payload
 - Local text filtering and page-size pagination, with page reset after sorting or filtering
 - Current-page select-all, single or multiple row selection, and stable `data-row-id` state that can
   survive server row replacement
-- `@ui.dataTable.sort|filter|page|next|previous` and equivalent methods under `$.star.ui.dataTable`
+- `@ui.dataTable.sort|filter|page|next|previous` and equivalent methods under `$.star.ui.dataTable`,
+  including `sorts(target)` and additive programmatic sorting
 - `jquery-star:data-table:before-sort|sort|filter|page|selection-change`
 - `data-processing="manual"` for server-owned filtering, sorting, and pagination
 
@@ -557,8 +565,8 @@ The local CLI has four commands:
 - `list` reads the configured catalog and supports structured JSON output.
 - `add` preflights source and destination paths, rejects traversal, refuses implicit overwrites, and
   supports dry runs.
-- `doctor` checks the project manifest, jQuery and jQuery Star dependencies, configuration, and
-  component directory.
+- `doctor` checks the project manifest, jQuery and jQStar dependencies, configuration, and component
+  directory.
 
 The npm package smoke test inspects the dry-run tarball, not just the worktree. It fails if the
 runtime, CSS, executable, schema, catalog, or representative recipes are absent.
@@ -632,12 +640,28 @@ pass.
 
 ## Project Browser
 
-Project Browser keeps its search input, table, row-selection checkboxes, and page links as native
-HTML. Pagination emits the requested page, and Data Table emits sort metadata. The copied typed
-action module sends those values as Datastar signals to `/api/demo/projects`. The official SDK
-patches `#project-browser-rows`, replaces `#project-browser-pagination`, and updates the result
-signals. Stable `data-row-id` values let Data Table retain selection when a row appears in refreshed
-server markup.
+Project Browser keeps its search input, owner and status facets, page-size, grouping and view
+selects, table, row-selection checkboxes, column controls, inline edit forms, and page links as
+native HTML. Pagination emits the requested page, and Data Table emits the ordered sort array. The
+copied typed action module sends complete page or virtual-window state as Datastar signals to
+`/api/demo/projects`. The backend allowlists every facet, sort, group, and size before querying the
+migration-managed SQLite store.
+
+The official SDK patches `#project-browser-rows`, replaces `#project-browser-pagination`, and
+updates canonical count, range, filter, page/window, sort, group, and message signals. Stable
+`data-row-id` values let Data Table retain selection across page and window patches, queries, sorts,
+groups, and edits.
+
+Group header rows report server aggregates and collapse their following project rows. Project rows
+expand to a semantic companion row containing the description, stored version, and edit form.
+`PATCH /api/demo/projects/:id` uses the form's expected version; a conflict reloads the canonical
+row, announces the failure, and focuses the refreshed editor.
+
+Column visibility, order, and left pinning are client-owned presentation state. The block normalizes
+and stores a versioned layout, reapplies it after patches, supports drag/drop and explicit move
+buttons, and never hides the selection or Project column. Virtual mode requests at most 80 fixed
+height data rows, renders spacer rows for the complete result height, aborts superseded requests,
+and disables variable-height grouping and expansion.
 
 ## Access Manager
 

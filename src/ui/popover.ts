@@ -1,7 +1,11 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { PopoverTarget, StarContext, StarPopoverStatic } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
@@ -30,7 +34,6 @@ interface PopoverCollection {
 const records = new WeakMap<HTMLElement, PopoverRecord>();
 const activeRecords = new Set<PopoverRecord>();
 let popoverId = 0;
-let globalListenersInstalled = false;
 
 function popoverRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="popover"]') ? value : undefined;
@@ -152,14 +155,14 @@ function wire(record: PopoverRecord): void {
   }
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-
-  document.addEventListener(
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) {
           activeRecords.delete(record);
         } else if (!record.root.contains(event.target)) {
@@ -169,23 +172,22 @@ function installGlobalListeners(): void {
     },
     true,
   );
-  document.addEventListener("keydown", (event) => {
+  host.listen(document, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
-    const open = [...activeRecords];
+    const open = documentRecords(activeRecords, document);
     const record = open[open.length - 1];
     if (!record) return;
     event.preventDefault();
     closePopover(record.root);
   });
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) position(record);
       else activeRecords.delete(record);
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own("service", "ui:popover:active-records", documentRecordCleanup(activeRecords, document));
 }
 
 function enhancePopover(root: HTMLElement): PopoverRecord {
@@ -217,7 +219,6 @@ function enhancePopover(root: HTMLElement): PopoverRecord {
   identifyTitle(record);
   syncState(record, record.open);
   if (record.cleanups.length === 0) wire(record);
-  installGlobalListeners();
   if (record.open) position(record);
   return record;
 }
@@ -250,7 +251,7 @@ function controlledPopover(context: StarContext, target?: unknown): HTMLElement 
   throw new Error('Popover action needs a root selector or an element inside data-jqs="popover".');
 }
 
-function registerActions(api: StarPopoverStatic): void {
+function registerActions(api: StarPopoverStatic, registerAction: ActionRegistrar): void {
   for (const operation of ["open", "close", "toggle"] as const) {
     registerAction(`ui.popover.${operation}`, (context) => {
       const root = controlledPopover(context, context.args?.[0]);
@@ -259,12 +260,16 @@ function registerActions(api: StarPopoverStatic): void {
   }
 }
 
-export function createPopovers(): PopoverCollection {
+export function createPopovers(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): PopoverCollection {
+  installGlobalListeners(host);
   const api: StarPopoverStatic = {
     open: (target) => openPopover(resolveRoot(target)),
     close: (target) => closePopover(resolveRoot(target)),
     toggle: (target) => togglePopover(resolveRoot(target)),
   };
-  registerActions(api);
+  registerActions(api, registerAction);
   return { api, enhance: enhanceTree };
 }

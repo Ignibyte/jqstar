@@ -1,0 +1,140 @@
+{
+  "$schema": "jqstar-test-evidence/1",
+  "requirements": [
+    {
+      "id": "property-expression",
+      "file": "test/property/runtime.property.test.ts",
+      "test": "maps every generated non-reserved $name expression to the matching signal"
+    },
+    {
+      "id": "property-request-encoding",
+      "file": "test/property/runtime.property.test.ts",
+      "test": "encodes generated public signal records according to the filtering contract"
+    },
+    {
+      "id": "property-sse-chunking",
+      "file": "test/property/sse.property.test.ts",
+      "test": "parses the same messages across arbitrary transport chunk boundaries"
+    },
+    {
+      "id": "property-protocol-request-encoding",
+      "file": "test/property/protocol.property.test.ts",
+      "test": "keeps generated generic and Datastar request encodings profile-specific"
+    },
+    {
+      "id": "property-protocol-adapter-selection",
+      "file": "test/property/protocol.property.test.ts",
+      "test": "rejects every generated exact/suffix overlap before registry commit"
+    },
+    {
+      "id": "property-protocol-body-ownership",
+      "file": "test/property/protocol.property.test.ts",
+      "test": "permits exactly one body claim for every generated claim sequence"
+    },
+    {
+      "id": "property-protocol-stream-chunking",
+      "file": "test/property/protocol.property.test.ts",
+      "test": "decodes generated Datastar patches across arbitrary byte boundaries"
+    },
+    {
+      "id": "property-patch-idempotence",
+      "file": "test/property/runtime.property.test.ts",
+      "test": "applies JSON signal patches idempotently without retaining patch objects"
+    },
+    {
+      "id": "property-operation-actions",
+      "file": "test/property/observation.property.test.ts",
+      "test": "keeps generated action sequences paired under one frozen identity"
+    },
+    {
+      "id": "property-operation-requests",
+      "file": "test/property/observation.property.test.ts",
+      "test": "keeps generated request progress and one terminal record JSON-safe"
+    },
+    {
+      "id": "property-request-middleware-order",
+      "file": "test/property/request-middleware.property.test.ts",
+      "test": "respects every edge in generated acyclic middleware orders"
+    },
+    {
+      "id": "property-request-middleware-dispatch",
+      "file": "test/property/request-middleware.property.test.ts",
+      "test": "keeps generated descriptor edits and short circuits to at most one dispatch"
+    },
+    {
+      "id": "request-middleware-sensitive-data",
+      "file": "test/request-middleware.test.ts",
+      "test": "freezes descriptors and permits same-origin URL and ordinary header additions"
+    },
+    {
+      "id": "request-middleware-abort-cleanup",
+      "file": "test/request-middleware-integration.test.ts",
+      "test": "runs once across retries, preserves operation identity, and aborts on application cleanup"
+    },
+    {
+      "id": "protocol-generic-sensitive-data",
+      "file": "test/protocol-datastar.test.ts",
+      "test": "keeps generic requests and responses free of Datastar behavior"
+    },
+    {
+      "id": "protocol-stream-partial-failure",
+      "file": "test/protocol-datastar.test.ts",
+      "test": "keeps an earlier stream patch when a later Datastar event is malformed"
+    },
+    {
+      "id": "protocol-stream-abort-cleanup",
+      "file": "test/protocol-datastar.test.ts",
+      "test": "cancels one live body on application cleanup and applies no late patch"
+    },
+    {
+      "id": "protocol-plugin-operation-identity",
+      "file": "test/protocol-datastar.test.ts",
+      "test": "dispatches an installed plugin profile through the same descriptor and operation"
+    },
+    {
+      "id": "operation-sensitive-data",
+      "file": "test/observation.test.ts",
+      "test": "publishes one request lifecycle across progress and retries without sensitive request data"
+    },
+    {
+      "id": "async-abort-overlap",
+      "file": "test/fetch.test.ts",
+      "test": "cancels an older matching request when a newer request starts"
+    },
+    {
+      "id": "async-retry",
+      "file": "test/fetch.test.ts",
+      "test": "retries network errors and reports the attempt lifecycle"
+    },
+    {
+      "id": "async-timeout",
+      "file": "test/fetch.test.ts",
+      "test": "turns cancellation during retry backoff into a clean aborted finish"
+    },
+    {
+      "id": "async-partial-failure",
+      "file": "test/fetch.test.ts",
+      "test": "records terminal HTTP errors and always clears pending state"
+    },
+    {
+      "id": "async-repeated-enhancement",
+      "file": "test/ui-transfer-list.test.ts",
+      "test": "does not create observed mutations during a repeated enhancement"
+    },
+    {
+      "id": "async-exact-disposal",
+      "file": "test/runtime.test.ts",
+      "test": "runs each owned mount cleanup and unmount hook exactly once"
+    },
+    {
+      "id": "coverage-sabotage",
+      "file": "test/quality/quality-gates.test.mjs",
+      "test": "rejects a coverage report after covered tests are deleted"
+    },
+    {
+      "id": "property-counterexample-replay",
+      "file": "test/quality/quality-gates.test.mjs",
+      "test": "replays the same generated counterexample from its seed and path"
+    }
+  ]
+}

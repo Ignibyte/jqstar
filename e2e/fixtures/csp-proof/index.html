@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>jQStar CSP package proof</title>
+    <link rel="stylesheet" href="/csp-proof.css" />
+    <script src="/csp-bootstrap.js"></script>
+    <script src="/axe.js"></script>
+    <script type="module" src="/csp-app.js"></script>
+  </head>
+  <body>
+    <header><a id="native-link" href="/csp-destination">Native destination</a></header>
+    <main>
+      <h1>jQStar CSP package proof</h1>
+      <form id="native-form" action="/csp-form" method="get">
+        <label for="native-name">Name</label>
+        <input id="native-name" name="name" required />
+        <button type="submit">Submit</button>
+      </form>
+      <section
+        id="app"
+        data-jqs
+        data-signals="{ count: 1, saved: false, serverMessage: 'ready', asyncMessage: 'waiting' }"
+        data-computed:double="$count * 2"
+      >
+        <h2>Runtime</h2>
+        <button
+          id="increment"
+          type="button"
+          data-on:click="$count++; $(el).attr('data-fired', 'yes')"
+        >
+          Increment
+        </button>
+        <button id="save" type="button" data-on:click="@proof.csp.save($count)">Save</button>
+        <button id="toggle" data-jqs="toggle" type="button" aria-label="Toggle package proof">
+          Toggle
+        </button>
+        <output id="count" data-text="$count"></output>
+        <output id="double" data-text="$double"></output>
+        <output id="saved" data-text="$saved ? 'saved' : 'pending'"></output>
+        <output id="helper" data-text="proof.csp.upper($serverMessage)"></output>
+        <output id="async" data-text="$asyncMessage"></output>
+        <section id="replace" data-text="$serverMessage"></section>
+        <ul id="stream"></ul>
+      </section>
+      <output id="result" aria-live="polite">Running</output>
+    </main>
+  </body>
+</html>

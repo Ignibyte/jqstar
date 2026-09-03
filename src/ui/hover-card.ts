@@ -1,7 +1,11 @@
-import { registerAction } from "../registry";
+import type { ActionRegistrar } from "../registry";
+import type { DocumentHost } from "../kernel";
 import type { HoverCardTarget, StarContext, StarHoverCardStatic } from "../types";
 import {
+  documentRecordCleanup,
+  documentRecords,
   hideFloating,
+  listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
@@ -29,7 +33,6 @@ interface HoverCardCollection {
 const records = new WeakMap<HTMLElement, HoverCardRecord>();
 const activeRecords = new Set<HoverCardRecord>();
 let hoverCardId = 0;
-let globalListenersInstalled = false;
 
 function hoverCardRoot(value: Element | null): HTMLElement | undefined {
   return value instanceof HTMLElement && value.matches('[data-jqs="hover-card"]')
@@ -195,20 +198,21 @@ function identifyContent(record: HoverCardRecord): void {
   }
 }
 
-function installGlobalListeners(): void {
-  if (globalListenersInstalled || typeof document === "undefined") return;
-  document.addEventListener("keydown", (event) => {
+function installGlobalListeners(host: DocumentHost): void {
+  const { document } = host;
+  host.listen(document, "keydown", (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
-    const record = [...activeRecords].at(-1);
+    const record = documentRecords(activeRecords, document).at(-1);
     if (!record) return;
     event.preventDefault();
     closeHoverCard(record.root);
   });
-  document.addEventListener(
+  host.listen(
+    document,
     "pointerdown",
     (event) => {
       if (!(event.target instanceof Node)) return;
-      for (const record of [...activeRecords]) {
+      for (const record of documentRecords(activeRecords, document)) {
         if (!record.root.isConnected) activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeHoverCard(record.root);
       }
@@ -216,7 +220,7 @@ function installGlobalListeners(): void {
     true,
   );
   const reposition = (): void => {
-    for (const record of [...activeRecords]) {
+    for (const record of documentRecords(activeRecords, document)) {
       if (record.root.isConnected) {
         positionFloating(record.root, record.trigger, record.content, {
           align: "start",
@@ -226,9 +230,12 @@ function installGlobalListeners(): void {
       } else activeRecords.delete(record);
     }
   };
-  window.addEventListener("resize", reposition);
-  window.addEventListener("scroll", reposition, true);
-  globalListenersInstalled = true;
+  listenToViewportChanges(host, reposition);
+  host.own(
+    "service",
+    "ui:hover-card:active-records",
+    documentRecordCleanup(activeRecords, document),
+  );
 }
 
 function enhanceHoverCard(root: HTMLElement): HoverCardRecord {
@@ -270,7 +277,6 @@ function enhanceHoverCard(root: HTMLElement): HoverCardRecord {
   identifyContent(record);
   syncState(record, record.open);
   if (record.cleanups.length === 0) wire(record);
-  installGlobalListeners();
   if (record.open) {
     positionFloating(record.root, record.trigger, record.content, {
       align: "start",
@@ -300,7 +306,11 @@ function controlledHoverCard(context: StarContext, target?: unknown): HTMLElemen
   throw new Error('Hover Card action needs a selector or an element inside data-jqs="hover-card".');
 }
 
-export function createHoverCards(): HoverCardCollection {
+export function createHoverCards(
+  host: DocumentHost,
+  registerAction: ActionRegistrar,
+): HoverCardCollection {
+  installGlobalListeners(host);
   const api: StarHoverCardStatic = {
     open: (target) => openHoverCard(resolveRoot(target)),
     close: (target) => closeHoverCard(resolveRoot(target)),

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/index.ts",
+    "src/testing/index.ts",
+    "src/datastar/testing.ts",
+    "server/index.ts",
+    "bin/jqstar.mjs",
+    "example/main.ts",
+    "example/site.ts",
+    "e2e/fixtures/runtime.ts",
+    "registry/blocks/*.ts",
+    "scripts/**/*.mjs",
+    "*.config.ts",
+    "eslint.config.js",
+    "stylelint.config.js"
+  ],
+  "project": [
+    "src/**/*.{ts,js}",
+    "server/**/*.ts",
+    "bin/**/*.mjs",
+    "example/**/*.ts",
+    "registry/blocks/**/*.ts",
+    "scripts/**/*.mjs",
+    "test/**/*.ts",
+    "e2e/**/*.ts",
+    "*.config.ts",
+    "*.config.{js,mjs,cjs}"
+  ],
+  "ignoreDependencies": ["htmx-2-0-0", "htmx-2-0-10", "turbo-8-0-21", "turbo-8-0-23"],
+  "vitest": { "config": ["vitest.config.ts"] },
+  "playwright": { "config": ["playwright.config.ts"] }
+}

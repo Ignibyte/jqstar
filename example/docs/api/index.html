@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Core API · jQStar</title>
+    <meta
+      name="description"
+      content="The installed jQuery plugin, global jQStar methods, actions, requests, and UI API available in jQStar 0.1."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Core API</h1>
+      <p class="docs-lede">
+        jQStar is HTML-driven, but its installed jQuery surface exposes explicit application,
+        action, request, lifecycle, and UI methods for code that needs programmatic control.
+      </p>
+      <div class="docs-callout">
+        <p>
+          The root surface is the 0.1 compatibility contract. The <code>core</code>,
+          <code>ui</code>, <code>datastar</code>, <code>testing</code>, and
+          <code>datastar/testing</code> package subpaths are published 0.4 previews.
+        </p>
+      </div>
+
+      <h2>Applications</h2>
+      <div class="api-table-wrap" role="region" aria-label="Application API" tabindex="0">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>API</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>$(root).star()</code></td>
+              <td>Start an attribute-driven application on the matched root.</td>
+            </tr>
+            <tr>
+              <td><code>$(root).star(definition)</code></td>
+              <td>Start an application from a typed behavior definition.</td>
+            </tr>
+            <tr>
+              <td><code>$.star.boot(root?)</code></td>
+              <td>Boot the document element or the supplied root.</td>
+            </tr>
+            <tr>
+              <td><code>$(root).star("instance")</code></td>
+              <td>Read the installed application instance.</td>
+            </tr>
+            <tr>
+              <td><code>$(root).star("state")</code></td>
+              <td>Read its reactive state object.</td>
+            </tr>
+            <tr>
+              <td><code>$(root).star("refresh")</code></td>
+              <td>Refresh computed bindings and directives.</td>
+            </tr>
+            <tr>
+              <td><code>$(root).star("destroy")</code></td>
+              <td>Destroy that application and its owned effects.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Named actions</h2>
+      <p>
+        Use named actions for behavior that is too long for an attribute. The callback receives real
+        jQuery, reactive state, computed values, root and initiating elements, the event, authored
+        arguments, and the application instance.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>main.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>$.star.action("removeItem", ({ $element, state }) =&gt; {
+  $element?.closest("li").fadeOut(180, function () {
+    $(this).remove();
+  });
+  state.itemCount = Math.max(0, Number(state.itemCount) - 1);
+});</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>items.html</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>&lt;button data-on:click="@removeItem"&gt;Remove&lt;/button&gt;</code></pre>
+      </div>
+
+      <h2>Backend actions</h2>
+      <p>
+        <code>$.star.get</code>, <code>post</code>, <code>put</code>, <code>patch</code>, and
+        <code>delete</code> return ordinary named-action functions. The same methods are available
+        declaratively as <code>@get</code>, <code>@post</code>, and their peers.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>main.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>const app = $("#items").star("instance");
+
+await app?.run($.star.post("/items", {
+  payload: { title: "Proof" },
+  pending: "saving",
+  error: "saveError",
+  retry: "never",
+}));</code></pre>
+      </div>
+
+      <h2>UI methods</h2>
+      <p>
+        <code>$.star.ui</code> groups component-specific methods such as <code>dialog.open</code>,
+        <code>tabs.activate</code>, <code>menu.close</code>, and <code>toast.show</code>. Named
+        <code>@ui.*</code> actions call the same behavior from HTML.
+        <code>$.star.ui.enhance(root)</code> scans newly authored component markup when an explicit
+        application integration needs it; normal jQStar and Datastar patches enhance automatically.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>main.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>$.star.ui.dialog.open("#account-dialog", {
+  initialFocus: "#account-dialog-cancel",
+});
+
+$.star.ui.tabs.activate("#settings-tabs", "security");
+
+$.star.ui.toast.show({
+  title: "Saved",
+  description: "Your changes are live.",
+  variant: "success",
+});</code></pre>
+      </div>
+
+      <h2>Scheduling and version</h2>
+      <p>
+        <code>$.star.nextUpdate()</code> resolves after the next reactive update flush.
+        <code>$.star.whenEnhanced()</code> waits for pending render transactions, observer delivery,
+        directive and UI enhancement, and the resulting reactive work. Use it before reading DOM
+        inserted by an HTML or Datastar patch. <code>$.star.version</code> reports the installed
+        runtime version, and <code>$.star.clearExpressionCache()</code> clears the current
+        expression engine's cache.
+      </p>
+
+      <h2>Terminal disposal</h2>
+      <p>
+        <code>$.star.dispose()</code> permanently closes one document installation, attempts every
+        owned cleanup, releases its document and expression-engine claims, and returns a frozen
+        JSON-safe report. A cleanup failure throws <code>StarDisposalError</code> after the complete
+        sweep and retains that report. Repeated disposal returns the same report or throws the same
+        error object.
+      </p>
+      <p>
+        Continue with the <a href="%BASE_URL%docs/csp/">CSP expression contract</a>, the
+        <a href="%BASE_URL%docs/testing/">testing harness</a>, or the
+        <a href="%BASE_URL%docs/plugins/">plugin contract and conformance guide</a>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>
