@@ -27,6 +27,9 @@ browser engines, generated output, clean installation, or release reproducibilit
 - Ticket 0014 plans a runner-neutral public test package and real external plugins.
 - Playwright supports Chromium, Firefox, WebKit, device projects, repeat runs, no-test refusal, and
   failing a build when a test passes only on retry.
+- PR 1 delivery run `33805631434` passed all 13 package-release hardening tests, but the integrated
+  green-control detector compared their colorized Vitest output without removing terminal control
+  codes and therefore reported a false failure.
 
 ### Scope
 
@@ -108,6 +111,9 @@ browser engines, generated output, clean installation, or release reproducibilit
   evidence. A clean Ubuntu run completed five of eight expected extractor entry points before the
   old 15-second build cap, so corrected limits must allow all eight passes without weakening the
   changed-signature assertion.
+- Normalize terminal control codes before applying detector patterns to subprocess output. Keep the
+  exact exit-code and complete-test-count requirements so presentation differences cannot create a
+  false red or false green result.
 
 ### Acceptance criteria
 
@@ -297,6 +303,8 @@ but cannot satisfy installed-consumer or release claims.
 | Focused process timeout/refusal test                                                | Pass, 1 test          | The shared runner timed out a hung process, reaped its process group, and kept killed and missing-tool outcomes red.                                                                               |
 | PR 1 hosted delivery run `33800660841`                                              | Fail, actionable      | The API Extractor build child reached five successful entry points before its 15-second cap; the drift subprocess and changed-signature assertion did not run.                                     |
 | Focused API Extractor drift test after Linux timeout repair                         | Pass, 1 test          | All eight entry-point reports built and deliberate jQuery overload drift remained red; the test completed in 7.98 seconds within 60/30/120-second bounds.                                          |
+| PR 1 hosted delivery run `33805631434`                                              | Fail, actionable      | All 13 package hardening tests passed in 25.61 seconds, but ANSI control codes prevented the raw-output detector from matching the complete test count.                                            |
+| `npm run test:quality:0044` after terminal-output normalization                     | Pass, 16 detectors    | The complete detector roster passed; the package hardening green control forces color, strips terminal control codes for matching, and still requires all 13 tests and a zero exit code.           |
 
 Useful red history is retained. The first full matrix took 368.15 seconds and found three
 WebKit-specific focus assumptions. After their focused repair, the second full matrix took 306.21
@@ -326,6 +334,7 @@ The final documentation-aware package and release measurements passed on one unc
 | The integrated detector self-test still expected eight package hardening tests after the exact public-document test raised the suite to nine.                  | Update the green-control detector to require all nine tests; the delivery failure remains recorded and no receipt is accepted from the stale expectation.                |
 | The mobile audit selected a transiently visible control, then measured it after Message Scroller set `hidden`, producing a retry-pass.                         | Select semantic/computed visibility and measure geometry in one browser task; do not filter on geometry, and keep flaky outcomes red.                                    |
 | Clean Ubuntu needs more than 15 seconds to build all eight API Extractor entry points.                                                                         | Build, drift, and outer limits are 60, 30, and 120 seconds; nonzero drift and changed-signature assertions remain mandatory and pass locally.                            |
+| The hosted package hardening control passed all 13 tests but its raw colorized summary did not match the plain-text detector.                                  | Strip terminal control codes before detector matching and force color in the green control so this presentation path is exercised on every platform.                     |
 
 ## Document
 

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { dirname, join, resolve } from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { runChild } from "./quality/lib/process.mjs";
 
 const root = process.cwd();
@@ -53,7 +54,7 @@ async function reserveAvailablePort() {
 function record(name, result, expected, detector, evidence, artifactDirectory = null) {
   const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
   const expectedExit = expected === "red" ? result.status !== 0 : result.status === 0;
-  const detectorMatched = detector.test(combined);
+  const detectorMatched = detector.test(stripVTControlCharacters(combined));
   let evidenceMatched = true;
   let evidenceFailure = null;
   if (evidence) {
@@ -295,7 +296,9 @@ record(
 
 record(
   "package-release-contract-hardening",
-  await run(npx, ["--no-install", "vitest", "run", "test/package-release-hardening.test.mjs"]),
+  await run(npx, ["--no-install", "vitest", "run", "test/package-release-hardening.test.mjs"], {
+    FORCE_COLOR: "1",
+  }),
   "green",
   /Tests\s+13 passed/u,
 );
