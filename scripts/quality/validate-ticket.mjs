@@ -1,8 +1,15 @@
 #!/usr/bin/env node
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { changedPaths, fingerprint, gitHead, repositoryRoot } from "./lib/git-state.mjs";
+import {
+  changedPaths,
+  fingerprint,
+  gitDirectory,
+  gitHead,
+  repositoryRoot,
+} from "./lib/git-state.mjs";
 import { inspectPhaseReport, inspectTicket } from "./lib/ticket.mjs";
 import { verifyReceipt } from "./verify-receipt.mjs";
 import { createSchemaValidator } from "./validate-json.mjs";
@@ -19,8 +26,10 @@ function sameFingerprint(left, right) {
 
 export async function validatePhaseEvidence({ root, reportPath, phase }) {
   let report;
+  let reportSource;
   try {
-    report = JSON.parse(await readFile(reportPath, "utf8"));
+    reportSource = await readFile(reportPath);
+    report = JSON.parse(reportSource.toString("utf8"));
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`phase report is missing or unreadable (${detail})`, { cause: error });
@@ -52,9 +61,15 @@ export async function validatePhaseEvidence({ root, reportPath, phase }) {
 
   if (phase === "test") {
     const { receipt } = await verifyReceipt(root);
+    const latestReportPath = path.join(await gitDirectory(root), "jqstar", "latest-report.json");
+    const authorizedPath = [receipt.reportPath, latestReportPath].some(
+      (candidate) => path.resolve(candidate) === path.resolve(reportPath),
+    );
+    const reportSha256 = createHash("sha256").update(reportSource).digest("hex");
     if (
       receipt.runId !== report.runId ||
-      path.resolve(receipt.reportPath) !== path.resolve(reportPath)
+      !authorizedPath ||
+      receipt.reportSha256 !== reportSha256
     ) {
       throw new Error("test phase report is not the report authorized by the current receipt");
     }

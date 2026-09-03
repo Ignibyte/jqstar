@@ -1,9 +1,9 @@
 ---
 id: 0041
 title: Install the evidence-gated delivery workflow
-status: blocked
+status: testing
 created: 2026-08-30
-updated: 2026-08-31
+updated: 2026-09-03
 ---
 
 # 0041: Install the evidence-gated delivery workflow
@@ -188,29 +188,37 @@ terminates the active group, records later configured stages that did not start 
 writes a red report. Final reports and receipts must validate against their complete schemas before
 they are written or trusted.
 
+The documented `.git/jqstar/latest-report.json` path is an authorized alias for Test-phase
+validation only when its bytes match the current receipt's report SHA-256. The immutable run report
+remains authoritative, and arbitrary copies remain rejected even when their JSON fields match.
+
 ## Test
 
-| Command                                                                  | Result     | Evidence                                                                                                                                                                               |
-| ------------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass       | 33 runner, discovery, scope, schema, receipt, interruption, evidence-vacuity, and phase tests pass.                                                                                    |
-| `node scripts/quality/validate-json.mjs`                                 | Pass       | All 40 JSON documents parsed and three report/config instances validated against 14 schemas.                                                                                           |
-| `npm exec -- actionlint .github/workflows/quality.yml`                   | Pass       | The clean-checkout workflow and its base-SHA selection are valid.                                                                                                                      |
-| `git diff --check`                                                       | Pass       | The current workflow implementation has no whitespace errors.                                                                                                                          |
-| `npm run quality:fast`                                                   | Pass       | Run `2026-08-30T19-45-06-407Z-45616` passed five enforced gates on one 419-file fingerprint.                                                                                           |
-| `npm run quality:delivery`                                               | Pass       | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 enforced gates and wrote a receipt for one unchanged 419-file fingerprint.                                                          |
-| `npm run quality:full-audit`                                             | Useful red | Run `2026-08-31T04-58-57-044Z-87453` retained every gate result and refused a receipt when repeated-browser quality failed.                                                            |
-| Read-only GitHub workflow inventory                                      | Pending    | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. GitHub exposes only the Pages workflow; the four local quality workflows have not been committed or pushed. |
-| Final local `npm run quality:delivery`                                   | Pass       | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced gates and wrote a receipt for the unchanged current tree.                                                                  |
+| Command                                                                  | Result          | Evidence                                                                                                                                                                               |
+| ------------------------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass            | 33 runner, discovery, scope, schema, receipt, interruption, evidence-vacuity, and phase tests pass.                                                                                    |
+| `node scripts/quality/validate-json.mjs`                                 | Pass            | All 40 JSON documents parsed and three report/config instances validated against 14 schemas.                                                                                           |
+| `npm exec -- actionlint .github/workflows/quality.yml`                   | Pass            | The clean-checkout workflow and its base-SHA selection are valid.                                                                                                                      |
+| `git diff --check`                                                       | Pass            | The current workflow implementation has no whitespace errors.                                                                                                                          |
+| `npm run quality:fast`                                                   | Pass            | Run `2026-08-30T19-45-06-407Z-45616` passed five enforced gates on one 419-file fingerprint.                                                                                           |
+| `npm run quality:delivery`                                               | Pass            | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 enforced gates and wrote a receipt for one unchanged 419-file fingerprint.                                                          |
+| `npm run quality:full-audit`                                             | Useful red      | Run `2026-08-31T04-58-57-044Z-87453` retained every gate result and refused a receipt when repeated-browser quality failed.                                                            |
+| Read-only GitHub workflow inventory                                      | Pending         | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. GitHub exposes only the Pages workflow; the four local quality workflows have not been committed or pushed. |
+| Final local `npm run quality:delivery`                                   | Pass            | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced gates and wrote a receipt for the unchanged current tree.                                                                  |
+| Documented Test-phase command with `.git/jqstar/latest-report.json`      | Fail, corrected | The validator rejected the byte-identical documented alias because it compared pathnames rather than receipt identity.                                                                 |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass            | All 34 tests pass, including canonical report, exact latest alias, modified alias, and arbitrary-copy receipt authorization cases.                                                     |
+| Latest-alias fix `npm run quality:fast`                                  | Pass            | Run `2026-09-03T19-00-00-808Z-10130` passed ticket workflow, runner self-tests, formatting, unit tests, and every selected static-fast gate.                                           |
 
 ### Inspection ledger
 
-| Finding                                                                                                            | Resolution                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A receipt could remain valid after the approved commit changed `HEAD`.                                             | Receipt verification now checks both the complete worktree fingerprint and the recorded `HEAD`.                                                                        |
-| A delivery with every test gate skipped could appear green.                                                        | Delivery and full-audit modes now require at least one enforced test gate to execute and pass.                                                                         |
-| Clean CI compared only its worktree to `HEAD`, making changed-line coverage, mutation, and ticket selection empty. | CI now supplies a validated ancestor base; scope sabotage proves committed, local, and untracked changes are combined and invalid bases fail.                          |
-| SIGTERM killed the active gate but allowed later stages to launch.                                                 | A real CLI sabotage proves the active gate is killed, later stages are recorded as interruption errors without starting, the report is red, and no receipt is written. |
-| Receipt verification trusted a few identity fields without validating the complete documents.                      | The runner validates reports and receipts before writing, and verification validates both schemas again before trusting their contents or hashes.                      |
+| Finding                                                                                                            | Resolution                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A receipt could remain valid after the approved commit changed `HEAD`.                                             | Receipt verification now checks both the complete worktree fingerprint and the recorded `HEAD`.                                                                          |
+| A delivery with every test gate skipped could appear green.                                                        | Delivery and full-audit modes now require at least one enforced test gate to execute and pass.                                                                           |
+| Clean CI compared only its worktree to `HEAD`, making changed-line coverage, mutation, and ticket selection empty. | CI now supplies a validated ancestor base; scope sabotage proves committed, local, and untracked changes are combined and invalid bases fail.                            |
+| SIGTERM killed the active gate but allowed later stages to launch.                                                 | A real CLI sabotage proves the active gate is killed, later stages are recorded as interruption errors without starting, the report is red, and no receipt is written.   |
+| Receipt verification trusted a few identity fields without validating the complete documents.                      | The runner validates reports and receipts before writing, and verification validates both schemas again before trusting their contents or hashes.                        |
+| The documented latest-report Test command was rejected despite matching the receipt report byte for byte.          | Test validation now permits only the canonical report and standard latest alias, and requires the receipt's exact run ID and SHA-256; arbitrary or modified copies fail. |
 
 ## Document
 
@@ -250,9 +258,8 @@ still needs a hosted clean-checkout run and retained-artifact verification after
 committing and pushing the current quality implementation. GitHub authentication is valid; the
 remaining blocker is that the remote contains only the Pages workflow.
 
-The named external state change is an authorized commit and push of the current workflow files,
-followed by a hosted GitHub Actions run whose retained report can be inspected. Local workflow
-validation cannot substitute for that evidence, and this ticket does not authorize either Git
-operation.
+The workflow files are now committed and the first hosted delivery run is in progress. The
+documented latest-report alias has executable receipt-identity coverage, and Test is open for a
+current delivery receipt plus hosted evidence.
 
-Status: Blocked
+Status: Testing

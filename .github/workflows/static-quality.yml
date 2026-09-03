@@ -35,3 +35,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes shellcheck
       - run: npm run quality:static:delivery
+      - name: Retain static quality evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-quality-${{ github.run_attempt }}
+          path: .git/jqstar
+          if-no-files-found: error
+          retention-days: 14

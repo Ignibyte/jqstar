@@ -1,9 +1,9 @@
 ---
 id: 0042
 title: Install static, architecture, security, and documentation gates
-status: blocked
+status: testing
 created: 2026-08-30
-updated: 2026-08-31
+updated: 2026-09-03
 ---
 
 # 0042: Install static, architecture, security, and documentation gates
@@ -201,38 +201,46 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 - Static analyzers run to completion after ordinary failures and write isolated logs plus one
   `jqstar-static-report/1`. SIGINT and SIGTERM terminate the detached analyzer group, make the run
   red, and still produce a report containing every selected gate.
+- Hosted static runs emit one escaped check annotation per failed gate and retain the complete
+  `.git/jqstar` evidence directory for fourteen days, including when the command fails.
 
 ## Test
 
-| Command                                                                  | Result          | Evidence                                                                                                                                                                                         |
-| ------------------------------------------------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `node scripts/quality/static-self-test.mjs`                              | Pass            | Fifteen source detectors, every scope selector, continued execution after a red gate, schema output, and detached-child SIGTERM cleanup proved red and green.                                    |
-| `node scripts/quality/tool-self-test.mjs`                                | Pass            | Eight dependency-cruiser rules, six Semgrep rules, and gitleaks proved red and green in temporary fixtures.                                                                                      |
-| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass            | Runner, evidence, receipt, phase-report, document-mapping, and phase-refusal tests passed.                                                                                                       |
-| `node scripts/quality/scope-census.mjs`                                  | Pass            | All 419 current files were assigned to exactly one of 21 scopes.                                                                                                                                 |
-| `node scripts/quality/validate-json.mjs`                                 | Pass            | Forty JSON files parsed; three instances and fourteen schemas validated.                                                                                                                         |
-| `node scripts/quality/source-policy.mjs`                                 | Pass            | All 301 selected source files passed with no approved deviations.                                                                                                                                |
-| `npm run quality:static`                                                 | Pass            | All 22 fast static gates passed after workflow hardening; report `static-2026-08-30T18-13-21-985Z-69740`.                                                                                        |
-| `npm run quality:static:delivery`                                        | Pass            | All 28 delivery static gates passed; report `static-2026-08-30T18-13-44-471Z-70596`.                                                                                                             |
-| `npm run quality:static:full-audit`                                      | Pass            | All 28 acknowledged audit static gates passed; report `static-2026-08-30T18-14-19-303Z-73123`.                                                                                                   |
-| `npm run quality:fast`                                                   | Pass            | Run `2026-08-30T19-45-06-407Z-45616` passed ticket, runner, format, unit, and current static-fast gates.                                                                                         |
-| Static gate in `npm run quality:delivery`                                | Pass, 28 gates  | Canonical run `2026-08-31T04-45-57-403Z-62775` passed the complete local static and security stack on the immutable delivery tree.                                                               |
-| Static gate in `npm run quality:full-audit`                              | Pass, 28 gates  | Canonical run `2026-08-31T04-58-57-044Z-87453` passed the acknowledged full static stack before the later browser failure.                                                                       |
-| Initial `npm run quality:static:delivery`                                | Fail, corrected | Semgrep found the private-import literal in its own sabotage harness. The rule now excludes only that harness, and the external self-test still proves the rule red and green.                   |
-| Second `npm run quality:static:delivery`                                 | Fail, corrected | Markdownlint found ignored Playwright diagnostics. The configuration now excludes named generated-output roots, and source policy rejects broad source ignores.                                  |
-| Read-only GitHub workflow inventory                                      | Pending         | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. The remote still exposes only Pages; static quality, CodeQL, and dependency review have not been committed or pushed. |
-| Static gate in final `npm run quality:delivery`                          | Pass, 28 gates  | Run `2026-08-31T15-21-08-168Z-69566` passed the complete static and security stack as part of the 13-gate delivery receipt for the unchanged current tree.                                       |
+| Command                                                                  | Result           | Evidence                                                                                                                                                                                         |
+| ------------------------------------------------------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `node scripts/quality/static-self-test.mjs`                              | Pass             | Fifteen source detectors, every scope selector, continued execution after a red gate, schema output, and detached-child SIGTERM cleanup proved red and green.                                    |
+| `node scripts/quality/tool-self-test.mjs`                                | Pass             | Eight dependency-cruiser rules, six Semgrep rules, and gitleaks proved red and green in temporary fixtures.                                                                                      |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass             | Runner, evidence, receipt, phase-report, document-mapping, and phase-refusal tests passed.                                                                                                       |
+| `node scripts/quality/scope-census.mjs`                                  | Pass             | All 419 current files were assigned to exactly one of 21 scopes.                                                                                                                                 |
+| `node scripts/quality/validate-json.mjs`                                 | Pass             | Forty JSON files parsed; three instances and fourteen schemas validated.                                                                                                                         |
+| `node scripts/quality/source-policy.mjs`                                 | Pass             | All 301 selected source files passed with no approved deviations.                                                                                                                                |
+| `npm run quality:static`                                                 | Pass             | All 22 fast static gates passed after workflow hardening; report `static-2026-08-30T18-13-21-985Z-69740`.                                                                                        |
+| `npm run quality:static:delivery`                                        | Pass             | All 28 delivery static gates passed; report `static-2026-08-30T18-13-44-471Z-70596`.                                                                                                             |
+| `npm run quality:static:full-audit`                                      | Pass             | All 28 acknowledged audit static gates passed; report `static-2026-08-30T18-14-19-303Z-73123`.                                                                                                   |
+| `npm run quality:fast`                                                   | Pass             | Run `2026-08-30T19-45-06-407Z-45616` passed ticket, runner, format, unit, and current static-fast gates.                                                                                         |
+| Static gate in `npm run quality:delivery`                                | Pass, 28 gates   | Canonical run `2026-08-31T04-45-57-403Z-62775` passed the complete local static and security stack on the immutable delivery tree.                                                               |
+| Static gate in `npm run quality:full-audit`                              | Pass, 28 gates   | Canonical run `2026-08-31T04-58-57-044Z-87453` passed the acknowledged full static stack before the later browser failure.                                                                       |
+| Initial `npm run quality:static:delivery`                                | Fail, corrected  | Semgrep found the private-import literal in its own sabotage harness. The rule now excludes only that harness, and the external self-test still proves the rule red and green.                   |
+| Second `npm run quality:static:delivery`                                 | Fail, corrected  | Markdownlint found ignored Playwright diagnostics. The configuration now excludes named generated-output roots, and source policy rejects broad source ignores.                                  |
+| Read-only GitHub workflow inventory                                      | Pending          | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. The remote still exposes only Pages; static quality, CodeQL, and dependency review have not been committed or pushed. |
+| Static gate in final `npm run quality:delivery`                          | Pass, 28 gates   | Run `2026-08-31T15-21-08-168Z-69566` passed the complete static and security stack as part of the 13-gate delivery receipt for the unchanged current tree.                                       |
+| First hosted Static quality run                                          | Fail, diagnosing | Run `33790910133` reached `npm run quality:static:delivery` and exited 1. CodeQL run `33790910130` passed. The public check exposes no failed gate ID or retained static report.                 |
+| Clean-checkout static reproduction on macOS                              | Pass, 28 gates   | Detached commit `9526d09` passed every static delivery gate, narrowing the hosted failure to the Linux runner or its installed tool behavior.                                                    |
+| `npx actionlint .github/workflows/static-quality.yml`                    | Fail, corrected  | Actionlint is a pinned external Go binary rather than an npm executable. Verification uses the installed `actionlint` binary directly.                                                           |
+| First hosted-evidence `npm run quality:fast`                             | Fail, corrected  | Run `2026-09-03T18-46-56-938Z-59141` found only ticket formatting from the final ledger edit; unit, workflow, runner, and static-fast checks passed.                                             |
+| Final hosted-evidence `npm run quality:fast`                             | Pass             | Run `2026-09-03T18-48-01-037Z-67904` passed ticket workflow, runner self-tests, formatting, unit tests, and all selected static-fast gates.                                                      |
 
 ### Inspection ledger
 
-| Finding                                                                                                  | Resolution                                                                                                                              |
-| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| A static analyzer failure stopped visibility into later analyzers.                                       | The runner now executes every selected gate, keeps isolated logs, and writes a deterministic combined report before failing.            |
-| An outer timeout could kill the static runner while leaving its analyzer's detached process group alive. | SIGINT/SIGTERM handlers call `terminateActiveChildren`; a real subprocess sabotage proves the nested PID is gone and the report is red. |
-| A post-interrupt tool-version probe could start a new detached child after termination began.            | `runGate` skips the version subprocess once the static runner records an interruption.                                                  |
-| Semgrep scanned a planted private import inside its own harness.                                         | Only `scripts/quality/tool-self-test.mjs` is excluded from that rule's repository pass; its temporary fixture remains mandatory.        |
-| Generated browser diagnostics entered the Markdownlint input.                                            | The Markdownlint ignore list names only generated roots already excluded from the source census.                                        |
-| `jscpd@5.1.0` references a nonexistent optional Windows package and breaks clean `npm ci`.               | The manifest pins `jscpd` to `5.0.16`, whose optional dependency graph installs reproducibly.                                           |
+| Finding                                                                                                        | Resolution                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| A static analyzer failure stopped visibility into later analyzers.                                             | The runner now executes every selected gate, keeps isolated logs, and writes a deterministic combined report before failing.            |
+| An outer timeout could kill the static runner while leaving its analyzer's detached process group alive.       | SIGINT/SIGTERM handlers call `terminateActiveChildren`; a real subprocess sabotage proves the nested PID is gone and the report is red. |
+| A post-interrupt tool-version probe could start a new detached child after termination began.                  | `runGate` skips the version subprocess once the static runner records an interruption.                                                  |
+| Semgrep scanned a planted private import inside its own harness.                                               | Only `scripts/quality/tool-self-test.mjs` is excluded from that rule's repository pass; its temporary fixture remains mandatory.        |
+| Generated browser diagnostics entered the Markdownlint input.                                                  | The Markdownlint ignore list names only generated roots already excluded from the source census.                                        |
+| `jscpd@5.1.0` references a nonexistent optional Windows package and breaks clean `npm ci`.                     | The manifest pins `jscpd` to `5.0.16`, whose optional dependency graph installs reproducibly.                                           |
+| The first hosted static failure exposed only a step exit code, and the standalone workflow retained no report. | Reopened Code to publish failed gate IDs as GitHub annotations and retain `.git/jqstar` evidence on every hosted static run.            |
 
 ## Document
 
@@ -270,8 +278,9 @@ dependency-review workflows run from a pushed checkout and their required-check 
 verified. GitHub authentication is valid; committing and pushing the current implementation still
 requires explicit user authorization.
 
-The named external state change is an authorized commit and push of the workflow files, followed by
-hosted CodeQL and dependency-review runs and verification of their required-check configuration. The
-local security suite remains enforced while this ticket is blocked.
+The workflow files are now committed. CodeQL passed on commit `9526d09`, while the first hosted
+Static quality run failed without exposing its failed gate or retaining the static report. Testing
+now has actionable hosted red evidence support and awaits the pull-request run that will identify
+the Linux-specific failure, exercise dependency review, and allow required-check verification.
 
-Status: Blocked
+Status: Testing
