@@ -106,6 +106,10 @@ gate, so future configuration can silently narrow its own scope.
   sabotage case must prove that another unresolved import from that file still fails.
 - Run the history secret scan with verbose, fully redacted output so a hosted failure identifies its
   rule, path, and commit without printing secret material.
+- Scope history secret scanning to commits reachable from the checked-out `HEAD`. This covers the
+  source branch and PR merge ancestry while excluding unrelated orphan deployment branches such as
+  generated GitHub Pages output; a git-backed sabotage must prove a secret committed on `HEAD`
+  remains red and an orphan generated ref does not contaminate the source-history verdict.
 
 ### Acceptance criteria
 
@@ -161,6 +165,8 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 - Prove the clean checkout architecture graph passes without generated bundles while an unrelated
   missing import from the built-package smoke harness remains red.
 - Prove Gitleaks diagnostic output remains fully redacted before relying on it in hosted logs.
+- Prove the Gitleaks history scope rejects a secret committed on `HEAD` but ignores the same planted
+  secret when it is reachable only from an orphan deployment branch.
 - Run the fast, delivery, and full-audit gate modes plus `git diff --check`.
 
 ## Code
@@ -217,7 +223,7 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 | Command                                                                  | Result           | Evidence                                                                                                                                                                               |
 | ------------------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `node scripts/quality/static-self-test.mjs`                              | Pass             | Fourteen source detectors, every scope selector, continued execution after a red gate, schema output, and detached-child SIGTERM cleanup proved red and green.                         |
-| `node scripts/quality/tool-self-test.mjs`                                | Pass             | Nine dependency-cruiser rules, six Semgrep rules, and fully redacted gitleaks diagnostics proved red and green in temporary fixtures.                                                  |
+| `node scripts/quality/tool-self-test.mjs`                                | Pass             | Nine dependency rules, six Semgrep rules, redacted secret output, and source-history `HEAD` reachability proved red and green in temporary fixtures.                                   |
 | `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass             | Runner, evidence, receipt, phase-report, document-mapping, and phase-refusal tests passed.                                                                                             |
 | `node scripts/quality/scope-census.mjs`                                  | Pass             | All 419 current files were assigned to exactly one of 21 scopes.                                                                                                                       |
 | `node scripts/quality/validate-json.mjs`                                 | Pass             | Forty JSON files parsed; three instances and fourteen schemas validated.                                                                                                               |
@@ -240,6 +246,7 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 | PR 1 hosted Static quality run                                           | Fail, actionable | Run `33796882050` retained artifact `static-quality-1` and identified only `dependency-architecture` and `gitleaks-history` as red; the other 26 static gates passed.                  |
 | Pinned Gitleaks 8.30.1 merge-ref reproduction                            | Pass             | The official checksum-verified Darwin arm64 binary scanned the 25-commit PR merge graph with fully redacted output and found no leak, isolating the remaining finding to hosted Linux. |
 | Corrected `npm run quality:static:delivery`                              | Pass, 28 gates   | Report `static-2026-09-03T19-41-42-097Z-55789` passed the strict architecture graph, nine-rule sabotage suite, and both secret scans.                                                  |
+| PR 1 second hosted Static quality run                                    | Fail, isolated   | Run `33798937798` passed 27 of 28 gates. Only `gitleaks-history` remained red; CodeQL run `33798937784` passed.                                                                        |
 
 ### Inspection ledger
 
@@ -254,6 +261,7 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 | The first hosted static failure exposed only a step exit code, and the standalone workflow retained no report. | Reopened Code to publish failed gate IDs as GitHub annotations and retain `.git/jqstar` evidence on every hosted static run.            |
 | Clean CI lacks the `dist/` files referenced by the built-package smoke test.                                   | Only those two generated edges are allowed; a ninth architecture sabotage proves another missing import from the same script stays red. |
 | Gitleaks 8.30.1 reports one finding on Linux but none for the same 25-commit merge graph on macOS.             | The history gate now emits verbose, fully redacted metadata; its sabotage proves the output contains `REDACTED` and not the secret.     |
+| Hosted Gitleaks scans all fetched refs and included orphan Pages commit `fa9d3c0`.                             | The generated 503 KB minified asset triggered `generic-api-key`; corrective scope uses `HEAD` reachability instead of an allowlist.     |
 
 ## Document
 
@@ -268,19 +276,19 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 
 ### Acceptance evidence
 
-| Criterion | Evidence                                                                                                                                                          | Result  |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| AC-01     | Scope census assigned all 419 files; every selector and unmatched/ambiguous path case has sabotage proof.                                                         | Pass    |
-| AC-02     | Four explicit TypeScript configs and strict typed ESLint passed with zero warnings in all three static modes.                                                     | Pass    |
-| AC-03     | Nine forbidden dependency graphs failed under their named dependency-cruiser rules; the clean repository graph passed without generated bundles.                  | Pass    |
-| AC-04     | Knip passed without a generated baseline; dynamic entry points are declared in committed configuration.                                                           | Pass    |
-| AC-05     | Cognitive complexity is capped at 149 and duplicated lines at 2.99%; self-tests prove environment values cannot relax either maximum.                             | Pass    |
-| AC-06     | Stylelint, HTML Validate, Markdownlint, cspell, local links, JSON schemas, ShellCheck, and actionlint passed.                                                     | Pass    |
-| AC-07     | Local security gates and hosted CodeQL pass. Hosted Linux Gitleaks diagnosis, Dependency Graph enablement, and required-check verification remain.                | Pending |
-| AC-08     | Fifteen source-policy sabotage cases passed; the committed deviation list is empty and the schema rejects invalid or expired records.                             | Pass    |
-| AC-09     | Every source detector and scope selector plus nine dependency, six Semgrep, and one secret rule proved red and green.                                             | Pass    |
-| AC-10     | Missing/error results, empty selections, unreadable evidence, timeouts, continued execution, structured reports, and nested signal cleanup have executable proof. | Pass    |
-| AC-11     | Every configured static gate is enforced; the deviation list and observe-mode debt count are empty.                                                               | Pass    |
+| Criterion | Evidence                                                                                                                                                            | Result  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| AC-01     | Scope census assigned all 419 files; every selector and unmatched/ambiguous path case has sabotage proof.                                                           | Pass    |
+| AC-02     | Four explicit TypeScript configs and strict typed ESLint passed with zero warnings in all three static modes.                                                       | Pass    |
+| AC-03     | Nine forbidden dependency graphs failed under their named dependency-cruiser rules; the clean repository graph passed without generated bundles.                    | Pass    |
+| AC-04     | Knip passed without a generated baseline; dynamic entry points are declared in committed configuration.                                                             | Pass    |
+| AC-05     | Cognitive complexity is capped at 149 and duplicated lines at 2.99%; self-tests prove environment values cannot relax either maximum.                               | Pass    |
+| AC-06     | Stylelint, HTML Validate, Markdownlint, cspell, local links, JSON schemas, ShellCheck, and actionlint passed.                                                       | Pass    |
+| AC-07     | Local security gates and hosted CodeQL pass. The `HEAD`-scoped history fix awaits hosted proof; Dependency Graph enablement and required-check verification remain. | Pending |
+| AC-08     | Fifteen source-policy sabotage cases passed; the committed deviation list is empty and the schema rejects invalid or expired records.                               | Pass    |
+| AC-09     | Every source detector and scope selector plus nine dependency, six Semgrep, and one secret rule proved red and green.                                               | Pass    |
+| AC-10     | Missing/error results, empty selections, unreadable evidence, timeouts, continued execution, structured reports, and nested signal cleanup have executable proof.   | Pass    |
+| AC-11     | Every configured static gate is enforced; the deviation list and observe-mode debt count are empty.                                                                 | Pass    |
 
 ### Completion audit
 
@@ -290,9 +298,9 @@ corrected delivery-static report passes all 28 gates, including the ninth archit
 fully redacted Gitleaks diagnostics.
 
 PR 1 proves that CodeQL passes and that hosted static reports survive a red run. Its first static
-report isolated two failures: generated bundle edges in a clean checkout and a Linux-only Gitleaks
-finding. The bundle-edge fix passes locally, and the next hosted run will provide safe metadata for
-the remaining finding. Dependency Review also requires the repository Dependency Graph to be enabled
-before AC-07 and required-check verification can close.
+report isolated two failures, and its second proved the generated-bundle fix while identifying the
+remaining secret result as an unrelated orphan Pages commit. The `HEAD`-reachable history scope now
+passes a git-backed sabotage locally and awaits hosted proof. Dependency Review also requires the
+repository Dependency Graph to be enabled before AC-07 and required-check verification can close.
 
 Status: Testing

@@ -186,6 +186,62 @@ async function selfTestGitleaks(root) {
   await writeFile(join(fixtureRoot, "green.txt"), "no credentials here\n");
   const green = await run("gitleaks", args, { capture: true, cwd: fixtureRoot });
   assert.equal(green.code, 0, `gitleaks green fixture failed: ${green.stdout}${green.stderr}`);
+
+  const historyRoot = join(root, "gitleaks-history");
+  await mkdir(historyRoot);
+  const git = async (...gitArgs) => {
+    const result = await run("git", gitArgs, { capture: true, cwd: historyRoot });
+    assert.equal(
+      result.code,
+      0,
+      `git ${gitArgs.join(" ")} failed: ${result.stdout}${result.stderr}`,
+    );
+  };
+  await git("init", "--initial-branch=main");
+  await git("config", "user.name", "jQStar quality fixture");
+  await git("config", "user.email", "quality-fixture@example.invalid");
+  await writeFile(join(historyRoot, "source.txt"), "clean source history\n");
+  await git("add", "source.txt");
+  await git("commit", "-m", "Create clean source history");
+  await git("switch", "--orphan", "pages");
+  await rm(join(historyRoot, "source.txt"), { force: true });
+  await writeFile(join(historyRoot, "generated.env"), `STRIPE_SECRET_KEY=${plantedSecret}\n`);
+  await git("add", "--all");
+  await git("commit", "-m", "Publish generated site");
+  await git("switch", "main");
+
+  const historyArgs = [
+    "git",
+    ".",
+    "--log-opts=HEAD",
+    "--config",
+    resolve(repositoryRoot, ".gitleaks.toml"),
+    "--no-banner",
+    "--no-color",
+    "--redact",
+    "--verbose",
+  ];
+  const sourceHistoryGreen = await run("gitleaks", historyArgs, {
+    capture: true,
+    cwd: historyRoot,
+  });
+  assert.equal(
+    sourceHistoryGreen.code,
+    0,
+    `orphan deployment ref contaminated source history: ${sourceHistoryGreen.stdout}${sourceHistoryGreen.stderr}`,
+  );
+
+  await writeFile(join(historyRoot, "credentials.env"), `STRIPE_SECRET_KEY=${plantedSecret}\n`);
+  await git("add", "credentials.env");
+  await git("commit", "-m", "Plant source-history secret");
+  const sourceHistoryRed = await run("gitleaks", historyArgs, {
+    capture: true,
+    cwd: historyRoot,
+  });
+  assert.notEqual(sourceHistoryRed.code, 0, "gitleaks HEAD-history sabotage stayed green");
+  const historyDiagnostic = `${sourceHistoryRed.stdout}\n${sourceHistoryRed.stderr}`;
+  assert(historyDiagnostic.includes("REDACTED"), "gitleaks history diagnostic was not redacted");
+  assert(!historyDiagnostic.includes(plantedSecret), "gitleaks history exposed the planted secret");
 }
 
 const root = await mkdtemp(join(tmpdir(), "jqstar-tool-self-test-"));

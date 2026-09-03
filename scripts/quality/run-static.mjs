@@ -85,7 +85,7 @@ const gates = [
   gate(
     "gitleaks-history",
     "gitleaks",
-    ["git", ".", "--no-banner", "--no-color", "--redact", "--verbose"],
+    ["git", ".", "--log-opts=HEAD", "--no-banner", "--no-color", "--redact", "--verbose"],
     ["delivery", "full-audit"],
     300_000,
   ),
