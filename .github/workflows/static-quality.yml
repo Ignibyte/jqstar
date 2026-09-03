@@ -28,10 +28,24 @@ jobs:
       - run: npm ci
       - name: Install pinned local security analyzers
         run: |
+          install_go_analyzer() {
+            local go_module="$1"
+            local attempt
+            for attempt in 1 2 3; do
+              if go install "$go_module"; then
+                return 0
+              fi
+              if [[ "$attempt" -eq 3 ]]; then
+                return 1
+              fi
+              printf 'Retrying %s after attempt %s of 3 failed\n' "$go_module" "$attempt" >&2
+              sleep "$((attempt * 10))"
+            done
+          }
           python -m pip install semgrep==1.166.0
-          go install github.com/zricethezav/gitleaks/v8@v8.30.1
-          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.5.1
-          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          install_go_analyzer github.com/zricethezav/gitleaks/v8@v8.30.1
+          install_go_analyzer github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.5.1
+          install_go_analyzer github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
           sudo apt-get update
           sudo apt-get install --yes shellcheck
       - run: npm run quality:static:delivery

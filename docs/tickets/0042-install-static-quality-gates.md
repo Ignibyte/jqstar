@@ -196,6 +196,7 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 | `scripts/quality/lib/process.mjs`                               | Isolate analyzer groups, logs, timeouts, and termination cleanup.      |
 | `schema/static-report.schema.json`                              | Publish and validate `jqstar-static-report/1`.                         |
 | `.github/workflows/static-quality.yml`                          | Install pinned analyzers and run the static delivery command in CI.    |
+| `.github/workflows/quality.yml`                                 | Retry pinned Go analyzer installation in delivery and audit jobs.      |
 | `.github/workflows/codeql.yml`                                  | Run hosted JavaScript and TypeScript CodeQL.                           |
 | `.github/workflows/dependency-review.yml`                       | Reject vulnerable or disallowed pull-request dependencies.             |
 | `package.json`, `package-lock.json`                             | Expose commands and lock JavaScript analyzers.                         |
@@ -217,6 +218,8 @@ Use separate fix commands for developer convenience. Gate commands are read-only
   red, and still produce a report containing every selected gate.
 - Hosted static runs emit one escaped check annotation per failed gate and retain the complete
   `.git/jqstar` evidence directory for fourteen days, including when the command fails.
+- CI retries each pinned Go analyzer installation after transient module-proxy or checksum-service
+  failures. A real nonzero exit remains fatal after the bounded retry count.
 
 ## Test
 
@@ -250,6 +253,11 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 | PR 1 final hosted Static quality run                                     | Pass, 28 gates   | Run `33810252950` passed every static and security gate on clean Ubuntu, including the `HEAD`-reachable history scan, and retained artifact `static-quality-1`.                                                                                     |
 | PR 1 final hosted CodeQL run                                             | Pass             | Run `33810252946` completed the JavaScript and TypeScript analysis successfully.                                                                                                                                                                    |
 | Ticket-evidence `npm run check`                                          | Environment fail | Run `2026-09-03T22-35-58-572Z-56492` passed every product gate, but the external-tool sabotage could not resolve Semgrep after changing directories because the launcher's temporary `PATH` entry was relative. The rerun uses absolute tool paths. |
+| Main branch-protection API response                                      | Pass             | `main` requires strict `delivery (Node 24)`, `static-delivery`, `CodeQL JavaScript and TypeScript`, and `dependency-review` checks. Enforcement includes admins; no review-count or push restriction was added.                                     |
+| PR 1 hosted delivery run `33815533631`                                   | Environment fail | The job stopped before tests when `sum.golang.org` returned an HTTP/2 `INTERNAL_ERROR` while `go install` compiled OSV-Scanner. The workflow had no retry for transient Go module-service failures.                                                 |
+| `actionlint -shellcheck shellcheck`                                      | Pass             | Both edited workflow files parse successfully and their embedded bounded-retry shell blocks pass ShellCheck.                                                                                                                                        |
+| Installer-repair `npm run quality:fast`                                  | Pass             | Run `2026-09-03T23-08-04-743Z-1978` passed ticket workflow, formatting, unit tests, and all selected static gates on one unchanged tree.                                                                                                            |
+| Installer-repair `npm run check`                                         | Environment fail | Run `2026-09-03T23-09-33-965Z-4676` passed every gate except `npm-audit`, whose bulk-advisory request returned no data before its five-minute timeout. A focused retry passed with zero vulnerabilities.                                            |
 
 ### Inspection ledger
 
@@ -265,6 +273,7 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 | Clean CI lacks the `dist/` files referenced by the built-package smoke test.                                   | Only those two generated edges are allowed; a ninth architecture sabotage proves another missing import from the same script stays red. |
 | Gitleaks 8.30.1 reports one finding on Linux but none for the same 25-commit merge graph on macOS.             | The history gate now emits verbose, fully redacted metadata; its sabotage proves the output contains `REDACTED` and not the secret.     |
 | Hosted Gitleaks scans all fetched refs and included orphan Pages commit `fa9d3c0`.                             | The generated 503 KB minified asset triggered `generic-api-key`; corrective scope uses `HEAD` reachability instead of an allowlist.     |
+| A transient `sum.golang.org` HTTP/2 error failed hosted delivery before tests started.                         | Retry each pinned Go analyzer installation a bounded number of times; preserve a final nonzero exit as a hard failure.                  |
 
 ## Document
 
@@ -279,19 +288,19 @@ Use separate fix commands for developer convenience. Gate commands are read-only
 
 ### Acceptance evidence
 
-| Criterion | Evidence                                                                                                                                                              | Result  |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| AC-01     | Scope census assigned all 419 files; every selector and unmatched/ambiguous path case has sabotage proof.                                                             | Pass    |
-| AC-02     | Four explicit TypeScript configs and strict typed ESLint passed with zero warnings in all three static modes.                                                         | Pass    |
-| AC-03     | Nine forbidden dependency graphs failed under their named dependency-cruiser rules; the clean repository graph passed without generated bundles.                      | Pass    |
-| AC-04     | Knip passed without a generated baseline; dynamic entry points are declared in committed configuration.                                                               | Pass    |
-| AC-05     | Cognitive complexity is capped at 149 and duplicated lines at 2.99%; self-tests prove environment values cannot relax either maximum.                                 | Pass    |
-| AC-06     | Stylelint, HTML Validate, Markdownlint, cspell, local links, JSON schemas, ShellCheck, and actionlint passed.                                                         | Pass    |
-| AC-07     | Local security gates, hosted Static Quality run `33810252950`, and CodeQL run `33810252946` pass. Dependency Graph enablement and required-check verification remain. | Pending |
-| AC-08     | Fifteen source-policy sabotage cases passed; the committed deviation list is empty and the schema rejects invalid or expired records.                                 | Pass    |
-| AC-09     | Every source detector and scope selector plus nine dependency, six Semgrep, and one secret rule proved red and green.                                                 | Pass    |
-| AC-10     | Missing/error results, empty selections, unreadable evidence, timeouts, continued execution, structured reports, and nested signal cleanup have executable proof.     | Pass    |
-| AC-11     | Every configured static gate is enforced; the deviation list and observe-mode debt count are empty.                                                                   | Pass    |
+| Criterion | Evidence                                                                                                                                                                                             | Result  |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| AC-01     | Scope census assigned all 419 files; every selector and unmatched/ambiguous path case has sabotage proof.                                                                                            | Pass    |
+| AC-02     | Four explicit TypeScript configs and strict typed ESLint passed with zero warnings in all three static modes.                                                                                        | Pass    |
+| AC-03     | Nine forbidden dependency graphs failed under their named dependency-cruiser rules; the clean repository graph passed without generated bundles.                                                     | Pass    |
+| AC-04     | Knip passed without a generated baseline; dynamic entry points are declared in committed configuration.                                                                                              | Pass    |
+| AC-05     | Cognitive complexity is capped at 149 and duplicated lines at 2.99%; self-tests prove environment values cannot relax either maximum.                                                                | Pass    |
+| AC-06     | Stylelint, HTML Validate, Markdownlint, cspell, local links, JSON schemas, ShellCheck, and actionlint passed.                                                                                        | Pass    |
+| AC-07     | Local security gates, hosted Static Quality run `33810252950`, and CodeQL run `33810252946` pass. The API response verifies all four required checks on `main`; Dependency Graph enablement remains. | Pending |
+| AC-08     | Fifteen source-policy sabotage cases passed; the committed deviation list is empty and the schema rejects invalid or expired records.                                                                | Pass    |
+| AC-09     | Every source detector and scope selector plus nine dependency, six Semgrep, and one secret rule proved red and green.                                                                                | Pass    |
+| AC-10     | Missing/error results, empty selections, unreadable evidence, timeouts, continued execution, structured reports, and nested signal cleanup have executable proof.                                    | Pass    |
+| AC-11     | Every configured static gate is enforced; the deviation list and observe-mode debt count are empty.                                                                                                  | Pass    |
 
 ### Completion audit
 
@@ -300,7 +309,9 @@ criteria. Fast passed 22 of 22 gates; delivery and full audit each passed 28 of 
 Quality run `33810252950` also passed all 28 gates, including the ninth architecture sabotage and
 the corrected `HEAD`-reachable history scan. Hosted CodeQL run `33810252946` passed.
 
-AC-07 remains open only because Dependency Review cannot run until the repository Dependency Graph
-is enabled and the final required-check configuration has not been applied and read back.
+The branch-protection API response verifies strict enforcement of all four intended hosted checks on
+`main`, including for admins. The bounded installer retry passes local workflow validation and the
+fast quality gate. AC-07 remains open only because Dependency Review cannot run until the repository
+Dependency Graph is enabled; hosted proof of the installer repair is pending.
 
 Status: Testing
