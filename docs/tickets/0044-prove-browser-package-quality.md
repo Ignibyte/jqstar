@@ -1,7 +1,7 @@
 ---
 id: 0044
 title: Prove browser, accessibility, package, and release quality
-status: coding
+status: testing
 created: 2026-08-30
 updated: 2026-09-03
 ---
@@ -305,6 +305,7 @@ but cannot satisfy installed-consumer or release claims.
 | Focused API Extractor drift test after Linux timeout repair                         | Pass, 1 test          | All eight entry-point reports built and deliberate jQuery overload drift remained red; the test completed in 7.98 seconds within 60/30/120-second bounds.                                          |
 | PR 1 hosted delivery run `33805631434`                                              | Fail, actionable      | All 13 package hardening tests passed in 25.61 seconds, but ANSI control codes prevented the raw-output detector from matching the complete test count.                                            |
 | `npm run test:quality:0044` after terminal-output normalization                     | Pass, 16 detectors    | The complete detector roster passed; the package hardening green control forces color, strips terminal control codes for matching, and still requires all 13 tests and a zero exit code.           |
+| PR 1 hosted delivery run `33810252990`                                              | Pass, 12 gates        | Clean Ubuntu passed browser, package, release, and all 16 detector/control checks. Artifact `quality-delivery-1` retained the schema-valid reports, logs, and eligible receipt.                    |
 
 Useful red history is retained. The first full matrix took 368.15 seconds and found three
 WebKit-specific focus assumptions. After their focused repair, the second full matrix took 306.21
@@ -371,8 +372,9 @@ fulfills the current installed-consumer dependency. AC-07 has an approved dispos
 exports owned by tickets 0013 and 0014. Manual assistive-technology execution remains a release
 candidate task under ticket 0017; AC-04 requires the recorded charters that already exist.
 
-Terminal closure depends on tickets 0041 through 0043. Their remaining hosted evidence requires an
-authorized commit and push. After those dependencies close, this ticket needs an exact-tree delivery
-receipt and Document-phase validation.
+Hosted delivery run `33810252990` passed the repaired package-hardening detector and every browser,
+package, release, and self-test gate. Ticket 0041 is complete. Terminal closure depends on tickets
+0042 and 0043. After those dependencies close, this ticket needs an exact-tree delivery receipt and
+Document-phase validation.
 
-Status: Coding
+Status: Testing

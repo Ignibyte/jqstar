@@ -1,7 +1,7 @@
 ---
 id: 0043
 title: Enforce production coverage and property testing
-status: coding
+status: testing
 created: 2026-08-30
 updated: 2026-09-03
 ---
@@ -261,6 +261,7 @@ uses incremental results.
 | `npm run quality:delivery`                                                                                            | Pass                   | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 gates on immutable fingerprint `18e984…5b0c`; later documentation and gate-order edits require a final refreshed receipt.                                      |
 | PR 1 hosted delivery run `33805631434`                                                                                | Fail, actionable       | Coverage passed 854 assertions but correctly rejected one public Datastar test file that its separate config could not resolve without `dist/`.                                                                   |
 | `npm run test:coverage` after public-alias repair                                                                     | Pass                   | Coverage resolves the clean public Datastar import, validates every executed-evidence mapping, and passes all global, subsystem, and changed-scope rules.                                                         |
+| PR 1 hosted delivery run `33810252990`                                                                                | Pass, 12 gates         | Clean Ubuntu run `2026-09-03T21-55-48-950Z-17497` passed coverage, property testing, and every other enforced delivery gate on one unchanged 602-file fingerprint.                                                |
 
 ### Inspection ledger
 
@@ -317,8 +318,9 @@ uses incremental results.
 
 The current coverage, production-census, property, and asynchronous-ownership requirements are
 implemented. Mutation criteria have approved dispositions through ticket 0048 rather than dormant
-tooling. Terminal closure still depends on tickets 0041 and 0042, whose hosted checks require an
-authorized commit and push. After those dependencies close, this ticket needs an exact-tree delivery
-receipt and Document-phase validation.
+tooling. Hosted delivery run `33810252990` passed the repaired coverage configuration. Ticket 0041
+is complete. Terminal closure still depends on ticket 0042, which needs Dependency Graph enablement
+and required-check verification. After that dependency closes, this ticket needs an exact-tree
+delivery receipt and Document-phase validation.
 
-Status: Coding
+Status: Testing
