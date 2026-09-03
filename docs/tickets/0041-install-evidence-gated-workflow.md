@@ -111,6 +111,9 @@ never counted as a pass.
 - Store reports and receipts under the active Git directory so evidence cannot change its own
   fingerprint.
 - Require an explicit phase-validation command and matching report when closing Code or Test.
+- Resolve every JavaScript-bearing public package export to its source entry point in Vitest. Unit
+  tests must exercise public import names from a clean checkout without depending on stale `dist/`
+  output.
 
 ### Risks
 
@@ -130,6 +133,7 @@ never counted as a pass.
   fingerprints.
 - Prove public standalone and Rustal-orchestrated runs record the same command results.
 - Run CI configuration validation, `npm run check`, `npm run test:package`, and `git diff --check`.
+- Remove generated `dist/` output and prove unit tests resolve every public source entry point.
 
 ### Planned files
 
@@ -150,29 +154,30 @@ never counted as a pass.
 
 ### Changed-file ledger
 
-| File                                                   | Purpose                                                         |
-| ------------------------------------------------------ | --------------------------------------------------------------- |
-| `quality/gates.mjs`                                    | Fixed gate definitions and conditional selection.               |
-| `schema/quality-report.schema.json`                    | Machine-readable `jqstar-quality-report/1` contract.            |
-| `schema/quality-receipt.schema.json`                   | Complete receipt structure and identity contract.               |
-| `scripts/quality/lib/git-state.mjs`                    | Complete roster, immutable diff scope, and content fingerprint. |
-| `scripts/quality/lib/files.mjs`                        | Atomic JSON writes.                                             |
-| `scripts/quality/lib/process.mjs`                      | Safe child execution, timeouts, logs, and evidence checks.      |
-| `scripts/quality/lib/ticket.mjs`                       | Machine-checkable phase rules.                                  |
-| `scripts/quality/run.mjs`                              | Fast, delivery, and full-audit orchestrator.                    |
-| `scripts/quality/validate-ticket.mjs`                  | Changed-ticket phase validator.                                 |
-| `scripts/quality/verify-receipt.mjs`                   | Current worktree and report receipt verifier.                   |
-| `scripts/quality/commit-guard.mjs`                     | Explicit, reversible hook installation.                         |
-| `test/quality-runner.test.mjs`                         | Gate and receipt sabotage suite.                                |
-| `test/ticket-workflow.test.mjs`                        | Phase-transition sabotage suite.                                |
-| `.githooks/pre-commit`                                 | Public commit guard entry point.                                |
-| `.github/workflows/quality.yml`                        | Clean-checkout delivery and scheduled audit CI.                 |
-| `package.json`                                         | Stable quality, phase, guard, and compatibility commands.       |
-| `docs/tickets/TEMPLATE.md`                             | Planned-file and inspection evidence fields.                    |
-| `docs/tickets/README.md`                               | Enforced phase transitions and receipt behavior.                |
-| `docs/DEVELOPMENT.md`                                  | Local commands, evidence paths, CI parity, and recovery.        |
-| `docs/QUALITY_PROGRAM.md`                              | Canonical modes and fail-closed evidence policy.                |
-| `docs/tickets/0041-install-evidence-gated-workflow.md` | Current implementation ledger.                                  |
+| File                                                   | Purpose                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------- |
+| `quality/gates.mjs`                                    | Fixed gate definitions and conditional selection.                     |
+| `schema/quality-report.schema.json`                    | Machine-readable `jqstar-quality-report/1` contract.                  |
+| `schema/quality-receipt.schema.json`                   | Complete receipt structure and identity contract.                     |
+| `scripts/quality/lib/git-state.mjs`                    | Complete roster, immutable diff scope, and content fingerprint.       |
+| `scripts/quality/lib/files.mjs`                        | Atomic JSON writes.                                                   |
+| `scripts/quality/lib/process.mjs`                      | Safe child execution, timeouts, logs, and evidence checks.            |
+| `scripts/quality/lib/ticket.mjs`                       | Machine-checkable phase rules.                                        |
+| `scripts/quality/run.mjs`                              | Fast, delivery, and full-audit orchestrator.                          |
+| `scripts/quality/validate-ticket.mjs`                  | Changed-ticket phase validator.                                       |
+| `scripts/quality/verify-receipt.mjs`                   | Current worktree and report receipt verifier.                         |
+| `scripts/quality/commit-guard.mjs`                     | Explicit, reversible hook installation.                               |
+| `test/quality-runner.test.mjs`                         | Gate and receipt sabotage suite.                                      |
+| `test/ticket-workflow.test.mjs`                        | Phase-transition sabotage suite.                                      |
+| `.githooks/pre-commit`                                 | Public commit guard entry point.                                      |
+| `.github/workflows/quality.yml`                        | Clean-checkout delivery and scheduled audit CI.                       |
+| `vitest.config.ts`                                     | Resolve all JavaScript public exports to source for clean unit tests. |
+| `package.json`                                         | Stable quality, phase, guard, and compatibility commands.             |
+| `docs/tickets/TEMPLATE.md`                             | Planned-file and inspection evidence fields.                          |
+| `docs/tickets/README.md`                               | Enforced phase transitions and receipt behavior.                      |
+| `docs/DEVELOPMENT.md`                                  | Local commands, evidence paths, CI parity, and recovery.              |
+| `docs/QUALITY_PROGRAM.md`                              | Canonical modes and fail-closed evidence policy.                      |
+| `docs/tickets/0041-install-evidence-gated-workflow.md` | Current implementation ledger.                                        |
 
 ### Design changes
 
@@ -194,20 +199,22 @@ remains authoritative, and arbitrary copies remain rejected even when their JSON
 
 ## Test
 
-| Command                                                                  | Result          | Evidence                                                                                                                                                                               |
-| ------------------------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass            | 33 runner, discovery, scope, schema, receipt, interruption, evidence-vacuity, and phase tests pass.                                                                                    |
-| `node scripts/quality/validate-json.mjs`                                 | Pass            | All 40 JSON documents parsed and three report/config instances validated against 14 schemas.                                                                                           |
-| `npm exec -- actionlint .github/workflows/quality.yml`                   | Pass            | The clean-checkout workflow and its base-SHA selection are valid.                                                                                                                      |
-| `git diff --check`                                                       | Pass            | The current workflow implementation has no whitespace errors.                                                                                                                          |
-| `npm run quality:fast`                                                   | Pass            | Run `2026-08-30T19-45-06-407Z-45616` passed five enforced gates on one 419-file fingerprint.                                                                                           |
-| `npm run quality:delivery`                                               | Pass            | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 enforced gates and wrote a receipt for one unchanged 419-file fingerprint.                                                          |
-| `npm run quality:full-audit`                                             | Useful red      | Run `2026-08-31T04-58-57-044Z-87453` retained every gate result and refused a receipt when repeated-browser quality failed.                                                            |
-| Read-only GitHub workflow inventory                                      | Pending         | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. GitHub exposes only the Pages workflow; the four local quality workflows have not been committed or pushed. |
-| Final local `npm run quality:delivery`                                   | Pass            | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced gates and wrote a receipt for the unchanged current tree.                                                                  |
-| Documented Test-phase command with `.git/jqstar/latest-report.json`      | Fail, corrected | The validator rejected the byte-identical documented alias because it compared pathnames rather than receipt identity.                                                                 |
-| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass            | All 34 tests pass, including canonical report, exact latest alias, modified alias, and arbitrary-copy receipt authorization cases.                                                     |
-| Latest-alias fix `npm run quality:fast`                                  | Pass            | Run `2026-09-03T19-00-00-808Z-10130` passed ticket workflow, runner self-tests, formatting, unit tests, and every selected static-fast gate.                                           |
+| Command                                                                  | Result           | Evidence                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass             | 33 runner, discovery, scope, schema, receipt, interruption, evidence-vacuity, and phase tests pass.                                                                                                                 |
+| `node scripts/quality/validate-json.mjs`                                 | Pass             | All 40 JSON documents parsed and three report/config instances validated against 14 schemas.                                                                                                                        |
+| `npm exec -- actionlint .github/workflows/quality.yml`                   | Pass             | The clean-checkout workflow and its base-SHA selection are valid.                                                                                                                                                   |
+| `git diff --check`                                                       | Pass             | The current workflow implementation has no whitespace errors.                                                                                                                                                       |
+| `npm run quality:fast`                                                   | Pass             | Run `2026-08-30T19-45-06-407Z-45616` passed five enforced gates on one 419-file fingerprint.                                                                                                                        |
+| `npm run quality:delivery`                                               | Pass             | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 enforced gates and wrote a receipt for one unchanged 419-file fingerprint.                                                                                       |
+| `npm run quality:full-audit`                                             | Useful red       | Run `2026-08-31T04-58-57-044Z-87453` retained every gate result and refused a receipt when repeated-browser quality failed.                                                                                         |
+| Read-only GitHub workflow inventory                                      | Pending          | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. GitHub exposes only the Pages workflow; the four local quality workflows have not been committed or pushed.                              |
+| Final local `npm run quality:delivery`                                   | Pass             | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced gates and wrote a receipt for the unchanged current tree.                                                                                               |
+| Documented Test-phase command with `.git/jqstar/latest-report.json`      | Fail, corrected  | The validator rejected the byte-identical documented alias because it compared pathnames rather than receipt identity.                                                                                              |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass             | All 34 tests pass, including canonical report, exact latest alias, modified alias, and arbitrary-copy receipt authorization cases.                                                                                  |
+| Latest-alias fix `npm run quality:fast`                                  | Pass             | Run `2026-09-03T19-00-00-808Z-10130` passed ticket workflow, runner self-tests, formatting, unit tests, and every selected static-fast gate.                                                                        |
+| PR 1 hosted delivery run `33800660841`                                   | Fail, actionable | Static, package, release, and browser lanes passed. Unit failed on a public Datastar entry point without a source alias and a bounded API Extractor child timeout; coverage correctly consumed the red unit report. |
+| Clean-output external render contract                                    | Pass, 16 tests   | `test/external-render-contract.test.ts` passed with `dist/` temporarily absent, proving every imported public entry point resolves through source aliases.                                                          |
 
 ### Inspection ledger
 
@@ -219,6 +226,7 @@ remains authoritative, and arbitrary copies remain rejected even when their JSON
 | SIGTERM killed the active gate but allowed later stages to launch.                                                 | A real CLI sabotage proves the active gate is killed, later stages are recorded as interruption errors without starting, the report is red, and no receipt is written.   |
 | Receipt verification trusted a few identity fields without validating the complete documents.                      | The runner validates reports and receipts before writing, and verification validates both schemas again before trusting their contents or hashes.                        |
 | The documented latest-report Test command was rejected despite matching the receipt report byte for byte.          | Test validation now permits only the canonical report and standard latest alias, and requires the receipt's exact run ID and SHA-256; arbitrary or modified copies fail. |
+| Clean unit execution resolved some public package names through stale `dist/` output.                              | Vitest now maps every JavaScript-bearing public export to source; all 16 external-render contract tests pass with `dist/` absent.                                        |
 
 ## Document
 

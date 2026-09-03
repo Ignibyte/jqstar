@@ -6,7 +6,15 @@ export default defineConfig({
     alias: [
       { find: /^jquery-star$/, replacement: resolve("src/index.ts") },
       { find: /^jquery-star\/core$/, replacement: resolve("src/core.ts") },
+      { find: /^jquery-star\/csp$/, replacement: resolve("src/csp.ts") },
+      {
+        find: /^jquery-star\/datastar\/testing$/,
+        replacement: resolve("src/datastar/testing.ts"),
+      },
+      { find: /^jquery-star\/datastar$/, replacement: resolve("src/datastar.ts") },
       { find: /^jquery-star\/testing$/, replacement: resolve("src/testing/index.ts") },
+      { find: /^jquery-star\/turbo$/, replacement: resolve("src/turbo.ts") },
+      { find: /^jquery-star\/ui$/, replacement: resolve("src/ui.ts") },
     ],
   },
   test: {
