@@ -1,9 +1,9 @@
 ---
 id: 0044
 title: Prove browser, accessibility, package, and release quality
-status: blocked
+status: done
 created: 2026-08-30
-updated: 2026-08-31
+updated: 2026-09-04
 ---
 
 # 0044: Prove browser, accessibility, package, and release quality
@@ -27,6 +27,9 @@ browser engines, generated output, clean installation, or release reproducibilit
 - Ticket 0014 plans a runner-neutral public test package and real external plugins.
 - Playwright supports Chromium, Firefox, WebKit, device projects, repeat runs, no-test refusal, and
   failing a build when a test passes only on retry.
+- PR 1 delivery run `33805631434` passed all 13 package-release hardening tests, but the integrated
+  green-control detector compared their colorized Vitest output without removing terminal control
+  codes and therefore reported a false failure.
 
 ### Scope
 
@@ -104,6 +107,13 @@ browser engines, generated output, clean installation, or release reproducibilit
   workflow, quality, accessibility-release, and ticket documents in the source repository. Bind the
   tarball to the exact public-document set so internal evidence edits do not change the product
   artifact.
+- Keep the API Extractor drift test bounded, but size its child and outer timeouts from hosted Linux
+  evidence. A clean Ubuntu run completed five of eight expected extractor entry points before the
+  old 15-second build cap, so corrected limits must allow all eight passes without weakening the
+  changed-signature assertion.
+- Normalize terminal control codes before applying detector patterns to subprocess output. Keep the
+  exact exit-code and complete-test-count requirements so presentation differences cannot create a
+  false red or false green result.
 
 ### Acceptance criteria
 
@@ -160,6 +170,7 @@ but cannot satisfy installed-consumer or release claims.
   `scripts/smoke-package-files.mjs`, `scripts/quality/package-release-contracts.mjs`,
   `scripts/quality/lib/process.mjs`
 - `quality/gates.mjs`, `test/quality-runner.test.mjs`, `test/package-release-hardening.test.mjs`
+- `vitest.config.ts` for clean-checkout source aliases used by public-boundary tests.
 - `config/api-extractor.json`, `config/quality-budgets.json`, `etc/jquery-star.api.md`
 - `schema/browser-report.schema.json`, `schema/package-report.schema.json`,
   `schema/release-report.schema.json`, `schema/quality-budgets.schema.json`,
@@ -177,6 +188,8 @@ but cannot satisfy installed-consumer or release claims.
 - Run package consumers under every supported TypeScript, Node, browser, and loading mode.
 - Rebuild twice from clean checkouts and compare normalized manifests and bytes.
 - Run delivery and full-audit gates plus `git diff --check`.
+- Run the focused API Extractor drift test on a clean Linux-equivalent checkout and prove the
+  deliberate overload change still exits nonzero with the changed-signature diagnostic.
 
 ## Code
 
@@ -204,6 +217,7 @@ but cannot satisfy installed-consumer or release claims.
 | `schema/browser-report.schema.json`, `schema/package-report.schema.json`, `schema/release-report.schema.json` | Bind passing evidence to exact projects, checks, counts, and engine versions.                                     |
 | `schema/quality-budgets.schema.json`, `schema/quality-0044-self-test-report.schema.json`                      | Validate budget policy and the exact detector-control roster.                                                     |
 | `test/package-release-hardening.test.mjs`                                                                     | Sabotage ordered checks, report status, workspaces, budgets, package documents, engine evidence, and API drift.   |
+| `vitest.config.ts`                                                                                            | Resolve every JavaScript public export to source during clean unit execution.                                     |
 | `src/ui/data-table.ts`, `test/ui-data-table.test.ts`                                                          | Prevent morphed checked state from selecting a new row identity and retain an exact regression.                   |
 | `src/ui/theme.css`                                                                                            | Make touch targets, reduced motion, and forced-color focus behavior observable across conditional projects.       |
 | `docs/accessibility/RELEASE_CHARTERS.md`                                                                      | Define manual NVDA and VoiceOver release checks.                                                                  |
@@ -282,11 +296,18 @@ but cannot satisfy installed-consumer or release claims.
 | `npm run test:quality:0044` after atomic mobile repair                              | Pass, 16 detectors    | All browser, package, API, budget, and release sabotage/control pairs remained live.                                                                                                               |
 | Ticket 0045's repaired `npm run quality:delivery`                                   | Pass, 13 gates        | Run `2026-08-31T15-06-12-375Z-44248` passed package and browser quality plus every other enforced delivery gate.                                                                                   |
 | Final documentation-aware `npm run quality:delivery`                                | Pass, 13 gates        | Run `2026-08-31T15-21-08-168Z-69566` reproduced the 261-file artifact in two independent clean-install workspaces with SHA-256 `e49fc740be710222d9260d551a1dacf284e2e34accd3c4b6efbc5d6330c66c58`. |
+| `npm run quality:delivery`                                                          | Pass                  | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced delivery gates and wrote an eligible receipt for the unchanged tree.                                                                   |
 | Ticket 0004 installed-consumer `npm run quality:delivery`                           | Pass, 13 gates        | Run `2026-08-31T18-13-11-338Z-43975` added peer refusals and module/UMD boot-dispose proof in Chromium, Firefox, and WebKit while preserving the 13-check package report.                          |
 | Focused package-document contract test                                              | Pass, 1 test          | The exact roster accepted all four public guides and rejected both a missing guide and an injected internal ticket path.                                                                           |
 | Package/release hardening without the API subprocess case                           | Pass, 8 tests         | Exact documents, side effects, mandatory build, check status, independent workspaces, budget ratchets, and package/release report refusals passed on the current tree.                             |
 | Focused API Extractor drift test on the saturated host                              | Inconclusive          | `build-types` exceeded one minute while macOS load stayed above 100; Vitest reached its 30-second allowance during fixture copy, before the sabotage configuration or assertion ran.               |
 | Focused process timeout/refusal test                                                | Pass, 1 test          | The shared runner timed out a hung process, reaped its process group, and kept killed and missing-tool outcomes red.                                                                               |
+| PR 1 hosted delivery run `33800660841`                                              | Fail, actionable      | The API Extractor build child reached five successful entry points before its 15-second cap; the drift subprocess and changed-signature assertion did not run.                                     |
+| Focused API Extractor drift test after Linux timeout repair                         | Pass, 1 test          | All eight entry-point reports built and deliberate jQuery overload drift remained red; the test completed in 7.98 seconds within 60/30/120-second bounds.                                          |
+| PR 1 hosted delivery run `33805631434`                                              | Fail, actionable      | All 13 package hardening tests passed in 25.61 seconds, but ANSI control codes prevented the raw-output detector from matching the complete test count.                                            |
+| `npm run test:quality:0044` after terminal-output normalization                     | Pass, 16 detectors    | The complete detector roster passed; the package hardening green control forces color, strips terminal control codes for matching, and still requires all 13 tests and a zero exit code.           |
+| PR 1 hosted delivery run `33810252990`                                              | Pass, 12 gates        | Clean Ubuntu passed browser, package, release, and all 16 detector/control checks. Artifact `quality-delivery-1` retained the schema-valid reports, logs, and eligible receipt.                    |
+| PR 1 final hosted delivery run `33818434101`                                        | Pass, 12 gates        | Clean Ubuntu passed browser, package, release, and all 16 detector/control checks on one unchanged 602-file fingerprint. Artifact `quality-delivery-1` retained the eligible receipt.              |
 
 Useful red history is retained. The first full matrix took 368.15 seconds and found three
 WebKit-specific focus assumptions. After their focused repair, the second full matrix took 306.21
@@ -315,6 +336,8 @@ The final documentation-aware package and release measurements passed on one unc
 | A passing `exports-and-files` report could replace its evidence with any JSON value and still satisfy the package-report schema.                               | Require the exact root/CSS exports, package version, and four-guide roster; schema sabotage removes and injects documentation entries.                                   |
 | The integrated detector self-test still expected eight package hardening tests after the exact public-document test raised the suite to nine.                  | Update the green-control detector to require all nine tests; the delivery failure remains recorded and no receipt is accepted from the stale expectation.                |
 | The mobile audit selected a transiently visible control, then measured it after Message Scroller set `hidden`, producing a retry-pass.                         | Select semantic/computed visibility and measure geometry in one browser task; do not filter on geometry, and keep flaky outcomes red.                                    |
+| Clean Ubuntu needs more than 15 seconds to build all eight API Extractor entry points.                                                                         | Build, drift, and outer limits are 60, 30, and 120 seconds; nonzero drift and changed-signature assertions remain mandatory and pass locally.                            |
+| The hosted package hardening control passed all 13 tests but its raw colorized summary did not match the plain-text detector.                                  | Strip terminal control codes before detector matching and force color in the green control so this presentation path is exercised on every platform.                     |
 
 ## Document
 
@@ -351,8 +374,8 @@ fulfills the current installed-consumer dependency. AC-07 has an approved dispos
 exports owned by tickets 0013 and 0014. Manual assistive-technology execution remains a release
 candidate task under ticket 0017; AC-04 requires the recorded charters that already exist.
 
-Terminal closure depends on tickets 0041 through 0043. Their remaining hosted evidence requires an
-authorized commit and push. After those dependencies close, this ticket needs an exact-tree delivery
-receipt and Document-phase validation.
+Hosted delivery run `33818434101` passed the repaired package-hardening detector and every browser,
+package, release, and self-test gate. Tickets 0041, 0042, and 0043 are complete. Every acceptance
+criterion has direct evidence or an approved disposition, and no dependency remains.
 
-Status: Blocked
+Status: Complete

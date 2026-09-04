@@ -85,7 +85,7 @@ const gates = [
   gate(
     "gitleaks-history",
     "gitleaks",
-    ["git", ".", "--no-banner", "--redact"],
+    ["git", ".", "--log-opts=HEAD", "--no-banner", "--no-color", "--redact", "--verbose"],
     ["delivery", "full-audit"],
     300_000,
   ),
@@ -116,6 +116,22 @@ const signalProbeGate = gate(
   ["fast", "delivery", "full-audit"],
   30_000,
 );
+
+function escapeWorkflowCommandData(value) {
+  return String(value).replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
+}
+
+function escapeWorkflowCommandProperty(value) {
+  return escapeWorkflowCommandData(value).replaceAll(":", "%3A").replaceAll(",", "%2C");
+}
+
+export function githubErrorAnnotation(result) {
+  const title = escapeWorkflowCommandProperty(`Static gate ${result.id}`);
+  const detail = escapeWorkflowCommandData(
+    result.reason ?? `See ${result.log ?? "the retained static quality report"}`,
+  );
+  return `::error title=${title}::${detail}`;
+}
 
 async function supplementalGates(paths) {
   const selected = [];
@@ -279,6 +295,9 @@ export async function runStatic(mode, { interruption = () => undefined } = {}) {
     process.stdout.write(
       `${result.status.toUpperCase().padEnd(5)} ${result.id}${result.reason ? `: ${result.reason}` : ""}\n`,
     );
+    if (process.env.GITHUB_ACTIONS === "true" && ["fail", "error"].includes(result.status)) {
+      process.stdout.write(`${githubErrorAnnotation(result)}\n`);
+    }
   }
   process.stdout.write(
     `${outcome.report.status.toUpperCase()} static ${mode} report: ${outcome.reportPath}\n`,

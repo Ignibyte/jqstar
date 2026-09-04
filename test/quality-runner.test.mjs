@@ -745,6 +745,15 @@ test(
       reportPath: delivery.reportPath,
       phase: "test",
     });
+    const latest = path.join(evidenceDirectory, "latest-report.json");
+    await validatePhaseEvidence({ root, reportPath: latest, phase: "test" });
+    const latestSource = await readFile(latest);
+    await writeFile(latest, Buffer.concat([latestSource, Buffer.from("\n")]));
+    await assert.rejects(
+      validatePhaseEvidence({ root, reportPath: latest, phase: "test" }),
+      /not the report authorized by the current receipt/,
+    );
+    await writeFile(latest, latestSource);
     const copied = path.join(evidenceDirectory, "copied-report.json");
     await writeFile(copied, await readFile(delivery.reportPath));
     await assert.rejects(

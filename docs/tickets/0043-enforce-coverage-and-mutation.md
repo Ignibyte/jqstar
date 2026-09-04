@@ -1,9 +1,9 @@
 ---
 id: 0043
 title: Enforce production coverage and property testing
-status: blocked
+status: done
 created: 2026-08-30
-updated: 2026-08-31
+updated: 2026-09-04
 ---
 
 # 0043: Enforce production coverage and property testing
@@ -29,6 +29,9 @@ state transitions also lack systematic generated-input proof.
   JSON reports, and break thresholds.
 - AIC reaches 100% mutation and covered-mutation scores on its enrolled source. Rustal enforces 95%
   MSI on changed production code and runs full mutation as a separate long audit.
+- PR 1 delivery run `33805631434` passed its normal 870-test unit lane, but the separate coverage
+  config omitted the public Datastar source alias. Coverage therefore passed 854 assertions while
+  correctly rejecting the failed `external-render-contract.test.ts` module collection.
 
 ### Scope
 
@@ -131,6 +134,9 @@ uses incremental results.
   entries below remain historical evidence of work that ran before removal. They are not the current
   quality contract and must not be used to restore mutation testing without a new, explicitly
   requested ticket.
+- Keep the coverage Vitest config's public-package aliases complete enough to run the same
+  clean-checkout public-boundary tests as the normal unit config. Coverage must not depend on stale
+  `dist/` output or silently omit a test file that fails module collection.
 
 - Treat the production census as the denominator authority. Runtime, server, and executable registry
   modules receive line coverage; declarations, process entrypoints, styles, templates, deployment
@@ -194,7 +200,7 @@ uses incremental results.
 | `scripts/quality/mutation-report.mjs`, `scripts/quality/mutation-scope.mjs`, `scripts/quality/run-mutation.mjs`                               | Select changed runtime lines, evaluate Stryker output, enforce per-file floors, and report.  |
 | `scripts/quality/run-properties.mjs`, `scripts/quality/verify-production-census.mjs`, `scripts/quality/lib.mjs`                               | Run replayable properties, reject census omissions, and bind gates to runner-owned evidence. |
 | `schema/coverage-report.schema.json`, `schema/mutation-report.schema.json`, `schema/property-report.schema.json`                              | Validate stable green, red, and error evidence shapes.                                       |
-| `vitest.coverage.config.ts`, `vitest.property.config.ts`, `vitest.stryker.config.ts`, `vitest.config.ts`                                      | Define coverage, property, mutation, and sandbox-safe test discovery.                        |
+| `vitest.coverage.config.ts`, `vitest.property.config.ts`, `vitest.stryker.config.ts`, `vitest.config.ts`                                      | Define coverage, property, mutation, clean public imports, and sandbox-safe test discovery.  |
 | `stryker.config.mjs`                                                                                                                          | Define bounded changed-scope and acknowledged full-audit Stryker defaults.                   |
 | `test/property/`                                                                                                                              | Add seeded properties and permanent minimized-counterexample replays.                        |
 | `test/quality/quality-gates.test.mjs`, `test/quality-runner.test.mjs`                                                                         | Prove custom detectors, scope rules, report schemas, and sandbox discovery fail closed.      |
@@ -253,26 +259,31 @@ uses incremental results.
 | Focused Stryker Data Table selection probe (7 mutants)                                                                | Pass, 100%             | The five viable selection-authority mutants were killed with zero survived, uncovered, or timed-out outcomes; two compile errors remained visible.                                                                |
 | `npm run quality:fast`                                                                                                | Pass                   | Run `2026-08-31T01-07-06-931Z-7882` passed all five Code gates on the 419-file worktree after the full-baseline implementation.                                                                                   |
 | `npm run quality:delivery`                                                                                            | Pass                   | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 gates on immutable fingerprint `18e984…5b0c`; later documentation and gate-order edits require a final refreshed receipt.                                      |
+| PR 1 hosted delivery run `33805631434`                                                                                | Fail, actionable       | Coverage passed 854 assertions but correctly rejected one public Datastar test file that its separate config could not resolve without `dist/`.                                                                   |
+| `npm run test:coverage` after public-alias repair                                                                     | Pass                   | Coverage resolves the clean public Datastar import, validates every executed-evidence mapping, and passes all global, subsystem, and changed-scope rules.                                                         |
+| PR 1 hosted delivery run `33810252990`                                                                                | Pass, 12 gates         | Clean Ubuntu run `2026-09-03T21-55-48-950Z-17497` passed coverage, property testing, and every other enforced delivery gate on one unchanged 602-file fingerprint.                                                |
+| PR 1 final hosted delivery run `33818434101`                                                                          | Pass, 12 gates         | Clean Ubuntu run `2026-09-03T23-46-42-400Z-17608` passed coverage, property testing, and every other enforced delivery gate on one unchanged 602-file fingerprint.                                                |
 
 ### Inspection ledger
 
-| Finding                                                                                                               | Resolution                                                                                                                                                                                               |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The old coverage glob counted `src/idiomorph.d.ts` at zero and omitted operated code outside `src/`.                  | Replaced the glob as authority with a fail-closed artifact census and semantic declaration/type-only exclusions.                                                                                         |
-| `test:quality:self` initially discovered the live `.stryker-tmp` copy and reported 26 tests instead of 13.            | Every Vitest configuration excludes `.stryker-tmp/**`; a planted sandbox file is absent from discovery. The expanded self-test now contains 19 intended detector tests.                                  |
-| A selected file with only compile/runtime errors could pass because its aggregate score was not numeric.              | Mutation now requires at least one viable mutant in every selected mutable file. A mixed report with one zero-viable file fails.                                                                         |
-| Changed production lines absent from Istanbul's statement map were silently ignored.                                  | Every changed line now has runtime coverage, explicit module-linkage evidence, type/format evidence, or an unexplained-line failure.                                                                     |
-| Requirement mappings proved only that test names appeared in source text.                                             | Coverage consumes Vitest's machine report and requires exactly one executed passing test for each of the 14 mappings.                                                                                    |
-| An unknown property replay ID could run the ordinary suite and appear green.                                          | Replay now rejects unknown IDs and requires exactly one property to consume the configured replay path.                                                                                                  |
-| Coverage initially missed a changed project-browser line and left `src/expression.ts` branches below its floor.       | Added boundary assertions; the next run covered the changed line and raised expression branches from 81.81% to 86.66% without lowering thresholds.                                                       |
-| Random seed -98656747/path `32:3:3` generated `el`, which names the reserved `$el` runtime context.                   | Recorded the minimized case and made the generator's exclusion of `el` and `root` explicit. The exact path now replays green.                                                                            |
-| Random seed 1727711309/path `13:2:1:2:3:2:2:4:18:15:15:15` found `{ a: { "._": "" } }` was silently omitted.          | Corrected filtering to inspect the actual key, committed the minimized input and output, and retained an exact regression test.                                                                          |
-| Early changed-scope mutation runs exposed survivors, uncovered code, and timeouts in server and UI code.              | Added exact routing, HTML, validation, ownership, state, and action assertions. The final run has zero uncovered mutants and zero timeouts.                                                              |
-| The final run retained one `server/api.ts:747` string survivor: `databasePath ?? ":memory:"` became `?? ""`.          | It remains listed and counts against the existing-file floor. SQLite treats both as isolated temporary databases for this contract; `server/api.ts` still scores 99.65%.                                 |
-| The full audit exhausted host resources, raising concern that ordinary delivery mutation might repeat the failure.    | A recovery run proved the ordinary lane uses the Git diff: it selected nine runtime files and completed in 4m22s. The acknowledged repository-wide sweep remains a separate release/scheduled operation. |
-| A 96% existing-file result and a 99% new critical-file result need different verdicts.                                | Sabotage proves the former passes the 95% floor and the latter fails its base-resolved 100% floor.                                                                                                       |
-| The first full sweep could not establish a ratchet because one zero-tolerance status policy was shared with delivery. | Added non-increasing full-audit status caps and non-decreasing aggregate/per-file floors. A dry replay of the higher-timeout outcomes passes at 46.32% with no floor failure.                            |
-| The first canonical 20-second sweep reported 152 timeouts, two above the focused-probe projection.                    | Kept the 150 target and removed mutation-created non-termination from fixed-size calendar/chart loops. The complete rerun passed with 146 timeouts.                                                      |
+| Finding                                                                                                                           | Resolution                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The old coverage glob counted `src/idiomorph.d.ts` at zero and omitted operated code outside `src/`.                              | Replaced the glob as authority with a fail-closed artifact census and semantic declaration/type-only exclusions.                                                                                         |
+| `test:quality:self` initially discovered the live `.stryker-tmp` copy and reported 26 tests instead of 13.                        | Every Vitest configuration excludes `.stryker-tmp/**`; a planted sandbox file is absent from discovery. The expanded self-test now contains 19 intended detector tests.                                  |
+| A selected file with only compile/runtime errors could pass because its aggregate score was not numeric.                          | Mutation now requires at least one viable mutant in every selected mutable file. A mixed report with one zero-viable file fails.                                                                         |
+| Changed production lines absent from Istanbul's statement map were silently ignored.                                              | Every changed line now has runtime coverage, explicit module-linkage evidence, type/format evidence, or an unexplained-line failure.                                                                     |
+| Requirement mappings proved only that test names appeared in source text.                                                         | Coverage consumes Vitest's machine report and requires exactly one executed passing test for each of the 14 mappings.                                                                                    |
+| An unknown property replay ID could run the ordinary suite and appear green.                                                      | Replay now rejects unknown IDs and requires exactly one property to consume the configured replay path.                                                                                                  |
+| Coverage initially missed a changed project-browser line and left `src/expression.ts` branches below its floor.                   | Added boundary assertions; the next run covered the changed line and raised expression branches from 81.81% to 86.66% without lowering thresholds.                                                       |
+| Random seed -98656747/path `32:3:3` generated `el`, which names the reserved `$el` runtime context.                               | Recorded the minimized case and made the generator's exclusion of `el` and `root` explicit. The exact path now replays green.                                                                            |
+| Random seed 1727711309/path `13:2:1:2:3:2:2:4:18:15:15:15` found `{ a: { "._": "" } }` was silently omitted.                      | Corrected filtering to inspect the actual key, committed the minimized input and output, and retained an exact regression test.                                                                          |
+| Early changed-scope mutation runs exposed survivors, uncovered code, and timeouts in server and UI code.                          | Added exact routing, HTML, validation, ownership, state, and action assertions. The final run has zero uncovered mutants and zero timeouts.                                                              |
+| The final run retained one `server/api.ts:747` string survivor: `databasePath ?? ":memory:"` became `?? ""`.                      | It remains listed and counts against the existing-file floor. SQLite treats both as isolated temporary databases for this contract; `server/api.ts` still scores 99.65%.                                 |
+| The full audit exhausted host resources, raising concern that ordinary delivery mutation might repeat the failure.                | A recovery run proved the ordinary lane uses the Git diff: it selected nine runtime files and completed in 4m22s. The acknowledged repository-wide sweep remains a separate release/scheduled operation. |
+| A 96% existing-file result and a 99% new critical-file result need different verdicts.                                            | Sabotage proves the former passes the 95% floor and the latter fails its base-resolved 100% floor.                                                                                                       |
+| The first full sweep could not establish a ratchet because one zero-tolerance status policy was shared with delivery.             | Added non-increasing full-audit status caps and non-decreasing aggregate/per-file floors. A dry replay of the higher-timeout outcomes passes at 46.32% with no floor failure.                            |
+| The first canonical 20-second sweep reported 152 timeouts, two above the focused-probe projection.                                | Kept the 150 target and removed mutation-created non-termination from fixed-size calendar/chart loops. The complete rerun passed with 146 timeouts.                                                      |
+| Normal unit tests resolved every public source import, but the separate coverage config still relied on `dist/` for some exports. | Coverage now maps the complete JavaScript public-export set to source and keeps collection failure red.                                                                                                  |
 
 ## Document
 
@@ -308,8 +319,8 @@ uses incremental results.
 
 The current coverage, production-census, property, and asynchronous-ownership requirements are
 implemented. Mutation criteria have approved dispositions through ticket 0048 rather than dormant
-tooling. Terminal closure still depends on tickets 0041 and 0042, whose hosted checks require an
-authorized commit and push. After those dependencies close, this ticket needs an exact-tree delivery
-receipt and Document-phase validation.
+tooling. Hosted delivery run `33818434101` passed the repaired coverage configuration. Tickets 0041
+and 0042 are complete, including all protected hosted checks. Every acceptance criterion has direct
+evidence or an approved disposition, and no dependency remains.
 
-Status: Blocked
+Status: Complete

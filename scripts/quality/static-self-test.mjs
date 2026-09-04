@@ -10,7 +10,7 @@ import { effectiveMaximum, validateMetrics } from "./check-metrics.mjs";
 import { classifyPaths } from "./scope-census.mjs";
 import { scanSourcePolicy, validateDeviations } from "./source-policy.mjs";
 import { createSchemaValidator } from "./validate-json.mjs";
-import { executeStaticGates } from "./run-static.mjs";
+import { executeStaticGates, githubErrorAnnotation } from "./run-static.mjs";
 import { qualityPaths, readJSON, repositoryRoot } from "./static-lib.mjs";
 
 const sourceSabotage = [
@@ -159,6 +159,21 @@ function selfTestPolicies() {
   assert.equal(validateMetrics(metrics, jscpd).length, 1, "metric mismatch sabotage stayed green");
   assert.equal(effectiveMaximum(10, "20"), 10, "environment lowered a committed maximum");
   assert.equal(effectiveMaximum(10, "5"), 5, "environment could not tighten a committed maximum");
+}
+
+function selfTestGithubAnnotations() {
+  assert.equal(
+    githubErrorAnnotation({
+      id: "linux:gate,one%",
+      status: "fail",
+      reason: "first line\r\nsecond line",
+    }),
+    "::error title=Static gate linux%3Agate%2Cone%25::first line%0D%0Asecond line",
+  );
+  assert.equal(
+    githubErrorAnnotation({ id: "gate", status: "error", log: "reports/gate.log" }),
+    "::error title=Static gate gate::See reports/gate.log",
+  );
 }
 
 async function selfTestSchemas() {
@@ -321,6 +336,7 @@ selfTestSourcePolicy();
 await selfTestScopes();
 await selfTestLinks();
 selfTestPolicies();
+selfTestGithubAnnotations();
 await selfTestSchemas();
 await selfTestOrchestration();
 await selfTestSignalCleanup();

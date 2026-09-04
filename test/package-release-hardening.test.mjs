@@ -520,7 +520,7 @@ describe("package and release quality contracts", () => {
       command: process.execPath,
       args: ["scripts/build-types.mjs"],
       cwd: root,
-      timeoutMs: 15_000,
+      timeoutMs: 60_000,
       env: process.env,
     });
     const buildOutput = `${build.stdout}${build.stderr}`;
@@ -581,7 +581,7 @@ describe("package and release quality contracts", () => {
         command: npx,
         args: ["--no-install", "api-extractor", "run", "--config", configuration],
         cwd: root,
-        timeoutMs: 10_000,
+        timeoutMs: 30_000,
         env: process.env,
       });
       const driftOutput = `${drift.stdout}${drift.stderr}`;
@@ -593,5 +593,5 @@ describe("package and release quality contracts", () => {
     } finally {
       await rm(directory, { force: true, recursive: true });
     }
-  }, 30_000);
+  }, 120_000);
 });
