@@ -536,6 +536,17 @@ test(
     assert.equal(result.report.gates[0].status, "skip");
     assert.equal(result.report.gates[0].reason, "source did not change");
 
+    const forced = await runQuality({
+      mode: "fast",
+      config: configured([gate]),
+      cwd: root,
+      runId: "forced",
+      forceAll: true,
+    });
+    assert.equal(forced.report.status, "pass");
+    assert.equal(forced.report.gates[0].status, "pass");
+    assert.equal(forced.report.gates[0].selection.selected, true);
+
     const evidenceSkip = await runQuality({
       mode: "fast",
       config: configured([

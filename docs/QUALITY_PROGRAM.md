@@ -225,6 +225,8 @@ on the reference machine.
 ### Delivery
 
 The delivery gate authorizes a commit and publication candidate only for its content fingerprint.
+Ordinary delivery runs retain changed-path selectors. The release-candidate orchestrator sets the
+internal all-gates flag so every configured delivery gate executes even from a clean commit.
 
 - every fast gate
 - complete production coverage census and ratchet
@@ -241,7 +243,8 @@ The delivery gate authorizes a commit and publication candidate only for its con
 
 The full audit runs on a schedule, before release candidates, and when a gate or high-risk boundary
 changes. It is explicitly acknowledged because repeated cross-engine browser, package, and release
-runs are expensive.
+runs are expensive. Release-candidate full audits also force every configured gate instead of
+applying changed-path selectors.
 
 - clean clone and `npm ci`
 - all browser, device, reduced-motion, forced-color, touch, no-JavaScript, and accessibility lanes

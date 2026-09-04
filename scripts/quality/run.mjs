@@ -160,6 +160,7 @@ export async function runQuality({
   writeJson = writeAtomicJson,
   interrupted = () => null,
   baseRef = process.env.JQS_QUALITY_BASE_SHA,
+  forceAll = process.env.JQS_QUALITY_FORCE_ALL === "1",
 } = {}) {
   if (!supportedModes.has(mode)) {
     throw new Error(`mode must be one of: ${[...supportedModes].join(", ")}`);
@@ -221,7 +222,11 @@ export async function runQuality({
       const stageGates = configuredGates.filter((gate) => (gate.stage ?? 0) === stage);
       await Promise.all(
         stageGates.map(async (gate) => {
-          if (gate.when?.changed && !matchesChanged(gate.when.changed, startupChangedPaths)) {
+          if (
+            !forceAll &&
+            gate.when?.changed &&
+            !matchesChanged(gate.when.changed, startupChangedPaths)
+          ) {
             indexedResults.set(
               gate.id,
               skippedGate(gate, gate.when.reason ?? "changed paths did not select this gate"),

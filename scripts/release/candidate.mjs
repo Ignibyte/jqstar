@@ -15,6 +15,7 @@ import { proveRelease } from "./prove.mjs";
 
 const root = process.cwd();
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const allGatesEnvironment = { ...process.env, JQS_QUALITY_FORCE_ALL: "1" };
 
 async function latestQualityReport() {
   const latest = await readJson(resolve(root, ".git/jqstar/latest-report.json"));
@@ -29,12 +30,14 @@ export async function createReleaseCandidate() {
     await prepareRelease(["--run-id", runId]);
     run(npm, ["run", "quality:full-audit"], {
       cwd: root,
+      env: allGatesEnvironment,
       label: "full release audit",
       stdio: "inherit",
     });
     const fullAudit = await latestQualityReport();
     run(npm, ["run", "check"], {
       cwd: root,
+      env: allGatesEnvironment,
       label: "release delivery check",
       stdio: "inherit",
     });

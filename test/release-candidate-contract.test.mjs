@@ -408,6 +408,7 @@ describe("stable release candidate contract", () => {
       ),
     );
     const executableSources = [candidateSource, prepareSource, proveSource].join("\n");
+    expect(candidateSource).toContain('JQS_QUALITY_FORCE_ALL: "1"');
     expect(executableSources).not.toMatch(
       /\b(?:npm publish|git tag|git push|gh release create)\b/u,
     );
