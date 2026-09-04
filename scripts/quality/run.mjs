@@ -160,7 +160,7 @@ export async function runQuality({
   writeJson = writeAtomicJson,
   interrupted = () => null,
   baseRef = process.env.JQS_QUALITY_BASE_SHA,
-  forceAll = process.env.JQS_QUALITY_FORCE_ALL === "1",
+  forceAll = false,
 } = {}) {
   if (!supportedModes.has(mode)) {
     throw new Error(`mode must be one of: ${[...supportedModes].join(", ")}`);
@@ -389,6 +389,7 @@ async function main() {
     mode,
     config,
     interrupted: () => receivedSignal,
+    forceAll: process.env.JQS_QUALITY_FORCE_ALL === "1",
   });
   for (const gate of report.gates) {
     process.stdout.write(

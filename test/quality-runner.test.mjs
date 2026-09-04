@@ -526,12 +526,20 @@ test(
     const gate = fixtureGate("pass", {
       when: { changed: ["src/**"], reason: "source did not change" },
     });
-    const result = await runQuality({
-      mode: "fast",
-      config: configured([gate]),
-      cwd: root,
-      runId: "skip",
-    });
+    const inheritedForceAll = process.env.JQS_QUALITY_FORCE_ALL;
+    process.env.JQS_QUALITY_FORCE_ALL = "1";
+    let result;
+    try {
+      result = await runQuality({
+        mode: "fast",
+        config: configured([gate]),
+        cwd: root,
+        runId: "skip",
+      });
+    } finally {
+      if (inheritedForceAll === undefined) delete process.env.JQS_QUALITY_FORCE_ALL;
+      else process.env.JQS_QUALITY_FORCE_ALL = inheritedForceAll;
+    }
     assert.equal(result.report.status, "pass");
     assert.equal(result.report.gates[0].status, "skip");
     assert.equal(result.report.gates[0].reason, "source did not change");
