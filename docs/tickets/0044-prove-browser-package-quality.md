@@ -1,9 +1,9 @@
 ---
 id: 0044
 title: Prove browser, accessibility, package, and release quality
-status: testing
+status: done
 created: 2026-08-30
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # 0044: Prove browser, accessibility, package, and release quality
@@ -296,6 +296,7 @@ but cannot satisfy installed-consumer or release claims.
 | `npm run test:quality:0044` after atomic mobile repair                              | Pass, 16 detectors    | All browser, package, API, budget, and release sabotage/control pairs remained live.                                                                                                               |
 | Ticket 0045's repaired `npm run quality:delivery`                                   | Pass, 13 gates        | Run `2026-08-31T15-06-12-375Z-44248` passed package and browser quality plus every other enforced delivery gate.                                                                                   |
 | Final documentation-aware `npm run quality:delivery`                                | Pass, 13 gates        | Run `2026-08-31T15-21-08-168Z-69566` reproduced the 261-file artifact in two independent clean-install workspaces with SHA-256 `e49fc740be710222d9260d551a1dacf284e2e34accd3c4b6efbc5d6330c66c58`. |
+| `npm run quality:delivery`                                                          | Pass                  | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced delivery gates and wrote an eligible receipt for the unchanged tree.                                                                   |
 | Ticket 0004 installed-consumer `npm run quality:delivery`                           | Pass, 13 gates        | Run `2026-08-31T18-13-11-338Z-43975` added peer refusals and module/UMD boot-dispose proof in Chromium, Firefox, and WebKit while preserving the 13-check package report.                          |
 | Focused package-document contract test                                              | Pass, 1 test          | The exact roster accepted all four public guides and rejected both a missing guide and an injected internal ticket path.                                                                           |
 | Package/release hardening without the API subprocess case                           | Pass, 8 tests         | Exact documents, side effects, mandatory build, check status, independent workspaces, budget ratchets, and package/release report refusals passed on the current tree.                             |
@@ -306,6 +307,7 @@ but cannot satisfy installed-consumer or release claims.
 | PR 1 hosted delivery run `33805631434`                                              | Fail, actionable      | All 13 package hardening tests passed in 25.61 seconds, but ANSI control codes prevented the raw-output detector from matching the complete test count.                                            |
 | `npm run test:quality:0044` after terminal-output normalization                     | Pass, 16 detectors    | The complete detector roster passed; the package hardening green control forces color, strips terminal control codes for matching, and still requires all 13 tests and a zero exit code.           |
 | PR 1 hosted delivery run `33810252990`                                              | Pass, 12 gates        | Clean Ubuntu passed browser, package, release, and all 16 detector/control checks. Artifact `quality-delivery-1` retained the schema-valid reports, logs, and eligible receipt.                    |
+| PR 1 final hosted delivery run `33818434101`                                        | Pass, 12 gates        | Clean Ubuntu passed browser, package, release, and all 16 detector/control checks on one unchanged 602-file fingerprint. Artifact `quality-delivery-1` retained the eligible receipt.              |
 
 Useful red history is retained. The first full matrix took 368.15 seconds and found three
 WebKit-specific focus assumptions. After their focused repair, the second full matrix took 306.21
@@ -372,9 +374,8 @@ fulfills the current installed-consumer dependency. AC-07 has an approved dispos
 exports owned by tickets 0013 and 0014. Manual assistive-technology execution remains a release
 candidate task under ticket 0017; AC-04 requires the recorded charters that already exist.
 
-Hosted delivery run `33810252990` passed the repaired package-hardening detector and every browser,
-package, release, and self-test gate. Ticket 0041 is complete. Terminal closure depends on tickets
-0042 and 0043. After those dependencies close, this ticket needs an exact-tree delivery receipt and
-Document-phase validation.
+Hosted delivery run `33818434101` passed the repaired package-hardening detector and every browser,
+package, release, and self-test gate. Tickets 0041, 0042, and 0043 are complete. Every acceptance
+criterion has direct evidence or an approved disposition, and no dependency remains.
 
-Status: Testing
+Status: Complete

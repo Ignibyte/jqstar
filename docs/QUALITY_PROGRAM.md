@@ -189,6 +189,12 @@ duplication run measured 2.9812% and uses the committed token and line sensitivi
 and dependency review remain hosted GitHub checks; they do not replace mandatory local security
 gates.
 
+Dependency Review requires the repository Dependency Graph. For `Ignibyte/jqstar`, organization
+security configuration `270649` enables the graph only for this repository, leaves the existing
+advanced CodeQL workflow in charge, and keeps unrelated secret-scanning features disabled. Branch
+protection on `main` strictly requires `delivery (Node 24)`, `static-delivery`,
+`CodeQL JavaScript and TypeScript`, and `dependency-review`, including for administrators.
+
 The detector sabotage is executable. The in-memory suite proves all 15 source-policy rules and every
 census selector on red and green inputs. The external suite creates temporary graphs and files to
 prove all eight dependency rules, all six Semgrep rules, and the gitleaks secret detector. It
