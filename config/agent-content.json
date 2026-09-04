@@ -1,6 +1,6 @@
 {
   "$schema": "jqstar-agent-content/1",
-  "corpusVersion": 3,
+  "corpusVersion": 4,
   "canonicalBaseUrl": "https://ignibyte.github.io/jqstar/",
   "webMcpDraft": "2026-08-26",
   "limits": {
@@ -9,7 +9,7 @@
     "guideCharacters": 16000,
     "exampleCharacters": 8000,
     "fullTextBytes": 120000,
-    "indexBytes": 165000
+    "indexBytes": 190000
   },
   "surfaces": [
     {
@@ -58,6 +58,42 @@
       "summary": "Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.",
       "keywords": ["install", "npm", "boot", "signals", "$", "$name", "registry", "cli"],
       "source": "example/docs/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "compatibility",
+      "title": "Compatibility",
+      "path": "docs/compatibility/",
+      "summary": "Stable jQStar 1.0 entries, formats, browser and tool support, host ranges, document topology, and lifecycle policy.",
+      "keywords": ["compatibility", "support", "node", "jquery", "browser", "entry points"],
+      "source": "example/docs/compatibility/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "migration-to-1",
+      "title": "Migrate to 1.0",
+      "path": "docs/migration/",
+      "summary": "Upgrade the 0.1 compatibility root or adopt stable modular, testing, CSP, Turbo, and htmx entries.",
+      "keywords": ["migration", "upgrade", "1.0", "modular", "csp", "turbo", "htmx"],
+      "source": "example/docs/migration/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "path": "docs/security/",
+      "summary": "Private vulnerability reporting, maintained versions, application responsibilities, CSP boundaries, and release response.",
+      "keywords": ["security", "vulnerability", "report", "csp", "support", "advisory"],
+      "source": "example/docs/security/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "download",
+      "title": "Download",
+      "path": "docs/download/",
+      "summary": "Install published packages or verify exact candidate tarballs without treating release preparation as publication.",
+      "keywords": ["download", "install", "npm", "tarball", "checksum", "release candidate"],
+      "source": "example/docs/download/index.html",
       "contentRoot": "article"
     },
     {

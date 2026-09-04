@@ -1,0 +1,240 @@
+{
+  "$schema": "../schema/release-contract.schema.json",
+  "schema": "jqstar-release-contract/1",
+  "version": "1.0.0",
+  "package": {
+    "name": "jquery-star",
+    "cli": "jqstar",
+    "browserGlobal": "jQueryStar",
+    "markupRoot": "data-jqs",
+    "pluginApiVersion": "0.1.0",
+    "cspGrammarVersion": "jqstar-csp-expression/1"
+  },
+  "source": {
+    "ticket": "0017",
+    "expectedBranch": "feat/stable-platform-release",
+    "expectedTag": "v1.0.0"
+  },
+  "stableEntries": [
+    {
+      "id": "root",
+      "subpath": ".",
+      "formats": ["esm", "commonjs", "umd"],
+      "install": "automatic",
+      "composition": ["core", "datastar", "ui"]
+    },
+    {
+      "id": "core",
+      "subpath": "./core",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["core"]
+    },
+    {
+      "id": "csp",
+      "subpath": "./csp",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["csp"]
+    },
+    {
+      "id": "ui",
+      "subpath": "./ui",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["ui"]
+    },
+    {
+      "id": "datastar",
+      "subpath": "./datastar",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["datastar"]
+    },
+    {
+      "id": "testing",
+      "subpath": "./testing",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["testing"]
+    },
+    {
+      "id": "datastar-testing",
+      "subpath": "./datastar/testing",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["datastar-testing"]
+    },
+    {
+      "id": "turbo",
+      "subpath": "./turbo",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["turbo"]
+    },
+    {
+      "id": "htmx",
+      "subpath": "./htmx",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["htmx"]
+    },
+    {
+      "id": "ui-css",
+      "subpath": "./ui.css",
+      "formats": ["css"],
+      "install": "stylesheet",
+      "composition": ["ui-theme"]
+    }
+  ],
+  "support": {
+    "node": ">=24",
+    "npm": ">=11",
+    "jquery": ">=4.0.0 <5",
+    "browsers": ["chromium", "firefox", "webkit"],
+    "moduleFormats": ["browser-module", "commonjs", "esm", "umd"],
+    "documents": ["ordinary-html-document", "same-origin-frame-document"],
+    "unsupportedDocuments": ["shadow-root-application"],
+    "bridges": {
+      "turbo": ">=8.0.21 <8.1.0",
+      "htmx": ">=2.0.0 <2.1.0"
+    }
+  },
+  "policies": [
+    { "kind": "compatibility", "path": "docs/COMPATIBILITY.md" },
+    { "kind": "security", "path": "SECURITY.md" },
+    { "kind": "support", "path": "SUPPORT.md" },
+    { "kind": "migration", "path": "MIGRATING_TO_1.md" },
+    { "kind": "release", "path": "RELEASING.md" },
+    { "kind": "changelog", "path": "CHANGELOG.md" },
+    { "kind": "architecture", "path": "docs/ARCHITECTURE.md" },
+    { "kind": "backend", "path": "docs/BACKEND.md" },
+    { "kind": "testing", "path": "docs/TESTING.md" },
+    { "kind": "csp", "path": "docs/CSP_EXPRESSIONS.md" },
+    { "kind": "interoperability", "path": "docs/INTEROPERABILITY.md" },
+    { "kind": "jquery-ecosystem", "path": "docs/JQUERY_ECOSYSTEM.md" },
+    { "kind": "jquery-ui-migration", "path": "docs/JQUERY_UI_MIGRATION.md" },
+    { "kind": "jquery-mobile-migration", "path": "docs/JQUERY_MOBILE_MIGRATION.md" },
+    { "kind": "self-hosting", "path": "docs/SELF_HOSTING.md" }
+  ],
+  "prerequisites": {
+    "requiredStatus": "done",
+    "criterionRule": "criterion-has-one-matching-terminal-evidence-row",
+    "tickets": [
+      "0001",
+      "0002",
+      "0003",
+      "0004",
+      "0005",
+      "0006",
+      "0007",
+      "0008",
+      "0009",
+      "0010",
+      "0011",
+      "0012",
+      "0013",
+      "0014",
+      "0015",
+      "0016",
+      "0034",
+      "0035",
+      "0036",
+      "0037",
+      "0038",
+      "0039",
+      "0040",
+      "0041",
+      "0042",
+      "0043",
+      "0044",
+      "0045",
+      "0046",
+      "0047",
+      "0048",
+      "0049",
+      "0050"
+    ]
+  },
+  "qualityModes": [
+    {
+      "mode": "full-audit",
+      "command": "npm run quality:full-audit",
+      "requiredGates": [
+        "ticket-workflow",
+        "quality-runner-self-test",
+        "format",
+        "unit",
+        "unit-repeated-audit",
+        "coverage",
+        "property",
+        "property-random-audit",
+        "static-full-audit",
+        "browser-repeated-audit",
+        "self-hosted",
+        "package-quality",
+        "release-quality",
+        "ticket-0044-detector-self-test"
+      ]
+    },
+    {
+      "mode": "delivery",
+      "command": "npm run check",
+      "requiredGates": [
+        "ticket-workflow",
+        "quality-runner-self-test",
+        "format",
+        "unit",
+        "coverage",
+        "property",
+        "static-delivery",
+        "self-hosted",
+        "package-quality",
+        "release-quality",
+        "browser-quality",
+        "ticket-0044-detector-self-test"
+      ]
+    }
+  ],
+  "optionalExclusions": [
+    "shared-stores",
+    "persistence",
+    "resources",
+    "resource-mutations",
+    "native-navigation",
+    "navigation-regions",
+    "prefetch-cache",
+    "inspection",
+    "devtools",
+    "upgrade-diagnostics"
+  ],
+  "archivedRuntimeExclusions": [
+    { "project": "jquery-ui", "package": "jquery-ui" },
+    { "project": "jquery-mobile", "package": "jquery-mobile" }
+  ],
+  "candidate": {
+    "cleanWorkingTree": true,
+    "committedSource": true,
+    "nonShallow": true,
+    "submodulesClean": true,
+    "tagMustBeAbsent": true,
+    "reproducibleBuilds": 2,
+    "digests": ["sha256", "sha512", "npm-integrity"],
+    "manifestFields": ["path", "mode", "bytes", "sha256"],
+    "sourceDate": "git-commit-timestamp",
+    "environmentNames": ["CI", "GITHUB_ACTIONS", "NODE_ENV", "SOURCE_DATE_EPOCH"],
+    "outputRoot": ".git/jqstar/releases/1.0.0"
+  },
+  "publication": {
+    "authorized": false,
+    "npmDistTag": "latest",
+    "prohibitedOperations": [
+      "create-tag",
+      "push-tag",
+      "npm-publish",
+      "github-release",
+      "sign",
+      "announce"
+    ]
+  }
+}

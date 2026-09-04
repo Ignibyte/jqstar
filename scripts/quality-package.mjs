@@ -808,14 +808,20 @@ try {
       "dist/ui.js.map",
       "bin/jqstar.mjs",
       "registry.json",
+      "CHANGELOG.md",
       "docs/BACKEND.md",
+      "docs/COMPATIBILITY.md",
       "docs/COMPONENT_ARCHITECTURE.md",
-      "docs/COMPONENT_RESEARCH.md",
       "docs/CSP_EXPRESSIONS.md",
       "docs/INTEROPERABILITY.md",
+      "docs/JQUERY_ECOSYSTEM.md",
+      "docs/JQUERY_MOBILE_MIGRATION.md",
+      "docs/JQUERY_UI_MIGRATION.md",
       "docs/SELF_HOSTING.md",
-      "docs/security/CSP_THREAT_MODEL.md",
+      "MIGRATING_TO_1.md",
+      "RELEASING.md",
       "SECURITY.md",
+      "SUPPORT.md",
     ])
       await access(join(extracted, path));
     assert(pack, "Package metadata is unavailable.");

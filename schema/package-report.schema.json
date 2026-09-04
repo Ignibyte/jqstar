@@ -461,16 +461,18 @@
         "version": { "type": "string", "minLength": 1 },
         "documentation": {
           "type": "array",
-          "minItems": 7,
-          "maxItems": 7,
+          "minItems": 9,
+          "maxItems": 9,
           "prefixItems": [
             { "const": "docs/BACKEND.md" },
+            { "const": "docs/COMPATIBILITY.md" },
             { "const": "docs/COMPONENT_ARCHITECTURE.md" },
-            { "const": "docs/COMPONENT_RESEARCH.md" },
             { "const": "docs/CSP_EXPRESSIONS.md" },
             { "const": "docs/INTEROPERABILITY.md" },
-            { "const": "docs/SELF_HOSTING.md" },
-            { "const": "docs/security/CSP_THREAT_MODEL.md" }
+            { "const": "docs/JQUERY_ECOSYSTEM.md" },
+            { "const": "docs/JQUERY_MOBILE_MIGRATION.md" },
+            { "const": "docs/JQUERY_UI_MIGRATION.md" },
+            { "const": "docs/SELF_HOSTING.md" }
           ],
           "items": false
         }

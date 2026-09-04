@@ -15,16 +15,6 @@ With jQStar, you can:
 - Continue using existing backend templates and jQuery plugins.
 - Adopt the framework incrementally instead of rewriting the application.
 
-## What we are building for
-
-1. An excellent server-rendered development experience.
-2. Predictable enhancement and cleanup after HTML replacement.
-3. Backend-agnostic examples for PHP, Rails, Django, Node, and similar stacks.
-4. Strong no-build and modular-package support.
-5. Accessible components that solve real application workflows.
-6. Optional navigation and shared state without making them mandatory.
-7. Clear migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.
-
 ## Reactive HTML. Actual jQuery
 
 Datastar-style reactive attributes use real jQuery inside every expression:
@@ -65,6 +55,11 @@ themes, transitions, or plugins.
 
 ## Setup
 
+The repository currently prepares the `1.0.0` release candidate. Candidate status is not a claim
+that the version is published. See [compatibility](docs/COMPATIBILITY.md),
+[migration](MIGRATING_TO_1.md), [support](SUPPORT.md), [security](SECURITY.md), and
+[release verification](RELEASING.md) before adopting or publishing it.
+
 ```sh
 npm install
 ```
@@ -85,11 +80,11 @@ $.star.boot();
 The UMD build installs itself on the global `jQuery` object, so a script-tag build only needs
 `$("#app").star()` after both scripts load.
 
-### Modular preview entries
+### Stable modular entries
 
 The root entry remains the compatibility path: importing it installs the complete core, Datastar
-profile, and UI plugin. The 0.4-track `core`, `ui`, `datastar`, `htmx`, and `turbo` subpaths are
-previews until the 1.0 platform audit. They are explicit and side-effect-free, so importing them
+profile, and UI plugin. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`,
+and `turbo` subpaths are stable in 1.0. They are explicit and side-effect-free, so importing them
 does not touch a document or jQuery instance:
 
 ```ts
@@ -126,7 +121,7 @@ jQuery UI identity, or a Widget Factory contract.
 Only the composed root has a UMD/script-tag build. Every JavaScript entry has matched ESM and
 CommonJS declarations and source maps.
 
-### Testing preview entries
+### Stable testing entries
 
 `jquery-star/testing` provides a runner-neutral harness over the explicit core installer. The caller
 supplies one same-realm `Window`, `Document`, and jQuery instance; the entry does not create a DOM,
@@ -213,11 +208,12 @@ Its current runtime exports, declarations, directives, named actions, request by
 entries, formats, and measured artifact are recorded in `quality/public-baseline.json` and checked
 by `npm run test:public-baseline` plus the installed-package gate.
 
-The recorded root surface is stable for later 0.x releases. A stable item receives at least one
-minor release of deprecation notice before removal. Version 0.1 publishes no stable error codes. The
-`core`, `ui`, `datastar`, `testing`, and `datastar/testing` subpaths are published 0.4 previews;
-they are tested package contracts but are not designated stable for 1.0 yet. Private source imports
-and undeclared subpaths receive no compatibility promise.
+The recorded 0.1 root surface is the compatibility baseline for 1.0. A stable 1.x item receives at
+least one minor release of deprecation notice before removal unless a security issue makes continued
+support unsafe. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and
+`turbo` subpaths are stable 1.0 contracts. Private source imports and undeclared subpaths receive no
+compatibility promise. See [the compatibility policy](docs/COMPATIBILITY.md) and
+[the 1.0 migration guide](MIGRATING_TO_1.md).
 
 ## Source registry
 
@@ -264,23 +260,10 @@ the `jquery-star` package supplies behavior and the compiled theme.
 
 ## Components and blocks
 
-The source catalog now includes 109 items: 102 component recipes and seven composed blocks. They are
-Button, Button Group, Dialog, Alert Dialog, Sheet, Drawer, Field, Form, Label, Input, Input Group,
-File Input, Textarea, Native Select, Checkbox, Radio Group, Switch, Slider, Toggle, Toggle Group,
-Collapsible, Accordion, Tabs, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar,
-Tree View, Select, Combobox, Calendar, Range Calendar, Date Picker, Date Range Picker, Number Field,
-Password Field, Tags Input, Input OTP, Resizable Panels, Scroll Area, Data Table, Toast, Card,
-Badge, Alert, Separator, Avatar, Skeleton, Spinner, Progress, Meter, Empty State, Keyboard Key,
-Breadcrumb, Pagination, Navigation Menu, Command Palette, Async Form, Sidebar, Carousel, Toolbar,
-Stepper, Sortable List, File Upload, Multi Select, Transfer List, Split Button, Time Picker, Color
-Picker, Rating, Message, Message Scroller, Search Field, Item, Feed, Questionnaire, Attachment,
-Bubble, Aspect Ratio, Chart, Direction, Marker, Table, Typography, Stat, Timeline, Status, Code
-Block, Browser Mockup, Diff, Log Viewer, JSON Viewer, Countdown, Connection Status, Terminal, Radial
-Progress, Indicator, Dock, Swap, Key Value, Clipboard, Editable, Operations Dashboard, Profile
-Settings, Project Browser, Access Manager, and Audit Log. The seven blocks are Command Palette,
-Async Form, Operations Dashboard, Profile Settings, Project Browser, Access Manager, and Audit Log.
-Import the precompiled theme for the default appearance. Tailwind is used to author this file but is
-not required in the consuming application.
+The catalog contains 102 component recipes and seven composed blocks: Command Palette, Async Form,
+Operations Dashboard, Profile Settings, Project Browser, Access Manager, and Audit Log. Run
+`jqstar list` for the current catalog. Import the precompiled theme for the default appearance;
+Tailwind is not required in the consuming application.
 
 ```ts
 import "jquery-star/ui.css";
@@ -1072,10 +1055,11 @@ focuses the viewport, Escape dismisses a focused toast, and a horizontal swipe d
 `data-priority="assertive"` only for time-sensitive messages. Actions require `data-alt-text` with a
 non-timed alternative.
 
-See [component research](docs/COMPONENT_RESEARCH.md) and
-[component architecture](docs/COMPONENT_ARCHITECTURE.md) for the decisions and verification rules.
+See [component research](https://github.com/Ignibyte/jqstar/blob/main/docs/COMPONENT_RESEARCH.md)
+and [component architecture](docs/COMPONENT_ARCHITECTURE.md) for the decisions and verification
+rules.
 
-## Local verification and manual publishing
+## Release verification and publication boundary
 
 GitHub Actions are intentionally not configured. Run the complete proof suite locally before
 pushing:
@@ -1092,27 +1076,27 @@ multi-page HTML, the real runtime, and no React client. Its main routes are:
 
 - `/` for the framework position and installation path
 - `/docs/` for Getting Started, Datastar, API, CSP expression, and component guides
+- `/docs/compatibility/`, `/docs/migration/`, `/docs/security/`, and `/docs/download/` for the
+  stable release contract
 - `/docs/agents/` for agent surfaces, provenance, limits, and reporting guidance
 - `/components/lab/` for the exhaustive component, block, backend, and accessibility proof
 
 ### Agent-readable website
 
-Agent-first means parity: browser and headless agents can retrieve the same reviewed framework
-facts, component contracts, and examples shown to people, with canonical public citations. The site
-publishes four source-backed surfaces:
+Browser and headless agents use the same reviewed facts, contracts, examples, and public citations.
+The four source-backed surfaces are:
 
 - `/docs/agents/` is the human-readable capability guide.
 - `/llms.txt` is the short discovery map.
 - `/llms-full.txt` is the bounded reviewed corpus.
 - `/jqstar-agent-index.json` is the versioned machine-readable index.
 
-The index drives the documentation search and five optional read-only WebMCP tools: current-page
-inspection, documentation search, guide retrieval, component-contract retrieval, and verified
-example retrieval. An origin-keyed secure browser must expose the 26 August 2026 Community Group
-draft through `document.modelContext`; unsupported browsers keep the ordinary website without
-errors. WebMCP is not a W3C Standard, a remote MCP endpoint, or a substitute for the static files.
-See the [agent-content guide](https://ignibyte.github.io/jqstar/docs/agents/) for exact limits and
-the issue reporting contract.
+The index drives documentation search and five optional read-only WebMCP tools. WebMCP requires a
+secure browser exposing the 26 August 2026 Community Group draft through `document.modelContext`;
+unsupported browsers keep the ordinary site. It is not a W3C Standard, remote MCP endpoint, or
+replacement for the static files. The
+[agent-content guide](https://ignibyte.github.io/jqstar/docs/agents/) defines exact limits and issue
+reporting.
 
 Publishing is explicit and does not run from a GitHub workflow:
 
@@ -1188,9 +1172,9 @@ installer. Importing the entry has no installation or DOM-scanning side effect.
 `createRenderAdapter()` from `jquery-star/core` releases outgoing applications and enhances incoming
 roots around a host-owned mutation. Requests, history, focus, and DOM changes remain host-owned.
 
-The side-effect-free `jquery-star/turbo` and `jquery-star/htmx` previews package that coordination
-for their host-specific lifecycle events. Both hosts remain optional and must be installed by the
-application.
+The stable, side-effect-free `jquery-star/turbo` and `jquery-star/htmx` entries package that
+coordination for their host-specific lifecycle events. Both hosts remain optional and must be
+installed by the application.
 
 For Turbo Drive and Frames, pass the exact installed package version because Turbo exposes no
 documented runtime version field:

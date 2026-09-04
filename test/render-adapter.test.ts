@@ -198,7 +198,7 @@ describe("public render adapter", () => {
     expect(second.operationId).toBe(2);
     const canceled = new Error("second render canceled");
     await expect(second.fail(canceled)).rejects.toBe(canceled);
-    expect(star.version).toBe("0.1.0");
+    expect(star.version).toBe("1.0.0");
   });
 
   it("releases promised roots that the renderer failed to retain", async () => {

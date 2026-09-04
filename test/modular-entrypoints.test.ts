@@ -41,7 +41,7 @@ describe("modular entry points", () => {
     kernels.push(kernel);
 
     expect(installed).toBe($);
-    expect(installed.star.version).toBe("0.1.0");
+    expect(installed.star.version).toBe("1.0.0");
     expect("ui" in installed.star).toBe(false);
     expect(kernel.actions.names()).toEqual(["delete", "get", "patch", "post", "put"]);
     expect(kernel.protocols.snapshot().map(({ id }) => id)).toEqual(["core.generic"]);

@@ -21,7 +21,7 @@
         "shasum": "95c33ac29005ff72ec444c5ba1cf457e61404fbb"
       },
       "jqueryStar": {
-        "version": "0.1.0",
+        "version": "1.0.0",
         "proof": "exact-quality-tarball"
       }
     }

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Security · jQStar</title>
+    <meta
+      name="description"
+      content="Report jQStar vulnerabilities and understand the package security boundary."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Security · jQStar" />
+    <meta
+      property="og:description"
+      content="jQStar reporting, support, CSP, and trust boundaries."
+    />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Security</h1>
+      <p class="docs-lede">
+        Report suspected vulnerabilities privately. Do not include secrets, private customer data,
+        or exploit details in a public issue.
+      </p>
+
+      <div class="docs-callout">
+        <p>
+          Use the repository's
+          <a href="https://github.com/Ignibyte/jqstar/security/advisories/new"
+            >private vulnerability report</a
+          >
+          form. Include the affected version and entry, impact, reproduction, and any proposed fix.
+        </p>
+      </div>
+
+      <h2>Response and supported versions</h2>
+      <p>
+        Maintainers aim to acknowledge a complete report within three business days and provide an
+        initial triage within seven. The current 1.x minor is maintained; the previous 1.x minor
+        receives security fixes for six months after the next minor ships.
+      </p>
+
+      <h2>Application responsibilities</h2>
+      <ul>
+        <li>Authenticate and authorize every server operation.</li>
+        <li>Apply CSRF defenses and validate all request data on the server.</li>
+        <li>Encode text and sanitize any application-trusted HTML before rendering it.</li>
+        <li>Protect secrets, response data, logs, and deployment configuration.</li>
+        <li>
+          Configure CSP, Trusted Types, allowed origins, and third-party scripts for the site.
+        </li>
+      </ul>
+      <p>
+        jQStar coordinates browser behavior; it is not an authorization layer, HTML sanitizer,
+        secrets store, or network policy.
+      </p>
+
+      <h2>Expression engines</h2>
+      <p>
+        The compatibility root evaluates application-authored JavaScript and therefore needs a CSP
+        policy that permits dynamic evaluation. The explicit <code>jquery-star/csp</code> entry uses
+        a closed finite grammar without dynamic code construction. It still requires trusted markup
+        and trusted installed extensions and is not a sandbox for attacker-authored expressions.
+      </p>
+      <p>
+        Read the complete <a href="%BASE_URL%docs/csp/">CSP expression contract</a> before selecting
+        the finite runtime.
+      </p>
+
+      <h2>Release response</h2>
+      <p>
+        A vulnerable release may be deprecated in npm and its GitHub release returned to draft while
+        a fixed version and advisory are prepared. Package evidence includes dependency advisories,
+        lock integrity, licenses, exports, lifecycle scripts, generated artifacts, and the exact
+        packed bytes.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

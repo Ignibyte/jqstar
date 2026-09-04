@@ -16,7 +16,7 @@ separate kernel.
 The root package keeps its 0.1 auto-install behavior. `jquery-star/core` explicitly installs the
 same kernel without UI or Datastar; `jquery-star/ui` and `jquery-star/datastar` are immutable
 official plugins. `jquery-star/testing` and `jquery-star/datastar/testing` are caller-operated test
-adapters. These modular entries are 0.4 previews and have no import-time document work.
+adapters. These modular entries are stable in 1.0 and have no import-time document work.
 
 The testing harness does not change the runtime topology. A harness owns the core installation it
 creates, its application handles, public operation snapshots, finite harness tasks, and an optional

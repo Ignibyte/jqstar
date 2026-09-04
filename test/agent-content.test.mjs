@@ -39,7 +39,7 @@ describe("agent content", () => {
     const { corpus } = await buildAgentArtifacts(root);
     const registry = JSON.parse(await readFile(resolve(root, "registry.json"), "utf8"));
     expect(corpus.schema).toBe("jqstar-agent-index/1");
-    expect(corpus.package).toMatchObject({ name: "jquery-star", version: "0.1.0" });
+    expect(corpus.package).toMatchObject({ name: "jquery-star", version: "1.0.0" });
     expect(corpus.siteVersion).toBe(corpus.package.version);
     expect(corpus.components).toHaveLength(registry.items.length);
     expect(corpus.components.find(({ name }) => name === "dialog")).toMatchObject({

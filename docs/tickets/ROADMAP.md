@@ -23,11 +23,10 @@ delivery order and when parallel work can start.
 | [0007](0007-inject-expression-engines.md)           | Per-kernel expression-engine contract with unchanged trusted JavaScript behavior.                            | 0005, 0006      |
 | [0038](0038-define-jquery-ecosystem-stewardship.md) | Integrate Core/QUnit/Migrate, migrate from UI/Mobile, ignore standalone Sizzle, and keep jQStar independent. | None            |
 
-Current closure state: tickets 0041–0044 are implemented locally but blocked from terminal closure
-until the repository workflows are committed with user authorization and their hosted GitHub Actions
-evidence is inspected. Ticket 0048 removed mutation testing from ticket 0043's active contract.
-Future `core`, external-plugin, and testing package contracts remain with tickets 0013 and 0014
-rather than blocking ticket 0044's current-root quality proof.
+Current closure state: the quality, ownership, website, agent, extension, modular, CSP, bridge, and
+jQuery migration prerequisites through ticket 0050 are complete. Ticket 0048 removed mutation
+testing from ticket 0043's active contract. Ticket 0017 now owns the clean 1.0 candidate audit and
+non-publishing handoff.
 
 Release gate: Plan → Code → Test → Document is evidence-gated. Delivery is bound to the exact tested
 worktree. Static analysis, coverage, security, browser, accessibility, installed-package, and
@@ -72,7 +71,7 @@ Turbo and htmx replacements do not duplicate or leak jQuery Star behavior.
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
 | [0039](0039-publish-jquery-ui-migration.md)     | jQuery UI coexistence and semantic migration; no runtime fork, Widget Factory claim, or presumed adapter.    | 0013, 0014, 0038        |
 | [0040](0040-publish-jquery-mobile-migration.md) | jQuery Mobile no-runtime route-by-route migration; preserve progressive enhancement, not the page framework. | 0014, 0036–0038         |
-| [0017](0017-prepare-stable-platform-release.md) | Compatibility, security, deprecation, migration, release, and clean-tarball audit.                           | 0003–0016 and 0034–0044 |
+| [0017](0017-prepare-stable-platform-release.md) | Compatibility, security, deprecation, migration, release, and clean-tarball audit.                           | 0001–0016 and 0034–0050 |
 
 Release gate: every 1.0 entry point, browser, format, public API, migration promise, and security
 statement has current evidence. jQuery UI and jQuery Mobile migrations do not add either archived
@@ -164,7 +163,7 @@ behavior.
 0006 + 0010 + 0013 + 0014 -> 0016 -> 0036 + 0037
 0038 -> 0039
 0014 + 0036 + 0037 + 0038 -> 0040
-0003..0016 + 0034..0044 -> 0017
+0001..0016 + 0034..0050 -> 0017
 
 0014 + 0017 -> 0018 -> 0019
 0014 + 0017 -> 0020 -> [resource decision] -> 0021 -> [mutation decision] -> 0022

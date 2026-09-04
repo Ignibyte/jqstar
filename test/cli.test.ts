@@ -385,7 +385,7 @@ describe("jqstar CLI", () => {
     const cwd = await project();
     await writeFile(
       join(cwd, "package.json"),
-      JSON.stringify({ dependencies: { jquery: "^4.0.0", "jquery-star": "^0.1.0" } }),
+      JSON.stringify({ dependencies: { jquery: "^4.0.0", "jquery-star": "^1.0.0" } }),
       "utf8",
     );
     expect(run("init", "--cwd", cwd).status).toBe(0);

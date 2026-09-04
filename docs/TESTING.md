@@ -345,9 +345,9 @@ preservation, repeated enhancement, and disposal behavior. See
 
 ## Published harness and conformance
 
-`jquery-star/testing` is a side-effect-free ESM/CommonJS preview for package consumers. It imports
-no DOM implementation or runner and does no import-time document, jQuery, fetch, listener, observer,
-plugin, or suite work. The caller supplies one Window/Document realm and its jQuery peer.
+`jquery-star/testing` is a stable, side-effect-free ESM/CommonJS entry for package consumers. It
+imports no DOM implementation or runner and does no import-time document, jQuery, fetch, listener,
+observer, plugin, or suite work. The caller supplies one Window/Document realm and its jQuery peer.
 `assertStarDOMRealm()` rejects mixed ownership. `withStarDOMRealm()` is an optional process-wide
 lease for packages that require ambient browser constructors; it snapshots only `STAR_DOM_GLOBALS`,
 rejects overlap before mutation, attempts every reverse restoration, and preserves callback and

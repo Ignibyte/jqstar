@@ -1,7 +1,7 @@
 # jQStar reviewed agent corpus
 
-Package: jquery-star@0.1.0
-Corpus version: 3
+Package: jquery-star@1.0.0
+Corpus version: 4
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Framework invariants
@@ -46,7 +46,7 @@ What jQStar is, what stays on the server, and the boundaries of the current fram
 Citation: https://ignibyte.github.io/jqstar/
 Source: example/index.html
 
-v0.1.0 is now available
+jQStar 1.0.0 release candidate
 Polished UI behavior for
 Datastar applications.
 A jQuery-powered framework built for backend-first developers. Write HTML, add standard
@@ -100,6 +100,12 @@ Read the guides →
 Component Lab
 Exercise the exhaustive UI, forms, data, blocks, and backend integration proof.
 Open the live system →
+1.0 compatibility
+Review stable entries, environments, formats, host ranges, and support policy.
+Read the contract →
+Migration and download
+Move from the 0.1 baseline, then verify the exact package you install.
+Plan the upgrade →
 
 ### Introduction [getting-started]
 Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.
@@ -114,7 +120,9 @@ Design philosophy: your backend generates HTML, jQStar enhances local
 interaction, and Datastar can stream server changes. No virtual DOM or duplicated browser
 router is required.
 Install the package
-jQStar 0.1 supports jQuery 4 and Node 24 or newer for package consumers and tooling.
+jQStar 1.0 supports jQuery 4 and Node 24 or newer for package consumers and tooling. Review
+the complete compatibility contract before
+adopting an optional entry.
 Terminal
 Copy
 ```
@@ -166,11 +174,219 @@ npx jqstar add button dialog tabs toast
 npx jqstar doctor
 ```
 Continue with Datastar integration , inspect the
-0.1 API , review the
+stable API , review the
 finite CSP expression contract , verify an
 external plugin , use the
-testing harness , or open the
+testing harness , follow the
+1.0 migration guide , or open the
 complete Component Lab .
+
+### Compatibility [compatibility]
+Stable jQStar 1.0 entries, formats, browser and tool support, host ranges, document topology, and lifecycle policy.
+Citation: https://ignibyte.github.io/jqstar/docs/compatibility/
+Source: example/docs/compatibility/index.html
+
+Compatibility
+jQStar 1.0 stabilizes the root package, modular runtime entries, testing harnesses, CSP
+runtime, and Turbo and htmx bridges. The package is tested from its packed tarball, not from
+repository-only imports.
+Stable package entries
+Entry
+Formats
+Installation
+jquery-star
+ESM, CommonJS, UMD
+Automatic root composition
+jquery-star/core
+ESM, CommonJS
+Explicit
+jquery-star/ui
+ESM, CommonJS
+Explicit plugin
+jquery-star/datastar
+ESM, CommonJS
+Explicit plugin
+jquery-star/csp
+ESM, CommonJS
+Explicit runtime
+jquery-star/testing
+ESM, CommonJS
+Test-only import
+jquery-star/datastar/testing
+ESM, CommonJS
+Test-only import
+jquery-star/turbo
+ESM, CommonJS
+Explicit bridge
+jquery-star/htmx
+ESM, CommonJS
+Explicit bridge
+jquery-star/ui.css
+CSS
+Optional stylesheet
+Supported environments
+- jQuery >=4.0.0 <5 .
+- Node 24 or newer and npm 11 or newer for Node consumers and project tooling.
+- Current installed Chromium, Firefox, and WebKit browser fixtures.
+- ESM, CommonJS, browser modules, and the root UMD/no-build distribution.
+- Ordinary HTML documents and same-origin frame documents.
+Shadow-root applications are not supported. Turbo support is
+>=8.0.21 <8.1.0 ; htmx support is >=2.0.0 <2.1.0 . Both
+hosts are optional and injected explicitly.
+Version boundaries
+The npm package version is 1.0.0 . The plugin registrar remains independently
+versioned as 0.1.0 , and the finite CSP grammar remains
+jqstar-csp-expression/1 . A package release does not silently change either
+contract.
+The root entry retains the recorded 0.1 behavior, including real jQuery, trusted JavaScript
+expressions, and the default Datastar request profile. Read the
+1.0 migration guide for additions and unchanged
+defaults.
+Lifecycle policy
+The current 1.x minor receives fixes. The previous 1.x minor receives security fixes for six
+months after the next minor ships. Unsupported entries fail explicitly; they are not kept
+alive through hidden aliases. Security handling is described in the
+security policy .
+
+### Migrate to 1.0 [migration-to-1]
+Upgrade the 0.1 compatibility root or adopt stable modular, testing, CSP, Turbo, and htmx entries.
+Citation: https://ignibyte.github.io/jqstar/docs/migration/
+Source: example/docs/migration/index.html
+
+Migrate to 1.0
+The 1.0 root entry preserves the 0.1 compatibility baseline. The main upgrade is choosing
+whether to keep that complete root or adopt stable, explicit package entries.
+Keep the compatibility root
+main.ts Copy
+```
+import $ from "jquery";
+import "jquery-star";
+$("#app").star();
+```
+This still auto-installs core, Datastar, and UI behavior. It still uses trusted JavaScript
+expressions and the core.datastar request profile by default. Existing
+data-signals , directives, actions, request events, and UI methods retain their
+recorded meanings.
+Choose explicit entries when needed
+main.ts Copy
+```
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { datastarPlugin } from "jquery-star/datastar";
+import { uiPlugin } from "jquery-star/ui";
+const installed = installStarCore($);
+installed.star.use([datastarPlugin, uiPlugin]);
+installed.star.boot(document);
+```
+Modular imports are inert until explicitly installed. Import
+jquery-star/testing only in tests. Use
+jquery-star/datastar/testing for deterministic Datastar fixtures.
+Review lifecycle and extension changes
+-
+Register plugins before the first application starts; installation is transactional.
+- Use $.star.whenEnhanced() before inspecting a server-patched DOM.
+-
+Use $.star.dispose() for terminal document shutdown and inspect its report.
+-
+Move reusable behavior into namespaced public plugins, directives, helpers, or actions.
+-
+Use the testing harness with a caller-owned same-realm document and jQuery instance.
+CSP, Turbo, and htmx are opt-in
+The root does not silently switch expression languages. Install
+jquery-star/csp before other plugins to use the finite grammar; move ambient
+globals, arbitrary calls, and unapproved jQuery methods into registered application actions
+or helpers. Do not import the compatibility root into the same jQuery owner.
+Turbo and htmx continue to own requests, history, focus, and DOM mutation. Their explicit
+bridges add jQStar cleanup, preservation, and re-enhancement around supported host events.
+See the bridge contract .
+jQuery UI and Mobile applications
+jQStar does not bundle either archived runtime and does not claim to be an official
+successor. Isolate and destroy application-owned jQuery UI regions while migrating them to
+native components. Migrate jQuery Mobile route by route to server documents, semantic HTML,
+responsive CSS, native forms, jQuery 4, and bounded jQStar enhancement.
+Continue with the detailed
+jQuery UI guide or
+jQuery Mobile guide .
+Names that do not change
+Use jQStar for the product, jquery-star for npm imports,
+jqstar for the CLI and repository, and data-jqs for component
+roots. The plugin API remains 0.1.0 ; the CSP grammar remains
+jqstar-csp-expression/1 .
+
+### Security [security]
+Private vulnerability reporting, maintained versions, application responsibilities, CSP boundaries, and release response.
+Citation: https://ignibyte.github.io/jqstar/docs/security/
+Source: example/docs/security/index.html
+
+Security
+Report suspected vulnerabilities privately. Do not include secrets, private customer data,
+or exploit details in a public issue.
+Use the repository's
+private vulnerability report
+form. Include the affected version and entry, impact, reproduction, and any proposed fix.
+Response and supported versions
+Maintainers aim to acknowledge a complete report within three business days and provide an
+initial triage within seven. The current 1.x minor is maintained; the previous 1.x minor
+receives security fixes for six months after the next minor ships.
+Application responsibilities
+- Authenticate and authorize every server operation.
+- Apply CSRF defenses and validate all request data on the server.
+- Encode text and sanitize any application-trusted HTML before rendering it.
+- Protect secrets, response data, logs, and deployment configuration.
+-
+Configure CSP, Trusted Types, allowed origins, and third-party scripts for the site.
+jQStar coordinates browser behavior; it is not an authorization layer, HTML sanitizer,
+secrets store, or network policy.
+Expression engines
+The compatibility root evaluates application-authored JavaScript and therefore needs a CSP
+policy that permits dynamic evaluation. The explicit jquery-star/csp entry uses
+a closed finite grammar without dynamic code construction. It still requires trusted markup
+and trusted installed extensions and is not a sandbox for attacker-authored expressions.
+Read the complete CSP expression contract before selecting
+the finite runtime.
+Release response
+A vulnerable release may be deprecated in npm and its GitHub release returned to draft while
+a fixed version and advisory are prepared. Package evidence includes dependency advisories,
+lock integrity, licenses, exports, lifecycle scripts, generated artifacts, and the exact
+packed bytes.
+
+### Download [download]
+Install published packages or verify exact candidate tarballs without treating release preparation as publication.
+Citation: https://ignibyte.github.io/jqstar/docs/download/
+Source: example/docs/download/index.html
+
+Download
+This site describes the jQStar 1.0.0 release candidate. A candidate receipt proves local
+packed bytes; it does not mean that version has been published to npm or tagged in Git.
+Install the current npm release
+Terminal Copy
+```
+npm install jquery-star jquery
+```
+npm resolves the currently published package. Check the returned version before relying on
+1.0 behavior; this page does not claim that an unpublished candidate is available there.
+Use a reviewed candidate tarball
+A maintainer can provide the exact jquery-star-1.0.0.tgz named by the immutable
+candidate receipt. Verify both hashes before installation.
+Terminal Copy
+```
+shasum -a 256 jquery-star-1.0.0.tgz
+shasum -a 512 jquery-star-1.0.0.tgz
+npm install ./jquery-star-1.0.0.tgz jquery
+```
+Package formats
+The package contains ESM and CommonJS entries, a root UMD build for no-build applications,
+declarations and source maps, optional CSS, the jqstar CLI, registry recipes,
+and a self-hosted website archive. jQuery remains an external peer; it is not vendored.
+Verify an authorized publication
+Terminal Copy
+```
+npm view jquery-star@1.0.0 --json
+git rev-parse v1.0.0^{commit}
+gh release view v1.0.0 --json tagName,targetCommitish,isDraft,isPrerelease,url
+```
+Compare registry integrity, tag target, release assets, and receipt hashes. Publication,
+tagging, signing, and announcements require separate maintainer authorization.
 
 ### Datastar integration [datastar-integration]
 Call backend actions and consume JSON, HTML, or Datastar SSE generated by the official SDK.
@@ -250,9 +466,10 @@ Source: example/docs/api/index.html
 Core API
 jQStar is HTML-driven, but its installed jQuery surface exposes explicit application,
 action, request, lifecycle, and UI methods for code that needs programmatic control.
-The root surface is the 0.1 compatibility contract. The core ,
-ui , datastar , testing , and
-datastar/testing package subpaths are published 0.4 previews.
+The root surface preserves the 0.1 compatibility contract. The core ,
+ui , datastar , csp , testing ,
+datastar/testing , turbo , and htmx package subpaths
+are stable in 1.0.
 Applications
 API
 Purpose
@@ -573,8 +790,8 @@ Source: example/docs/interoperability/index.html
 
 Turbo and htmx interoperability
 jQStar has tested bridges for wrapping external DOM renders without taking over the host
-library. The jquery-star/turbo and jquery-star/htmx previews both
-ship now.
+library. The stable jquery-star/turbo and jquery-star/htmx entries
+both ship now.
 One ownership seam: the host sends requests and mutates the DOM. A bridge
 uses createRenderAdapter() only to release outgoing jQStar roots, preserve
 exact approved identities, enhance incoming roots, and await the barrier.
@@ -841,9 +1058,10 @@ Citation: https://ignibyte.github.io/jqstar/docs/testing/
 Source: example/docs/testing/index.html
 
 Testing
-The jquery-star/testing preview supplies a runner-neutral harness for public
-jQStar behavior. You choose the DOM implementation and jQuery instance; the harness owns
-only the installation, applications, response fixtures, and finite work created through it.
+The stable jquery-star/testing entry supplies a runner-neutral harness for
+public jQStar behavior. You choose the DOM implementation and jQuery instance; the harness
+owns only the installation, applications, response fixtures, and finite work created through
+it.
 Explicit ownership: importing the testing entry does not create a DOM,
 install jQStar, replace fetch , or register a test suite. The generic entry
 does not import a DOM package, test runner, or Datastar.

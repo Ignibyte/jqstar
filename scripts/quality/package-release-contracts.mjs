@@ -26,12 +26,14 @@ export const releaseCheckNames = Object.freeze([
 
 export const packageDocumentationPaths = Object.freeze([
   "docs/BACKEND.md",
+  "docs/COMPATIBILITY.md",
   "docs/COMPONENT_ARCHITECTURE.md",
-  "docs/COMPONENT_RESEARCH.md",
   "docs/CSP_EXPRESSIONS.md",
   "docs/INTEROPERABILITY.md",
+  "docs/JQUERY_ECOSYSTEM.md",
+  "docs/JQUERY_MOBILE_MIGRATION.md",
+  "docs/JQUERY_UI_MIGRATION.md",
   "docs/SELF_HOSTING.md",
-  "docs/security/CSP_THREAT_MODEL.md",
 ]);
 
 const notRunDetail = "check did not run";

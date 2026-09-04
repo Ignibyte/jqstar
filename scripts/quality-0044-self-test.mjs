@@ -300,7 +300,7 @@ record(
     FORCE_COLOR: "1",
   }),
   "green",
-  /Tests\s+13 passed/u,
+  /Tests\s+14 passed/u,
 );
 
 record(

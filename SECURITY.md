@@ -10,6 +10,24 @@ and release automation, and the behavior represented by generated distribution a
 Tests, examples, and documentation are evidence of intended behavior. They do not prove that a
 security control is effective.
 
+## Reporting a vulnerability
+
+Use
+[GitHub private vulnerability reporting](https://github.com/Ignibyte/jqstar/security/advisories/new).
+Do not open a public issue, attach exploit material to a public discussion, or include credentials
+or production data. Include the affected package version and entry, supported environment, minimal
+reproduction, reachability assumptions, and observed impact.
+
+The target is to acknowledge a complete report within three business days and provide an initial
+triage decision within seven calendar days. These are response goals, not a service-level agreement.
+Coordinated disclosure timing depends on impact, fix availability, downstream exposure, and reporter
+agreement. The project will credit reporters who want attribution and will not publish their private
+contact information.
+
+The latest published 1.x minor and patch line receives security fixes. The previous 1.x minor
+receives security fixes for six months after the next minor release. Before `1.0.0` is published,
+the repository is a candidate and makes no registry support claim. See [SUPPORT.md](SUPPORT.md).
+
 ## Threat model and trust boundaries
 
 Application markup, expression-bearing HTML responses, installed plugins, registered actions and
@@ -17,9 +35,9 @@ helpers, and the supplied canonical jQuery peer are trusted code or markup. Stat
 event detail, action arguments, JSON signal patches, response data, and action/helper return data
 may be attacker-controlled and must remain data.
 
-The current trusted expression engine executes JavaScript and requires `unsafe-eval`. The planned
-`jquery-star/csp` profile is a separate finite interpreter defined by `jqstar-csp-expression/1`. It
-is not shipped yet and must not be described as an attacker-expression sandbox.
+The trusted expression engine executes JavaScript and requires `unsafe-eval`. The explicit
+`jquery-star/csp` profile is a separate finite interpreter defined by `jqstar-csp-expression/1`.
+Neither profile is an attacker-expression sandbox.
 
 Applications remain responsible for authentication, authorization, CSRF protection, endpoint policy,
 output encoding, HTML sanitization, Trusted Types, and their page Content Security Policy.
@@ -83,11 +101,24 @@ impact. Tests alone are not evidence that a suspected path is unreachable.
 
 ## Known limitations and compensating controls
 
-The CSP parser, evaluator, package subpath, and strict-policy browser proof are planned work, not a
-shipped security control. `docs/CSP_EXPRESSIONS.md` and `docs/security/CSP_THREAT_MODEL.md` define
-the frozen contract and its implementation gates.
+The CSP entry limits expression syntax and removes dynamic code from that package graph. It does not
+sanitize HTML, make untrusted markup safe, control third-party scripts, or replace the application
+page policy. `docs/CSP_EXPRESSIONS.md` and the repository's
+[CSP threat model](https://github.com/Ignibyte/jqstar/blob/main/docs/security/CSP_THREAT_MODEL.md)
+define its frozen contract, tested capabilities, and remaining application duties.
 
-Before the CSP implementation can be treated as effective, it must resolve and test raw
-action/helper result branding before thenable assimilation, exact committed-helper provenance,
-expression-bearing response HTML as trusted markup, and engine ownership/disposal semantics. Until
-then, deployments use the trusted engine and its required page policy explicitly.
+The root entry deliberately retains trusted JavaScript expressions for 0.1 compatibility. A site
+that cannot allow the trusted compiler must migrate its expressions and install the CSP entry
+explicitly. Turbo and htmx bridges trust the injected host capability and supported version. The
+proof server demonstrates boundaries but is not an authentication or authorization service.
+
+## Fix, withdrawal, and disclosure
+
+A confirmed finding is fixed on the supported line and receives a public advisory when users need
+action. The advisory states affected versions, impact, prerequisites, fixed versions, and migration
+or mitigation steps without exposing private reporter data.
+
+If a published release is unsafe, prefer a corrected release and npm deprecation over unpublishing.
+Deprecation preserves existing dependency graphs while warning new installations. Changing an npm
+dist-tag, deprecating a version, editing a GitHub release, creating a tag, or publishing a fix is an
+external write and requires explicit authorization under [RELEASING.md](RELEASING.md).

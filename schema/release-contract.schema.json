@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/release-contract.schema.json",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schema",
+    "version",
+    "package",
+    "source",
+    "stableEntries",
+    "support",
+    "policies",
+    "prerequisites",
+    "qualityModes",
+    "optionalExclusions",
+    "archivedRuntimeExclusions",
+    "candidate",
+    "publication"
+  ],
+  "properties": {
+    "$schema": { "const": "../schema/release-contract.schema.json" },
+    "schema": { "const": "jqstar-release-contract/1" },
+    "version": { "const": "1.0.0" },
+    "package": {
+      "type": "object",
+      "required": [
+        "name",
+        "cli",
+        "browserGlobal",
+        "markupRoot",
+        "pluginApiVersion",
+        "cspGrammarVersion"
+      ],
+      "properties": {
+        "name": { "const": "jquery-star" },
+        "cli": { "const": "jqstar" },
+        "browserGlobal": { "const": "jQueryStar" },
+        "markupRoot": { "const": "data-jqs" },
+        "pluginApiVersion": { "const": "0.1.0" },
+        "cspGrammarVersion": { "const": "jqstar-csp-expression/1" }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["ticket", "expectedBranch", "expectedTag"],
+      "properties": {
+        "ticket": { "const": "0017" },
+        "expectedBranch": { "const": "feat/stable-platform-release" },
+        "expectedTag": { "const": "v1.0.0" }
+      },
+      "additionalProperties": false
+    },
+    "stableEntries": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/stableEntry" }
+    },
+    "support": {
+      "type": "object",
+      "required": [
+        "node",
+        "npm",
+        "jquery",
+        "browsers",
+        "moduleFormats",
+        "documents",
+        "unsupportedDocuments",
+        "bridges"
+      ],
+      "properties": {
+        "node": { "const": ">=24" },
+        "npm": { "const": ">=11" },
+        "jquery": { "const": ">=4.0.0 <5" },
+        "browsers": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [{ "const": "chromium" }, { "const": "firefox" }, { "const": "webkit" }],
+          "items": false
+        },
+        "moduleFormats": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            { "const": "browser-module" },
+            { "const": "commonjs" },
+            { "const": "esm" },
+            { "const": "umd" }
+          ],
+          "items": false
+        },
+        "documents": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            { "const": "ordinary-html-document" },
+            { "const": "same-origin-frame-document" }
+          ],
+          "items": false
+        },
+        "unsupportedDocuments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "prefixItems": [{ "const": "shadow-root-application" }],
+          "items": false
+        },
+        "bridges": {
+          "type": "object",
+          "required": ["turbo", "htmx"],
+          "properties": {
+            "turbo": { "const": ">=8.0.21 <8.1.0" },
+            "htmx": { "const": ">=2.0.0 <2.1.0" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "policies": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/policy" }
+    },
+    "prerequisites": {
+      "type": "object",
+      "required": ["requiredStatus", "criterionRule", "tickets"],
+      "properties": {
+        "requiredStatus": { "const": "done" },
+        "criterionRule": { "const": "criterion-has-one-matching-terminal-evidence-row" },
+        "tickets": {
+          "type": "array",
+          "minItems": 33,
+          "maxItems": 33,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[0-9]{4}$" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "qualityModes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {
+          "allOf": [
+            { "$ref": "#/$defs/qualityMode" },
+            {
+              "type": "object",
+              "properties": {
+                "mode": { "const": "full-audit" },
+                "command": { "const": "npm run quality:full-audit" },
+                "requiredGates": { "type": "array", "minItems": 14, "maxItems": 14 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/qualityMode" },
+            {
+              "type": "object",
+              "properties": {
+                "mode": { "const": "delivery" },
+                "command": { "const": "npm run check" },
+                "requiredGates": { "type": "array", "minItems": 12, "maxItems": 12 }
+              }
+            }
+          ]
+        }
+      ],
+      "items": false
+    },
+    "optionalExclusions": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonemptyString" }
+    },
+    "archivedRuntimeExclusions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["project", "package"],
+        "properties": {
+          "project": { "enum": ["jquery-ui", "jquery-mobile"] },
+          "package": { "enum": ["jquery-ui", "jquery-mobile"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "cleanWorkingTree",
+        "committedSource",
+        "nonShallow",
+        "submodulesClean",
+        "tagMustBeAbsent",
+        "reproducibleBuilds",
+        "digests",
+        "manifestFields",
+        "sourceDate",
+        "environmentNames",
+        "outputRoot"
+      ],
+      "properties": {
+        "cleanWorkingTree": { "const": true },
+        "committedSource": { "const": true },
+        "nonShallow": { "const": true },
+        "submodulesClean": { "const": true },
+        "tagMustBeAbsent": { "const": true },
+        "reproducibleBuilds": { "const": 2 },
+        "digests": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "const": "sha256" },
+            { "const": "sha512" },
+            { "const": "npm-integrity" }
+          ],
+          "items": false
+        },
+        "manifestFields": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            { "const": "path" },
+            { "const": "mode" },
+            { "const": "bytes" },
+            { "const": "sha256" }
+          ],
+          "items": false
+        },
+        "sourceDate": { "const": "git-commit-timestamp" },
+        "environmentNames": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }
+        },
+        "outputRoot": { "const": ".git/jqstar/releases/1.0.0" }
+      },
+      "additionalProperties": false
+    },
+    "publication": {
+      "type": "object",
+      "required": ["authorized", "npmDistTag", "prohibitedOperations"],
+      "properties": {
+        "authorized": { "const": false },
+        "npmDistTag": { "const": "latest" },
+        "prohibitedOperations": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "prefixItems": [
+            { "const": "create-tag" },
+            { "const": "push-tag" },
+            { "const": "npm-publish" },
+            { "const": "github-release" },
+            { "const": "sign" },
+            { "const": "announce" }
+          ],
+          "items": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "nonemptyString": { "type": "string", "minLength": 1 },
+    "stableEntry": {
+      "type": "object",
+      "required": ["id", "subpath", "formats", "install", "composition"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "subpath": { "type": "string", "pattern": "^\\.(?:$|/)" },
+        "formats": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["esm", "commonjs", "umd", "css"] }
+        },
+        "install": { "enum": ["automatic", "explicit", "stylesheet"] },
+        "composition": { "$ref": "#/$defs/stringArray" }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["kind", "path"],
+      "properties": {
+        "kind": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "path": { "type": "string", "pattern": "^(?:[A-Z][A-Z0-9_]*|docs/[A-Z][A-Z0-9_]*)\\.md$" }
+      },
+      "additionalProperties": false
+    },
+    "qualityMode": {
+      "type": "object",
+      "required": ["mode", "command", "requiredGates"],
+      "properties": {
+        "mode": { "enum": ["full-audit", "delivery"] },
+        "command": { "type": "string", "minLength": 1 },
+        "requiredGates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "stringArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonemptyString" }
+    }
+  }
+}

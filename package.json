@@ -1,6 +1,6 @@
 {
   "name": "jquery-star",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "HTML-first reactive framework for server-rendered applications, powered by jQuery",
   "type": "module",
   "license": "MIT",
@@ -17,15 +17,15 @@
   },
   "jqstar": {
     "entrypoints": {
-      ".": "compatibility-stable-for-0.x",
-      "./core": "0.4-preview",
-      "./csp": "0.4-preview",
-      "./datastar": "0.4-preview",
-      "./datastar/testing": "0.4-preview",
-      "./htmx": "0.4-preview",
-      "./testing": "0.4-preview",
-      "./turbo": "0.4-preview",
-      "./ui": "0.4-preview"
+      ".": "stable",
+      "./core": "stable",
+      "./csp": "stable",
+      "./datastar": "stable",
+      "./datastar/testing": "stable",
+      "./htmx": "stable",
+      "./testing": "stable",
+      "./turbo": "stable",
+      "./ui": "stable"
     }
   },
   "engines": {
@@ -147,22 +147,28 @@
     "jqstar": "bin/jqstar.mjs"
   },
   "files": [
+    "CHANGELOG.md",
     "bin",
     "demo-dist/site.br",
     "deploy",
     "dist",
     "!dist/types",
     "docs/BACKEND.md",
+    "docs/COMPATIBILITY.md",
     "docs/COMPONENT_ARCHITECTURE.md",
-    "docs/COMPONENT_RESEARCH.md",
     "docs/CSP_EXPRESSIONS.md",
     "docs/INTEROPERABILITY.md",
+    "docs/JQUERY_ECOSYSTEM.md",
+    "docs/JQUERY_MOBILE_MIGRATION.md",
+    "docs/JQUERY_UI_MIGRATION.md",
     "docs/SELF_HOSTING.md",
-    "docs/security/CSP_THREAT_MODEL.md",
     "!docs/README.md",
     "LICENSE",
+    "MIGRATING_TO_1.md",
     "README.md",
+    "RELEASING.md",
     "SECURITY.md",
+    "SUPPORT.md",
     "registry",
     "registry.json",
     "schema",
@@ -170,6 +176,8 @@
     "!schema/jquery-ecosystem.schema.json",
     "!schema/jquery-mobile-migration.schema.json",
     "!schema/jquery-ui-migration.schema.json",
+    "!schema/release-candidate.schema.json",
+    "!schema/release-contract.schema.json",
     "server-dist"
   ],
   "scripts": {
@@ -213,6 +221,10 @@
     "quality:tool:qunit": "qunit --help",
     "quality:census": "node scripts/quality/verify-production-census.mjs",
     "registry:list": "node ./bin/jqstar.mjs list",
+    "release:candidate": "node scripts/release/candidate.mjs",
+    "release:handoff": "node scripts/release/handoff.mjs",
+    "release:prepare": "node scripts/release/prepare.mjs",
+    "release:prove": "node scripts/release/prove.mjs",
     "publish:pages": "npm run check && npm run test:package && npm run build:pages && gh-pages -d demo-dist -m \"Publish jqstar catalog\"",
     "test": "npm run test:unit",
     "test:browser:quality": "node scripts/quality-browser.mjs",

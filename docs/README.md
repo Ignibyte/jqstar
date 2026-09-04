@@ -30,6 +30,12 @@ The package has two public layers:
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [INTEROPERABILITY.md](INTEROPERABILITY.md): approved Turbo and htmx versions, external render
   state machine, event mappings, preservation, ownership, and downstream bridge requirements.
+- [COMPATIBILITY.md](COMPATIBILITY.md): stable 1.0 entries, environments, version boundaries,
+  deprecation policy, and executable evidence map.
+- [../MIGRATING_TO_1.md](../MIGRATING_TO_1.md): complete 0.1-to-1.0 package migration.
+- [../SUPPORT.md](../SUPPORT.md): maintained release lines and support expectations.
+- [../RELEASING.md](../RELEASING.md): clean candidate proof, publication authorization boundary,
+  verification, and rollback.
 - [JQUERY_ECOSYSTEM.md](JQUERY_ECOSYSTEM.md): current jQuery project statuses, package boundaries,
   migration roles, naming, and independent-project policy.
 - [JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md): exact jQuery UI coexistence ownership, complete
@@ -49,25 +55,26 @@ The package has two public layers:
 
 ## Fast orientation
 
-| Area             | Source                                        | Purpose                                                                            |
-| ---------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Root entry       | `src/index.ts`                                | Auto-installs the compatibility core + Datastar + UI composition.                  |
-| Modular entries  | `src/core.ts`, `src/ui.ts`, `src/datastar.ts` | Side-effect-free 0.4 preview installers/plugins and isolated types.                |
-| Runtime          | `src/runtime.ts`                              | Creates applications, state, effects, rules, actions, and lifecycle cleanup.       |
-| Kernel           | `src/kernel.ts`                               | Owns one document host, actions, applications, resources, and disposal.            |
-| Render adapter   | `src/render-adapter.ts`                       | Coordinates external DOM commits, preservation, incoming boot, and barriers.       |
-| Testing adapters | `src/testing/`, `src/datastar/testing.ts`     | Explicit-realm harness, fixtures, and runner-neutral conformance.                  |
-| Declarative mode | `src/declarative.ts`                          | Compiles `data-*` attributes into application behavior.                            |
-| Expressions      | `src/expression.ts`, `src/csp/`, `src/csp.ts` | Keeps trusted JavaScript as the root default and publishes the finite CSP profile. |
-| Reactivity       | `src/reactivity.ts`                           | Owned effects, dependency tracking, and contained microtask scheduling.            |
-| Requests         | `src/fetch.ts`                                | Backend actions, cancellation, retries, JSON, and SSE response handling.           |
-| Patching         | `src/patch.ts`, `src/sse.ts`                  | Transactional DOM/signal patches, preservation, and SSE parsing.                   |
-| UI behavior      | `src/ui/`                                     | Reusable accessible component controllers.                                         |
-| Source registry  | `registry.json`, `registry/`                  | Copy-in HTML components and composed blocks.                                       |
-| Registry CLI     | `bin/jqstar.mjs`                              | `init`, `list`, `add`, and `doctor`.                                               |
-| Website and lab  | `example/`                                    | Native docs, agent corpus, WebMCP adapter, and end-to-end integration proof.       |
-| Proof backend    | `server/`                                     | Node HTTP routes using the official Datastar SDK.                                  |
-| Tests            | `test/`, `e2e/`                               | Unit, integration, server, browser, responsive, and accessibility evidence.        |
+| Area             | Source                                              | Purpose                                                                            |
+| ---------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Root entry       | `src/index.ts`                                      | Auto-installs the compatibility core + Datastar + UI composition.                  |
+| Modular entries  | `src/core.ts`, `src/ui.ts`, `src/datastar.ts`       | Stable side-effect-free installers/plugins and isolated types.                     |
+| Runtime          | `src/runtime.ts`                                    | Creates applications, state, effects, rules, actions, and lifecycle cleanup.       |
+| Kernel           | `src/kernel.ts`                                     | Owns one document host, actions, applications, resources, and disposal.            |
+| Render adapter   | `src/render-adapter.ts`                             | Coordinates external DOM commits, preservation, incoming boot, and barriers.       |
+| Testing adapters | `src/testing/`, `src/datastar/testing.ts`           | Explicit-realm harness, fixtures, and runner-neutral conformance.                  |
+| Declarative mode | `src/declarative.ts`                                | Compiles `data-*` attributes into application behavior.                            |
+| Expressions      | `src/expression.ts`, `src/csp/`, `src/csp.ts`       | Keeps trusted JavaScript as the root default and publishes the finite CSP profile. |
+| Reactivity       | `src/reactivity.ts`                                 | Owned effects, dependency tracking, and contained microtask scheduling.            |
+| Requests         | `src/fetch.ts`                                      | Backend actions, cancellation, retries, JSON, and SSE response handling.           |
+| Patching         | `src/patch.ts`, `src/sse.ts`                        | Transactional DOM/signal patches, preservation, and SSE parsing.                   |
+| UI behavior      | `src/ui/`                                           | Reusable accessible component controllers.                                         |
+| Source registry  | `registry.json`, `registry/`                        | Copy-in HTML components and composed blocks.                                       |
+| Registry CLI     | `bin/jqstar.mjs`                                    | `init`, `list`, `add`, and `doctor`.                                               |
+| Website and lab  | `example/`                                          | Native docs, agent corpus, WebMCP adapter, and end-to-end integration proof.       |
+| Proof backend    | `server/`                                           | Node HTTP routes using the official Datastar SDK.                                  |
+| Tests            | `test/`, `e2e/`                                     | Unit, integration, server, browser, responsive, and accessibility evidence.        |
+| Release contract | `quality/release-contract.json`, `scripts/release/` | Stable surface and non-publishing candidate proof.                                 |
 
 ## Current invariants
 

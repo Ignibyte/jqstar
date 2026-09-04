@@ -55,13 +55,17 @@ try {
   if (!docsHead.ok || docsHead.headers.get("content-type") !== "text/html; charset=utf-8") {
     throw new Error("The self-hosted documentation HEAD contract failed.");
   }
-  const agentResources = [
+  const publicResources = [
     ["/docs/agents/", "text/html; charset=utf-8", "Agent-first parity:"],
+    ["/docs/compatibility/", "text/html; charset=utf-8", "Stable package entries"],
+    ["/docs/migration/", "text/html; charset=utf-8", "Migrate to 1.0"],
+    ["/docs/security/", "text/html; charset=utf-8", "Application responsibilities"],
+    ["/docs/download/", "text/html; charset=utf-8", "reviewed candidate tarball"],
     ["/llms.txt", "text/plain; charset=utf-8", "# jQStar"],
     ["/llms-full.txt", "text/plain; charset=utf-8", "@starfederation/datastar-sdk"],
     ["/jqstar-agent-index.json", "application/json; charset=utf-8", '"jqstar-agent-index/1"'],
   ];
-  for (const [path, contentType, marker] of agentResources) {
+  for (const [path, contentType, marker] of publicResources) {
     const response = await fetch(`${origin}${path}`);
     const body = await response.text();
     const head = await fetch(`${origin}${path}`, { method: "HEAD" });

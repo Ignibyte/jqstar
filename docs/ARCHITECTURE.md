@@ -44,11 +44,12 @@ expression engine remains permanently claimed and cannot be installed into anoth
 assigned to later extension tickets.
 
 The package has six JavaScript boundaries. The root is auto-installing ESM/CommonJS and the only UMD
-global. `core`, `ui`, `datastar`, `testing`, and `datastar/testing` are side-effect-free
-ESM/CommonJS preview entries with isolated declarations. Core declarations return a typed installed
-jQuery value and do not augment global jQuery; only root declarations retain ambient augmentation.
-Generic testing imports core but no DOM implementation, runner, UI, or Datastar code. Datastar test
-fixtures stay in the separate SDK-backed entry. UI CSS remains a separate explicit import.
+global. `core`, `ui`, `datastar`, `csp`, `testing`, and `datastar/testing` are stable,
+side-effect-free ESM/CommonJS entries with isolated declarations. Core declarations return a typed
+installed jQuery value and do not augment global jQuery; only root declarations retain ambient
+augmentation. Generic testing imports core but no DOM implementation, runner, UI, or Datastar code.
+Datastar test fixtures stay in the separate SDK-backed entry. UI CSS remains a separate explicit
+import.
 
 ## jQuery ecosystem boundary
 

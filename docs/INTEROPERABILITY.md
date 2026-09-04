@@ -1,6 +1,6 @@
 # Turbo and htmx interoperability contract
 
-This contract covers the shipped `jquery-star/turbo` and `jquery-star/htmx` previews. The machine
+This contract covers the stable `jquery-star/turbo` and `jquery-star/htmx` entries. The machine
 authority is [`quality/external-bridge-contract.json`](../quality/external-bridge-contract.json).
 
 ## Ownership
@@ -162,7 +162,7 @@ values.
 | Operation observations              | One render ID covers each real mutation and ends in one redacted outcome.                |
 | Disposal                            | Plugin listeners and active operations release idempotently without changing host state. |
 
-Tickets 0036 and 0037 rerun this matrix for the shipped Turbo and htmx previews. Both boundary
+Tickets 0036 and 0037 rerun this matrix for the shipped Turbo and htmx entries. Both boundary
 versions pass the bridge suite in Chromium, Firefox, and WebKit.
 
 ## htmx troubleshooting

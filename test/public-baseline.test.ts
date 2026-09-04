@@ -72,6 +72,10 @@ interface PackageManifest {
   peerDependencies: { jquery: string };
 }
 
+interface ReleaseContract {
+  version: string;
+}
+
 interface QualityBudgets {
   package: { files: number; packedBytes: number; unpackedBytes: number };
   cspPackage: { packedBytes: number; unpackedBytes: number };
@@ -89,6 +93,7 @@ function readJSON<T>(path: string): T {
 }
 
 const baseline = readJSON<PublicBaseline>("quality/public-baseline.json");
+const release = readJSON<ReleaseContract>("quality/release-contract.json");
 const manifest = readJSON<PackageManifest>("package.json");
 const budgets = readJSON<QualityBudgets>("config/quality-budgets.json");
 
@@ -121,7 +126,8 @@ function exportedNames(typeOnly: boolean): string[] {
 describe("public 0.1 baseline", () => {
   it("freezes the root, declaration, jQuery, UI, and action names", () => {
     expect(baseline.schema).toBe("jqstar-public-baseline/1");
-    expect(baseline.version).toBe($.star.version);
+    expect(baseline.version).toBe("0.1.0");
+    expect($.star.version).toBe(release.version);
     expect(baseline.runtime.autoInstall).toBe(true);
     expect(typeof $.fn.star).toBe("function");
     expect(typeof $.star).toBe("object");
@@ -173,7 +179,7 @@ describe("public 0.1 baseline", () => {
   });
 
   it("matches the published package, support matrix, and measured budget envelope", () => {
-    expect(manifest.version).toBe(baseline.version);
+    expect(manifest.version).toBe(release.version);
     expect(Object.keys(manifest.exports).sort()).toEqual(baseline.package.exports);
     expect(manifest.peerDependencies.jquery).toBe(baseline.support.jquery);
     expect(manifest.engines.node).toBe(baseline.support.node);

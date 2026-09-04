@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compatibility · jQStar</title>
+    <meta
+      name="description"
+      content="Stable jQStar 1.0 package entries, supported environments, and compatibility policy."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Compatibility · jQStar" />
+    <meta property="og:description" content="The tested jQStar 1.0 support contract." />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Compatibility</h1>
+      <p class="docs-lede">
+        jQStar 1.0 stabilizes the root package, modular runtime entries, testing harnesses, CSP
+        runtime, and Turbo and htmx bridges. The package is tested from its packed tarball, not from
+        repository-only imports.
+      </p>
+
+      <h2>Stable package entries</h2>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Entry</th>
+            <th scope="col">Formats</th>
+            <th scope="col">Installation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>jquery-star</code></th>
+            <td>ESM, CommonJS, UMD</td>
+            <td>Automatic root composition</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/core</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/ui</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit plugin</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/datastar</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit plugin</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/csp</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit runtime</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/testing</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Test-only import</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/datastar/testing</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Test-only import</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/turbo</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit bridge</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/htmx</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit bridge</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/ui.css</code></th>
+            <td>CSS</td>
+            <td>Optional stylesheet</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Supported environments</h2>
+      <ul>
+        <li>jQuery <code>&gt;=4.0.0 &lt;5</code>.</li>
+        <li>Node 24 or newer and npm 11 or newer for Node consumers and project tooling.</li>
+        <li>Current installed Chromium, Firefox, and WebKit browser fixtures.</li>
+        <li>ESM, CommonJS, browser modules, and the root UMD/no-build distribution.</li>
+        <li>Ordinary HTML documents and same-origin frame documents.</li>
+      </ul>
+      <p>
+        Shadow-root applications are not supported. Turbo support is
+        <code>&gt;=8.0.21 &lt;8.1.0</code>; htmx support is <code>&gt;=2.0.0 &lt;2.1.0</code>. Both
+        hosts are optional and injected explicitly.
+      </p>
+
+      <h2>Version boundaries</h2>
+      <p>
+        The npm package version is <code>1.0.0</code>. The plugin registrar remains independently
+        versioned as <code>0.1.0</code>, and the finite CSP grammar remains
+        <code>jqstar-csp-expression/1</code>. A package release does not silently change either
+        contract.
+      </p>
+      <p>
+        The root entry retains the recorded 0.1 behavior, including real jQuery, trusted JavaScript
+        expressions, and the default Datastar request profile. Read the
+        <a href="%BASE_URL%docs/migration/">1.0 migration guide</a> for additions and unchanged
+        defaults.
+      </p>
+
+      <h2>Lifecycle policy</h2>
+      <p>
+        The current 1.x minor receives fixes. The previous 1.x minor receives security fixes for six
+        months after the next minor ships. Unsupported entries fail explicitly; they are not kept
+        alive through hidden aliases. Security handling is described in the
+        <a href="%BASE_URL%docs/security/">security policy</a>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

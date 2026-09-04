@@ -195,6 +195,10 @@ async function proveSelfHosted(extracted) {
     );
     for (const [path, contentType, marker] of [
       ["/docs/agents/", "text/html; charset=utf-8", "Agent-first parity:"],
+      ["/docs/compatibility/", "text/html; charset=utf-8", "Stable package entries"],
+      ["/docs/migration/", "text/html; charset=utf-8", "Migrate to 1.0"],
+      ["/docs/security/", "text/html; charset=utf-8", "Application responsibilities"],
+      ["/docs/download/", "text/html; charset=utf-8", "reviewed candidate tarball"],
       ["/llms.txt", "text/plain; charset=utf-8", "# jQStar"],
       ["/llms-full.txt", "text/plain; charset=utf-8", "@starfederation/datastar-sdk"],
       ["/jqstar-agent-index.json", "application/json; charset=utf-8", '"jqstar-agent-index/1"'],

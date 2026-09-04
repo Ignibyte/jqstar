@@ -61,7 +61,7 @@ function packageReport() {
       "./datastar/testing",
       "./ui.css",
     ],
-    version: "0.1.0",
+    version: "1.0.0",
     documentation: [...packageDocumentationPaths],
   };
   checks[8].detail = {
@@ -107,7 +107,7 @@ function packageReport() {
     csp: {
       schema: "jqstar-csp-browser/1",
       policy: "default-src 'none'",
-      packageVersion: "0.1.0",
+      packageVersion: "1.0.0",
       grammarVersion: "jqstar-csp-expression/1",
       corpusDigest: "a".repeat(64),
       sourceDigest: "b".repeat(64),
@@ -191,7 +191,7 @@ function packageReport() {
     mode: "package",
     status: "pass",
     package: {
-      filename: "jquery-star-0.1.0.tgz",
+      filename: "jquery-star-1.0.0.tgz",
       files: 1,
       packedBytes: 1,
       unpackedBytes: 1,
@@ -351,6 +351,27 @@ describe("package and release quality contracts", () => {
           if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
         }
       }
+    } finally {
+      await rm(parent, { force: true, recursive: true });
+    }
+  }, 10_000);
+
+  it("removes an owned release workspace when its supervised command times out", async () => {
+    const parent = await mkdtemp(join(resolve(root, ".git/jqstar"), "release-timeout-"));
+    try {
+      const result = await runChild({
+        command: process.execPath,
+        args: [resolve(root, "test/fixtures/owned-temporary-directory-signal.mjs"), parent],
+        cwd: root,
+        timeoutMs: 500,
+        env: process.env,
+      });
+      expect(result.timedOut).toBe(true);
+      expect(result.signal).toBe("SIGTERM");
+      const directory = result.stdout.trim();
+      expect(directory).toContain(parent);
+      await expect(access(directory)).rejects.toMatchObject({ code: "ENOENT" });
+      expect(await readdir(parent)).toEqual([]);
     } finally {
       await rm(parent, { force: true, recursive: true });
     }

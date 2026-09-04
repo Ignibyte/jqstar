@@ -68,7 +68,10 @@ interface MigrationContract {
       usage: string;
       version: string;
     };
-    modernPackages: { jquery: { integrity: string; shasum: string; version: string } };
+    modernPackages: {
+      jquery: { integrity: string; shasum: string; version: string };
+      jqueryStar: { version: string };
+    };
   };
   referenceApp: {
     capabilities: string[];
@@ -157,7 +160,7 @@ describe("jQuery Mobile migration authority", () => {
       version: "1.4.1",
     });
     expect(contract.policy.modernPackages.jquery).toMatchObject({ version: "4.0.0" });
-    expect(packageManifest.version).toBe("0.1.0");
+    expect(packageManifest.version).toBe(contract.policy.modernPackages.jqueryStar.version);
   });
 
   it("maps all 95 official API entries to one detailed owner group", () => {

@@ -64,11 +64,9 @@ const required = [
   "dist/ui.js",
   "docs/BACKEND.md",
   "docs/COMPONENT_ARCHITECTURE.md",
-  "docs/COMPONENT_RESEARCH.md",
   "docs/CSP_EXPRESSIONS.md",
   "docs/INTEROPERABILITY.md",
   "docs/SELF_HOSTING.md",
-  "docs/security/CSP_THREAT_MODEL.md",
   "SECURITY.md",
   "registry.json",
   "registry/blocks/operations-dashboard.html",
@@ -158,6 +156,10 @@ const siteBundle = JSON.parse(
 const bundledFiles = new Map(siteBundle.files);
 for (const path of [
   "docs/agents/index.html",
+  "docs/compatibility/index.html",
+  "docs/migration/index.html",
+  "docs/security/index.html",
+  "docs/download/index.html",
   "docs/ecosystem/index.html",
   "llms.txt",
   "llms-full.txt",

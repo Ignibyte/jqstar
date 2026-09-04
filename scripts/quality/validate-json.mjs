@@ -38,6 +38,7 @@ async function main() {
     "quality/jquery-mobile-migration.json",
     "schema/jquery-mobile-migration.schema.json",
   );
+  await validateInstance("quality/release-contract.json", "schema/release-contract.schema.json");
   const cspManifests = [
     "test/fixtures/csp/contract.json",
     "test/fixtures/csp/accepted.json",
@@ -52,7 +53,7 @@ async function main() {
   const schemas = jsonFiles.filter((path) => path.endsWith(".schema.json"));
   for (const schema of schemas) createSchemaValidator(await readJSON(schema));
   process.stdout.write(
-    `JSON and schemas: ${jsonFiles.length} files parsed, ${7 + cspManifests.length} instances and ${schemas.length} schemas validated\n`,
+    `JSON and schemas: ${jsonFiles.length} files parsed, ${8 + cspManifests.length} instances and ${schemas.length} schemas validated\n`,
   );
 }
 

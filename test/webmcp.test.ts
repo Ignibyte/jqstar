@@ -54,7 +54,7 @@ describe("jQStar WebMCP", () => {
     expect(page).toMatchObject({
       schema: "jqstar-webmcp-result/1",
       tool: "get_jqstar_page",
-      packageVersion: "0.1.0",
+      packageVersion: "1.0.0",
       citations: ["https://ignibyte.github.io/jqstar/"],
       result: { id: "framework-home" },
     });

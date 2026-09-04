@@ -54,8 +54,8 @@ application with `$(root).star(definition)` or boot declarative markup with `$.s
 
 The package exports:
 
-- an auto-installing compatibility root plus side-effect-free `core`, `ui`, `datastar`, `testing`,
-  `datastar/testing`, `htmx`, and `turbo` 0.4 preview entries; only the root composes runtime
+- an auto-installing compatibility root plus stable, side-effect-free `core`, `ui`, `datastar`,
+  `csp`, `testing`, `datastar/testing`, `htmx`, and `turbo` entries; only the root composes runtime
   plugins and publishes a UMD global
 - application lifecycle and typed definitions
 - the trusted expression-engine factory, installer capability, structured failures, and cache
@@ -111,6 +111,10 @@ profile means no dynamic code construction in the shipped CSP entry graph, requi
 and trusted installed extensions, and is not a sandbox. The `jquery-star/csp` subpath provides the
 explicit installer and engine factory. The exact packed entry is tested under a strict response
 policy in Chromium, Firefox, and WebKit.
+
+The 1.0 website publishes compatibility, migration, security, and download routes from the same
+self-hosted archive. Download copy distinguishes the prepared candidate from an npm or Git tag and
+does not turn candidate preparation into a publication claim.
 
 ## Non-goals
 
@@ -171,6 +175,13 @@ files are absent; local development and GitHub Pages retain ordinary nested HTML
 brain, quality, accessibility-release, and ticket documents remain source-repository material. Node
 24 or newer is required.
 
+Version `1.0.0` is the first stable platform contract. `package.json` is the runtime version source;
+`quality/release-contract.json` records the stable entries and candidate policy. Candidate tooling
+under `scripts/release/` binds two reproducible tarball builds, installed consumers, complete
+quality runs, prerequisite evidence, and a non-publishing handoff to one clean committed source
+tree. Generated receipts live below `.git/jqstar/releases/` and are never package inputs. Tagging,
+pushing, publishing, signing, and release creation require separate explicit authorization.
+
 ## Compatibility policy
 
 `quality/public-baseline.json` is the executable 0.1 compatibility index. Public root exports,
@@ -184,9 +195,9 @@ public through the root entry, including transactional directive, helper, reques
 protocol-profile, and operation-observer registration. The root entry also publishes kernel and
 application operation subscriptions; request descriptor, outcome, and middleware contracts; protocol
 request/response, matcher, lease, and capability contracts; and typed errors. `core`, `ui`,
-`datastar`, `testing`, `datastar/testing`, `htmx`, and `turbo` are published and package-tested as
-0.4 previews; ticket 0017 owns their stable 1.0 designation. Source-only modules and undeclared
-package subpaths are internal until a later ticket publishes and tests them.
+`datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and `turbo` are stable 1.0 package
+contracts. Source-only modules and undeclared package subpaths remain internal until a later ticket
+publishes and tests them.
 
 The supported document host is an ordinary HTML document, including an explicitly supplied
 same-origin frame document, with one live jQStar kernel and one canonical jQuery instance. A second

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Download · jQStar</title>
+    <meta
+      name="description"
+      content="Install or verify jQStar without confusing a release candidate with a publication."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Download · jQStar" />
+    <meta
+      property="og:description"
+      content="jQStar package, no-build, and source installation paths."
+    />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Download</h1>
+      <p class="docs-lede">
+        This site describes the jQStar 1.0.0 release candidate. A candidate receipt proves local
+        packed bytes; it does not mean that version has been published to npm or tagged in Git.
+      </p>
+
+      <h2>Install the current npm release</h2>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>Terminal</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>npm install jquery-star jquery</code></pre>
+      </div>
+      <p>
+        npm resolves the currently published package. Check the returned version before relying on
+        1.0 behavior; this page does not claim that an unpublished candidate is available there.
+      </p>
+
+      <h2>Use a reviewed candidate tarball</h2>
+      <p>
+        A maintainer can provide the exact <code>jquery-star-1.0.0.tgz</code> named by the immutable
+        candidate receipt. Verify both hashes before installation.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>Terminal</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>shasum -a 256 jquery-star-1.0.0.tgz
+shasum -a 512 jquery-star-1.0.0.tgz
+npm install ./jquery-star-1.0.0.tgz jquery</code></pre>
+      </div>
+
+      <h2>Package formats</h2>
+      <p>
+        The package contains ESM and CommonJS entries, a root UMD build for no-build applications,
+        declarations and source maps, optional CSS, the <code>jqstar</code> CLI, registry recipes,
+        and a self-hosted website archive. jQuery remains an external peer; it is not vendored.
+      </p>
+
+      <h2>Verify an authorized publication</h2>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>Terminal</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>npm view jquery-star@1.0.0 --json
+git rev-parse v1.0.0^{commit}
+gh release view v1.0.0 --json tagName,targetCommitish,isDraft,isPrerelease,url</code></pre>
+      </div>
+      <p>
+        Compare registry integrity, tag target, release assets, and receipt hashes. Publication,
+        tagging, signing, and announcements require separate maintainer authorization.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

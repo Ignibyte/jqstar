@@ -49,6 +49,10 @@ Check the local service before configuring the reverse proxy:
 ```sh
 curl --fail --silent http://127.0.0.1:4173/health
 curl --fail --silent http://127.0.0.1:4173/docs/
+curl --fail --silent http://127.0.0.1:4173/docs/compatibility/
+curl --fail --silent http://127.0.0.1:4173/docs/migration/
+curl --fail --silent http://127.0.0.1:4173/docs/security/
+curl --fail --silent http://127.0.0.1:4173/docs/download/
 curl --fail --silent http://127.0.0.1:4173/docs/agents/
 curl --fail --silent http://127.0.0.1:4173/llms.txt
 curl --fail --silent http://127.0.0.1:4173/llms-full.txt

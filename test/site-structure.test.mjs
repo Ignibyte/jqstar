@@ -8,6 +8,10 @@ const publicRoutes = [
   "example/index.html",
   "example/docs/index.html",
   "example/docs/agents/index.html",
+  "example/docs/compatibility/index.html",
+  "example/docs/migration/index.html",
+  "example/docs/security/index.html",
+  "example/docs/download/index.html",
   "example/docs/datastar/index.html",
   "example/docs/api/index.html",
   "example/docs/csp/index.html",
@@ -101,8 +105,8 @@ describe("jQStar website structure", () => {
     expect(full).toContain("@starfederation/datastar-sdk");
     expect(JSON.parse(index)).toMatchObject({
       schema: "jqstar-agent-index/1",
-      corpusVersion: 3,
-      package: { name: "jquery-star", version: "0.1.0" },
+      corpusVersion: 4,
+      package: { name: "jquery-star", version: "1.0.0" },
     });
   });
 });

@@ -5,6 +5,10 @@ import { installWebMcpHarness } from "./fixtures/webmcp-harness";
 const documentationRoutes = [
   ["/docs/", "Introduction"],
   ["/docs/agents/", "Agent support"],
+  ["/docs/compatibility/", "Compatibility"],
+  ["/docs/migration/", "Migrate to 1.0"],
+  ["/docs/security/", "Security"],
+  ["/docs/download/", "Download"],
   ["/docs/datastar/", "Datastar Integration"],
   ["/docs/api/", "Core API"],
   ["/docs/csp/", "CSP expressions"],
@@ -82,6 +86,31 @@ test("every documentation route loads directly with shared navigation", async ({
     ).toBeVisible();
     await expect(page.locator('[data-doc-link][aria-current="page"]')).toHaveCount(1);
   }
+});
+
+test("release pages distinguish stable contracts from publication state", async ({ page }) => {
+  await page.goto("/docs/compatibility/");
+  await expect(page.getByRole("heading", { name: "Stable package entries" })).toBeVisible();
+  await expect(page.getByText("jquery-star/datastar/testing", { exact: true })).toBeVisible();
+
+  await page.goto("/docs/migration/");
+  await expect(page.getByText("The 1.0 root entry preserves", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("jQStar does not bundle either archived runtime", { exact: false }),
+  ).toBeVisible();
+
+  await page.goto("/docs/security/");
+  await expect(page.getByRole("link", { name: "private vulnerability report" })).toHaveAttribute(
+    "href",
+    "https://github.com/Ignibyte/jqstar/security/advisories/new",
+  );
+
+  await page.goto("/docs/download/");
+  await expect(page.locator(".docs-lede")).toContainText("does not mean");
+  await expect(page.getByText("npm install jquery-star jquery", { exact: true })).toBeVisible();
+
+  const axe = await new AxeBuilder({ page }).include("main").analyze();
+  expect(axe.violations).toEqual([]);
 });
 
 test("the CSP guide keeps its shipped status and narrow security claim explicit", async ({
