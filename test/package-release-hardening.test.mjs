@@ -56,6 +56,7 @@ function packageReport() {
       "./ui",
       "./datastar",
       "./testing",
+      "./htmx",
       "./turbo",
       "./datastar/testing",
       "./ui.css",
@@ -85,6 +86,8 @@ function packageReport() {
       "typescript-csp-bundler",
     ],
     peerDependencies: {
+      htmxRange: ">=2.0.0 <2.1.0",
+      htmxOptional: true,
       jqueryRange: ">=4.0.0 <5",
       turboRange: ">=8.0.21 <8.1.0",
       turboOptional: true,
@@ -164,6 +167,14 @@ function packageReport() {
       gzipBudget: 1,
       modules: 1,
       externalDOMAndRunners: "absent",
+    },
+    htmx: {
+      bytes: 1,
+      budget: 1,
+      gzipBytes: 1,
+      gzipBudget: 1,
+      modules: 1,
+      hostPackage: "absent",
     },
     turbo: {
       bytes: 1,
@@ -469,12 +480,14 @@ describe("package and release quality contracts", () => {
       (report) => (report.checks[10].detail.engines[0].version = ""),
       (report) => delete report.checks[10].detail.lifecycle,
       (report) => delete report.checks[8].detail.peerDependencies.missing,
+      (report) => delete report.checks[8].detail.peerDependencies.htmxOptional,
       (report) => delete report.checks[8].detail.peerDependencies.turboOptional,
       (report) => (report.checks[8].detail.peerDependencies.incompatible.exitCode = 0),
       (report) => report.checks[8].detail.consumers.pop(),
       (report) => (report.checks[3].detail.ratchet.status = "fail"),
       (report) => report.checks[4].detail.documentation.pop(),
       (report) => report.checks[4].detail.documentation.push("docs/tickets/0044.md"),
+      (report) => delete report.checks[11].detail.htmx,
       (report) => delete report.checks[11].detail.turbo,
     ]) {
       const sabotaged = structuredClone(valid);

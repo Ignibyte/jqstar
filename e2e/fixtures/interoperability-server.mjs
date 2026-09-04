@@ -23,6 +23,7 @@ const hostAssets = new Map([
   ["/interop/assets/htmx-2.0.0.js", resolve(root, "node_modules/htmx-2-0-0/dist/htmx.min.js")],
   ["/interop/assets/htmx-2.0.10.js", resolve(root, "node_modules/htmx-2-0-10/dist/htmx.min.js")],
   ["/interop/recorder.js", resolve(root, "e2e/fixtures/interoperability-recorder.js")],
+  ["/interop/htmx-bridge.js", resolve(root, "e2e/fixtures/htmx-bridge-bootstrap.js")],
   ["/interop/turbo-bridge.js", resolve(root, "e2e/fixtures/turbo-bridge-bootstrap.js")],
 ]);
 const distribution = resolve(root, "dist");
@@ -38,12 +39,16 @@ function escapeHtml(value) {
   return value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 }
 
-function shell(host, version, route, content) {
+function shell(host, version, route, content, bridge = false) {
   const hostScript =
     host === "turbo"
       ? `<script type="importmap">{"imports":{"jquery":"/interop/assets/jquery-module.js"}}</script>
     <script type="module" src="/interop/turbo-bridge.js?version=${escapeHtml(version)}"></script>`
-      : `<script src="/interop/assets/htmx-${version}.js" defer></script>`;
+      : bridge
+        ? `<script type="importmap">{"imports":{"jquery":"/interop/assets/jquery-module.js"}}</script>
+    <script src="/interop/assets/htmx-${version}.js"></script>
+    <script type="module" src="/interop/htmx-bridge.js?version=${escapeHtml(version)}"></script>`
+        : `<script src="/interop/assets/htmx-${version}.js" defer></script>`;
   const bodyAttributes = host === "htmx" ? ' hx-boost="true" hx-target="#main"' : "";
   return `<!doctype html>
 <html lang="en">
@@ -104,7 +109,7 @@ function turboPage(version, route) {
   );
 }
 
-function htmxPage(version, route) {
+function htmxPage(version, route, bridge = false) {
   const label = route === "boosted" ? "new-placeholder" : "original";
   return shell(
     "htmx",
@@ -125,10 +130,10 @@ function htmxPage(version, route) {
       <aside id="adjacent">Anchor</aside>
       <button id="before-swap" hx-get="/interop/htmx/${version}/fragment/adjacent" hx-target="#adjacent" hx-swap="beforebegin">Before</button>
       <button id="after-swap" hx-get="/interop/htmx/${version}/fragment/adjacent" hx-target="#adjacent" hx-swap="afterend">After</button>
-      <div id="delete-target">Delete me</div>
+      <div id="delete-target" data-jqs>Delete me</div>
       <button id="delete-swap" hx-delete="/interop/htmx/${version}/fragment/empty" hx-target="#delete-target" hx-swap="delete">Delete</button>
       <button id="none-swap" hx-get="/interop/htmx/${version}/fragment/item" hx-target="#region" hx-swap="none">None</button>
-      <aside id="oob-target">Old out-of-band content</aside>
+      <aside id="oob-target" data-jqs>Old out-of-band content</aside>
       <button id="oob-swap" hx-get="/interop/htmx/${version}/fragment/oob" hx-target="#region" hx-swap="innerHTML">Out of band</button>
       <button id="cancel-swap" hx-get="/interop/htmx/${version}/fragment/inner" hx-target="#region">Cancel</button>
       <button id="no-content" hx-get="/interop/htmx/${version}/no-content" hx-target="#region">No content</button>
@@ -150,6 +155,7 @@ function htmxPage(version, route) {
       </form>
       <output id="form-result"></output>
     </main>`,
+    bridge,
   );
 }
 
@@ -254,7 +260,7 @@ const server = createServer(async (request, response) => {
       response,
       200,
       "text/html; charset=utf-8",
-      '<h1 id="boosted-result">Boosted document</h1>',
+      '<h1 id="boosted-result" data-jqs>Boosted document</h1>',
     );
     return;
   }
@@ -262,13 +268,14 @@ const server = createServer(async (request, response) => {
   const fragments = {
     "fragment/inner":
       '<section id="region-preserved" hx-preserve data-jqs data-jqs-preserve><label>Preserved <input id="preserved-input" data-focus-key="preserved-input" value="region-new-placeholder"></label></section><p id="inner-result" data-jqs>Inner replaced</p>',
-    "fragment/outer": '<section id="region"><p id="outer-result">Outer replaced</p></section>',
-    "fragment/item": '<li class="added-item">Added</li>',
-    "fragment/adjacent": '<aside class="adjacent-result">Adjacent</aside>',
+    "fragment/outer":
+      '<section id="region"><p id="outer-result" data-jqs>Outer replaced</p></section>',
+    "fragment/item": '<li class="added-item" data-jqs>Added</li>',
+    "fragment/adjacent": '<aside class="adjacent-result" data-jqs>Adjacent</aside>',
     "fragment/empty": "",
-    "fragment/form": '<span id="form-response">Submitted</span>',
+    "fragment/form": '<span id="form-response" data-jqs>Submitted</span>',
     "fragment/oob":
-      '<p id="oob-main">Main replacement</p><aside id="oob-target" hx-swap-oob="outerHTML">New out-of-band content</aside>',
+      '<p id="oob-main" data-jqs>Main replacement</p><aside id="oob-target" data-jqs hx-swap-oob="outerHTML">New out-of-band content</aside>',
   };
   if (Object.hasOwn(fragments, route)) {
     const proofHeaders =
@@ -278,7 +285,13 @@ const server = createServer(async (request, response) => {
   }
   const proofHeaders =
     route === "form" && request.method === "POST" ? await formProofHeaders(request) : {};
-  respond(response, 200, "text/html; charset=utf-8", htmxPage(version, route), proofHeaders);
+  respond(
+    response,
+    200,
+    "text/html; charset=utf-8",
+    htmxPage(version, route, url.searchParams.get("bridge") === "1"),
+    proofHeaders,
+  );
 });
 
 server.listen(port, "127.0.0.1", () => {

@@ -55,8 +55,8 @@ application with `$(root).star(definition)` or boot declarative markup with `$.s
 The package exports:
 
 - an auto-installing compatibility root plus side-effect-free `core`, `ui`, `datastar`, `testing`,
-  `datastar/testing`, and `turbo` 0.4 preview entries; only the root composes runtime plugins and
-  publishes a UMD global
+  `datastar/testing`, `htmx`, and `turbo` 0.4 preview entries; only the root composes runtime
+  plugins and publishes a UMD global
 - application lifecycle and typed definitions
 - the trusted expression-engine factory, installer capability, structured failures, and cache
   controls; explicit core installation selects the engine before document ownership
@@ -75,8 +75,8 @@ The package exports:
 - DOM patch operations backed by Idiomorph
 - a host-neutral external render adapter with exact preservation, incoming-root boot, and the full
   enhancement barrier
-- a frozen Turbo and htmx bridge contract with exact evidence ranges, plus a shipped optional Turbo
-  lifecycle bridge. The htmx bridge remains assigned to its separate ticket
+- a frozen Turbo and htmx bridge contract with exact evidence ranges, plus shipped optional
+  host-specific lifecycle bridges
 - transactional application setup, public terminal disposal reports, and explicit
   `data-jqs-preserve` roots
 - an explicit-realm, runner-neutral testing harness with bounded settling, deterministic response
@@ -143,7 +143,7 @@ test/                 Vitest unit and integration tests
 `docs/CSP_EXPRESSIONS.md`, `docs/security/CSP_THREAT_MODEL.md`, and `test/fixtures/csp/` are the
 versioned contract inputs for the shipped CSP parser, package entry, and browser proof.
 `docs/INTEROPERABILITY.md`, `quality/external-bridge-contract.json`, and the interoperability
-fixtures define the approved inputs for the shipped Turbo bridge and future htmx bridge.
+fixtures define the approved inputs for the shipped Turbo and htmx bridges.
 
 ## Dependency boundaries
 
@@ -151,9 +151,10 @@ fixtures define the approved inputs for the shipped Turbo bridge and future htmx
 - `json5` parses declarative signal and option values.
 - `idiomorph` performs state-preserving HTML morphs.
 - `@starfederation/datastar-sdk` defines the server event protocol.
-- `@hotwired/turbo >=8.0.21 <8.1.0` is an optional peer used only by `jquery-star/turbo`. Exact
-  Turbo 8.0.21/8.0.23 and htmx 2.0.0/2.0.10 aliases are development fixtures. Host code does not
-  enter a published jQStar bundle.
+- `@hotwired/turbo >=8.0.21 <8.1.0` is an optional peer used only by `jquery-star/turbo`.
+- `htmx.org >=2.0.0 <2.1.0` is an optional peer used only by `jquery-star/htmx`. Exact Turbo
+  8.0.21/8.0.23 and htmx 2.0.0/2.0.10 aliases are development fixtures. Host code does not enter a
+  published jQStar bundle.
 - QUnit 2.26.0 is an exact installed-package test consumer. jQuery Migrate, jQuery UI, jQuery
   Mobile, standalone Sizzle, and QUnit are absent from runtime dependencies and published bundle
   graphs. `@types/sizzle` is only a transitive development declaration from `@types/jquery`.
@@ -162,13 +163,13 @@ fixtures define the approved inputs for the shipped Turbo bridge and future htmx
 ## Release shape
 
 The npm package exposes the compatibility root as ESM, CommonJS, and UMD; modular
-core/UI/Datastar/testing/Turbo entries as ESM and CommonJS; matched declarations and source maps;
-explicit compiled UI CSS; the CLI; registry sources; schema; deployment examples; the public guides
-linked from the package README; the static agent corpus and guide; and one deterministic Brotli
-archive of the self-hosted website. The server uses that archive only when loose deployment files
-are absent; local development and GitHub Pages retain ordinary nested HTML routes. Repository brain,
-quality, accessibility-release, and ticket documents remain source-repository material. Node 24 or
-newer is required.
+core/UI/Datastar/testing/htmx/Turbo entries as ESM and CommonJS; matched declarations and source
+maps; explicit compiled UI CSS; the CLI; registry sources; schema; deployment examples; the public
+guides linked from the package README; the static agent corpus and guide; and one deterministic
+Brotli archive of the self-hosted website. The server uses that archive only when loose deployment
+files are absent; local development and GitHub Pages retain ordinary nested HTML routes. Repository
+brain, quality, accessibility-release, and ticket documents remain source-repository material. Node
+24 or newer is required.
 
 ## Compatibility policy
 
@@ -183,9 +184,9 @@ public through the root entry, including transactional directive, helper, reques
 protocol-profile, and operation-observer registration. The root entry also publishes kernel and
 application operation subscriptions; request descriptor, outcome, and middleware contracts; protocol
 request/response, matcher, lease, and capability contracts; and typed errors. `core`, `ui`,
-`datastar`, `testing`, `datastar/testing`, and `turbo` are published and package-tested as 0.4
-previews; ticket 0017 owns their stable 1.0 designation. Source-only modules and undeclared package
-subpaths are internal until a later ticket publishes and tests them.
+`datastar`, `testing`, `datastar/testing`, `htmx`, and `turbo` are published and package-tested as
+0.4 previews; ticket 0017 owns their stable 1.0 designation. Source-only modules and undeclared
+package subpaths are internal until a later ticket publishes and tests them.
 
 The supported document host is an ordinary HTML document, including an explicitly supplied
 same-origin frame document, with one live jQStar kernel and one canonical jQuery instance. A second

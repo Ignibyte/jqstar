@@ -105,6 +105,7 @@ const entrypoints = [
     config: "config/api-extractor.testing.json",
     declaration: "dist/testing.d.ts",
   },
+  { name: "htmx", config: "config/api-extractor.htmx.json", declaration: "dist/htmx.d.ts" },
   { name: "turbo", config: "config/api-extractor.turbo.json", declaration: "dist/turbo.d.ts" },
   {
     name: "datastar-testing",

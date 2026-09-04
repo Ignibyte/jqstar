@@ -281,7 +281,9 @@ lifecycle transitions, overlap rejection, cleanup deduplication, failure settlem
 matching, redaction, concurrent disposal, and a real public render-adapter commit.
 `test/property/external-render-contract.property.test.ts` generates unique preservation matches and
 disjoint terminal operation sequences. `test/property/turbo-bridge.property.test.ts` generates
-bounded no-mutation traces and disjoint Frame completion orders against the shipped bridge.
+bounded no-mutation traces and disjoint Frame completion orders.
+`test/property/htmx-bridge.property.test.ts` generates bounded request-only traces and disjoint
+mutation completion orders against the shipped htmx bridge.
 
 `e2e/interoperability-baseline.spec.ts` uses the actual Turbo 8.0.21/8.0.23 and htmx 2.0.0/2.0.10
 packages through a same-origin progressive server fixture. The desktop Chromium, Firefox, and WebKit
@@ -291,9 +293,11 @@ inner/outer/delete/adjacent/out-of-band/none/boost/history/form/cancel/no-conten
 Semantic records contain event categories and relative order only. They exclude URLs, content, form
 data, response data, DOM objects, and timing.
 
-The Turbo cases now install `jquery-star/turbo` for both supported boundary packages and prove that
-jQStar adds one ownership transaction without changing host requests, mutation, history, or focus
-behavior. The htmx cases remain the host baseline for ticket 0037. See
+The Turbo and htmx cases install their matching jQStar bridge for both supported boundary packages.
+They prove that jQStar adds one ownership transaction per real mutation without changing host
+requests, mutation, history, forms, focus, or JavaScript-disabled behavior. The htmx bridge cases
+also prove inner, outer, delete, adjacent, out-of-band, none, boost, history, cancellation, failure,
+preservation, repeated enhancement, and disposal behavior. See
 [`INTEROPERABILITY.md`](INTEROPERABILITY.md) for the event mappings and version-update process.
 
 ## Published harness and conformance
@@ -336,10 +340,10 @@ one correlated operation ID across success and failure.
 
 Package quality additionally checks ESM, CommonJS, NodeNext, Bundler, export-map refusal, package
 contents, publint, Are the Types Wrong, graph exclusions, sentinels, and raw/gzip budgets. Its Turbo
-consumer installs the optional peer, creates the explicit bridge, and proves Turbo is absent from
-the built bridge graph. Generic testing must not contain Datastar, DOM implementations, test
-runners, or fixture packages; root, core, UI, Datastar, CSP, and testing consumers must not contain
-Turbo bridge or host code.
+and htmx consumers install the optional peers, create the explicit bridges, and prove each host is
+absent from its built bridge graph. Generic testing must not contain Datastar, DOM implementations,
+test runners, or fixture packages; root, core, UI, Datastar, CSP, and testing consumers must not
+contain Turbo or htmx bridge/host code.
 
 The delivery-quality browser and package checks are stricter than the developer smoke commands:
 

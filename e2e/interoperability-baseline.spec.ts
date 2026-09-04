@@ -36,8 +36,25 @@ interface BridgeObservation {
   version: string;
 }
 
-async function openHost(page: Page, host: "htmx" | "turbo", version: string) {
-  await page.goto(`${fixtureOrigin}/interop/${host}/${version}/start`);
+interface HtmxBridgeObservation {
+  bridgeOperationId: number;
+  elapsedMs: number;
+  eventId: string;
+  flowId: string;
+  host: "htmx";
+  outcome: string;
+  phase: string;
+  removalCount: number;
+  renderOperationId: number | null;
+  schema: string;
+  sequence: number;
+  swapStyle: string;
+  targetCategory: string;
+  version: string;
+}
+
+async function openHost(page: Page, host: "htmx" | "turbo", version: string, bridge = false) {
+  await page.goto(`${fixtureOrigin}/interop/${host}/${version}/start${bridge ? "?bridge=1" : ""}`);
   await page.waitForFunction(
     ([expectedHost, expectedVersion]) => {
       const interop = (
@@ -64,6 +81,17 @@ async function openHost(page: Page, host: "htmx" | "turbo", version: string) {
     await page.waitForFunction(
       () => typeof (window as unknown as { htmx?: unknown }).htmx === "object",
     );
+    if (bridge) {
+      await page.waitForFunction(
+        (expectedVersion) =>
+          (
+            window as unknown as {
+              __htmxBridge?: { version: string };
+            }
+          ).__htmxBridge?.version === expectedVersion,
+        version,
+      );
+    }
   }
 }
 
@@ -117,6 +145,67 @@ function expectBridgeRedacted(trace: BridgeObservation[]) {
       "version",
     ]);
     expect(record.schema).toBe("jqstar-turbo-bridge-observation/1");
+    expect(record.elapsedMs).toBeGreaterThanOrEqual(0);
+  }
+}
+
+async function htmxBridgeCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __htmxBridge: { observations(): HtmxBridgeObservation[] };
+        }
+      ).__htmxBridge.observations().length,
+  );
+}
+
+async function htmxBridgeRecords(page: Page, from = 0): Promise<HtmxBridgeObservation[]> {
+  await page.evaluate(async () => {
+    await Promise.resolve();
+    await (
+      window as unknown as {
+        __htmxBridge: { whenIdle(): Promise<void> };
+      }
+    ).__htmxBridge.whenIdle();
+  });
+  return page.evaluate(
+    (start) =>
+      (
+        window as unknown as {
+          __htmxBridge: { observations(): HtmxBridgeObservation[] };
+        }
+      ).__htmxBridge
+        .observations()
+        .slice(start),
+    from,
+  );
+}
+
+function expectHtmxBridgeRedacted(trace: HtmxBridgeObservation[]) {
+  expect(trace.length).toBeGreaterThan(0);
+  expect(JSON.stringify(trace)).not.toMatch(
+    /url|query|headers|formValues|requestBody|responseBody|serverResponse|html|dom|signals|selector|historyValue|errorData|message/u,
+  );
+  for (const record of trace) {
+    expect(Object.keys(record).sort()).toEqual([
+      "bridgeOperationId",
+      "elapsedMs",
+      "eventId",
+      "flowId",
+      "host",
+      "outcome",
+      "phase",
+      "removalCount",
+      "renderOperationId",
+      "schema",
+      "sequence",
+      "swapStyle",
+      "targetCategory",
+      "version",
+    ]);
+    expect(record.schema).toBe("jqstar-htmx-bridge-observation/1");
+    expect(record.host).toBe("htmx");
     expect(record.elapsedMs).toBeGreaterThanOrEqual(0);
   }
 }
@@ -870,5 +959,595 @@ test("htmx forms, boosted navigation, and history stay host-owned", async ({ pag
     const restoreTrace = await records(page);
     expect(eventNames(restoreTrace)).toContain("htmx:historyRestore");
     expectRedacted(restoreTrace);
+  }
+});
+
+test("htmx bridge preserves, releases, and enhances every approved swap boundary", async ({
+  page,
+}) => {
+  for (const version of htmxVersions) {
+    await openHost(page, "htmx", version, true);
+    await page.locator("#region-preserved input").fill("bridge-retained-value");
+    await page.evaluate(() => {
+      const fixture = window as unknown as {
+        __bridgeNestedApplications?: Array<{ destroyed: boolean }>;
+        __bridgePreservedApplication?: object;
+        __bridgePreservedNode?: Element;
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+      };
+      const preserved = document.querySelector("#region-preserved")!;
+      fixture.__bridgePreservedNode = preserved;
+      fixture.__bridgePreservedApplication = fixture
+        .__htmxBridgeJQuery(preserved)
+        .star("instance")!;
+      fixture.__bridgeNestedApplications = [
+        "#nested-owner",
+        "#nested-cleanup",
+        "#nested-child",
+      ].map((selector) =>
+        fixture.__htmxBridgeJQuery(document.querySelector(selector)!).star("instance")!,
+      );
+    });
+    const innerStart = await htmxBridgeCount(page);
+    await page.locator("#inner-swap").click();
+    await expect(page.locator("#inner-result")).toHaveText("Inner replaced");
+    await waitForEvent(page, "htmx:afterSettle");
+    const innerBridge = await htmxBridgeRecords(page, innerStart);
+
+    expect(
+      await page.evaluate(() => {
+        const fixture = window as unknown as {
+          __bridgeNestedApplications: Array<{ destroyed: boolean }>;
+          __bridgePreservedApplication: object;
+          __bridgePreservedNode: Element;
+          __htmxBridgeJQuery: (target: Element) => {
+            star(command: "instance"): object | undefined;
+          };
+        };
+        const preserved = document.querySelector("#region-preserved")!;
+        return {
+          incomingOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector("#inner-result")!).star("instance"),
+          ),
+          nestedDestroyed: fixture.__bridgeNestedApplications.map(({ destroyed }) => destroyed),
+          preservedApplication:
+            fixture.__bridgePreservedApplication ===
+            fixture.__htmxBridgeJQuery(preserved).star("instance"),
+          preservedNode: fixture.__bridgePreservedNode === preserved,
+        };
+      }),
+    ).toEqual({
+      incomingOwned: true,
+      nestedDestroyed: [true, true, true],
+      preservedApplication: true,
+      preservedNode: true,
+    });
+    await expect(page.locator("#region-preserved input")).toHaveValue("bridge-retained-value");
+    const innerTerminal = innerBridge.filter(({ phase }) => phase === "committed");
+    expect(innerTerminal).toHaveLength(1);
+    expect(innerTerminal[0]).toMatchObject({
+      eventId: "htmx:afterSettle",
+      flowId: "htmx.swap.inner",
+      outcome: "completed",
+      swapStyle: "innerHTML",
+      targetCategory: "region",
+    });
+    expect(new Set(innerBridge.map(({ bridgeOperationId }) => bridgeOperationId)).size).toBe(1);
+    expectHtmxBridgeRedacted(innerBridge);
+
+    for (const [trigger, result, style] of [
+      ["#append-swap", ".added-item", "beforeend"],
+      ["#prepend-swap", ".added-item", "afterbegin"],
+      ["#before-swap", ".adjacent-result", "beforebegin"],
+      ["#after-swap", ".adjacent-result", "afterend"],
+    ] as const) {
+      const bridgeStart = await htmxBridgeCount(page);
+      const beforeCount = await page.locator(result).count();
+      await page.locator(trigger).click();
+      await expect(page.locator(result)).toHaveCount(beforeCount + 1);
+      await waitForEvent(page, "htmx:afterSettle");
+      const bridgeTrace = await htmxBridgeRecords(page, bridgeStart);
+      expect(
+        await page.locator(`${result}[data-jqs]`).evaluateAll((roots) =>
+          roots.every((root) =>
+            Boolean(
+              (
+                window as unknown as {
+                  __htmxBridgeJQuery: (target: Element) => {
+                    star(command: "instance"): object | undefined;
+                  };
+                }
+              )
+                .__htmxBridgeJQuery(root)
+                .star("instance"),
+            ),
+          ),
+        ),
+      ).toBe(true);
+      expect(bridgeTrace.filter(({ phase }) => phase === "committed")).toEqual([
+        expect.objectContaining({
+          eventId: "htmx:afterSettle",
+          flowId: "htmx.swap.adjacent",
+          outcome: "completed",
+          removalCount: 0,
+          swapStyle: style,
+        }),
+      ]);
+    }
+
+    await page.evaluate(() => {
+      const fixture = window as unknown as {
+        __bridgeOuterApplication?: { destroyed: boolean };
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+      };
+      fixture.__bridgeOuterApplication = fixture
+        .__htmxBridgeJQuery(document.querySelector("#inner-result")!)
+        .star("instance")!;
+    });
+    const outerStart = await htmxBridgeCount(page);
+    await page.locator("#outer-swap").click();
+    await expect(page.locator("#outer-result")).toHaveText("Outer replaced");
+    await waitForEvent(page, "htmx:afterSettle");
+    expect(
+      await page.evaluate(() => {
+        const fixture = window as unknown as {
+          __bridgeOuterApplication: { destroyed: boolean };
+          __htmxBridgeJQuery: (target: Element) => {
+            star(command: "instance"): object | undefined;
+          };
+        };
+        return {
+          incomingOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector("#outer-result")!).star("instance"),
+          ),
+          outgoingDestroyed: fixture.__bridgeOuterApplication.destroyed,
+        };
+      }),
+    ).toEqual({ incomingOwned: true, outgoingDestroyed: true });
+    expect((await htmxBridgeRecords(page, outerStart)).at(-1)).toMatchObject({
+      eventId: "htmx:afterSettle",
+      flowId: "htmx.swap.outer",
+      outcome: "completed",
+      swapStyle: "outerHTML",
+    });
+
+    await page.evaluate(() => {
+      const fixture = window as unknown as {
+        __bridgeDeleteApplication?: { destroyed: boolean };
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+      };
+      fixture.__bridgeDeleteApplication = fixture
+        .__htmxBridgeJQuery(document.querySelector("#delete-target")!)
+        .star("instance")!;
+    });
+    const deleteStart = await htmxBridgeCount(page);
+    await page.locator("#delete-swap").click();
+    await expect(page.locator("#delete-target")).toHaveCount(0);
+    await waitForEvent(page, "htmx:afterRequest");
+    const deleteBridge = await htmxBridgeRecords(page, deleteStart);
+    expect(
+      await page.evaluate(
+        () =>
+          (window as unknown as { __bridgeDeleteApplication: { destroyed: boolean } })
+            .__bridgeDeleteApplication.destroyed,
+      ),
+    ).toBe(true);
+    expect(deleteBridge.filter(({ phase }) => phase === "committed")).toEqual([
+      expect.objectContaining({
+        eventId: "htmx:afterRequest",
+        flowId: "htmx.swap.delete",
+        outcome: "completed",
+        swapStyle: "delete",
+      }),
+    ]);
+  }
+});
+
+test("htmx bridge separates OOB, no-mutation, error, and disposal outcomes", async ({ page }) => {
+  for (const version of htmxVersions) {
+    await openHost(page, "htmx", version, true);
+    await page.evaluate(() => {
+      const fixture = window as unknown as {
+        __bridgeMainApplication?: { destroyed: boolean };
+        __bridgeOobApplication?: { destroyed: boolean };
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+      };
+      fixture.__bridgeMainApplication = fixture
+        .__htmxBridgeJQuery(document.querySelector("#nested-owner")!)
+        .star("instance")!;
+      fixture.__bridgeOobApplication = fixture
+        .__htmxBridgeJQuery(document.querySelector("#oob-target")!)
+        .star("instance")!;
+    });
+    const oobStart = await htmxBridgeCount(page);
+    await page.locator("#oob-swap").click();
+    await expect(page.locator("#oob-main")).toHaveText("Main replacement");
+    await expect(page.locator("#oob-target")).toHaveText("New out-of-band content");
+    await waitForEvent(page, "htmx:afterSettle");
+    const oobBridge = await htmxBridgeRecords(page, oobStart);
+    expect(
+      await page.evaluate(() => {
+        const fixture = window as unknown as {
+          __bridgeMainApplication: { destroyed: boolean };
+          __bridgeOobApplication: { destroyed: boolean };
+          __htmxBridgeJQuery: (target: Element) => {
+            star(command: "instance"): object | undefined;
+          };
+        };
+        return {
+          incomingMainOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector("#oob-main")!).star("instance"),
+          ),
+          incomingOobOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector("#oob-target")!).star("instance"),
+          ),
+          mainDestroyed: fixture.__bridgeMainApplication.destroyed,
+          oobDestroyed: fixture.__bridgeOobApplication.destroyed,
+        };
+      }),
+    ).toEqual({
+      incomingMainOwned: true,
+      incomingOobOwned: true,
+      mainDestroyed: true,
+      oobDestroyed: true,
+    });
+    const oobTerminal = oobBridge.filter(({ phase }) => phase === "committed");
+    expect(oobTerminal.map(({ flowId }) => flowId).sort()).toEqual([
+      "htmx.swap.inner",
+      "htmx.swap.oob",
+    ]);
+    expect(new Set(oobTerminal.map(({ bridgeOperationId }) => bridgeOperationId)).size).toBe(2);
+    expectHtmxBridgeRedacted(oobBridge);
+
+    for (const [trigger, terminalEvent, expected] of [
+      [
+        "#none-swap",
+        "htmx:afterRequest",
+        {
+          eventId: "htmx:afterRequest",
+          flowId: "htmx.swap.none",
+          outcome: "observed-no-mutation",
+          phase: "committed",
+          renderOperationId: null,
+        },
+      ],
+      [
+        "#cancel-swap",
+        "htmx:afterRequest",
+        {
+          eventId: "htmx:beforeSwap",
+          flowId: "htmx.swap.inner",
+          outcome: "canceled-before-mutation",
+          phase: "canceled",
+        },
+      ],
+      [
+        "#no-content",
+        "htmx:afterRequest",
+        {
+          eventId: "htmx:afterRequest",
+          flowId: "htmx.swap.none",
+          outcome: "observed-no-mutation",
+          phase: "committed",
+          renderOperationId: null,
+        },
+      ],
+      [
+        "#response-error",
+        "htmx:responseError",
+        {
+          eventId: "htmx:responseError",
+          flowId: "htmx.request.error",
+          outcome: "failed-before-mutation",
+          phase: "failed",
+          renderOperationId: null,
+        },
+      ],
+      [
+        "#network-error",
+        "htmx:sendError",
+        {
+          eventId: "htmx:sendError",
+          flowId: "htmx.request.error",
+          outcome: "failed-before-mutation",
+          phase: "failed",
+          renderOperationId: null,
+        },
+      ],
+      [
+        "#swap-error",
+        "htmx:swapError",
+        {
+          eventId: "htmx:swapError",
+          flowId: "htmx.swap.inner",
+          phase: "failed",
+        },
+      ],
+      [
+        "#target-error",
+        "htmx:targetError",
+        {
+          eventId: "htmx:targetError",
+          flowId: "htmx.request.error",
+          outcome: "failed-before-mutation",
+          phase: "failed",
+          renderOperationId: null,
+        },
+      ],
+    ] as const) {
+      const start = await htmxBridgeCount(page);
+      await clearRecords(page);
+      await page.locator(trigger).click();
+      await waitForEvent(page, terminalEvent);
+      const bridgeTrace = await htmxBridgeRecords(page, start);
+      expect(bridgeTrace.at(-1)).toMatchObject(expected);
+      expectHtmxBridgeRedacted(bridgeTrace);
+    }
+
+    await openHost(page, "htmx", version, true);
+    const disposal = await page.evaluate(async () => {
+      const fixture = window as unknown as {
+        __htmxBridge: {
+          dispose(): Promise<{
+            attempted: number;
+            preparedReleased: number;
+            remaining: number;
+            schema: string;
+          }>;
+          observations(): HtmxBridgeObservation[];
+        };
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+        htmx: object;
+      };
+      const host = fixture.htmx;
+      const existing = fixture
+        .__htmxBridgeJQuery(document.querySelector("#delete-target")!)
+        .star("instance")!;
+      const observations = fixture.__htmxBridge.observations().length;
+      const first = fixture.__htmxBridge.dispose();
+      const second = fixture.__htmxBridge.dispose();
+      return {
+        existingDestroyed: existing.destroyed,
+        hostRetained: host === fixture.htmx,
+        observations,
+        report: await first,
+        samePromise: first === second,
+      };
+    });
+    expect(disposal).toEqual({
+      existingDestroyed: false,
+      hostRetained: true,
+      observations: 0,
+      report: {
+        attempted: 0,
+        preparedReleased: 0,
+        remaining: 0,
+        schema: "jqstar-htmx-bridge-disposal/1",
+      },
+      samePromise: true,
+    });
+    await page.locator("#append-swap").click();
+    await expect(page.locator(".added-item")).toHaveCount(1);
+    expect(
+      await page.evaluate(() => {
+        const fixture = window as unknown as {
+          __htmxBridge: { observations(): HtmxBridgeObservation[] };
+          __htmxBridgeJQuery: (target: Element) => {
+            star(command: "instance"): object | undefined;
+          };
+        };
+        return {
+          incomingOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector(".added-item")!).star("instance"),
+          ),
+          observations: fixture.__htmxBridge.observations().length,
+        };
+      }),
+    ).toEqual({ incomingOwned: false, observations: 0 });
+  }
+});
+
+test("htmx bridge keeps forms, boosted visits, focus, and history host-owned", async ({ page }) => {
+  for (const version of htmxVersions) {
+    await openHost(page, "htmx", version, true);
+    await page.locator('#get-form input[name="query"]').fill("");
+    const validationStart = await htmxBridgeCount(page);
+    await page.locator("#get-form button").click();
+    await expect(page.locator('#get-form input[name="query"]')).toBeFocused();
+    expect(await htmxBridgeCount(page)).toBe(validationStart);
+
+    await page.locator('#get-form input[name="query"]').fill("bridge-get");
+    const getStart = await htmxBridgeCount(page);
+    const getRequestPromise = page.waitForRequest(
+      (request) =>
+        request.method() === "GET" && new URL(request.url()).pathname.endsWith("/fragment/form"),
+    );
+    await page.locator("#get-form button").click();
+    expectGetFormRequest(await getRequestPromise, "bridge-get");
+    await expect(page.locator("#form-response")).toHaveText("Submitted");
+    await waitForEvent(page, "htmx:afterSettle");
+    expect(
+      await page.evaluate(() =>
+        Boolean(
+          (
+            window as unknown as {
+              __htmxBridgeJQuery: (target: Element) => {
+                star(command: "instance"): object | undefined;
+              };
+            }
+          )
+            .__htmxBridgeJQuery(document.querySelector("#form-response")!)
+            .star("instance"),
+        ),
+      ),
+    ).toBe(true);
+    expect((await htmxBridgeRecords(page, getStart)).at(-1)).toMatchObject({
+      flowId: "htmx.swap.inner",
+      outcome: "completed",
+      phase: "committed",
+    });
+
+    await page.evaluate(() => {
+      const fixture = window as unknown as {
+        __bridgeFormApplication?: { destroyed: boolean };
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+      };
+      fixture.__bridgeFormApplication = fixture
+        .__htmxBridgeJQuery(document.querySelector("#form-response")!)
+        .star("instance")!;
+    });
+    await page.locator('#post-form input[name="value"]').fill("bridge-post");
+    await page.locator('#post-form input[type="file"]').setInputFiles({
+      name: "interop-proof.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("interop-file"),
+    });
+    const postStart = await htmxBridgeCount(page);
+    const postResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname.endsWith("/fragment/form"),
+    );
+    await page.locator("#post-form button").click();
+    const postResponse = await postResponsePromise;
+    expectPostFormRequest(postResponse.request());
+    expectPostFormProof(postResponse, "bridge-post");
+    await expect(page.locator("#form-response")).toHaveText("Submitted");
+    await waitForEvent(page, "htmx:afterSettle");
+    expect(
+      await page.evaluate(() => {
+        const fixture = window as unknown as {
+          __bridgeFormApplication: { destroyed: boolean };
+          __htmxBridgeJQuery: (target: Element) => {
+            star(command: "instance"): object | undefined;
+          };
+        };
+        return {
+          incomingOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector("#form-response")!).star("instance"),
+          ),
+          outgoingDestroyed: fixture.__bridgeFormApplication.destroyed,
+        };
+      }),
+    ).toEqual({ incomingOwned: true, outgoingDestroyed: true });
+    expect((await htmxBridgeRecords(page, postStart)).at(-1)).toMatchObject({
+      flowId: "htmx.swap.inner",
+      outcome: "completed",
+      phase: "committed",
+    });
+
+    await page.evaluate(() => {
+      const fixture = window as unknown as {
+        __bridgeBoostApplication?: { destroyed: boolean };
+        __bridgeHeaderApplication?: object;
+        __bridgeHeaderNode?: Element;
+        __htmxBridgeJQuery: (target: Element) => {
+          star(command: "instance"): { destroyed: boolean } | undefined;
+        };
+      };
+      const header = document.querySelector("#permanent")!;
+      fixture.__bridgeHeaderNode = header;
+      fixture.__bridgeHeaderApplication = fixture.__htmxBridgeJQuery(header).star("instance")!;
+      fixture.__bridgeBoostApplication = fixture
+        .__htmxBridgeJQuery(document.querySelector("#form-response")!)
+        .star("instance")!;
+    });
+    const boostStart = await htmxBridgeCount(page);
+    await page.locator("#boost-link").click();
+    await expect(page.locator("#boosted-result")).toHaveText("Boosted document");
+    await expect(page).toHaveURL(new RegExp(`/interop/htmx/${version}/boosted$`, "u"));
+    await waitForEvent(page, "htmx:afterSettle");
+    expect(
+      await page.evaluate(() => {
+        const fixture = window as unknown as {
+          __bridgeBoostApplication: { destroyed: boolean };
+          __bridgeHeaderApplication: object;
+          __bridgeHeaderNode: Element;
+          __htmxBridgeJQuery: (target: Element) => {
+            star(command: "instance"): object | undefined;
+          };
+        };
+        const header = document.querySelector("#permanent")!;
+        return {
+          boostOwned: Boolean(
+            fixture.__htmxBridgeJQuery(document.querySelector("#boosted-result")!).star("instance"),
+          ),
+          headerApplication:
+            fixture.__bridgeHeaderApplication ===
+            fixture.__htmxBridgeJQuery(header).star("instance"),
+          headerNode: fixture.__bridgeHeaderNode === header,
+          outgoingDestroyed: fixture.__bridgeBoostApplication.destroyed,
+        };
+      }),
+    ).toEqual({
+      boostOwned: true,
+      headerApplication: true,
+      headerNode: true,
+      outgoingDestroyed: true,
+    });
+    expect((await htmxBridgeRecords(page, boostStart)).at(-1)).toMatchObject({
+      eventId: "htmx:afterSettle",
+      flowId: "htmx.document.boost",
+      outcome: "completed",
+      phase: "committed",
+      targetCategory: "document",
+    });
+
+    const historyStart = await htmxBridgeCount(page);
+    await clearRecords(page);
+    await page.goBack();
+    await expect(page.locator("h1")).toHaveText("htmx start");
+    await waitForEvent(page, "htmx:historyRestore");
+    const historyHostTrace = await records(page);
+    const historyHostEvents = eventNames(historyHostTrace);
+    expect(historyHostEvents).toContain("htmx:beforeHistorySave");
+    if (version === "2.0.0") {
+      expect(historyHostEvents).not.toContain("htmx:historyCacheHit");
+      expect(historyHostEvents).toContain("htmx:beforeCleanupElement");
+    } else {
+      expect(
+        historyHostEvents.find(
+          (event) => event === "htmx:historyCacheHit" || event === "htmx:historyCacheMissLoad",
+        ),
+        historyHostEvents.join(", "),
+      ).toBeDefined();
+    }
+    const historyBridge = await htmxBridgeRecords(page, historyStart);
+    expect(historyBridge.filter(({ phase }) => phase === "committed")).toEqual([
+      expect.objectContaining({
+        eventId: "htmx:historyRestore",
+        flowId: "htmx.history.restore",
+        outcome: "completed",
+        targetCategory: "history",
+      }),
+    ]);
+    expect(
+      await page.evaluate(() =>
+        Boolean(
+          (
+            window as unknown as {
+              __htmxBridgeJQuery: (target: Element) => {
+                star(command: "instance"): object | undefined;
+              };
+            }
+          )
+            .__htmxBridgeJQuery(document.querySelector("#nested-owner")!)
+            .star("instance"),
+        ),
+      ),
+    ).toBe(true);
+    expectHtmxBridgeRedacted(historyBridge);
   }
 });

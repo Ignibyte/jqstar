@@ -132,12 +132,13 @@ describe("jQuery ecosystem evidence", () => {
   it("keeps real jQuery as the sole required peer and preserves the jQuery/signal boundary", () => {
     expect(packageManifest.peerDependencies).toEqual({
       "@hotwired/turbo": ">=8.0.21 <8.1.0",
+      "htmx.org": ">=2.0.0 <2.1.0",
       jquery: ">=4.0.0 <5",
     });
     expect(
       (packageManifest as { peerDependenciesMeta?: Record<string, { optional?: boolean }> })
         .peerDependenciesMeta,
-    ).toEqual({ "@hotwired/turbo": { optional: true } });
+    ).toEqual({ "@hotwired/turbo": { optional: true }, "htmx.org": { optional: true } });
     expect((packageManifest as { files?: string[] }).files).toContain(
       "!schema/jquery-ecosystem.schema.json",
     );

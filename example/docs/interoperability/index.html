@@ -6,7 +6,7 @@
     <title>Turbo and htmx interoperability · jQStar</title>
     <meta
       name="description"
-      content="Install the jQStar Turbo bridge and review the tested Turbo and htmx lifecycle, version, preservation, and ownership contract."
+      content="Install the jQStar Turbo and htmx bridges and review their tested lifecycle, version, preservation, and ownership contracts."
     />
     <meta name="robots" content="index, follow" />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
@@ -16,9 +16,9 @@
     <article class="docs-article">
       <h1>Turbo and htmx interoperability</h1>
       <p class="docs-lede">
-        jQStar has a tested contract for wrapping external DOM renders without taking over the host
-        library. The <code>jquery-star/turbo</code> preview ships now. The htmx bridge remains
-        planned.
+        jQStar has tested bridges for wrapping external DOM renders without taking over the host
+        library. The <code>jquery-star/turbo</code> and <code>jquery-star/htmx</code> previews both
+        ship now.
       </p>
       <div class="docs-callout">
         <p>
@@ -52,8 +52,9 @@
         </table>
       </div>
       <p>
-        Missing, prerelease, unknown, and out-of-range versions fail before the Turbo bridge
-        installs listeners. jQStar does not auto-detect or load either host.
+        Missing, prerelease, unknown, and out-of-range versions fail before a bridge installs
+        listeners. The htmx bridge also requires the explicit version to match
+        <code>htmx.version</code>. jQStar does not auto-detect or load either host.
       </p>
 
       <h2>Install the Turbo bridge</h2>
@@ -76,6 +77,29 @@ await bridge.whenIdle();</code></pre>
         registers document-scoped public event listeners but never calls Turbo start or navigation
         APIs. <code>bridge.dispose()</code> removes those listeners without disposing Turbo or the
         jQStar kernel.
+      </p>
+
+      <h2>Install the htmx bridge</h2>
+      <div class="code-block">
+        <div class="code-heading"><span>Explicit htmx capability and version</span></div>
+        <pre><code>import htmx from "htmx.org";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createHtmxBridge } from "jquery-star/htmx";
+
+const { star } = installStarCore($);
+const bridge = star.use(
+  createHtmxBridge({ $, htmx, version: "2.0.10" }),
+);
+
+await bridge.whenIdle();</code></pre>
+      </div>
+      <p>
+        Use the exact installed htmx package version. Importing the jQStar bridge is inert.
+        Installing it registers document-scoped public lifecycle listeners but never calls
+        <code>htmx.ajax()</code>, <code>htmx.process()</code>, <code>htmx.swap()</code>, or
+        <code>htmx.trigger()</code>. <code>whenIdle()</code> waits for bridge-owned render and
+        jQStar enhancement work, not arbitrary htmx requests or network idleness.
       </p>
 
       <h2>Lifecycle</h2>
@@ -143,11 +167,11 @@ Terminal alternatives: canceled or failed</code></pre>
       <h2>Preservation and focus</h2>
       <p>
         <code>data-jqs-preserve</code> remains the core marker. The Turbo bridge also passes an
-        exact old <code>data-turbo-permanent</code> element when it is connected, inside the
+        exact old <code>data-turbo-permanent</code> element, and the htmx bridge does the same for
+        <code>hx-preserve</code>. In each case, the old element must be connected, inside the
         outgoing boundary, uniquely identified, matched once in the incoming content, and retained
-        after mutation. A future htmx bridge may do the same for <code>hx-preserve</code>.
-        Duplicate, missing, disconnected, moved, or cross-document candidates are cleaned and
-        diagnosed.
+        after mutation. Duplicate, missing, disconnected, moved, or cross-document candidates are
+        cleaned and diagnosed.
       </p>
       <p>
         The tested hosts retain DOM and control-value identity for valid permanent elements but can
@@ -171,6 +195,28 @@ Terminal alternatives: canceled or failed</code></pre>
         >
         for every stable mapping ID and update rule.
       </p>
+
+      <h2>htmx troubleshooting</h2>
+      <ul>
+        <li>
+          An installation error usually means the explicit version differs from
+          <code>htmx.version</code>, falls outside <code>&gt;=2.0.0 &lt;2.1.0</code>, or the
+          capability is incomplete.
+        </li>
+        <li>
+          A prevented swap can indicate a disconnected target, unsupported swap style, duplicate
+          main swap, or overlapping active boundary. Pass <code>onError</code> and inspect
+          <code>bridge.observations()</code> for redacted evidence.
+        </li>
+        <li>
+          A recreated preserved root needs the same unique, non-empty <code>id</code> on the old and
+          incoming <code>hx-preserve</code> or <code>data-jqs-preserve</code> element.
+        </li>
+        <li>
+          A pending <code>whenIdle()</code> is waiting for a mapped htmx terminal event or jQStar
+          enhancement. Call <code>dispose()</code> during shutdown.
+        </li>
+      </ul>
     </article>
     <script type="module" src="/site.ts"></script>
   </body>

@@ -347,9 +347,19 @@
         },
         "peerDependencies": {
           "type": "object",
-          "required": ["jqueryRange", "turboRange", "turboOptional", "missing", "incompatible"],
+          "required": [
+            "jqueryRange",
+            "htmxRange",
+            "htmxOptional",
+            "turboRange",
+            "turboOptional",
+            "missing",
+            "incompatible"
+          ],
           "properties": {
             "jqueryRange": { "const": ">=4.0.0 <5" },
+            "htmxRange": { "const": ">=2.0.0 <2.1.0" },
+            "htmxOptional": { "const": true },
             "turboRange": { "const": ">=8.0.21 <8.1.0" },
             "turboOptional": { "const": true },
             "missing": {
@@ -432,8 +442,8 @@
       "properties": {
         "exports": {
           "type": "array",
-          "minItems": 9,
-          "maxItems": 9,
+          "minItems": 10,
+          "maxItems": 10,
           "prefixItems": [
             { "const": "." },
             { "const": "./core" },
@@ -441,6 +451,7 @@
             { "const": "./ui" },
             { "const": "./datastar" },
             { "const": "./testing" },
+            { "const": "./htmx" },
             { "const": "./turbo" },
             { "const": "./datastar/testing" },
             { "const": "./ui.css" }
@@ -468,7 +479,7 @@
     },
     "bundleSentinelEvidence": {
       "type": "object",
-      "required": ["root", "core", "csp", "testing", "datastarTesting", "turbo"],
+      "required": ["root", "core", "csp", "testing", "datastarTesting", "htmx", "turbo"],
       "properties": {
         "root": {
           "type": "object",
@@ -564,6 +575,19 @@
             "gzipBudget": { "type": "integer", "minimum": 1 },
             "modules": { "type": "integer", "minimum": 1 },
             "externalDOMAndRunners": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "htmx": {
+          "type": "object",
+          "required": ["bytes", "budget", "gzipBytes", "gzipBudget", "modules", "hostPackage"],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "hostPackage": { "const": "absent" }
           },
           "additionalProperties": false
         },

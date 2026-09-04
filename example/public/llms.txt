@@ -21,7 +21,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 - [Core API](https://ignibyte.github.io/jqstar/docs/api/): Applications, named actions, backend actions, UI methods, scheduling, version, and lifecycle.
 - [CSP expressions](https://ignibyte.github.io/jqstar/docs/csp/): The shipped jquery-star/csp installer, finite expression grammar, capability boundary, deterministic limits, server policy, diagnostics, and compatibility migrations.
 - [Plugins](https://ignibyte.github.io/jqstar/docs/plugins/): Build transactional public plugins and verify packed-package rollback, use, rendering, observation, and cleanup behavior.
-- [Turbo and htmx interoperability](https://ignibyte.github.io/jqstar/docs/interoperability/): Install the shipped Turbo lifecycle bridge and review tested version boundaries, preservation, focus ownership, and future htmx limits.
+- [Turbo and htmx interoperability](https://ignibyte.github.io/jqstar/docs/interoperability/): Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.
 - [jQuery ecosystem](https://ignibyte.github.io/jqstar/docs/ecosystem/): Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.
 - [Testing](https://ignibyte.github.io/jqstar/docs/testing/): Use an explicit DOM realm, deterministic response queue, bounded flush, disposal reports, and runner-neutral conformance.
 - [Components](https://ignibyte.github.io/jqstar/docs/components/): Native component semantics, data-jqs roots, data-part slots, state attributes, and source-owned recipes.
@@ -42,7 +42,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 - Datastar SSE must be generated with @starfederation/datastar-sdk. Do not handwrite Datastar event strings. Citation: https://ignibyte.github.io/jqstar/docs/datastar/
 - Server-rendered HTML remains authoritative. Use data-jqs-preserve only for a live root that must survive a patch, and use whenEnhanced() to wait for a complete patch commit. Citation: https://ignibyte.github.io/jqstar/docs/datastar/
 - The testing harness requires a caller-owned same-realm Window, Document, and jQuery instance. Its bounded flush covers jQStar-owned work, queued fixtures, and registered finite tasks, not arbitrary timers or real-network idleness. Citation: https://ignibyte.github.io/jqstar/docs/testing/
-- Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned. Citation: https://ignibyte.github.io/jqstar/docs/interoperability/
+- Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo and jquery-star/htmx bridges use the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. Citation: https://ignibyte.github.io/jqstar/docs/interoperability/
 - jQStar components start with native HTML semantics and add only missing state and keyboard behavior. WebMCP does not replace semantic HTML, accessibility APIs, or JavaScript-disabled content. Citation: https://ignibyte.github.io/jqstar/docs/components/
 - jQStar is independent. It provides migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile without claiming to be an official successor or bundling those archived UI runtimes. Citation: https://ignibyte.github.io/jqstar/docs/ecosystem/
 

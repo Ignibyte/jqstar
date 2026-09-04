@@ -1,8 +1,7 @@
 # Turbo and htmx interoperability contract
 
-This contract covers the shipped `jquery-star/turbo` preview and the planned `jquery-star/htmx`
-plugin. The machine authority is
-[`quality/external-bridge-contract.json`](../quality/external-bridge-contract.json).
+This contract covers the shipped `jquery-star/turbo` and `jquery-star/htmx` previews. The machine
+authority is [`quality/external-bridge-contract.json`](../quality/external-bridge-contract.json).
 
 ## Ownership
 
@@ -92,8 +91,28 @@ any bridge-owned active render without disposing Turbo or the jQStar kernel.
 
 ## htmx mapping
 
-One htmx operation deduplicates target and descendant cleanup. An insertion-only swap begins after
-`htmx:beforeSwap` confirms `shouldSwap`.
+Install htmx and core explicitly, then install one bridge into that document's jQStar kernel:
+
+```ts
+import htmx from "htmx.org";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createHtmxBridge } from "jquery-star/htmx";
+
+const { star } = installStarCore($);
+const bridge = star.use(createHtmxBridge({ $, htmx, version: "2.0.10" }));
+```
+
+The explicit version must equal the read-only `htmx.version` value. The bridge import and factory
+call do not install listeners. Plugin installation validates the capability, the exact stable
+version, and the `>=2.0.0 <2.1.0` range before registering document-scoped listeners. A missing or
+malformed capability, a prerelease or out-of-range version, a version mismatch, or a duplicate
+plugin fails before partial installation.
+
+The bridge observes htmx's public lifecycle. It never calls `htmx.ajax()`, `htmx.process()`,
+`htmx.swap()`, or `htmx.trigger()`, and it does not change a target, response, request, indicator,
+history entry, focus decision, or swap delay. One htmx operation deduplicates target and descendant
+cleanup. An insertion-only swap begins after `htmx:beforeSwap` confirms `shouldSwap`.
 
 | Stable ID              | Host seam                                     | jQStar action                           | Terminal evidence |
 | ---------------------- | --------------------------------------------- | --------------------------------------- | ----------------- |
@@ -110,8 +129,19 @@ One htmx operation deduplicates target and descendant cleanup. An insertion-only
 The tested releases place `afterRequest` before `afterSettle`. Delete has no `afterSwap` or
 `afterSettle`. `hx-swap="none"` can emit `afterSwap` without mutation.
 
-`hx-preserve` uses the same identity checks. Focus stays host-owned. Custom swaps, View Transitions,
-cross-document or shadow targets, and script guarantees are out of scope.
+`hx-preserve` and `data-jqs-preserve` retain the old live element only when it is connected, inside
+the outgoing boundary, uniquely identified in the document, and matched once in the incoming
+content. Missing, duplicate, moved, disconnected, or cross-document candidates are cleaned instead
+of being promised. Focus stays host-owned.
+
+`bridge.whenIdle()` waits for bridge-owned render transactions and their jQStar enhancement work. It
+does not claim that htmx has no pending network request or extension work. `bridge.observations()`
+returns at most 256 frozen, redacted records, and `bridge.observe()` subscribes to later records.
+`bridge.dispose()` is idempotent. It removes bridge listeners, releases prepared correlations, and
+settles active bridge operations without disposing htmx or the jQStar kernel.
+
+Custom swaps, View Transitions, cross-document or shadow targets, and script guarantees are out of
+scope.
 
 ## Exact-once, observation, and coexistence rules
 
@@ -132,8 +162,21 @@ values.
 | Operation observations              | One render ID covers each real mutation and ends in one redacted outcome.                |
 | Disposal                            | Plugin listeners and active operations release idempotently without changing host state. |
 
-Ticket 0036 reruns this matrix for the shipped Turbo preview. Ticket 0037 must do the same before an
-htmx bridge ships.
+Tickets 0036 and 0037 rerun this matrix for the shipped Turbo and htmx previews. Both boundary
+versions pass the bridge suite in Chromium, Firefox, and WebKit.
+
+## htmx troubleshooting
+
+- If installation throws, compare the explicit version with `htmx.version` and the supported range
+  `>=2.0.0 <2.1.0`. Do not pass a prerelease or an inferred range.
+- If a swap is prevented, use the optional `onError` callback and `bridge.observations()` to check
+  for a disconnected target, unsupported swap style, duplicate main swap, or overlapping active
+  boundary. The records omit selectors, response content, URLs, headers, form data, and raw errors.
+- If a preserved root is recreated, give the old and incoming `hx-preserve` or `data-jqs-preserve`
+  elements the same unique non-empty `id`. Both elements must stay within the approved swap
+  boundary.
+- If `whenIdle()` is still pending, wait for htmx's mapped terminal event or call `dispose()` during
+  shutdown. It is a bridge-render barrier, not general htmx network idleness.
 
 ## Evidence and updates
 

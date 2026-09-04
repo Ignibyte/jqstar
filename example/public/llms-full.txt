@@ -30,7 +30,7 @@ Citation: https://ignibyte.github.io/jqstar/docs/datastar/
 The testing harness requires a caller-owned same-realm Window, Document, and jQuery instance. Its bounded flush covers jQStar-owned work, queued fixtures, and registered finite tasks, not arbitrary timers or real-network idleness.
 Citation: https://ignibyte.github.io/jqstar/docs/testing/
 
-Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned.
+Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo and jquery-star/htmx bridges use the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots.
 Citation: https://ignibyte.github.io/jqstar/docs/interoperability/
 
 jQStar components start with native HTML semantics and add only missing state and keyboard behavior. WebMCP does not replace semantic HTML, accessibility APIs, or JavaScript-disabled content.
@@ -567,14 +567,14 @@ those claims and use the runner adapter described in the
 testing guide .
 
 ### Turbo and htmx interoperability [external-interoperability]
-Install the shipped Turbo lifecycle bridge and review tested version boundaries, preservation, focus ownership, and future htmx limits.
+Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.
 Citation: https://ignibyte.github.io/jqstar/docs/interoperability/
 Source: example/docs/interoperability/index.html
 
 Turbo and htmx interoperability
-jQStar has a tested contract for wrapping external DOM renders without taking over the host
-library. The jquery-star/turbo preview ships now. The htmx bridge remains
-planned.
+jQStar has tested bridges for wrapping external DOM renders without taking over the host
+library. The jquery-star/turbo and jquery-star/htmx previews both
+ship now.
 One ownership seam: the host sends requests and mutates the DOM. A bridge
 uses createRenderAdapter() only to release outgoing jQStar roots, preserve
 exact approved identities, enhance incoming roots, and await the barrier.
@@ -588,8 +588,9 @@ Turbo
 htmx
 >=2.0.0 <2.1.0
 2.0.0 and 2.0.10
-Missing, prerelease, unknown, and out-of-range versions fail before the Turbo bridge
-installs listeners. jQStar does not auto-detect or load either host.
+Missing, prerelease, unknown, and out-of-range versions fail before a bridge installs
+listeners. The htmx bridge also requires the explicit version to match
+htmx.version . jQStar does not auto-detect or load either host.
 Install the Turbo bridge
 Explicit Turbo capability and version
 ```
@@ -607,6 +608,24 @@ Use the exact installed Turbo package version. Importing the bridge is inert. In
 registers document-scoped public event listeners but never calls Turbo start or navigation
 APIs. bridge.dispose() removes those listeners without disposing Turbo or the
 jQStar kernel.
+Install the htmx bridge
+Explicit htmx capability and version
+```
+import htmx from "htmx.org";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createHtmxBridge } from "jquery-star/htmx";
+const { star } = installStarCore($);
+const bridge = star.use(
+createHtmxBridge({ $, htmx, version: "2.0.10" }),
+);
+await bridge.whenIdle();
+```
+Use the exact installed htmx package version. Importing the jQStar bridge is inert.
+Installing it registers document-scoped public lifecycle listeners but never calls
+htmx.ajax() , htmx.process() , htmx.swap() , or
+htmx.trigger() . whenIdle() waits for bridge-owned render and
+jQStar enhancement work, not arbitrary htmx requests or network idleness.
 Lifecycle
 External render state machine
 ```
@@ -637,11 +656,11 @@ htmx no-swap
 afterSwap may fire even when no target mutation occurs.
 Preservation and focus
 data-jqs-preserve remains the core marker. The Turbo bridge also passes an
-exact old data-turbo-permanent element when it is connected, inside the
+exact old data-turbo-permanent element, and the htmx bridge does the same for
+hx-preserve . In each case, the old element must be connected, inside the
 outgoing boundary, uniquely identified, matched once in the incoming content, and retained
-after mutation. A future htmx bridge may do the same for hx-preserve .
-Duplicate, missing, disconnected, moved, or cross-document candidates are cleaned and
-diagnosed.
+after mutation. Duplicate, missing, disconnected, moved, or cross-document candidates are
+cleaned and diagnosed.
 The tested hosts retain DOM and control-value identity for valid permanent elements but can
 move focus to the activated control. Focus remains host-owned. A bridge must not add a focus
 correction unless a later contract explicitly approves and tests one.
@@ -655,6 +674,21 @@ cross-document targets, and script execution guarantees are outside this contrac
 complete
 repository contract
 for every stable mapping ID and update rule.
+htmx troubleshooting
+-
+An installation error usually means the explicit version differs from
+htmx.version , falls outside >=2.0.0 <2.1.0 , or the
+capability is incomplete.
+-
+A prevented swap can indicate a disconnected target, unsupported swap style, duplicate
+main swap, or overlapping active boundary. Pass onError and inspect
+bridge.observations() for redacted evidence.
+-
+A recreated preserved root needs the same unique, non-empty id on the old and
+incoming hx-preserve or data-jqs-preserve element.
+-
+A pending whenIdle() is waiting for a mapped htmx terminal event or jQStar
+enhancement. Call dispose() during shutdown.
 
 ### jQuery ecosystem [jquery-ecosystem]
 Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.

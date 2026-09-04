@@ -83,9 +83,9 @@ The UMD build installs itself on the global `jQuery` object, so a script-tag bui
 ### Modular preview entries
 
 The root entry remains the compatibility path: importing it installs the complete core, Datastar
-profile, and UI plugin. The 0.4-track `core`, `ui`, `datastar`, and `turbo` subpaths are previews
-until the 1.0 platform audit. They are explicit and side-effect-free, so importing them does not
-touch a document or jQuery instance:
+profile, and UI plugin. The 0.4-track `core`, `ui`, `datastar`, `htmx`, and `turbo` subpaths are
+previews until the 1.0 platform audit. They are explicit and side-effect-free, so importing them
+does not touch a document or jQuery instance:
 
 ```ts
 import $ from "jquery";
@@ -114,6 +114,7 @@ jQuery UI identity, or a Widget Factory contract.
 | `jquery-star/ui`               | ESM, CommonJS           | No side effect; install `uiPlugin`                     |
 | `jquery-star/testing`          | ESM, CommonJS           | No side effect; caller supplies DOM, jQuery, runner    |
 | `jquery-star/datastar/testing` | ESM, CommonJS           | No side effect; official-SDK Datastar test fixtures    |
+| `jquery-star/htmx`             | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
 | `jquery-star/turbo`            | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
 | `jquery-star/ui.css`           | CSS                     | Explicit stylesheet import; never injected by JS       |
 
@@ -1182,9 +1183,12 @@ installer. Importing the entry has no installation or DOM-scanning side effect.
 `createRenderAdapter()` from `jquery-star/core` releases outgoing applications and enhances incoming
 roots around a host-owned mutation. Requests, history, focus, and DOM changes remain host-owned.
 
-The side-effect-free `jquery-star/turbo` preview packages that coordination for Turbo Drive and
-Frames. Turbo remains optional and must be installed by the application. Pass the exact installed
-version because Turbo exposes no documented runtime version field:
+The side-effect-free `jquery-star/turbo` and `jquery-star/htmx` previews package that coordination
+for their host-specific lifecycle events. Both hosts remain optional and must be installed by the
+application.
+
+For Turbo Drive and Frames, pass the exact installed package version because Turbo exposes no
+documented runtime version field:
 
 ```ts
 import * as Turbo from "@hotwired/turbo";
@@ -1204,9 +1208,31 @@ chooses how Turbo mutates the DOM. Matching `data-jqs-preserve` roots and unique
 `data-turbo-permanent` roots retain their live identity. Call `bridge.dispose()` to remove bridge
 listeners and settle any active ownership transaction.
 
-The htmx bridge remains planned. The [interoperability contract](docs/INTEROPERABILITY.md) records
-the exact supported boundaries, event mappings, preservation checks, observations, and unsupported
-flows for both hosts.
+For htmx, inject the host capability and repeat its exact read-only `htmx.version` value:
+
+```ts
+import htmx from "htmx.org";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createHtmxBridge } from "jquery-star/htmx";
+
+const { star } = installStarCore($);
+const bridge = star.use(createHtmxBridge({ $, htmx, version: "2.0.10" }));
+
+await bridge.whenIdle();
+```
+
+The htmx bridge accepts `htmx.org >=2.0.0 <2.1.0` and checks that the explicit version matches
+`htmx.version`. It observes public request, swap, cleanup, settle, out-of-band, history, and error
+events. It never calls `htmx.ajax()`, `htmx.process()`, `htmx.swap()`, or `htmx.trigger()`. Valid
+`data-jqs-preserve` and `hx-preserve` roots retain exact live identity. `whenIdle()` waits for
+bridge-owned render transactions and jQStar enhancement, not arbitrary htmx requests or network
+idleness. `observations()` returns the bounded redacted lifecycle history, and `dispose()` removes
+listeners without disposing htmx or the jQStar kernel.
+
+The [interoperability contract](docs/INTEROPERABILITY.md) records both bridges' exact supported
+boundaries, event mappings, preservation checks, observations, troubleshooting, and unsupported
+flows.
 
 ## Transactional plugins
 

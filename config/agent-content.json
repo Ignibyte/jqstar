@@ -117,7 +117,7 @@
       "id": "external-interoperability",
       "title": "Turbo and htmx interoperability",
       "path": "docs/interoperability/",
-      "summary": "Install the shipped Turbo lifecycle bridge and review tested version boundaries, preservation, focus ownership, and future htmx limits.",
+      "summary": "Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.",
       "keywords": [
         "turbo",
         "htmx",
@@ -269,7 +269,7 @@
     },
     {
       "id": "external-render-ownership",
-      "statement": "Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned.",
+      "statement": "Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo and jquery-star/htmx bridges use the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots.",
       "path": "docs/interoperability/",
       "sources": ["example/docs/interoperability/index.html", "docs/INTEROPERABILITY.md"]
     },

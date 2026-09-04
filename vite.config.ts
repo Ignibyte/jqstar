@@ -9,6 +9,7 @@ export default defineConfig({
         core: resolve(__dirname, "src/core.ts"),
         ui: resolve(__dirname, "src/ui.ts"),
         datastar: resolve(__dirname, "src/datastar.ts"),
+        htmx: resolve(__dirname, "src/htmx.ts"),
         testing: resolve(__dirname, "src/testing/index.ts"),
         turbo: resolve(__dirname, "src/turbo.ts"),
         "datastar-testing": resolve(__dirname, "src/datastar/testing.ts"),

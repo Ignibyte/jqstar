@@ -676,18 +676,23 @@ try {
     const packageBudget =
       sabotage === "package-budget" ? { ...budgets.package, packedBytes: 1 } : budgets.package;
     const cspPackageBudget = budgets.cspPackage;
+    const htmxPackageBudget = budgets.htmxPackage;
     const turboPackageBudget = budgets.turboPackage;
     assert(
       pack.size <=
-        packageBudget.packedBytes + cspPackageBudget.packedBytes + turboPackageBudget.packedBytes,
-      `Packed bytes ${pack.size} exceed ${packageBudget.packedBytes} base plus ${cspPackageBudget.packedBytes} CSP and ${turboPackageBudget.packedBytes} Turbo allowances.`,
+        packageBudget.packedBytes +
+          cspPackageBudget.packedBytes +
+          turboPackageBudget.packedBytes +
+          htmxPackageBudget.packedBytes,
+      `Packed bytes ${pack.size} exceed ${packageBudget.packedBytes} base plus ${cspPackageBudget.packedBytes} CSP, ${turboPackageBudget.packedBytes} Turbo, and ${htmxPackageBudget.packedBytes} htmx allowances.`,
     );
     assert(
       pack.unpackedSize <=
         packageBudget.unpackedBytes +
           cspPackageBudget.unpackedBytes +
-          turboPackageBudget.unpackedBytes,
-      `Unpacked bytes ${pack.unpackedSize} exceed ${packageBudget.unpackedBytes} base plus ${cspPackageBudget.unpackedBytes} CSP and ${turboPackageBudget.unpackedBytes} Turbo allowances.`,
+          turboPackageBudget.unpackedBytes +
+          htmxPackageBudget.unpackedBytes,
+      `Unpacked bytes ${pack.unpackedSize} exceed ${packageBudget.unpackedBytes} base plus ${cspPackageBudget.unpackedBytes} CSP, ${turboPackageBudget.unpackedBytes} Turbo, and ${htmxPackageBudget.unpackedBytes} htmx allowances.`,
     );
     assert(
       pack.files.length <= packageBudget.files,
@@ -747,6 +752,12 @@ try {
       "dist/datastar-testing.js",
       "dist/datastar-testing.js.map",
       "dist/index.d.ts",
+      "dist/htmx.cjs",
+      "dist/htmx.cjs.map",
+      "dist/htmx.d.cts",
+      "dist/htmx.d.ts",
+      "dist/htmx.js",
+      "dist/htmx.js.map",
       "dist/index.d.cts",
       "dist/jquery-star.cjs",
       "dist/jquery-star.cjs.map",
@@ -803,7 +814,7 @@ try {
       manifest.exports?.["."]?.require?.types === "./dist/index.d.cts",
       "Root CommonJS type export is wrong.",
     );
-    for (const entry of ["core", "csp", "ui", "datastar", "turbo"]) {
+    for (const entry of ["core", "csp", "ui", "datastar", "htmx", "turbo"]) {
       const exported = manifest.exports?.[`./${entry}`];
       assert(exported?.import?.default === `./dist/${entry}.js`, `${entry} ESM export is wrong.`);
       assert(
@@ -868,10 +879,11 @@ try {
       "./ui",
       "./datastar",
       "./testing",
+      "./htmx",
       "./turbo",
       "./datastar/testing",
     ]);
-    return "node16 profile across root, core, CSP, UI, Datastar, testing, and Turbo entries";
+    return "node16 profile across root, core, CSP, UI, Datastar, testing, htmx, and Turbo entries";
   });
 
   await record("refresh-package-subject", () => {
@@ -882,12 +894,18 @@ try {
   await record("installed-consumer", async () => {
     const installedManifest = JSON.parse(await readFile(join(extracted, "package.json"), "utf8"));
     const jqueryPeer = installedManifest.peerDependencies?.jquery;
+    const htmxPeer = installedManifest.peerDependencies?.["htmx.org"];
     const turboPeer = installedManifest.peerDependencies?.["@hotwired/turbo"];
     assert(jqueryPeer === ">=4.0.0 <5", "Packed jQuery peer range changed.");
+    assert(htmxPeer === ">=2.0.0 <2.1.0", "Packed htmx peer range changed.");
     assert(turboPeer === ">=8.0.21 <8.1.0", "Packed Turbo peer range changed.");
     assert(
       installedManifest.peerDependenciesMeta?.["@hotwired/turbo"]?.optional === true,
       "Packed Turbo peer must remain optional.",
+    );
+    assert(
+      installedManifest.peerDependenciesMeta?.["htmx.org"]?.optional === true,
+      "Packed htmx peer must remain optional.",
     );
     await writeFile(
       join(consumer, "package.json"),
@@ -1200,13 +1218,16 @@ const { default: $ } = await import("jquery");
 const core = await import("jquery-star/core");
 const uiEntry = await import("jquery-star/ui");
 const datastarEntry = await import("jquery-star/datastar");
+const htmxEntry = await import("jquery-star/htmx");
 const turboEntry = await import("jquery-star/turbo");
 if ($.star !== undefined || $.fn.star !== undefined) throw new Error("Modular imports installed jQStar");
 const installed = core.installStarCore($);
 const datastar = installed.star.use(datastarEntry.datastarPlugin);
 const ui = installed.star.use(uiEntry.uiPlugin);
+const htmx = installed.star.use(htmxEntry.createHtmxBridge({ $, htmx: { version: "2.0.10", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }, version: "2.0.10" }));
 const turbo = installed.star.use(turboEntry.createTurboBridge({ $, Turbo: { cache: {}, session: {}, start() {}, visit() {} }, version: "8.0.23" }));
 if (datastar.id !== "core.datastar") throw new Error("Datastar plugin facade failed");
+if (htmx.host !== "htmx" || htmx.version !== "2.0.10") throw new Error("htmx plugin facade failed");
 if (turbo.host !== "turbo" || turbo.version !== "8.0.23") throw new Error("Turbo plugin facade failed");
 if (installed.star.ui !== ui) throw new Error("UI plugin did not attach $.star.ui");
 if (uiEntry.uiPlugin.version !== installed.star.version || datastarEntry.datastarPlugin.version !== installed.star.version) throw new Error("Modular versions differ");
@@ -1225,14 +1246,17 @@ const $ = require("jquery");
 const core = require("jquery-star/core");
 const uiEntry = require("jquery-star/ui");
 const datastarEntry = require("jquery-star/datastar");
+const htmxEntry = require("jquery-star/htmx");
 const turboEntry = require("jquery-star/turbo");
 if ($.star !== undefined || $.fn.star !== undefined) throw new Error("CommonJS modular imports installed jQStar");
 const installed = core.installStarCore($);
 const datastar = installed.star.use(datastarEntry.datastarPlugin);
 const ui = installed.star.use(uiEntry.uiPlugin);
+const htmx = installed.star.use(htmxEntry.createHtmxBridge({ $, htmx: { version: "2.0.0", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }, version: "2.0.0" }));
 const turbo = installed.star.use(turboEntry.createTurboBridge({ $, Turbo: { cache: {}, session: {}, start() {}, visit() {} }, version: "8.0.21" }));
 if (installed !== $ || datastar.id !== "core.datastar" || installed.star.ui !== ui) throw new Error("CommonJS modular composition failed");
 if (turbo.host !== "turbo" || turbo.version !== "8.0.21") throw new Error("CommonJS Turbo plugin facade failed");
+if (htmx.host !== "htmx" || htmx.version !== "2.0.0") throw new Error("CommonJS htmx plugin facade failed");
 if ($.ui !== undefined || $.widget !== undefined) throw new Error("CommonJS UI plugin claimed jQuery UI");
 `,
     );
@@ -1570,6 +1594,7 @@ await nextUpdate();
 import { createRenderAdapter, installStarCore, type StarCoreStatic, type StarInstalledJQuery, type StarRenderAdapter, type StarRenderTransaction } from "jquery-star/core";
 import { uiPlugin, type StarUIStatic } from "jquery-star/ui";
 import { datastarPlugin } from "jquery-star/datastar";
+import { createHtmxBridge, type StarHtmxBridge, type StarHtmxCapability } from "jquery-star/htmx";
 import { createTurboBridge, type StarTurboBridge, type StarTurboCapability } from "jquery-star/turbo";
 type ArbitraryJQueryHasStar = JQueryStatic extends { star: unknown } ? true : false;
 const arbitraryJQueryHasStar: ArbitraryJQueryHasStar = false;
@@ -1579,9 +1604,11 @@ const renderAdapter: StarRenderAdapter = createRenderAdapter(installed);
 const renderTransaction: StarRenderTransaction = renderAdapter.begin(document.documentElement);
 const datastar = core.use(datastarPlugin);
 const ui: StarUIStatic = core.use(uiPlugin);
+const htmxCapability: StarHtmxCapability = { version: "2.0.10", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} };
+const htmx: StarHtmxBridge = core.use(createHtmxBridge({ $, htmx: htmxCapability, version: "2.0.10" }));
 const Turbo: StarTurboCapability = { cache: {}, session: {}, start() {}, visit() {} };
 const turbo: StarTurboBridge = core.use(createTurboBridge({ $, Turbo, version: "8.0.23" }));
-void [arbitraryJQueryHasStar, datastar.id, ui.enhance, turbo.observations, core.version, renderTransaction.operationId];
+void [arbitraryJQueryHasStar, datastar.id, ui.enhance, htmx.observations, turbo.observations, core.version, renderTransaction.operationId];
 `,
     );
     for (const resolution of ["NodeNext", "Bundler"]) {
@@ -1741,6 +1768,8 @@ installed.star.dispose();
         "typescript-csp-bundler",
       ],
       peerDependencies: {
+        htmxRange: htmxPeer,
+        htmxOptional: true,
         jqueryRange: jqueryPeer,
         turboRange: turboPeer,
         turboOptional: true,
@@ -1964,6 +1993,8 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "/dist/datastar-",
       "/dist/testing.js",
       "/dist/testing-",
+      "/dist/htmx.js",
+      "/dist/htmx-",
       "/dist/turbo.js",
       "/dist/turbo-",
       "/dist/csp.js",
@@ -2030,6 +2061,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/@playwright",
       "node_modules/@starfederation/datastar-sdk",
       "/dist/datastar-testing",
+      "/dist/htmx",
       "/dist/turbo",
       "/dist/csp",
     ]) {
@@ -2056,6 +2088,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/vitest",
       "node_modules/@playwright",
       "/dist/csp",
+      "/dist/htmx",
       "/dist/turbo",
     ]) {
       assert(
@@ -2086,6 +2119,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/ui.js",
       "/dist/datastar.js",
       "/dist/testing.js",
+      "/dist/htmx.js",
       "/dist/turbo.js",
     ]) {
       assert(
@@ -2115,11 +2149,37 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/ui",
       "/dist/datastar",
       "/dist/testing",
+      "/dist/htmx",
       "/dist/csp",
     ]) {
       assert(
         !turboBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
         `Installed Turbo graph contains ${forbidden}.`,
+      );
+    }
+    const htmxBundle = await buildOptionalGraph(
+      "htmx",
+      'import $ from "jquery"; import { installStarCore } from "jquery-star/core"; import { createHtmxBridge } from "jquery-star/htmx"; window.__htmxBridge = () => { const installed = installStarCore($); const htmx = { version: "2.0.10", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }; return installed.star.use(createHtmxBridge({ $, htmx, version: "2.0.10" })); };\n',
+    );
+    assert(
+      htmxBundle.bytes <= budgets.consumerBundles.htmxImportBytes,
+      `Installed htmx bundle is ${htmxBundle.bytes} bytes; budget is ${budgets.consumerBundles.htmxImportBytes}.`,
+    );
+    assert(
+      htmxBundle.gzipBytes <= budgets.consumerBundles.htmxImportGzipBytes,
+      `Installed htmx gzip bundle is ${htmxBundle.gzipBytes} bytes; budget is ${budgets.consumerBundles.htmxImportGzipBytes}.`,
+    );
+    for (const forbidden of [
+      "node_modules/htmx.org",
+      "/dist/ui",
+      "/dist/datastar",
+      "/dist/testing",
+      "/dist/turbo",
+      "/dist/csp",
+    ]) {
+      assert(
+        !htmxBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
+        `Installed htmx graph contains ${forbidden}.`,
       );
     }
     return {
@@ -2159,6 +2219,14 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
         gzipBudget: budgets.consumerBundles.datastarTestingImportGzipBytes,
         modules: datastarTestingBundle.modules.length,
         externalDOMAndRunners: "absent",
+      },
+      htmx: {
+        bytes: htmxBundle.bytes,
+        budget: budgets.consumerBundles.htmxImportBytes,
+        gzipBytes: htmxBundle.gzipBytes,
+        gzipBudget: budgets.consumerBundles.htmxImportGzipBytes,
+        modules: htmxBundle.modules.length,
+        hostPackage: "absent",
       },
       turbo: {
         bytes: turboBundle.bytes,

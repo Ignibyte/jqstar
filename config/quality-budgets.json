@@ -17,6 +17,10 @@
     "packedBytes": 32000,
     "unpackedBytes": 120000
   },
+  "htmxPackage": {
+    "packedBytes": 60000,
+    "unpackedBytes": 240000
+  },
   "bundles": {
     "dist/core.cjs": 1024,
     "dist/core.js": 1024,
@@ -26,6 +30,8 @@
     "dist/datastar.js": 512,
     "dist/datastar-testing.cjs": 6000,
     "dist/datastar-testing.js": 6000,
+    "dist/htmx.cjs": 18000,
+    "dist/htmx.js": 18000,
     "dist/jquery-star.cjs": 2048,
     "dist/jquery-star.js": 2048,
     "dist/jquery-star.umd.cjs": 464896,
@@ -48,6 +54,8 @@
     "testingImportGzipBytes": 85000,
     "datastarTestingImportBytes": 80000,
     "datastarTestingImportGzipBytes": 30000,
+    "htmxImportBytes": 240000,
+    "htmxImportGzipBytes": 75000,
     "turboImportBytes": 220000,
     "turboImportGzipBytes": 70000
   },

@@ -7,6 +7,7 @@
     "ratchet",
     "package",
     "cspPackage",
+    "htmxPackage",
     "turboPackage",
     "bundles",
     "consumerBundles",
@@ -52,6 +53,15 @@
       },
       "additionalProperties": false
     },
+    "htmxPackage": {
+      "type": "object",
+      "required": ["packedBytes", "unpackedBytes"],
+      "properties": {
+        "packedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "unpackedBytes": { "$ref": "#/$defs/positiveBudget" }
+      },
+      "additionalProperties": false
+    },
     "bundles": { "$ref": "#/$defs/namedPositiveBudgets" },
     "consumerBundles": {
       "type": "object",
@@ -66,6 +76,8 @@
         "testingImportGzipBytes",
         "datastarTestingImportBytes",
         "datastarTestingImportGzipBytes",
+        "htmxImportBytes",
+        "htmxImportGzipBytes",
         "turboImportBytes",
         "turboImportGzipBytes"
       ],
@@ -80,6 +92,8 @@
         "testingImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
         "datastarTestingImportBytes": { "$ref": "#/$defs/positiveBudget" },
         "datastarTestingImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "htmxImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "htmxImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
         "turboImportBytes": { "$ref": "#/$defs/positiveBudget" },
         "turboImportGzipBytes": { "$ref": "#/$defs/positiveBudget" }
       },

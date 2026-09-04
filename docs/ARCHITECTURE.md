@@ -102,13 +102,14 @@ events to that adapter. It shares a lifecycle state machine, overlap policy, red
 shape, and preservation checks without inventing a common host event API. Turbo and htmx retain
 ownership of requests, forms, redirects, cache, history, focus, and DOM mutation.
 
-`jquery-star/turbo` is the side-effect-free Turbo implementation of this boundary. Its explicit
-factory validates the injected capability and version before its document-scoped plugin registers
-listeners. It wraps only Turbo's public document and Frame render callbacks, owns only short-lived
-jQStar render transactions and bounded redacted observations, and leaves Turbo in control of every
-request and mutation. Ticket 0037 owns the separate future htmx plugin. Both follow the exact
-manifest in `quality/external-bridge-contract.json`. Core, root, UI, Datastar, CSP, and testing
-entries remain free of Turbo and htmx code.
+`jquery-star/turbo` and `jquery-star/htmx` are side-effect-free, host-specific implementations of
+this boundary. Each explicit factory validates its injected capability and version before its
+document-scoped plugin registers listeners. Turbo wraps public document and Frame render callbacks.
+The htmx bridge correlates public request, swap, cleanup, settle, out-of-band, history, and error
+events without calling a host rendering API. Both own only short-lived jQStar render transactions
+and bounded redacted observations, and both leave the host in control of every request and mutation.
+They follow the exact manifest in `quality/external-bridge-contract.json`. Core, root, UI, Datastar,
+CSP, and testing entries remain free of Turbo and htmx code.
 
 ## Plugin transactions
 

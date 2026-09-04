@@ -22,6 +22,7 @@
       "./csp": "0.4-preview",
       "./datastar": "0.4-preview",
       "./datastar/testing": "0.4-preview",
+      "./htmx": "0.4-preview",
       "./testing": "0.4-preview",
       "./turbo": "0.4-preview",
       "./ui": "0.4-preview"
@@ -35,6 +36,7 @@
     "reactivity",
     "declarative",
     "datastar",
+    "htmx",
     "signals"
   ],
   "sideEffects": [
@@ -107,6 +109,16 @@
       "require": {
         "types": "./dist/testing.d.cts",
         "default": "./dist/testing.cjs"
+      }
+    },
+    "./htmx": {
+      "import": {
+        "types": "./dist/htmx.d.ts",
+        "default": "./dist/htmx.js"
+      },
+      "require": {
+        "types": "./dist/htmx.d.cts",
+        "default": "./dist/htmx.cjs"
       }
     },
     "./turbo": {
@@ -224,10 +236,14 @@
   },
   "peerDependencies": {
     "@hotwired/turbo": ">=8.0.21 <8.1.0",
+    "htmx.org": ">=2.0.0 <2.1.0",
     "jquery": ">=4.0.0 <5"
   },
   "peerDependenciesMeta": {
     "@hotwired/turbo": {
+      "optional": true
+    },
+    "htmx.org": {
       "optional": true
     }
   },
