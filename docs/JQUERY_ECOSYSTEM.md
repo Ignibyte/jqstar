@@ -69,8 +69,9 @@ ticket 0014.
 also says no significant new feature work is planned. OpenJS still lists it as Archived.
 
 jQStar's native components are the new-code path. Similar names do not imply source, API, styling,
-or instance compatibility. Ticket 0039 owns an exact installed coexistence fixture, representative
-migration, full catalog map, and evidence-scored adapter decision.
+or instance compatibility. The [jQuery UI migration guide](JQUERY_UI_MIGRATION.md) publishes the
+exact installed coexistence fixture, representative migration, full API map, and evidence-scored
+no-adapter decision.
 
 The policy-level capability map covers every official widget and interaction plus the contracts that
 catalog comparisons often hide:
@@ -86,8 +87,10 @@ catalog comparisons often hide:
 | ThemeRoller and UI classes                                                            | jQStar uses its own CSS variables and source-owned semantic markup.                             |
 | Third-party Widget Factory extensions                                                 | Application-owned coexistence only. Compatibility is assessed per application.                  |
 
-The complete 28-entry list and official API links are in the machine matrix. A counterpart means the
-same user need has a migration destination. It never means drop-in Widget Factory compatibility.
+The policy-level 28-entry capability list and official links remain in the ecosystem matrix. The
+downstream migration authority expands the official 1.14 catalog to 72 unique API URLs, each mapped
+exactly once to a detailed migration row. A counterpart means the same user need has a migration
+destination. It never means drop-in Widget Factory compatibility.
 
 ## jQuery Mobile contributes lessons, not runtime
 

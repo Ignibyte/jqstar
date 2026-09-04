@@ -30,6 +30,10 @@ async function main() {
   await validateInstance("config/quality-budgets.json", "schema/quality-budgets.schema.json");
   await validateInstance("quality/public-baseline.json", "schema/public-baseline.schema.json");
   await validateInstance("quality/jquery-ecosystem.json", "schema/jquery-ecosystem.schema.json");
+  await validateInstance(
+    "quality/jquery-ui-migration.json",
+    "schema/jquery-ui-migration.schema.json",
+  );
   const cspManifests = [
     "test/fixtures/csp/contract.json",
     "test/fixtures/csp/accepted.json",
@@ -44,7 +48,7 @@ async function main() {
   const schemas = jsonFiles.filter((path) => path.endsWith(".schema.json"));
   for (const schema of schemas) createSchemaValidator(await readJSON(schema));
   process.stdout.write(
-    `JSON and schemas: ${jsonFiles.length} files parsed, ${5 + cspManifests.length} instances and ${schemas.length} schemas validated\n`,
+    `JSON and schemas: ${jsonFiles.length} files parsed, ${6 + cspManifests.length} instances and ${schemas.length} schemas validated\n`,
   );
 }
 

@@ -32,6 +32,8 @@ The package has two public layers:
   state machine, event mappings, preservation, ownership, and downstream bridge requirements.
 - [JQUERY_ECOSYSTEM.md](JQUERY_ECOSYSTEM.md): current jQuery project statuses, package boundaries,
   migration roles, naming, and independent-project policy.
+- [JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md): exact jQuery UI coexistence ownership, complete
+  API map, incremental migration sequence, measurements, and no-adapter decision.
 - [security/CSP_THREAT_MODEL.md](security/CSP_THREAT_MODEL.md): CSP engine assets, trust boundaries,
   abuse cases, mitigations, and downstream security gates.
 - [COMPONENT_ARCHITECTURE.md](COMPONENT_ARCHITECTURE.md): component public contracts.

@@ -1,0 +1,1622 @@
+{
+  "$schema": "../schema/jquery-ui-migration.schema.json",
+  "schema": "jqstar-jquery-ui-migration/1",
+  "reviewedAt": "2026-09-04T15:30:00Z",
+  "sourceMatrix": {
+    "path": "quality/jquery-ecosystem.json",
+    "sha256": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718"
+  },
+  "packages": {
+    "jquery": {
+      "name": "jquery",
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/jquery/-/jquery-4.0.0.tgz",
+      "integrity": "sha512-TXCHVR3Lb6TZdtw1l3RTLf8RBWVGexdxL6AC8/e0xZKEpBflBsjh9/8LXw+dkNFuOyW9B7iB3O1sP7hS0Kiacg==",
+      "shasum": "95c33ac29005ff72ec444c5ba1cf457e61404fbb",
+      "role": "peer-and-fixture"
+    },
+    "jqueryUi": {
+      "name": "jquery-ui",
+      "version": "1.14.2",
+      "resolved": "https://registry.npmjs.org/jquery-ui/-/jquery-ui-1.14.2.tgz",
+      "integrity": "sha512-1gSl7PUjyipa2adSr780Ujk16faicrV7PjPPzPtvWk7tTqBnsqp67NNV9jZK2+BIxUPXWSnIUU/LBCgwgGZE+Q==",
+      "shasum": "515288b5c730b720acca6e53a0366827ad834053",
+      "role": "fixture-only"
+    }
+  },
+  "sources": [
+    {
+      "id": "openjs.archived-projects",
+      "kind": "status",
+      "url": "https://github.com/openjs-foundation/cross-project-council",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery-ui.release-1.14.2",
+      "kind": "release",
+      "url": "https://blog.jqueryui.com/2026/01/jquery-ui-1-14-2-released/",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery-ui.api-1.14",
+      "kind": "catalog",
+      "url": "https://api.jqueryui.com/",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery.release-4.0.0",
+      "kind": "release",
+      "url": "https://blog.jquery.com/2026/01/17/jquery-4-0-0/",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery.support",
+      "kind": "support",
+      "url": "https://jquery.com/support/",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery-ui.upgrade-1.14",
+      "kind": "migration",
+      "url": "https://jqueryui.com/upgrade-guide/1.14/",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery-migrate.workflow",
+      "kind": "migration",
+      "url": "https://github.com/jquery/jquery-migrate/blob/main/README.md",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    },
+    {
+      "id": "jquery-ui.themeroller",
+      "kind": "theme",
+      "url": "https://jqueryui.com/themeroller/",
+      "reviewedAt": "2026-09-04T15:30:00Z"
+    }
+  ],
+  "migrationClasses": [
+    "direct-semantic",
+    "changed-contract",
+    "external-coexistence",
+    "no-equivalent"
+  ],
+  "officialInventory": [
+    {
+      "id": "jquery-ui.widget.accordion",
+      "category": "widget",
+      "name": "Accordion",
+      "url": "https://api.jqueryui.com/accordion/",
+      "matrixId": "migration.widget.accordion"
+    },
+    {
+      "id": "jquery-ui.widget.autocomplete",
+      "category": "widget",
+      "name": "Autocomplete",
+      "url": "https://api.jqueryui.com/autocomplete/",
+      "matrixId": "migration.widget.autocomplete"
+    },
+    {
+      "id": "jquery-ui.widget.button",
+      "category": "widget",
+      "name": "Button",
+      "url": "https://api.jqueryui.com/button/",
+      "matrixId": "migration.widget.button"
+    },
+    {
+      "id": "jquery-ui.widget.buttonset",
+      "category": "widget",
+      "name": "Buttonset",
+      "url": "https://api.jqueryui.com/buttonset/",
+      "matrixId": "migration.widget.buttonset"
+    },
+    {
+      "id": "jquery-ui.widget.checkboxradio",
+      "category": "widget",
+      "name": "Checkboxradio",
+      "url": "https://api.jqueryui.com/checkboxradio/",
+      "matrixId": "migration.widget.checkboxradio"
+    },
+    {
+      "id": "jquery-ui.widget.controlgroup",
+      "category": "widget",
+      "name": "Controlgroup",
+      "url": "https://api.jqueryui.com/controlgroup/",
+      "matrixId": "migration.widget.controlgroup"
+    },
+    {
+      "id": "jquery-ui.widget.datepicker",
+      "category": "widget",
+      "name": "Datepicker",
+      "url": "https://api.jqueryui.com/datepicker/",
+      "matrixId": "migration.widget.datepicker"
+    },
+    {
+      "id": "jquery-ui.widget.dialog",
+      "category": "widget",
+      "name": "Dialog",
+      "url": "https://api.jqueryui.com/dialog/",
+      "matrixId": "migration.widget.dialog"
+    },
+    {
+      "id": "jquery-ui.widget.menu",
+      "category": "widget",
+      "name": "Menu",
+      "url": "https://api.jqueryui.com/menu/",
+      "matrixId": "migration.widget.menu"
+    },
+    {
+      "id": "jquery-ui.widget.progressbar",
+      "category": "widget",
+      "name": "Progressbar",
+      "url": "https://api.jqueryui.com/progressbar/",
+      "matrixId": "migration.widget.progressbar"
+    },
+    {
+      "id": "jquery-ui.widget.selectmenu",
+      "category": "widget",
+      "name": "Selectmenu",
+      "url": "https://api.jqueryui.com/selectmenu/",
+      "matrixId": "migration.widget.selectmenu"
+    },
+    {
+      "id": "jquery-ui.widget.slider",
+      "category": "widget",
+      "name": "Slider",
+      "url": "https://api.jqueryui.com/slider/",
+      "matrixId": "migration.widget.slider"
+    },
+    {
+      "id": "jquery-ui.widget.spinner",
+      "category": "widget",
+      "name": "Spinner",
+      "url": "https://api.jqueryui.com/spinner/",
+      "matrixId": "migration.widget.spinner"
+    },
+    {
+      "id": "jquery-ui.widget.tabs",
+      "category": "widget",
+      "name": "Tabs",
+      "url": "https://api.jqueryui.com/tabs/",
+      "matrixId": "migration.widget.tabs"
+    },
+    {
+      "id": "jquery-ui.widget.tooltip",
+      "category": "widget",
+      "name": "Tooltip",
+      "url": "https://api.jqueryui.com/tooltip/",
+      "matrixId": "migration.widget.tooltip"
+    },
+    {
+      "id": "jquery-ui.interaction.draggable",
+      "category": "interaction",
+      "name": "Draggable",
+      "url": "https://api.jqueryui.com/draggable/",
+      "matrixId": "migration.interaction.draggable"
+    },
+    {
+      "id": "jquery-ui.interaction.droppable",
+      "category": "interaction",
+      "name": "Droppable",
+      "url": "https://api.jqueryui.com/droppable/",
+      "matrixId": "migration.interaction.droppable"
+    },
+    {
+      "id": "jquery-ui.interaction.mouse",
+      "category": "interaction",
+      "name": "Mouse",
+      "url": "https://api.jqueryui.com/mouse/",
+      "matrixId": "migration.interaction.mouse"
+    },
+    {
+      "id": "jquery-ui.interaction.resizable",
+      "category": "interaction",
+      "name": "Resizable",
+      "url": "https://api.jqueryui.com/resizable/",
+      "matrixId": "migration.interaction.resizable"
+    },
+    {
+      "id": "jquery-ui.interaction.selectable",
+      "category": "interaction",
+      "name": "Selectable",
+      "url": "https://api.jqueryui.com/selectable/",
+      "matrixId": "migration.interaction.selectable"
+    },
+    {
+      "id": "jquery-ui.interaction.sortable",
+      "category": "interaction",
+      "name": "Sortable",
+      "url": "https://api.jqueryui.com/sortable/",
+      "matrixId": "migration.interaction.sortable"
+    },
+    {
+      "id": "jquery-ui.effect.add-class",
+      "category": "effect",
+      "name": ".addClass()",
+      "url": "https://api.jqueryui.com/addClass/",
+      "matrixId": "migration.effects.class-animation"
+    },
+    {
+      "id": "jquery-ui.effect.blind",
+      "category": "effect",
+      "name": "Blind",
+      "url": "https://api.jqueryui.com/blind-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.bounce",
+      "category": "effect",
+      "name": "Bounce",
+      "url": "https://api.jqueryui.com/bounce-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.clip",
+      "category": "effect",
+      "name": "Clip",
+      "url": "https://api.jqueryui.com/clip-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.color-animation",
+      "category": "effect",
+      "name": "Color Animation",
+      "url": "https://api.jqueryui.com/color-animation/",
+      "matrixId": "migration.effects.class-animation"
+    },
+    {
+      "id": "jquery-ui.effect.css-clip",
+      "category": "effect",
+      "name": ".cssClip()",
+      "url": "https://api.jqueryui.com/cssClip/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.drop",
+      "category": "effect",
+      "name": "Drop",
+      "url": "https://api.jqueryui.com/drop-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.easings",
+      "category": "effect",
+      "name": "Easings",
+      "url": "https://api.jqueryui.com/easings/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.effect-method",
+      "category": "effect",
+      "name": ".effect()",
+      "url": "https://api.jqueryui.com/effect/",
+      "matrixId": "migration.effects.visibility-methods"
+    },
+    {
+      "id": "jquery-ui.effect.explode",
+      "category": "effect",
+      "name": "Explode",
+      "url": "https://api.jqueryui.com/explode-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.fade",
+      "category": "effect",
+      "name": "Fade",
+      "url": "https://api.jqueryui.com/fade-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.fold",
+      "category": "effect",
+      "name": "Fold",
+      "url": "https://api.jqueryui.com/fold-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.hide",
+      "category": "effect",
+      "name": ".hide()",
+      "url": "https://api.jqueryui.com/hide/",
+      "matrixId": "migration.effects.visibility-methods"
+    },
+    {
+      "id": "jquery-ui.effect.highlight",
+      "category": "effect",
+      "name": "Highlight",
+      "url": "https://api.jqueryui.com/highlight-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.clip-to-box",
+      "category": "effect",
+      "name": "jQuery.effects.clipToBox()",
+      "url": "https://api.jqueryui.com/jQuery.effects.clipToBox/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.create-placeholder",
+      "category": "effect",
+      "name": "jQuery.effects.createPlaceholder()",
+      "url": "https://api.jqueryui.com/jQuery.effects.createPlaceholder/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.define",
+      "category": "effect",
+      "name": "jQuery.effects.define()",
+      "url": "https://api.jqueryui.com/jQuery.effects.define/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.remove-placeholder",
+      "category": "effect",
+      "name": "jQuery.effects.removePlaceholder()",
+      "url": "https://api.jqueryui.com/jQuery.effects.removePlaceholder/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.restore-style",
+      "category": "effect",
+      "name": "jQuery.effects.restoreStyle()",
+      "url": "https://api.jqueryui.com/jQuery.effects.restoreStyle/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.save-style",
+      "category": "effect",
+      "name": "jQuery.effects.saveStyle()",
+      "url": "https://api.jqueryui.com/jQuery.effects.saveStyle/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.scaled-dimensions",
+      "category": "effect",
+      "name": "jQuery.effects.scaledDimensions()",
+      "url": "https://api.jqueryui.com/jQuery.effects.scaledDimensions/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.puff",
+      "category": "effect",
+      "name": "Puff",
+      "url": "https://api.jqueryui.com/puff-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.pulsate",
+      "category": "effect",
+      "name": "Pulsate",
+      "url": "https://api.jqueryui.com/pulsate-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.remove-class",
+      "category": "effect",
+      "name": ".removeClass()",
+      "url": "https://api.jqueryui.com/removeClass/",
+      "matrixId": "migration.effects.class-animation"
+    },
+    {
+      "id": "jquery-ui.effect.scale",
+      "category": "effect",
+      "name": "Scale",
+      "url": "https://api.jqueryui.com/scale-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.shake",
+      "category": "effect",
+      "name": "Shake",
+      "url": "https://api.jqueryui.com/shake-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.show",
+      "category": "effect",
+      "name": ".show()",
+      "url": "https://api.jqueryui.com/show/",
+      "matrixId": "migration.effects.visibility-methods"
+    },
+    {
+      "id": "jquery-ui.effect.size",
+      "category": "effect",
+      "name": "Size",
+      "url": "https://api.jqueryui.com/size-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.slide",
+      "category": "effect",
+      "name": "Slide",
+      "url": "https://api.jqueryui.com/slide-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.effect.switch-class",
+      "category": "effect",
+      "name": ".switchClass()",
+      "url": "https://api.jqueryui.com/switchClass/",
+      "matrixId": "migration.effects.class-animation"
+    },
+    {
+      "id": "jquery-ui.effect.toggle",
+      "category": "effect",
+      "name": ".toggle()",
+      "url": "https://api.jqueryui.com/toggle/",
+      "matrixId": "migration.effects.visibility-methods"
+    },
+    {
+      "id": "jquery-ui.effect.toggle-class",
+      "category": "effect",
+      "name": ".toggleClass()",
+      "url": "https://api.jqueryui.com/toggleClass/",
+      "matrixId": "migration.effects.class-animation"
+    },
+    {
+      "id": "jquery-ui.effect.transfer-method",
+      "category": "effect",
+      "name": ".transfer()",
+      "url": "https://api.jqueryui.com/transfer/",
+      "matrixId": "migration.effects.internal-utilities"
+    },
+    {
+      "id": "jquery-ui.effect.transfer",
+      "category": "effect",
+      "name": "Transfer",
+      "url": "https://api.jqueryui.com/transfer-effect/",
+      "matrixId": "migration.effects.catalog"
+    },
+    {
+      "id": "jquery-ui.method.labels",
+      "category": "method",
+      "name": ".labels()",
+      "url": "https://api.jqueryui.com/labels/",
+      "matrixId": "migration.method.labels"
+    },
+    {
+      "id": "jquery-ui.method.position",
+      "category": "method",
+      "name": ".position()",
+      "url": "https://api.jqueryui.com/position/",
+      "matrixId": "migration.method.position"
+    },
+    {
+      "id": "jquery-ui.method.disable-selection",
+      "category": "method",
+      "name": ".disableSelection()",
+      "url": "https://api.jqueryui.com/disableSelection/",
+      "matrixId": "migration.method.selection-control"
+    },
+    {
+      "id": "jquery-ui.method.enable-selection",
+      "category": "method",
+      "name": ".enableSelection()",
+      "url": "https://api.jqueryui.com/enableSelection/",
+      "matrixId": "migration.method.selection-control"
+    },
+    {
+      "id": "jquery-ui.method.remove-unique-id",
+      "category": "method",
+      "name": ".removeUniqueId()",
+      "url": "https://api.jqueryui.com/removeUniqueId/",
+      "matrixId": "migration.method.unique-id"
+    },
+    {
+      "id": "jquery-ui.method.scroll-parent",
+      "category": "method",
+      "name": ".scrollParent()",
+      "url": "https://api.jqueryui.com/scrollParent/",
+      "matrixId": "migration.method.scroll-parent"
+    },
+    {
+      "id": "jquery-ui.method.unique-id",
+      "category": "method",
+      "name": ".uniqueId()",
+      "url": "https://api.jqueryui.com/uniqueId/",
+      "matrixId": "migration.method.unique-id"
+    },
+    {
+      "id": "jquery-ui.selector.data",
+      "category": "selector",
+      "name": ":data",
+      "url": "https://api.jqueryui.com/data-selector/",
+      "matrixId": "migration.selector.data"
+    },
+    {
+      "id": "jquery-ui.selector.focusable",
+      "category": "selector",
+      "name": ":focusable",
+      "url": "https://api.jqueryui.com/focusable-selector/",
+      "matrixId": "migration.selector.focusable"
+    },
+    {
+      "id": "jquery-ui.selector.tabbable",
+      "category": "selector",
+      "name": ":tabbable",
+      "url": "https://api.jqueryui.com/tabbable-selector/",
+      "matrixId": "migration.selector.tabbable"
+    },
+    {
+      "id": "jquery-ui.utility.key-code",
+      "category": "utility",
+      "name": "jQuery.ui.keyCode",
+      "url": "https://api.jqueryui.com/jQuery.ui.keyCode/",
+      "matrixId": "migration.utility.key-code"
+    },
+    {
+      "id": "jquery-ui.contract.form-reset-mixin",
+      "category": "contract",
+      "name": "Form Reset Mixin",
+      "url": "https://api.jqueryui.com/form-reset-mixin/",
+      "matrixId": "migration.contract.form-reset"
+    },
+    {
+      "id": "jquery-ui.contract.widget-factory",
+      "category": "contract",
+      "name": "Widget Factory",
+      "url": "https://api.jqueryui.com/jQuery.widget/",
+      "matrixId": "migration.contract.widget-factory"
+    },
+    {
+      "id": "jquery-ui.contract.widget-plugin-bridge",
+      "category": "contract",
+      "name": "Widget Plugin Bridge",
+      "url": "https://api.jqueryui.com/jQuery.widget.bridge/",
+      "matrixId": "migration.contract.plugin-bridge"
+    },
+    {
+      "id": "jquery-ui.theme.css-framework",
+      "category": "theme",
+      "name": "CSS Framework",
+      "url": "https://api.jqueryui.com/theming/css-framework/",
+      "matrixId": "migration.theme.css-framework"
+    },
+    {
+      "id": "jquery-ui.theme.icons",
+      "category": "theme",
+      "name": "Icons",
+      "url": "https://api.jqueryui.com/theming/icons/",
+      "matrixId": "migration.theme.icons"
+    },
+    {
+      "id": "jquery-ui.theme.stacking-elements",
+      "category": "theme",
+      "name": "Stacking Elements",
+      "url": "https://api.jqueryui.com/theming/stacking-elements/",
+      "matrixId": "migration.theme.stacking"
+    }
+  ],
+  "matrix": [
+    {
+      "id": "migration.widget.accordion",
+      "inventoryIds": ["jquery-ui.widget.accordion"],
+      "legacySemantics": "Widget-managed headers, panels, options, methods, events, data, and theme classes.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["registry/components/accordion.html"],
+      "markupApiChange": "Author heading buttons and disclosure panels in source HTML; registry actions replace plugin calls.",
+      "accessibilityFallback": "Headings and content remain readable without JavaScript; buttons expose expanded state.",
+      "coexistenceRule": "Keep legacy and jQStar accordion roots disjoint and initialize each once.",
+      "knownGaps": "No Widget Factory methods, option mutation, event payload, animation option, or theme class compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#accordion",
+      "testId": "JQUI-WIDGET-ACCORDION"
+    },
+    {
+      "id": "migration.widget.autocomplete",
+      "inventoryIds": ["jquery-ui.widget.autocomplete"],
+      "legacySemantics": "Plugin-owned menu, asynchronous source callbacks, selection events, and instance methods.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["registry/components/combobox.html"],
+      "markupApiChange": "Use a labelled input, source-owned listbox, named actions, and application request code.",
+      "accessibilityFallback": "The input remains labelled and submittable; suggestions are optional enhancement.",
+      "coexistenceRule": "Do not initialize both plugins on one input or share suggestion-popup ownership.",
+      "knownGaps": "No source callback, plugin instance, menu widget, or jQuery UI event compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#autocomplete",
+      "testId": "JQUI-WIDGET-AUTOCOMPLETE"
+    },
+    {
+      "id": "migration.widget.button",
+      "inventoryIds": ["jquery-ui.widget.button"],
+      "legacySemantics": "Imperative enhancement and theme classes restyle buttons, inputs, and anchors.",
+      "migrationClass": "direct-semantic",
+      "counterparts": ["native button", "registry/components/button.html"],
+      "markupApiChange": "Keep a native button or link and apply the documented data-jqs styling contract.",
+      "accessibilityFallback": "Native activation, disabled state, form submission, and link navigation remain authoritative.",
+      "coexistenceRule": "Remove the legacy button instance before applying jQStar presentation to the same element.",
+      "knownGaps": "No icon option, refresh method, or UI theme-class compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#button",
+      "testId": "JQUI-WIDGET-BUTTON"
+    },
+    {
+      "id": "migration.widget.buttonset",
+      "inventoryIds": ["jquery-ui.widget.buttonset"],
+      "legacySemantics": "A retired wrapper plugin discovers child controls and manages group corners and refresh.",
+      "migrationClass": "changed-contract",
+      "counterparts": [
+        "registry/components/button-group.html",
+        "registry/components/toggle-group.html"
+      ],
+      "markupApiChange": "Choose a semantic button group or pressed-control group and author every member.",
+      "accessibilityFallback": "Native controls and group labels remain usable without enhancement.",
+      "coexistenceRule": "Do not run legacy child discovery inside a jQStar group.",
+      "knownGaps": "No automatic descendant discovery, corner classes, or refresh bridge.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#buttonset-and-controlgroup",
+      "testId": "JQUI-WIDGET-BUTTONSET"
+    },
+    {
+      "id": "migration.widget.checkboxradio",
+      "inventoryIds": ["jquery-ui.widget.checkboxradio"],
+      "legacySemantics": "Checkboxes and radios are visually replaced by a themeable button widget.",
+      "migrationClass": "direct-semantic",
+      "counterparts": [
+        "native checkbox",
+        "native radio",
+        "registry/components/checkbox.html",
+        "registry/components/radio-group.html"
+      ],
+      "markupApiChange": "Retain labelled native inputs as the submitted state and use source-owned styling.",
+      "accessibilityFallback": "Browser checkbox and radio semantics survive without CSS or JavaScript.",
+      "coexistenceRule": "Destroy checkboxradio before removing its generated label classes and adding jQStar styling.",
+      "knownGaps": "No plugin refresh, icon option, or themeable-button API.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#checkboxradio",
+      "testId": "JQUI-WIDGET-CHECKBOXRADIO"
+    },
+    {
+      "id": "migration.widget.controlgroup",
+      "inventoryIds": ["jquery-ui.widget.controlgroup"],
+      "legacySemantics": "The plugin discovers supported child widgets and manages direction, disabled state, and corners.",
+      "migrationClass": "changed-contract",
+      "counterparts": [
+        "registry/components/button-group.html",
+        "registry/components/input-group.html"
+      ],
+      "markupApiChange": "Author an explicit labelled group and choose its native controls.",
+      "accessibilityFallback": "Fieldset, legend, labels, and native controls remain usable.",
+      "coexistenceRule": "A legacy controlgroup may sit beside, not wrap, a jQStar component root.",
+      "knownGaps": "No automatic widget discovery, shared option propagation, or theme corner contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#buttonset-and-controlgroup",
+      "testId": "JQUI-WIDGET-CONTROLGROUP"
+    },
+    {
+      "id": "migration.widget.datepicker",
+      "inventoryIds": ["jquery-ui.widget.datepicker"],
+      "legacySemantics": "An input-attached calendar plugin owns parsing, formatting, popup placement, and callbacks.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["native input[type=date]", "registry/components/date-picker.html"],
+      "markupApiChange": "Prefer a labelled native date input; use the explicit jQStar calendar composition only when required.",
+      "accessibilityFallback": "The input retains name, value, constraints, validation, and direct form submission.",
+      "coexistenceRule": "Never attach both datepicker implementations to the same input.",
+      "knownGaps": "No jQuery UI date formatting, regional bundle, callback, or option compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#project-editor-sequence",
+      "testId": "JQUI-WIDGET-DATEPICKER"
+    },
+    {
+      "id": "migration.widget.dialog",
+      "inventoryIds": ["jquery-ui.widget.dialog"],
+      "legacySemantics": "Generated wrapper, overlay, focus lifecycle, options, methods, callbacks, and stacking.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["native dialog", "registry/components/dialog.html"],
+      "markupApiChange": "Use a source-owned dialog element and named open/close actions.",
+      "accessibilityFallback": "Dialog content remains in source HTML; a nonmodal fallback link or section remains available.",
+      "coexistenceRule": "Legacy and native dialogs own separate portals, overlays, focus return, and z-index layers.",
+      "knownGaps": "No plugin options, drag/resize integration, generated wrapper, or event payload compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#project-editor-sequence",
+      "testId": "JQUI-WIDGET-DIALOG"
+    },
+    {
+      "id": "migration.widget.menu",
+      "inventoryIds": ["jquery-ui.widget.menu"],
+      "legacySemantics": "A list plugin adds menu roles, focus management, submenu behavior, and callbacks.",
+      "migrationClass": "changed-contract",
+      "counterparts": [
+        "registry/components/dropdown-menu.html",
+        "registry/components/context-menu.html"
+      ],
+      "markupApiChange": "Choose a menu-button or context-menu pattern with explicit trigger, items, and named actions.",
+      "accessibilityFallback": "Commands use native buttons; navigation uses native links.",
+      "coexistenceRule": "Separate triggers, popup roots, document handlers, and focus ownership.",
+      "knownGaps": "No direct menu plugin, role inference, position option, or UI event payload compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#command-toolbar",
+      "testId": "JQUI-WIDGET-MENU"
+    },
+    {
+      "id": "migration.widget.progressbar",
+      "inventoryIds": ["jquery-ui.widget.progressbar"],
+      "legacySemantics": "A div-based plugin renders determinate or indeterminate progress and change events.",
+      "migrationClass": "direct-semantic",
+      "counterparts": ["native progress", "registry/components/progress.html"],
+      "markupApiChange": "Use a labelled progress element and update its native value.",
+      "accessibilityFallback": "Native progress semantics remain available without JavaScript.",
+      "coexistenceRule": "Do not initialize the plugin on the native jQStar progress root.",
+      "knownGaps": "No plugin change/complete event or theme class contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#direct-semantic-migrations",
+      "testId": "JQUI-WIDGET-PROGRESSBAR"
+    },
+    {
+      "id": "migration.widget.selectmenu",
+      "inventoryIds": ["jquery-ui.widget.selectmenu"],
+      "legacySemantics": "A select-backed custom button and popup expose plugin methods, options, and events.",
+      "migrationClass": "changed-contract",
+      "counterparts": [
+        "native select",
+        "registry/components/native-select.html",
+        "registry/components/select.html"
+      ],
+      "markupApiChange": "Prefer the original labelled select; use an explicit listbox composition only when native behavior is insufficient.",
+      "accessibilityFallback": "The native select retains its name, value, validation, keyboard behavior, and submit semantics.",
+      "coexistenceRule": "Destroy selectmenu before revealing or reusing the original select.",
+      "knownGaps": "No selectmenu rendering hooks, menu widget, width option, or event compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#direct-semantic-migrations",
+      "testId": "JQUI-WIDGET-SELECTMENU"
+    },
+    {
+      "id": "migration.widget.slider",
+      "inventoryIds": ["jquery-ui.widget.slider"],
+      "legacySemantics": "A div-based slider creates handles and emits plugin-specific start, slide, stop, and change events.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["native input[type=range]", "registry/components/slider.html"],
+      "markupApiChange": "Use a labelled range input as the value and translate application logic to input/change events.",
+      "accessibilityFallback": "Native keyboard, touch, constraints, and form semantics survive.",
+      "coexistenceRule": "Do not attach the legacy slider to a jQStar range control.",
+      "knownGaps": "No multiple handles, range fill API, plugin event payload, or option mutation compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#direct-semantic-migrations",
+      "testId": "JQUI-WIDGET-SLIDER"
+    },
+    {
+      "id": "migration.widget.spinner",
+      "inventoryIds": ["jquery-ui.widget.spinner"],
+      "legacySemantics": "An input wrapper adds step buttons, parsing, formatting, and plugin methods/events.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["native input[type=number]", "registry/components/number-field.html"],
+      "markupApiChange": "Keep a labelled number input and use explicit step controls only when needed.",
+      "accessibilityFallback": "Native min, max, step, validation, and submission remain authoritative.",
+      "coexistenceRule": "Destroy the wrapper before moving the input into a jQStar number field.",
+      "knownGaps": "No Globalize parsing, page step, plugin methods, or event compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#direct-semantic-migrations",
+      "testId": "JQUI-WIDGET-SPINNER"
+    },
+    {
+      "id": "migration.widget.tabs",
+      "inventoryIds": ["jquery-ui.widget.tabs"],
+      "legacySemantics": "The widget derives panels from anchors and manages activation, remote loading, disabled tabs, and callbacks.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["registry/components/tabs.html"],
+      "markupApiChange": "Author tab buttons and panels with stable IDs; keep server navigation as links when it is navigation.",
+      "accessibilityFallback": "Content stays in source HTML and direct URLs remain links where applicable.",
+      "coexistenceRule": "Keep tablists and panel IDs unique per ownership island.",
+      "knownGaps": "No remote-loading mode, collapsible option, plugin refresh, or callback payload compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#project-editor-sequence",
+      "testId": "JQUI-WIDGET-TABS"
+    },
+    {
+      "id": "migration.widget.tooltip",
+      "inventoryIds": ["jquery-ui.widget.tooltip"],
+      "legacySemantics": "Delegated title interception creates positioned tooltip content with plugin options and events.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["native title", "registry/components/tooltip.html"],
+      "markupApiChange": "Prefer concise native titles or author an explicit tooltip trigger/content relationship.",
+      "accessibilityFallback": "The accessible name cannot depend on the tooltip; native title is the minimal fallback.",
+      "coexistenceRule": "Do not delegate both tooltip systems over the same subtree.",
+      "knownGaps": "No content callback, track option, Position API, or plugin event compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#command-toolbar",
+      "testId": "JQUI-WIDGET-TOOLTIP"
+    },
+    {
+      "id": "migration.interaction.draggable",
+      "inventoryIds": ["jquery-ui.interaction.draggable"],
+      "legacySemantics": "Arbitrary elements become mouse-draggable with helpers, containment, snapping, and plugin events.",
+      "migrationClass": "external-coexistence",
+      "counterparts": [],
+      "markupApiChange": "Keep the application-owned plugin until the user task can be expressed by a bounded semantic component.",
+      "accessibilityFallback": "Provide keyboard commands and non-drag controls for the same operation.",
+      "coexistenceRule": "Legacy drag state and document handlers remain outside jQStar roots.",
+      "knownGaps": "jQStar has no generic draggable API or helper/containment/snap contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#generic-interactions",
+      "testId": "JQUI-INTERACTION-DRAGGABLE"
+    },
+    {
+      "id": "migration.interaction.droppable",
+      "inventoryIds": ["jquery-ui.interaction.droppable"],
+      "legacySemantics": "Drop targets coordinate accept, tolerance, scope, greedy nesting, and events with draggable instances.",
+      "migrationClass": "external-coexistence",
+      "counterparts": [],
+      "markupApiChange": "Keep the application-owned paired interaction or redesign as explicit move commands.",
+      "accessibilityFallback": "Every drop action requires a keyboard-operable alternative.",
+      "coexistenceRule": "Do not mix jQStar roots into a legacy drag/drop scope.",
+      "knownGaps": "No generic drop manager, tolerance modes, scopes, or event payloads.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#generic-interactions",
+      "testId": "JQUI-INTERACTION-DROPPABLE"
+    },
+    {
+      "id": "migration.interaction.mouse",
+      "inventoryIds": ["jquery-ui.interaction.mouse"],
+      "legacySemantics": "A Widget Factory base class normalizes mouse capture, distance, delay, start, drag, and stop hooks.",
+      "migrationClass": "no-equivalent",
+      "counterparts": [],
+      "markupApiChange": "Use native pointer events inside a bounded component and pair them with keyboard behavior.",
+      "accessibilityFallback": "The feature must work without precision dragging and expose keyboard controls.",
+      "coexistenceRule": "jQStar does not inherit, patch, or call the mouse base class.",
+      "knownGaps": "No public interaction base class or Widget Factory extension surface.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#generic-interactions",
+      "testId": "JQUI-INTERACTION-MOUSE"
+    },
+    {
+      "id": "migration.interaction.resizable",
+      "inventoryIds": ["jquery-ui.interaction.resizable"],
+      "legacySemantics": "Arbitrary elements receive handles, constraints, helpers, animation, and resize callbacks.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["registry/components/resizable.html"],
+      "markupApiChange": "Use the bounded panel recipe with source-owned handles, named actions, and declared size state.",
+      "accessibilityFallback": "Expose keyboard resize buttons and preserve readable content at every supported size.",
+      "coexistenceRule": "Do not attach both implementations to one panel or share handles.",
+      "knownGaps": "No arbitrary-element, aspect-ratio, animate, alsoResize, or plugin callback compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#generic-interactions",
+      "testId": "JQUI-INTERACTION-RESIZABLE"
+    },
+    {
+      "id": "migration.interaction.selectable",
+      "inventoryIds": ["jquery-ui.interaction.selectable"],
+      "legacySemantics": "Pointer lasso state selects arbitrary descendant elements and emits selecting/selected events.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["native checkbox", "native select"],
+      "markupApiChange": "Model selection with the semantic control appropriate to the data, not a generic lasso.",
+      "accessibilityFallback": "Checkboxes, listboxes, or table selection commands provide keyboard and form state.",
+      "coexistenceRule": "Legacy lasso regions remain separate until redesigned.",
+      "knownGaps": "No lasso tolerance, selecting classes, or generic selection event contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#generic-interactions",
+      "testId": "JQUI-INTERACTION-SELECTABLE"
+    },
+    {
+      "id": "migration.interaction.sortable",
+      "inventoryIds": ["jquery-ui.interaction.sortable"],
+      "legacySemantics": "Items can be reordered or connected across lists through pointer helpers, placeholders, options, and events.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["registry/components/sortable.html"],
+      "markupApiChange": "Use a source-owned ordered list with explicit drag handles, hidden form order, and named keyboard/pointer actions.",
+      "accessibilityFallback": "Move-up and move-down controls preserve ordering without drag and submit the same value.",
+      "coexistenceRule": "A list belongs to exactly one sortable implementation and one application form.",
+      "knownGaps": "No connectWith, helper clone, arbitrary item selector, or UI event payload compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#project-editor-sequence",
+      "testId": "JQUI-INTERACTION-SORTABLE"
+    },
+    {
+      "id": "migration.effects.class-animation",
+      "inventoryIds": [
+        "jquery-ui.effect.add-class",
+        "jquery-ui.effect.color-animation",
+        "jquery-ui.effect.remove-class",
+        "jquery-ui.effect.switch-class",
+        "jquery-ui.effect.toggle-class"
+      ],
+      "legacySemantics": "jQuery class methods and color properties accept effect duration, easing, and completion behavior.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["CSS transitions", "Web Animations API"],
+      "markupApiChange": "Change documented state attributes or classes and let application CSS animate nonessential presentation.",
+      "accessibilityFallback": "Disable nonessential motion under prefers-reduced-motion and preserve the final state without animation.",
+      "coexistenceRule": "Legacy effects may run only inside the legacy island and cannot animate jQStar ownership state.",
+      "knownGaps": "No overloaded jQuery methods, color animation engine, easing catalog, or callback compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#effects",
+      "testId": "JQUI-EFFECT-CLASS"
+    },
+    {
+      "id": "migration.effects.catalog",
+      "inventoryIds": [
+        "jquery-ui.effect.blind",
+        "jquery-ui.effect.bounce",
+        "jquery-ui.effect.clip",
+        "jquery-ui.effect.drop",
+        "jquery-ui.effect.explode",
+        "jquery-ui.effect.fade",
+        "jquery-ui.effect.fold",
+        "jquery-ui.effect.highlight",
+        "jquery-ui.effect.puff",
+        "jquery-ui.effect.pulsate",
+        "jquery-ui.effect.scale",
+        "jquery-ui.effect.shake",
+        "jquery-ui.effect.size",
+        "jquery-ui.effect.slide",
+        "jquery-ui.effect.transfer"
+      ],
+      "legacySemantics": "Named visual effects expose effect-specific option bags, duration, easing, queueing, and completion callbacks.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["CSS transitions", "Web Animations API"],
+      "markupApiChange": "Treat motion as optional application presentation attached to a semantic state change.",
+      "accessibilityFallback": "The state change must complete immediately under reduced motion and when animation APIs are absent.",
+      "coexistenceRule": "Do not load effects as a hidden dependency of native jQStar components.",
+      "knownGaps": "No named effects, effect option schemas, queues, or callback contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#effects",
+      "testId": "JQUI-EFFECT-CATALOG"
+    },
+    {
+      "id": "migration.effects.visibility-methods",
+      "inventoryIds": [
+        "jquery-ui.effect.effect-method",
+        "jquery-ui.effect.hide",
+        "jquery-ui.effect.show",
+        "jquery-ui.effect.toggle"
+      ],
+      "legacySemantics": "Effect-aware methods overload jQuery visibility APIs with named effects and completion callbacks.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["hidden attribute", "dialog open state", "documented data-state attributes"],
+      "markupApiChange": "Set the semantic visibility state through native HTML or a named component action.",
+      "accessibilityFallback": "Hidden and open states must match focusability and accessibility-tree exposure without motion.",
+      "coexistenceRule": "One owner changes an element's visibility state; do not alternate legacy and jQStar calls.",
+      "knownGaps": "No named-effect overload, duration queue, or completion callback compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#effects",
+      "testId": "JQUI-EFFECT-VISIBILITY"
+    },
+    {
+      "id": "migration.effects.internal-utilities",
+      "inventoryIds": [
+        "jquery-ui.effect.css-clip",
+        "jquery-ui.effect.easings",
+        "jquery-ui.effect.clip-to-box",
+        "jquery-ui.effect.create-placeholder",
+        "jquery-ui.effect.define",
+        "jquery-ui.effect.remove-placeholder",
+        "jquery-ui.effect.restore-style",
+        "jquery-ui.effect.save-style",
+        "jquery-ui.effect.scaled-dimensions",
+        "jquery-ui.effect.transfer-method"
+      ],
+      "legacySemantics": "Effects utilities expose clipping, easing, placeholder, style snapshot, dimension, definition, and transfer internals.",
+      "migrationClass": "no-equivalent",
+      "counterparts": [],
+      "markupApiChange": "Do not translate internal calls; replace the user-visible state change with native HTML and bounded application CSS.",
+      "accessibilityFallback": "No semantic behavior may depend on an effects utility.",
+      "coexistenceRule": "Legacy application code owns these utilities until the effect is removed.",
+      "knownGaps": "No compatible utility functions, internal extension surface, or transfer helper.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#effects",
+      "testId": "JQUI-EFFECT-UTILITIES"
+    },
+    {
+      "id": "migration.method.labels",
+      "inventoryIds": ["jquery-ui.method.labels"],
+      "legacySemantics": "The method returns labels associated with the first matched control.",
+      "migrationClass": "direct-semantic",
+      "counterparts": ["HTMLElement.labels", "explicit label[for]"],
+      "markupApiChange": "Use the native labels collection or explicit source-owned label relationships.",
+      "accessibilityFallback": "Every form control keeps a persistent accessible label.",
+      "coexistenceRule": "Label ownership is native and shared; generated duplicate IDs are forbidden.",
+      "knownGaps": "No jQuery collection return contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-METHOD-LABELS"
+    },
+    {
+      "id": "migration.method.position",
+      "inventoryIds": ["jquery-ui.method.position"],
+      "legacySemantics": "The Position utility aligns elements to targets with my/at, collision, within, and using options.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["component-owned floating placement"],
+      "markupApiChange": "Use normal layout first; let a documented floating component own its popup placement.",
+      "accessibilityFallback": "Popup content remains reachable and readable when precision placement is unavailable.",
+      "coexistenceRule": "Legacy popups keep their Position calls; jQStar publishes no shared Position API.",
+      "knownGaps": "No general my/at, collision strategy, within boundary, or using callback contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-METHOD-POSITION"
+    },
+    {
+      "id": "migration.method.selection-control",
+      "inventoryIds": ["jquery-ui.method.disable-selection", "jquery-ui.method.enable-selection"],
+      "legacySemantics": "Methods suppress and restore browser text selection for interaction widgets.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["CSS user-select on explicit handles"],
+      "markupApiChange": "Limit user-select styling to a bounded drag handle while a pointer operation is active.",
+      "accessibilityFallback": "Text remains selectable outside handles and all operations have keyboard controls.",
+      "coexistenceRule": "Legacy interactions manage their own suppression; jQStar does not call these methods.",
+      "knownGaps": "No collection method or broad subtree suppression contract.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-METHOD-SELECTION"
+    },
+    {
+      "id": "migration.method.unique-id",
+      "inventoryIds": ["jquery-ui.method.remove-unique-id", "jquery-ui.method.unique-id"],
+      "legacySemantics": "Methods synthesize and remove ui-id values on elements without IDs.",
+      "migrationClass": "direct-semantic",
+      "counterparts": ["source-owned stable IDs"],
+      "markupApiChange": "Render stable IDs with the HTML that owns each ARIA or label relationship.",
+      "accessibilityFallback": "Relationships exist before enhancement and remain stable across patches.",
+      "coexistenceRule": "Never reuse or remove IDs owned by the other library.",
+      "knownGaps": "No automatic ID generation/removal method or ui-id prefix compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-METHOD-UNIQUE-ID"
+    },
+    {
+      "id": "migration.method.scroll-parent",
+      "inventoryIds": ["jquery-ui.method.scroll-parent"],
+      "legacySemantics": "The method finds a matched element's nearest scrollable ancestor.",
+      "migrationClass": "no-equivalent",
+      "counterparts": [],
+      "markupApiChange": "Keep scroll ownership explicit in component markup or application layout.",
+      "accessibilityFallback": "Keyboard focus remains visible within every scroll container.",
+      "coexistenceRule": "Legacy code may call the method only inside its island.",
+      "knownGaps": "No public scroll-parent query or jQuery collection result.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-METHOD-SCROLL-PARENT"
+    },
+    {
+      "id": "migration.selector.data",
+      "inventoryIds": ["jquery-ui.selector.data"],
+      "legacySemantics": "A custom selector matches elements by jQuery data keys, including widget instances.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["documented attributes", "application-owned references"],
+      "markupApiChange": "Select documented source attributes or retain direct references owned by the application.",
+      "accessibilityFallback": "Behavior discovery never depends on hidden data for semantic meaning.",
+      "coexistenceRule": "jQStar never reads or adopts jQuery UI instance data.",
+      "knownGaps": "No :data selector or access to private widget instance keys.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-SELECTOR-DATA"
+    },
+    {
+      "id": "migration.selector.focusable",
+      "inventoryIds": ["jquery-ui.selector.focusable"],
+      "legacySemantics": "A custom selector applies jQuery UI visibility and element rules to discover programmatically focusable nodes.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["component-owned focus contract"],
+      "markupApiChange": "Use native controls and query only the explicit focus candidates documented by the component.",
+      "accessibilityFallback": "Disabled, hidden, inert, and negative-tabindex states remain native.",
+      "coexistenceRule": "Each dialog or popup computes focus within its own root.",
+      "knownGaps": "No public selector with identical visibility edge cases.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-SELECTOR-FOCUSABLE"
+    },
+    {
+      "id": "migration.selector.tabbable",
+      "inventoryIds": ["jquery-ui.selector.tabbable"],
+      "legacySemantics": "A custom selector filters focusable elements to the current tab order.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["component-owned tab-stop contract"],
+      "markupApiChange": "Prefer native document order and let the owning component enumerate its documented tab stops.",
+      "accessibilityFallback": "Positive tabindex is avoided and native controls retain predictable order.",
+      "coexistenceRule": "Focus traps cannot enumerate nodes across ownership islands.",
+      "knownGaps": "No public selector with identical tabindex and visibility edge cases.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-SELECTOR-TABBABLE"
+    },
+    {
+      "id": "migration.utility.key-code",
+      "inventoryIds": ["jquery-ui.utility.key-code"],
+      "legacySemantics": "A numeric keyCode constant table supports old keyboard handlers.",
+      "migrationClass": "direct-semantic",
+      "counterparts": ["KeyboardEvent.key", "KeyboardEvent.code"],
+      "markupApiChange": "Compare named KeyboardEvent key values in the bounded component handler.",
+      "accessibilityFallback": "Use standard keys for the semantic pattern and preserve native browser behavior.",
+      "coexistenceRule": "Legacy handlers may keep constants until their owning feature migrates.",
+      "knownGaps": "No numeric constant namespace or normalization layer.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#core-methods-selectors-and-utilities",
+      "testId": "JQUI-UTILITY-KEY-CODE"
+    },
+    {
+      "id": "migration.contract.form-reset",
+      "inventoryIds": ["jquery-ui.contract.form-reset-mixin"],
+      "legacySemantics": "Widget instances register delayed refresh work when their containing form resets.",
+      "migrationClass": "direct-semantic",
+      "counterparts": ["native form reset", "registry/components/form.html"],
+      "markupApiChange": "Keep native controls authoritative and let bounded components listen to reset only when derived presentation needs refresh.",
+      "accessibilityFallback": "Reset restores native default values without enhancement.",
+      "coexistenceRule": "Legacy widgets retain their mixin listeners until explicitly destroyed.",
+      "knownGaps": "No Widget Factory mixin or automatic instance refresh registry.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#forms-and-server-updates",
+      "testId": "JQUI-CONTRACT-FORM-RESET"
+    },
+    {
+      "id": "migration.contract.widget-factory",
+      "inventoryIds": ["jquery-ui.contract.widget-factory"],
+      "legacySemantics": "$.widget supplies inheritance, lifecycle hooks, options, methods, events, data instances, and extension points.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["registry blocks", "jQStar plugin and directive contracts"],
+      "markupApiChange": "Rewrite behavior around source-owned HTML and the smallest documented native jQStar API.",
+      "accessibilityFallback": "Semantics and state exist in HTML rather than generated widget structure.",
+      "coexistenceRule": "jQStar never patches $.widget, subclasses UI widgets, or adopts their instances.",
+      "knownGaps": "No inheritance, _super, option bag, protected hook, instance data, or widget event compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#widget-factory-and-extensions",
+      "testId": "JQUI-CONTRACT-WIDGET-FACTORY"
+    },
+    {
+      "id": "migration.contract.plugin-bridge",
+      "inventoryIds": ["jquery-ui.contract.widget-plugin-bridge"],
+      "legacySemantics": "A jQuery plugin name initializes instances and dispatches arbitrary string methods with collection semantics.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["data-jqs roots", "named registry actions", "documented $.star.ui methods"],
+      "markupApiChange": "Replace initialization with explicit markup and replace each method string with a named action or typed method.",
+      "accessibilityFallback": "The markup remains meaningful when no action handler runs.",
+      "coexistenceRule": "Never register a jQStar facade under a jQuery UI plugin name.",
+      "knownGaps": "No unrestricted string dispatch, option getter/setter, instance return, or chain compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#widget-factory-and-extensions",
+      "testId": "JQUI-CONTRACT-PLUGIN-BRIDGE"
+    },
+    {
+      "id": "migration.theme.css-framework",
+      "inventoryIds": ["jquery-ui.theme.css-framework"],
+      "legacySemantics": "Theme classes encode widget structure, states, corners, overlays, and helpers.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["jQStar CSS variables", "documented data-state attributes"],
+      "markupApiChange": "Remove generated UI wrappers/classes per widget and style the new source-owned structure separately.",
+      "accessibilityFallback": "Forced colors and native state remain legible without theme images.",
+      "coexistenceRule": "Scope the legacy theme to its island and do not apply UI classes to jQStar roots.",
+      "knownGaps": "No ui-* class, structure, state, corner, or helper compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#themes-css-and-stacking",
+      "testId": "JQUI-THEME-CSS"
+    },
+    {
+      "id": "migration.theme.icons",
+      "inventoryIds": ["jquery-ui.theme.icons"],
+      "legacySemantics": "Theme icon classes select sprites and hide or pair visible labels.",
+      "migrationClass": "no-equivalent",
+      "counterparts": ["source-owned SVG", "text labels"],
+      "markupApiChange": "Use an application-owned SVG with a persistent accessible name or visible text.",
+      "accessibilityFallback": "Meaning never depends on background images, color, or an unlabeled glyph.",
+      "coexistenceRule": "Keep legacy sprite URLs inside the scoped fixture/theme island.",
+      "knownGaps": "No ui-icon names, sprite coordinates, or ThemeRoller icon compatibility.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#themes-css-and-stacking",
+      "testId": "JQUI-THEME-ICONS"
+    },
+    {
+      "id": "migration.theme.stacking",
+      "inventoryIds": ["jquery-ui.theme.stacking-elements"],
+      "legacySemantics": "Append targets and ui-front classes establish popup and overlay stacking contexts.",
+      "migrationClass": "changed-contract",
+      "counterparts": ["component-owned popup root", "native dialog top layer"],
+      "markupApiChange": "Declare each popup owner and prefer native dialog top-layer behavior or a bounded application layer scale.",
+      "accessibilityFallback": "Focus and reading order follow semantic ownership even if visual stacking CSS is absent.",
+      "coexistenceRule": "Legacy and jQStar overlays use separate append targets and documented z-index bands.",
+      "knownGaps": "No ui-front search, appendTo option, or shared stacking manager.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#themes-css-and-stacking",
+      "testId": "JQUI-THEME-STACKING"
+    },
+    {
+      "id": "migration.extension.third-party-widget",
+      "inventoryIds": [],
+      "legacySemantics": "Application or third-party plugins may subclass Widget Factory contracts and add undocumented markup, methods, events, themes, and dependencies.",
+      "migrationClass": "external-coexistence",
+      "counterparts": [],
+      "markupApiChange": "Inventory and test each extension as application code, then retain, replace, or rewrite it independently.",
+      "accessibilityFallback": "Migration must identify and preserve the extension's actual keyboard, focus, form, and no-script behavior.",
+      "coexistenceRule": "No compatibility is inferred from an official widget mapping; the application owns initialization and destroy.",
+      "knownGaps": "jQStar cannot promise compatibility with unknown extension contracts.",
+      "example": "docs/JQUERY_UI_MIGRATION.md#widget-factory-and-extensions",
+      "testId": "JQUI-EXTENSION-THIRD-PARTY"
+    }
+  ],
+  "applicationSlices": [
+    {
+      "id": "project-editor",
+      "independent": true,
+      "features": [
+        "dialog",
+        "tabs",
+        "autocomplete",
+        "native date fallback",
+        "sortable project order",
+        "form validation and submission",
+        "server-owned region replacement",
+        "responsive navigation"
+      ],
+      "repeatedStateChangingOperations": [
+        "open and close the project dialog",
+        "activate project tabs",
+        "select a suggestion",
+        "reorder project rows"
+      ],
+      "legacy": {
+        "authoredHtmlJsLines": 182,
+        "javascriptBytes": 522385,
+        "cssBytes": 35137,
+        "dependencies": 1,
+        "imperativeLifecycleCalls": 11,
+        "accessibilityDefects": 1,
+        "serverChanges": 2,
+        "testLines": 168
+      },
+      "directMigration": {
+        "authoredHtmlJsLines": 164,
+        "javascriptBytes": 0,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 0,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 177
+      },
+      "adapterHypothesis": {
+        "authoredHtmlJsLines": 151,
+        "javascriptBytes": 2870,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 8,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 221
+      },
+      "accessibilityBaseline": {
+        "legacyRuleIds": ["nested-interactive"],
+        "legacyNodeCount": 2,
+        "directMigrationAddedRuleIds": [],
+        "adapterEvidence": "not-executed"
+      },
+      "preservedBehavior": [
+        "native form names, values, validation, and submitter",
+        "keyboard and focus return",
+        "touch reorder alternative",
+        "forced colors and reduced motion",
+        "direct page load, server response, and no-JavaScript content"
+      ]
+    },
+    {
+      "id": "command-toolbar",
+      "independent": true,
+      "features": [
+        "menu",
+        "button states",
+        "tooltips",
+        "keyboard roving focus",
+        "responsive overflow"
+      ],
+      "repeatedStateChangingOperations": [
+        "open and close a command menu",
+        "enable and disable toolbar commands",
+        "move keyboard focus",
+        "show and hide command help"
+      ],
+      "legacy": {
+        "authoredHtmlJsLines": 96,
+        "javascriptBytes": 522385,
+        "cssBytes": 35137,
+        "dependencies": 1,
+        "imperativeLifecycleCalls": 7,
+        "accessibilityDefects": 3,
+        "serverChanges": 0,
+        "testLines": 86
+      },
+      "directMigration": {
+        "authoredHtmlJsLines": 91,
+        "javascriptBytes": 0,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 0,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 94
+      },
+      "adapterHypothesis": {
+        "authoredHtmlJsLines": 84,
+        "javascriptBytes": 2870,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 5,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 118
+      },
+      "accessibilityBaseline": {
+        "legacyRuleIds": ["aria-required-children", "aria-required-parent", "listitem"],
+        "legacyNodeCount": 5,
+        "directMigrationAddedRuleIds": [],
+        "adapterEvidence": "not-executed"
+      },
+      "preservedBehavior": [
+        "native button activation",
+        "keyboard order and Escape close",
+        "persistent accessible names",
+        "responsive overflow",
+        "forced colors, reduced motion, and no-JavaScript commands"
+      ]
+    }
+  ],
+  "stepMeasurements": [
+    {
+      "id": "step.project-editor.legacy",
+      "slice": "project-editor",
+      "stage": "legacy",
+      "counts": {
+        "authoredHtmlJsLines": 182,
+        "javascriptBytes": 522385,
+        "cssBytes": 35137,
+        "dependencies": 1,
+        "imperativeLifecycleCalls": 11,
+        "accessibilityDefects": 1,
+        "serverChanges": 2,
+        "testLines": 168
+      },
+      "linesAdded": 182,
+      "linesRemoved": 0,
+      "linesChanged": 0,
+      "unsupportedBehavior": [],
+      "method": "Physical nonblank HTML and JavaScript lines in the isolated slice; package bytes use installed unminified distribution assets."
+    },
+    {
+      "id": "step.project-editor.coexistence",
+      "slice": "project-editor",
+      "stage": "coexistence",
+      "counts": {
+        "authoredHtmlJsLines": 201,
+        "javascriptBytes": 522385,
+        "cssBytes": 35137,
+        "dependencies": 1,
+        "imperativeLifecycleCalls": 8,
+        "accessibilityDefects": 1,
+        "serverChanges": 2,
+        "testLines": 205
+      },
+      "linesAdded": 74,
+      "linesRemoved": 55,
+      "linesChanged": 21,
+      "unsupportedBehavior": [],
+      "method": "Same physical-line method; the temporary overlap includes explicit application destroy before server replacement."
+    },
+    {
+      "id": "step.project-editor.direct",
+      "slice": "project-editor",
+      "stage": "direct-migration",
+      "counts": {
+        "authoredHtmlJsLines": 164,
+        "javascriptBytes": 0,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 0,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 177
+      },
+      "linesAdded": 112,
+      "linesRemoved": 130,
+      "linesChanged": 38,
+      "unsupportedBehavior": [
+        "jQuery UI effect names and Widget Factory callbacks are intentionally not preserved"
+      ],
+      "method": "Counts exclude package, tests, generated files, comments, and blank lines; shared jQStar runtime bytes are not charged as migration-only code."
+    },
+    {
+      "id": "step.project-editor.adapter",
+      "slice": "project-editor",
+      "stage": "adapter-hypothesis",
+      "counts": {
+        "authoredHtmlJsLines": 151,
+        "javascriptBytes": 2870,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 8,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 221
+      },
+      "linesAdded": 134,
+      "linesRemoved": 165,
+      "linesChanged": 52,
+      "unsupportedBehavior": [
+        "third-party Widget Factory extensions",
+        "dynamic option bags",
+        "unrestricted string method dispatch"
+      ],
+      "method": "Hand-scored bounded facade sketch; it is evidence only and is not shipped. Minified bytes are estimated with the repository terser configuration."
+    },
+    {
+      "id": "step.command-toolbar.legacy",
+      "slice": "command-toolbar",
+      "stage": "legacy",
+      "counts": {
+        "authoredHtmlJsLines": 96,
+        "javascriptBytes": 522385,
+        "cssBytes": 35137,
+        "dependencies": 1,
+        "imperativeLifecycleCalls": 7,
+        "accessibilityDefects": 3,
+        "serverChanges": 0,
+        "testLines": 86
+      },
+      "linesAdded": 96,
+      "linesRemoved": 0,
+      "linesChanged": 0,
+      "unsupportedBehavior": [],
+      "method": "Physical nonblank HTML and JavaScript lines in the independent toolbar slice; shared installed package assets are stated rather than divided."
+    },
+    {
+      "id": "step.command-toolbar.direct",
+      "slice": "command-toolbar",
+      "stage": "direct-migration",
+      "counts": {
+        "authoredHtmlJsLines": 91,
+        "javascriptBytes": 0,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 0,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 94
+      },
+      "linesAdded": 63,
+      "linesRemoved": 68,
+      "linesChanged": 18,
+      "unsupportedBehavior": [
+        "jQuery UI Menu callback payloads and Position options are intentionally not preserved"
+      ],
+      "method": "Counts exclude tests, generated files, comments, blank lines, and the shared jQStar runtime."
+    },
+    {
+      "id": "step.command-toolbar.adapter",
+      "slice": "command-toolbar",
+      "stage": "adapter-hypothesis",
+      "counts": {
+        "authoredHtmlJsLines": 84,
+        "javascriptBytes": 2870,
+        "cssBytes": 0,
+        "dependencies": 0,
+        "imperativeLifecycleCalls": 5,
+        "accessibilityDefects": 0,
+        "serverChanges": 0,
+        "testLines": 118
+      },
+      "linesAdded": 76,
+      "linesRemoved": 88,
+      "linesChanged": 27,
+      "unsupportedBehavior": [
+        "menu rendering hooks",
+        "Position options",
+        "unrestricted string method dispatch"
+      ],
+      "method": "Hand-scored bounded facade sketch; it is evidence only and is not shipped. Shared adapter bytes are stated in both slices and counted once for the size threshold."
+    }
+  ],
+  "adapterScorecard": {
+    "frozenBeforeCode": true,
+    "thresholds": {
+      "minimumIndependentSlices": 2,
+      "minimumRepeatedOperationsPerSlice": 2,
+      "minimumLineReductionPercent": 25,
+      "minimumLinesSavedPerSlice": 20,
+      "maximumWidgets": 2,
+      "maximumMethodsPerWidget": 3,
+      "maximumOptionsPerWidget": 4,
+      "maximumEventsPerWidget": 4,
+      "maximumMinifiedJsBytes": 5120,
+      "maximumGzipJsBytes": 2048,
+      "maximumMinifiedCssBytes": 1024,
+      "requiredBrowserCount": 3,
+      "requiredChangedLineCoveragePercent": 100
+    },
+    "results": [
+      {
+        "dimension": "independent-demand",
+        "pass": false,
+        "evidence": "Both slices repeat state changes, but they do not require the same bounded facade: the editor needs dialog/tabs/form/sortable behavior while the toolbar needs menu/tooltip/roving-focus behavior."
+      },
+      {
+        "dimension": "migration-code",
+        "pass": false,
+        "evidence": "The adapter sketch saves 13 of 164 lines (7.9%) in the editor and 7 of 91 lines (7.7%) in the toolbar, below both the 25% and 20-line thresholds."
+      },
+      {
+        "dimension": "semantics-accessibility",
+        "pass": false,
+        "evidence": "Direct migration is tested, but an unimplemented adapter has no executable keyboard, focus, form, touch, forced-color, reduced-motion, or no-script proof."
+      },
+      {
+        "dimension": "public-surface",
+        "pass": false,
+        "evidence": "Covering both slices would require at least dialog, tabs, sortable, menu, and tooltip facades, exceeding the two-widget limit before option, method, and event compatibility is considered."
+      },
+      {
+        "dimension": "shipped-size",
+        "pass": false,
+        "evidence": "The 2870-byte minified sketch is under the minified limit but has no measured gzip artifact; missing evidence is a failure. Direct migration adds no adapter bytes or jQuery UI runtime."
+      },
+      {
+        "dimension": "ownership",
+        "pass": false,
+        "evidence": "A facade would need to translate imperative initialization and calls across multiple independent roots, creating a second lifecycle boundary without removing direct migration work."
+      },
+      {
+        "dimension": "maintenance-security",
+        "pass": false,
+        "evidence": "No adapter implementation, exact public types, 100% changed-line coverage, or three-browser package gate exists. Ticket 0039 intentionally ships none."
+      },
+      {
+        "dimension": "deprecation",
+        "pass": true,
+        "evidence": "Any future bounded adapter would be experimental and removable before 1.0, while direct native migration remains documented."
+      },
+      {
+        "dimension": "native-distortion",
+        "pass": true,
+        "evidence": "No adapter ships, so native jQStar markup, methods, events, state attributes, CSS, and accessibility behavior remain unchanged."
+      }
+    ]
+  },
+  "genericInteractions": [
+    {
+      "id": "draggable",
+      "decision": "no-proposal",
+      "nativeConsumers": [],
+      "requirements": [
+        "pointer capture bounded to one semantic operation",
+        "keyboard alternative",
+        "touch cancellation",
+        "focus and ownership cleanup"
+      ],
+      "reason": "No two independent native jQStar consumers require a generic arbitrary-element draggable primitive."
+    },
+    {
+      "id": "droppable",
+      "decision": "no-proposal",
+      "nativeConsumers": [],
+      "requirements": [
+        "semantic target acceptance",
+        "keyboard-operable move",
+        "touch target feedback",
+        "cross-root ownership rules"
+      ],
+      "reason": "No two independent native consumers require a shared drop-target coordinator."
+    },
+    {
+      "id": "resizable",
+      "decision": "existing-bounded-component",
+      "nativeConsumers": ["registry/components/resizable.html"],
+      "requirements": [
+        "explicit handles",
+        "keyboard resize controls",
+        "min/max constraints",
+        "cleanup on root disposal"
+      ],
+      "reason": "One bounded recipe already owns panel resizing; one consumer does not justify a generic interaction API."
+    },
+    {
+      "id": "selectable",
+      "decision": "no-proposal",
+      "nativeConsumers": [],
+      "requirements": [
+        "semantic selection model",
+        "keyboard range behavior",
+        "touch behavior",
+        "form or application state ownership"
+      ],
+      "reason": "Existing native controls cover current selection tasks and no pair of consumers requires lasso behavior."
+    },
+    {
+      "id": "sortable",
+      "decision": "existing-bounded-component",
+      "nativeConsumers": ["registry/components/sortable.html"],
+      "requirements": [
+        "source-owned ordered items",
+        "pointer and keyboard parity",
+        "hidden form order",
+        "disposal and focus restoration"
+      ],
+      "reason": "The bounded sortable recipe serves its current task; no second independent need supports extracting a generic primitive."
+    }
+  ],
+  "boundaries": {
+    "runtimePolicy": "fixture-only",
+    "ownership": [
+      "jQuery UI regions are application-owned and explicitly initialized and destroyed",
+      "jQStar roots are enhanced and disposed only through jQStar",
+      "server replacement targets one named ownership island at a time",
+      "neither library adopts the other's data, event handlers, portals, or state"
+    ],
+    "forbiddenClaims": [
+      "jQStar is jQuery UI 2",
+      "jQStar is the new or official jQuery UI",
+      "jQStar is sponsored or endorsed by jQuery or OpenJS",
+      "jQStar is a drop-in Widget Factory, API, theme, effect, or extension replacement"
+    ],
+    "forbiddenPaths": [
+      "src/",
+      "registry/",
+      "dist/",
+      "example/public/assets/",
+      "package tarball",
+      "consumer runtime dependency graph"
+    ]
+  },
+  "decision": {
+    "result": "no-go",
+    "allThresholdsPass": false,
+    "adapterShipped": false,
+    "recommendedPath": "coexist-then-direct-semantic-migration",
+    "rationale": [
+      "The two slices do not demand one small facade",
+      "The line reduction misses both frozen thresholds",
+      "A useful cross-slice surface exceeds the widget limit",
+      "Direct semantic migration removes legacy lifecycle and runtime cost",
+      "Missing executable adapter evidence is a scorecard failure"
+    ]
+  }
+}

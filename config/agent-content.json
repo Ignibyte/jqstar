@@ -9,7 +9,7 @@
     "guideCharacters": 16000,
     "exampleCharacters": 8000,
     "fullTextBytes": 120000,
-    "indexBytes": 160000
+    "indexBytes": 161000
   },
   "surfaces": [
     {
@@ -137,6 +137,23 @@
       "keywords": ["jquery", "migrate", "jquery ui", "jquery mobile", "sizzle", "qunit"],
       "source": "example/docs/ecosystem/index.html",
       "contentRoot": "summary"
+    },
+    {
+      "id": "jquery-ui-migration",
+      "title": "jQuery UI coexistence and migration",
+      "path": "docs/ecosystem/jquery-ui/",
+      "summary": "Isolate application-owned jQuery UI regions and migrate them feature by feature to semantic HTML and native jQStar components.",
+      "keywords": [
+        "jquery ui",
+        "coexistence",
+        "migration",
+        "widget factory",
+        "themeroller",
+        "adapter",
+        "destroy"
+      ],
+      "source": "example/docs/ecosystem/jquery-ui/index.html",
+      "contentRoot": "article"
     },
     {
       "id": "testing-harness",
@@ -427,6 +444,13 @@
       "expectedIds": ["framework-home", "migration-boundary"],
       "requiredTerms": ["independent", "not", "bundling"],
       "path": ""
+    },
+    {
+      "id": "jquery-ui-migration-path",
+      "question": "How do I migrate a jQuery UI application to jQStar, and is there a compatibility adapter?",
+      "expectedIds": ["jquery-ui-migration"],
+      "requiredTerms": ["one feature at a time", "destroy", "no adapter"],
+      "path": "docs/ecosystem/jquery-ui/"
     },
     {
       "id": "troubleshooting",

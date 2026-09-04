@@ -15,6 +15,7 @@ const siteEntries = [
   "docs/csp/index.html",
   "docs/interoperability/index.html",
   "docs/ecosystem/index.html",
+  "docs/ecosystem/jquery-ui/index.html",
   "docs/plugins/index.html",
   "docs/testing/index.html",
   "docs/components/index.html",

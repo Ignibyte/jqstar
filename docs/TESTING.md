@@ -71,6 +71,26 @@ record expires on 2027-03-03 and fails closed after that date. Refresh primary s
 downstream digest before extending the expiry. See [JQUERY_ECOSYSTEM.md](JQUERY_ECOSYSTEM.md) for
 the human-readable decisions.
 
+## jQuery UI migration evidence
+
+`quality/jquery-ui-migration.json` maps 72 unique official jQuery UI 1.14 API URLs exactly once,
+records the four migration classes, pins jQuery 4.0.0 and UI 1.14.2, compares project-editor and
+command-toolbar slices, and applies the frozen no-adapter scorecard. Its unit test verifies the
+source-matrix digest, schema, installed asset sizes, lockfile classification, counterpart paths,
+measurement calculations, and forbidden production imports. Its property test permutes the full
+inventory and generates missing, duplicate, and unknown assignments.
+
+`e2e/jquery-ui-migration.spec.ts` loads the real installed UI runtime/base theme beside packaged
+jQStar output. Chromium, Firefox, and WebKit cover disjoint data, events, focus, dialog, tabs,
+autocomplete, sort, forms, explicit destroy, server replacement, sibling identity, and separate
+documents. Mobile touch, reduced motion, forced colors, and JavaScript-disabled projects cover the
+fallback paths. The suite records four inherited serious/critical axe rules across seven legacy
+nodes and requires zero such findings in native and partially migrated islands.
+
+Package quality rejects jQuery UI from runtime dependency fields, packed paths, the clean consumer
+tree, and every entry graph. The root checkout keeps `jquery-ui@1.14.2` only as an exact development
+fixture. See [JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md) for the migration and rollback steps.
+
 ## Coverage and generated inputs
 
 The production denominator is `quality/production-census.json`, not a broad source glob. Run its

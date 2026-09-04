@@ -60,6 +60,14 @@ The dated, schema-validated decisions and downstream ownership IDs live in
 [`quality/jquery-ecosystem.json`](../quality/jquery-ecosystem.json) and are explained in
 [JQUERY_ECOSYSTEM.md](JQUERY_ECOSYSTEM.md).
 
+jQuery UI coexistence is an application boundary, not a runtime extension seam. Legacy regions own
+their installed UI instances, generated wrappers, data keys, delegated handlers, theme, portals, and
+explicit destroy calls. Adjacent jQStar regions own their `data-jqs` roots, `data-part` slots,
+state, actions, focus, and disposal. Server rendering replaces one named island at a time after its
+current owner disposes it. jQStar does not import UI, patch Widget Factory, adopt UI data, or infer
+cleanup from legacy markup. The complete map and no-adapter decision are in
+[JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md).
+
 ## Public testing boundary
 
 `src/testing/` owns a consumer-facing harness around `installStarCore()`. Creation validates one

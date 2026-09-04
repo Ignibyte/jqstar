@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createServer } from "node:http";
+import { existsSync } from "node:fs";
 import { access, mkdir, readFile, readdir, rename, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
@@ -726,6 +727,16 @@ try {
       manifest.version === JSON.parse(await readFile("package.json", "utf8")).version,
       "Packed version differs from source.",
     );
+    assert(
+      manifest.dependencies?.["jquery-ui"] === undefined &&
+        manifest.peerDependencies?.["jquery-ui"] === undefined &&
+        manifest.optionalDependencies?.["jquery-ui"] === undefined,
+      "Packed package must not declare a jQuery UI runtime dependency.",
+    );
+    assert(
+      pack.files.every(({ path }) => !/(?:^|\/)(?:jquery-ui|ui-icons)(?:[./-]|$)/iu.test(path)),
+      "Packed package contains a jQuery UI runtime, theme, icon, or source path.",
+    );
     for (const path of [
       "dist/core.cjs",
       "dist/core.cjs.map",
@@ -1016,6 +1027,10 @@ try {
         navigationPluginTarball,
       ],
       { cwd: consumer },
+    );
+    assert(
+      !existsSync(join(consumer, "node_modules/jquery-ui")),
+      "Installed production consumer unexpectedly contains jQuery UI.",
     );
     const cliVersion = command(
       "installed CLI version",
@@ -1944,6 +1959,8 @@ QUnit.start();
       "better-sqlite",
       "jqstar source registry",
       "jqstar-csp-expression/1",
+      "jQuery UI",
+      "ui-widget",
     ]) {
       assert(!bundledSource.includes(forbidden), `Installed root bundle contains ${forbidden}.`);
     }
@@ -2001,6 +2018,7 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "/dist/csp-",
       "/registry/",
       "/server-dist/",
+      "node_modules/jquery-ui",
     ]) {
       assert(
         !coreModules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2060,6 +2078,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/vitest",
       "node_modules/@playwright",
       "node_modules/@starfederation/datastar-sdk",
+      "node_modules/jquery-ui",
       "/dist/datastar-testing",
       "/dist/htmx",
       "/dist/turbo",
@@ -2087,6 +2106,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/qunit",
       "node_modules/vitest",
       "node_modules/@playwright",
+      "node_modules/jquery-ui",
       "/dist/csp",
       "/dist/htmx",
       "/dist/turbo",
@@ -2121,6 +2141,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/testing.js",
       "/dist/htmx.js",
       "/dist/turbo.js",
+      "node_modules/jquery-ui",
     ]) {
       assert(
         !cspBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2151,6 +2172,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/testing",
       "/dist/htmx",
       "/dist/csp",
+      "node_modules/jquery-ui",
     ]) {
       assert(
         !turboBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2176,6 +2198,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/testing",
       "/dist/turbo",
       "/dist/csp",
+      "node_modules/jquery-ui",
     ]) {
       assert(
         !htmxBundle.modules.some((moduleId) => moduleId.includes(forbidden)),

@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 
 const networkProofPort = Number(process.env.JQS_NETWORK_PROOF_PORT ?? 4174);
 const interoperabilityPort = Number(process.env.JQS_INTEROP_PORT ?? 4175);
+const jqueryUiMigrationPort = Number(process.env.JQS_JQUERY_UI_MIGRATION_PORT ?? 4176);
 const artifactDirectory = resolve(
   process.env.JQS_PLAYWRIGHT_ARTIFACT_DIRECTORY ?? ".git/jqstar/standalone/playwright",
 );
@@ -34,13 +35,13 @@ const requiredProjects = [
   },
   {
     name: "mobile-touch",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@mobile/,
     use: { ...devices["Pixel 7"] },
   },
   {
     name: "reduced-motion",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@motion/,
     use: {
       ...devices["Desktop Chrome"],
@@ -49,7 +50,7 @@ const requiredProjects = [
   },
   {
     name: "forced-colors",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@color/,
     use: {
       ...devices["Desktop Chrome"],
@@ -58,13 +59,13 @@ const requiredProjects = [
   },
   {
     name: "zoom-reflow",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@zoom/,
     use: { ...devices["Desktop Chrome"] },
   },
   {
     name: "javascript-disabled",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@nojs/,
     use: { ...devices["Desktop Chrome"], javaScriptEnabled: false },
   },
@@ -118,6 +119,11 @@ export default defineConfig({
     {
       command: "node e2e/fixtures/interoperability-server.mjs",
       url: `http://127.0.0.1:${interoperabilityPort}/health`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: "node e2e/fixtures/jquery-ui-migration-server.mjs",
+      url: `http://127.0.0.1:${jqueryUiMigrationPort}/health`,
       reuseExistingServer: !process.env.CI,
     },
   ],

@@ -56,7 +56,9 @@ The boundary is exact: `$ is real jQuery` and `$name` is the reactive signal nam
 an independent project and is not affiliated with, sponsored by, endorsed by, or an official
 successor to the jQuery project or the OpenJS Foundation. See the
 [jQuery ecosystem policy](docs/JQUERY_ECOSYSTEM.md) for the current Core, Migrate, UI, Mobile,
-Sizzle, and QUnit decisions.
+Sizzle, and QUnit decisions. Existing jQuery UI applications should follow the
+[measured coexistence and migration guide](docs/JQUERY_UI_MIGRATION.md); jQStar does not provide a
+drop-in Widget Factory, API, theme, effect, or extension replacement.
 
 ## Setup
 

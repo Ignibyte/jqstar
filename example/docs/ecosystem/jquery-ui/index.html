@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jQuery UI migration · jQStar</title>
+    <meta
+      name="description"
+      content="Run isolated jQuery UI regions beside jQStar and migrate one semantic feature at a time."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>jQuery UI coexistence and migration</h1>
+      <p class="docs-lede">
+        Keep existing jQuery UI regions application-owned while you migrate one feature at a time to
+        semantic HTML and native jQStar components. New work should use jQStar directly.
+      </p>
+      <div class="docs-callout">
+        <p>
+          <strong>No compatibility facade:</strong> a similar component name does not promise Widget
+          Factory, plugin, method, option, event, data, Position, effect, theme, or third-party
+          extension compatibility.
+        </p>
+      </div>
+
+      <h2>Verified boundary</h2>
+      <p>
+        The fixture pins jQuery 4.0.0 and jQuery UI 1.14.2 with the official base theme. It runs
+        beside packaged jQStar output in Chromium, Firefox, and WebKit, plus touch, reduced-motion,
+        forced-color, and JavaScript-disabled modes. jQuery UI is a development fixture only; it is
+        absent from jQStar runtime dependencies, package paths, installed consumer trees, and entry
+        graphs.
+      </p>
+      <p>
+        The full inventory maps 72 unique official API pages exactly once. It covers all 15 widgets,
+        6 interactions, 34 effect entries, methods, selectors, utilities, Widget Factory contracts,
+        and theming. Third-party widgets remain application-specific.
+      </p>
+
+      <h2>Choose the migration class</h2>
+      <div
+        class="api-table-wrap"
+        role="region"
+        aria-label="jQuery UI migration classes"
+        tabindex="0"
+      >
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Use it when</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Direct semantic</td>
+              <td>A native control or relationship already owns the task.</td>
+            </tr>
+            <tr>
+              <td>Changed contract</td>
+              <td>A jQStar counterpart exists with new source markup and APIs.</td>
+            </tr>
+            <tr>
+              <td>External coexistence</td>
+              <td>The application must temporarily keep a legacy interaction.</td>
+            </tr>
+            <tr>
+              <td>No equivalent</td>
+              <td>jQStar does not publish the legacy API or behavior.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Keep ownership separate</h2>
+      <ul>
+        <li>
+          A legacy island owns its UI instances, generated wrappers, data, events, theme, portals,
+          and explicit <code>destroy</code>.
+        </li>
+        <li>
+          A jQStar island owns its <code>data-jqs</code> root, <code>data-part</code> slots, state,
+          named actions, focus, and disposal.
+        </li>
+        <li>
+          Destroy the current owner before a server response replaces its island, then initialize
+          only the incoming owner.
+        </li>
+        <li>
+          Do not patch <code>$.widget</code>, read private UI data, auto-initialize legacy markup,
+          or run both systems on one element.
+        </li>
+      </ul>
+
+      <h2>Migrate the project editor</h2>
+      <ol>
+        <li>
+          Record the exact legacy behavior, form values, server requests, focus, keyboard, touch,
+          responsive, and no-script baseline.
+        </li>
+        <li>
+          Add jQStar beside the untouched legacy island and verify package, data, event, CSS,
+          overlay, and focus isolation.
+        </li>
+        <li>
+          Move date input, autocomplete, tabs, sortable order, and dialog one semantic region at a
+          time.
+        </li>
+        <li>
+          Preserve native names, values, validation, submitters, server behavior, direct URLs, and
+          keyboard alternatives.
+        </li>
+        <li>
+          Release and observe the region, then explicitly destroy and remove its old UI code and
+          theme assets.
+        </li>
+      </ol>
+
+      <h2>Adapter decision</h2>
+      <p>
+        No adapter ships. The project-editor and command-toolbar slices need different facades. The
+        measured sketches save only 13 lines (7.9%) and 7 lines (7.7%), below the frozen 25% and
+        20-line thresholds. A shared surface would also exceed the two-widget limit and has no
+        executable accessibility, gzip, type, coverage, or browser proof.
+      </p>
+      <p>
+        Direct semantic migration removes the legacy lifecycle and runtime cost. A future adapter
+        needs new observed demand and a separate bounded ticket.
+      </p>
+
+      <h2>Accessibility and rollback</h2>
+      <p>
+        The exact fixture retains four serious or critical legacy axe rules across seven nodes and
+        adds none in native or partially migrated islands. It also verifies touch targets, reduced
+        motion, forced colors, native validation and submission without JavaScript, explicit destroy
+        before server replacement, sibling identity, and independent documents.
+      </p>
+      <p>
+        Release one island behind an application-owned switch. Keep the prior template and assets
+        deployable until checks pass. Rollback disposes the current owner, restores only that
+        island, and initializes the previous owner.
+      </p>
+
+      <p>
+        Read the
+        <a href="https://github.com/Ignibyte/jqstar/blob/main/docs/JQUERY_UI_MIGRATION.md"
+          >complete matrix, code examples, measurements, and verification guide</a
+        >. jQStar is an independent project and is not affiliated with, sponsored by, endorsed by,
+        or an official successor to the jQuery project or the OpenJS Foundation.
+      </p>
+    </article>
+  </body>
+</html>

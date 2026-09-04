@@ -1,0 +1,106 @@
+@layer jquery-ui, jqstar, migration-fixture;
+
+@import url("/jquery-ui-migration/jquery-ui/base/jquery-ui.css") layer(jquery-ui);
+@import url("/jquery-ui-migration/jquery-star-ui.css") layer(jqstar);
+
+@layer migration-fixture {
+  :root {
+    color-scheme: light dark;
+    font-family: system-ui, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .page-header,
+  #fixture-main {
+    margin-inline: auto;
+    max-width: 78rem;
+    padding: 1rem;
+  }
+
+  .page-header,
+  .island-grid,
+  .field-row,
+  .command-slice {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .island-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ownership-island {
+    border: 0.2rem solid;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  .legacy-island {
+    border-color: #865e00;
+  }
+
+  .native-island {
+    border-color: #00695c;
+  }
+
+  .composite-island {
+    border-color: #5b4b8a;
+    margin-block-start: 1rem;
+  }
+
+  .field-row {
+    grid-template-columns: max-content minmax(8rem, 1fr);
+    margin-block: 1rem;
+  }
+
+  #legacy-sortable,
+  [data-jqs="sortable"] [data-part="list"] {
+    padding-inline-start: 1.5rem;
+  }
+
+  #legacy-sortable li,
+  [data-jqs="sortable"] [data-part="item"] {
+    border: 1px solid ButtonBorder;
+    margin-block: 0.35rem;
+    padding: 0.5rem;
+  }
+
+  button,
+  input,
+  summary,
+  a {
+    min-block-size: 2.75rem;
+  }
+
+  :focus-visible {
+    outline: 0.2rem solid Highlight;
+    outline-offset: 0.15rem;
+  }
+
+  @media (max-width: 48rem) {
+    .island-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ownership-island {
+      border-color: CanvasText;
+    }
+  }
+}

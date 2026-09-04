@@ -178,7 +178,7 @@ describe("jQuery ecosystem evidence", () => {
   });
 
   it("keeps Migrate, UI, Mobile, and standalone Sizzle out of runtime ownership", () => {
-    const forbiddenPackages = ["jquery-migrate", "jquery-mobile", "jquery-ui", "sizzle"];
+    const forbiddenPackages = ["jquery-migrate", "jquery-mobile", "sizzle"];
     const rootLock = packageLock.packages[""] ?? {};
     for (const dependencies of [
       packageManifest.dependencies,
@@ -196,6 +196,12 @@ describe("jQuery ecosystem evidence", () => {
     expect(project("jquery-mobile").runtimePolicy).toBe("absent");
     expect(project("jquery-ui").runtimePolicy).toBe("external-only");
     expect(project("jquery-migrate").runtimePolicy).toBe("application-opt-in");
+    expect(packageManifest.devDependencies?.["jquery-ui"]).toBe("1.14.2");
+    expect(rootLock.devDependencies?.["jquery-ui"]).toBe("1.14.2");
+    expect(packageManifest.dependencies).not.toHaveProperty("jquery-ui");
+    expect(packageManifest.peerDependencies).not.toHaveProperty("jquery-ui");
+    expect(rootLock.dependencies).not.toHaveProperty("jquery-ui");
+    expect(rootLock.peerDependencies).not.toHaveProperty("jquery-ui");
 
     const importPattern =
       /(?:from\s*|import\s*\(|require\s*\(|src\s*=)\s*["'](?:jquery-migrate|jquery-mobile|jquery-ui|sizzle|qunit)(?:\/[^"']*)?["']/u;

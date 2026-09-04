@@ -1,0 +1,402 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jqstar.com/schema/jquery-ui-migration.schema.json",
+  "title": "jQStar jQuery UI migration contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema",
+    "reviewedAt",
+    "sourceMatrix",
+    "packages",
+    "sources",
+    "migrationClasses",
+    "officialInventory",
+    "matrix",
+    "applicationSlices",
+    "stepMeasurements",
+    "adapterScorecard",
+    "genericInteractions",
+    "boundaries",
+    "decision"
+  ],
+  "properties": {
+    "$schema": { "const": "../schema/jquery-ui-migration.schema.json" },
+    "schema": { "const": "jqstar-jquery-ui-migration/1" },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "sourceMatrix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "const": "quality/jquery-ecosystem.json" },
+        "sha256": { "const": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718" }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jquery", "jqueryUi"],
+      "properties": {
+        "jquery": { "$ref": "#/$defs/package" },
+        "jqueryUi": { "$ref": "#/$defs/package" }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 7,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "migrationClasses": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["direct-semantic", "changed-contract", "external-coexistence", "no-equivalent"]
+      }
+    },
+    "officialInventory": {
+      "type": "array",
+      "minItems": 72,
+      "maxItems": 72,
+      "items": { "$ref": "#/$defs/inventoryEntry" }
+    },
+    "matrix": {
+      "type": "array",
+      "minItems": 30,
+      "items": { "$ref": "#/$defs/matrixRow" }
+    },
+    "applicationSlices": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/applicationSlice" }
+    },
+    "stepMeasurements": {
+      "type": "array",
+      "minItems": 6,
+      "items": { "$ref": "#/$defs/measurement" }
+    },
+    "adapterScorecard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozenBeforeCode", "thresholds", "results"],
+      "properties": {
+        "frozenBeforeCode": { "const": true },
+        "thresholds": { "$ref": "#/$defs/thresholds" },
+        "results": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": { "$ref": "#/$defs/scoreResult" }
+        }
+      }
+    },
+    "genericInteractions": {
+      "type": "array",
+      "minItems": 4,
+      "items": { "$ref": "#/$defs/interaction" }
+    },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtimePolicy", "ownership", "forbiddenClaims", "forbiddenPaths"],
+      "properties": {
+        "runtimePolicy": { "const": "fixture-only" },
+        "ownership": { "$ref": "#/$defs/stringList" },
+        "forbiddenClaims": { "$ref": "#/$defs/stringList" },
+        "forbiddenPaths": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "allThresholdsPass", "adapterShipped", "recommendedPath", "rationale"],
+      "properties": {
+        "result": { "const": "no-go" },
+        "allThresholdsPass": { "const": false },
+        "adapterShipped": { "const": false },
+        "recommendedPath": { "const": "coexist-then-direct-semantic-migration" },
+        "rationale": { "$ref": "#/$defs/stringList" }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1, "maxLength": 1200 },
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "resolved", "integrity", "shasum", "role"],
+      "properties": {
+        "name": { "enum": ["jquery", "jquery-ui"] },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "resolved": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://registry\\.npmjs\\.org/"
+        },
+        "integrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+=*$" },
+        "shasum": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "role": { "enum": ["peer-and-fixture", "fixture-only"] }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "url", "reviewedAt"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "kind": { "enum": ["status", "release", "support", "catalog", "migration", "theme"] },
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "reviewedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "inventoryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "name", "url", "matrixId"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^jquery-ui\\.[a-z0-9.-]+$" },
+        "category": {
+          "enum": [
+            "widget",
+            "interaction",
+            "effect",
+            "method",
+            "selector",
+            "utility",
+            "contract",
+            "theme"
+          ]
+        },
+        "name": { "$ref": "#/$defs/nonEmptyString" },
+        "url": { "type": "string", "format": "uri", "pattern": "^https://api\\.jqueryui\\.com/" },
+        "matrixId": { "type": "string", "pattern": "^migration\\.[a-z0-9.-]+$" }
+      }
+    },
+    "matrixRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "inventoryIds",
+        "legacySemantics",
+        "migrationClass",
+        "counterparts",
+        "markupApiChange",
+        "accessibilityFallback",
+        "coexistenceRule",
+        "knownGaps",
+        "example",
+        "testId"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^migration\\.[a-z0-9.-]+$" },
+        "inventoryIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^jquery-ui\\.[a-z0-9.-]+$" }
+        },
+        "legacySemantics": { "$ref": "#/$defs/nonEmptyString" },
+        "migrationClass": {
+          "enum": ["direct-semantic", "changed-contract", "external-coexistence", "no-equivalent"]
+        },
+        "counterparts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "markupApiChange": { "$ref": "#/$defs/nonEmptyString" },
+        "accessibilityFallback": { "$ref": "#/$defs/nonEmptyString" },
+        "coexistenceRule": { "$ref": "#/$defs/nonEmptyString" },
+        "knownGaps": { "$ref": "#/$defs/nonEmptyString" },
+        "example": { "type": "string", "pattern": "^(docs|example|e2e)/" },
+        "testId": { "type": "string", "pattern": "^JQUI-[A-Z0-9-]+$" }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authoredHtmlJsLines",
+        "javascriptBytes",
+        "cssBytes",
+        "dependencies",
+        "imperativeLifecycleCalls",
+        "accessibilityDefects",
+        "serverChanges",
+        "testLines"
+      ],
+      "properties": {
+        "authoredHtmlJsLines": { "type": "integer", "minimum": 0 },
+        "javascriptBytes": { "type": "integer", "minimum": 0 },
+        "cssBytes": { "type": "integer", "minimum": 0 },
+        "dependencies": { "type": "integer", "minimum": 0 },
+        "imperativeLifecycleCalls": { "type": "integer", "minimum": 0 },
+        "accessibilityDefects": { "type": "integer", "minimum": 0 },
+        "serverChanges": { "type": "integer", "minimum": 0 },
+        "testLines": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "applicationSlice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "independent",
+        "features",
+        "repeatedStateChangingOperations",
+        "legacy",
+        "directMigration",
+        "adapterHypothesis",
+        "accessibilityBaseline",
+        "preservedBehavior"
+      ],
+      "properties": {
+        "id": { "enum": ["project-editor", "command-toolbar"] },
+        "independent": { "const": true },
+        "features": { "$ref": "#/$defs/stringList" },
+        "repeatedStateChangingOperations": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "legacy": { "$ref": "#/$defs/counts" },
+        "directMigration": { "$ref": "#/$defs/counts" },
+        "adapterHypothesis": { "$ref": "#/$defs/counts" },
+        "accessibilityBaseline": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "legacyRuleIds",
+            "legacyNodeCount",
+            "directMigrationAddedRuleIds",
+            "adapterEvidence"
+          ],
+          "properties": {
+            "legacyRuleIds": { "$ref": "#/$defs/stringList" },
+            "legacyNodeCount": { "type": "integer", "minimum": 1 },
+            "directMigrationAddedRuleIds": { "type": "array", "maxItems": 0 },
+            "adapterEvidence": { "const": "not-executed" }
+          }
+        },
+        "preservedBehavior": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "slice",
+        "stage",
+        "counts",
+        "linesAdded",
+        "linesRemoved",
+        "linesChanged",
+        "unsupportedBehavior",
+        "method"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^step\\.[a-z0-9.-]+$" },
+        "slice": { "enum": ["project-editor", "command-toolbar"] },
+        "stage": { "enum": ["legacy", "coexistence", "direct-migration", "adapter-hypothesis"] },
+        "counts": { "$ref": "#/$defs/counts" },
+        "linesAdded": { "type": "integer", "minimum": 0 },
+        "linesRemoved": { "type": "integer", "minimum": 0 },
+        "linesChanged": { "type": "integer", "minimum": 0 },
+        "unsupportedBehavior": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "method": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimumIndependentSlices",
+        "minimumRepeatedOperationsPerSlice",
+        "minimumLineReductionPercent",
+        "minimumLinesSavedPerSlice",
+        "maximumWidgets",
+        "maximumMethodsPerWidget",
+        "maximumOptionsPerWidget",
+        "maximumEventsPerWidget",
+        "maximumMinifiedJsBytes",
+        "maximumGzipJsBytes",
+        "maximumMinifiedCssBytes",
+        "requiredBrowserCount",
+        "requiredChangedLineCoveragePercent"
+      ],
+      "properties": {
+        "minimumIndependentSlices": { "const": 2 },
+        "minimumRepeatedOperationsPerSlice": { "const": 2 },
+        "minimumLineReductionPercent": { "const": 25 },
+        "minimumLinesSavedPerSlice": { "const": 20 },
+        "maximumWidgets": { "const": 2 },
+        "maximumMethodsPerWidget": { "const": 3 },
+        "maximumOptionsPerWidget": { "const": 4 },
+        "maximumEventsPerWidget": { "const": 4 },
+        "maximumMinifiedJsBytes": { "const": 5120 },
+        "maximumGzipJsBytes": { "const": 2048 },
+        "maximumMinifiedCssBytes": { "const": 1024 },
+        "requiredBrowserCount": { "const": 3 },
+        "requiredChangedLineCoveragePercent": { "const": 100 }
+      }
+    },
+    "scoreResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "pass", "evidence"],
+      "properties": {
+        "dimension": {
+          "enum": [
+            "independent-demand",
+            "migration-code",
+            "semantics-accessibility",
+            "public-surface",
+            "shipped-size",
+            "ownership",
+            "maintenance-security",
+            "deprecation",
+            "native-distortion"
+          ]
+        },
+        "pass": { "type": "boolean" },
+        "evidence": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "decision", "nativeConsumers", "requirements", "reason"],
+      "properties": {
+        "id": { "enum": ["draggable", "droppable", "resizable", "selectable", "sortable"] },
+        "decision": { "enum": ["existing-bounded-component", "no-proposal"] },
+        "nativeConsumers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "requirements": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "reason": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}

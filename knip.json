@@ -27,7 +27,7 @@
     "*.config.ts",
     "*.config.{js,mjs,cjs}"
   ],
-  "ignoreDependencies": ["htmx-2-0-0", "htmx-2-0-10", "turbo-8-0-21", "turbo-8-0-23"],
+  "ignoreDependencies": ["htmx-2-0-0", "htmx-2-0-10", "jquery-ui", "turbo-8-0-21", "turbo-8-0-23"],
   "vitest": { "config": ["vitest.config.ts"] },
   "playwright": { "config": ["playwright.config.ts"] }
 }
