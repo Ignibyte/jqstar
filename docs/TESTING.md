@@ -91,6 +91,29 @@ Package quality rejects jQuery UI from runtime dependency fields, packed paths, 
 tree, and every entry graph. The root checkout keeps `jquery-ui@1.14.2` only as an exact development
 fixture. See [JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md) for the migration and rollback steps.
 
+## jQuery Mobile migration evidence
+
+`quality/jquery-mobile-migration.json` records the exact ticket-0038 digest, archived package
+identity, 95 official API URLs, 60 unique data attributes and 122 contexts, ten transitions, extra
+behaviors, nine modern owners, bridge outcomes, two application worksheets, exact reference-app
+measurements, and the no-runtime result. Contract tests validate its closed schema, one-to-one
+assignments, package/lock/install/source absence, official-SDK generation, fixture measurements, and
+package-quality assertions. Property tests permute assignments and generate missing, duplicate, and
+unknown values.
+
+`e2e/jquery-mobile-migration.spec.ts` runs four shared scenarios in Chromium, Firefox, and WebKit,
+plus mobile/zoom, reduced-motion, forced-colors, and JavaScript-disabled scenarios. The 16
+executions cover direct routes and reloads, GET search/local filtering, native dialog and tabs,
+official-SDK status patching, validation, submitter override, conflict, redirect, multipart file,
+history/scroll/focus, pointer cancellation and one activation, touch targets, orientation, 200% text
+with 200% zoom, slow/error documents, offline messaging, and axe.
+
+Package quality rejects jQuery Mobile from every dependency field, packed runtime/theme/icon/source
+path, clean consumer tree, and root/core/testing/CSP/Datastar/Turbo/htmx graph. Unlike the UI
+migration fixture, the archived package is never installed or executed. See
+[JQUERY_MOBILE_MIGRATION.md](JQUERY_MOBILE_MIGRATION.md) for the triage, migration, and rollback
+steps.
+
 ## Coverage and generated inputs
 
 The production denominator is `quality/production-census.json`, not a broad source glob. Run its

@@ -19,7 +19,7 @@
     "guideCharacters": 16000,
     "exampleCharacters": 8000,
     "fullTextBytes": 120000,
-    "indexBytes": 161000
+    "indexBytes": 165000
   },
   "provenance": {
     "manifest": "config/agent-content.json",
@@ -43,6 +43,7 @@
       "example/docs/csp/index.html",
       "example/docs/datastar/index.html",
       "example/docs/ecosystem/index.html",
+      "example/docs/ecosystem/jquery-mobile/index.html",
       "example/docs/ecosystem/jquery-ui/index.html",
       "example/docs/index.html",
       "example/docs/interoperability/index.html",
@@ -441,6 +442,36 @@
       "content": "jQuery UI coexistence and migration\nKeep existing jQuery UI regions application-owned while you migrate one feature at a time to\nsemantic HTML and native jQStar components. New work should use jQStar directly.\nNo compatibility facade: a similar component name does not promise Widget\nFactory, plugin, method, option, event, data, Position, effect, theme, or third-party\nextension compatibility.\nVerified boundary\nThe fixture pins jQuery 4.0.0 and jQuery UI 1.14.2 with the official base theme. It runs\nbeside packaged jQStar output in Chromium, Firefox, and WebKit, plus touch, reduced-motion,\nforced-color, and JavaScript-disabled modes. jQuery UI is a development fixture only; it is\nabsent from jQStar runtime dependencies, package paths, installed consumer trees, and entry\ngraphs.\nThe full inventory maps 72 unique official API pages exactly once. It covers all 15 widgets,\n6 interactions, 34 effect entries, methods, selectors, utilities, Widget Factory contracts,\nand theming. Third-party widgets remain application-specific.\nChoose the migration class\nClass\nUse it when\nDirect semantic\nA native control or relationship already owns the task.\nChanged contract\nA jQStar counterpart exists with new source markup and APIs.\nExternal coexistence\nThe application must temporarily keep a legacy interaction.\nNo equivalent\njQStar does not publish the legacy API or behavior.\nKeep ownership separate\n-\nA legacy island owns its UI instances, generated wrappers, data, events, theme, portals,\nand explicit destroy .\n-\nA jQStar island owns its data-jqs root, data-part slots, state,\nnamed actions, focus, and disposal.\n-\nDestroy the current owner before a server response replaces its island, then initialize\nonly the incoming owner.\n-\nDo not patch $.widget , read private UI data, auto-initialize legacy markup,\nor run both systems on one element.\nMigrate the project editor\n-\nRecord the exact legacy behavior, form values, server requests, focus, keyboard, touch,\nresponsive, and no-script baseline.\n-\nAdd jQStar beside the untouched legacy island and verify package, data, event, CSS,\noverlay, and focus isolation.\n-\nMove date input, autocomplete, tabs, sortable order, and dialog one semantic region at a\ntime.\n-\nPreserve native names, values, validation, submitters, server behavior, direct URLs, and\nkeyboard alternatives.\n-\nRelease and observe the region, then explicitly destroy and remove its old UI code and\ntheme assets.\nAdapter decision\nNo adapter ships. The project-editor and command-toolbar slices need different facades. The\nmeasured sketches save only 13 lines (7.9%) and 7 lines (7.7%), below the frozen 25% and\n20-line thresholds. A shared surface would also exceed the two-widget limit and has no\nexecutable accessibility, gzip, type, coverage, or browser proof.\nDirect semantic migration removes the legacy lifecycle and runtime cost. A future adapter\nneeds new observed demand and a separate bounded ticket.\nAccessibility and rollback\nThe exact fixture retains four serious or critical legacy axe rules across seven nodes and\nadds none in native or partially migrated islands. It also verifies touch targets, reduced\nmotion, forced colors, native validation and submission without JavaScript, explicit destroy\nbefore server replacement, sibling identity, and independent documents.\nRelease one island behind an application-owned switch. Keep the prior template and assets\ndeployable until checks pass. Rollback disposes the current owner, restores only that\nisland, and initializes the previous owner.\nRead the\ncomplete matrix, code examples, measurements, and verification guide . jQStar is an independent project and is not affiliated with, sponsored by, endorsed by,\nor an official successor to the jQuery project or the OpenJS Foundation.",
       "provenance": {
         "source": "example/docs/ecosystem/jquery-ui/index.html",
+        "kind": "public-html"
+      }
+    },
+    {
+      "id": "jquery-mobile-migration",
+      "type": "guide",
+      "title": "jQuery Mobile migration",
+      "summary": "Migrate archived jQuery Mobile applications route by route to server documents, semantic HTML, responsive CSS, jQuery 4, and bounded jQStar enhancement.",
+      "canonicalUrl": "https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-mobile/",
+      "path": "docs/ecosystem/jquery-mobile/",
+      "keywords": [
+        "data-role",
+        "jquery mobile",
+        "native forms",
+        "no runtime",
+        "responsive",
+        "route migration",
+        "virtual mouse"
+      ],
+      "headings": [
+        "jQuery Mobile migration",
+        "Verified boundary",
+        "Use route boundaries",
+        "Reference application",
+        "Forms and input",
+        "Read the complete guide"
+      ],
+      "content": "jQuery Mobile migration\nMove one route at a time to ordinary server documents, native links and forms, responsive\nCSS, jQuery 4, and bounded jQStar enhancement. Do not load the archived Mobile runtime in a\nmodern route.\nNo compatibility runtime: jQStar does not recreate the page container,\nAjax router, virtual mouse aliases, transition catalog, theme swatches, role\nauto-initializer, or third-party plugin API.\nVerified boundary\nThe machine authority maps 95 official 1.4 API entries, 60 unique data attributes with 122\ndocumented contexts, ten transitions, and 16 additional behaviors. Every item has one owner:\nnative HTML, native CSS, a jQStar component, application code, the Datastar SDK, an optional\napproved bridge, full document navigation, or intentionally unsupported.\nThe historical jquery-mobile@1.4.1 identity is evidence only. It is absent from\ndependencies, the lockfile, fixtures, CI downloads, packed files, clean consumer installs,\nand jQStar entry graphs.\nUse route boundaries\n-\nInventory roles, attributes, events, plugins, themes, routes, forms, and server work.\n- Give every screen a direct server URL and preserve native link/form behavior.\n- Upgrade Core with the official Migrate workflow in a separate legacy-stack change.\n- Replace layout and swatches with semantic HTML and responsive CSS.\n- Migrate one widget or region to a native element or source-owned jQStar component.\n-\nKeep full documents, or select one approved host bridge for measured application need.\n-\nRemove the old initializer, assets, handlers, and dependency for that route; test and\nrelease.\nKeep the old and new route templates deployable until production verification passes.\nRollback switches the whole route to its prior compatible stack. It never mixes jQuery\nMobile with jQuery 4 in the same modern document.\nReference application\nThe server-rendered project tracker proves list, detail, GET search, edit/conflict,\nmultipart upload, responsive navigation, native dialog, tabs, table/list presentation,\nofficial-SDK status patching, history, focus, scroll, pointer cancellation, and slow, error,\noffline, and JavaScript-disabled behavior. Four shared scenarios run in Chromium, Firefox,\nand WebKit, followed by four special-mode scenarios for 16 browser executions.\nForms and input\n-\nPreserve action, method, names, submitters, encoding, files, constraint validation, and\nserver redirects or errors.\n-\nKeep authentication, authorization, CSRF, validation, output encoding, and conflict\nhandling on the server.\n- Never replay an uncertain write automatically after a disconnect.\n-\nReplace virtual input with native click/pointer/input events, pointer cancellation, and a\nkeyboard-operable control that produces one activation.\nRead the complete guide\nThe\nrepository migration guide\ncontains the complete inventory boundary, triage worksheet, Core/Migrate split, ownership\nchoices, forms and pointer contracts, two application inventories, rollback procedure, exact\nmeasurements, sources, and unsupported behavior.",
+      "provenance": {
+        "source": "example/docs/ecosystem/jquery-mobile/index.html",
         "kind": "public-html"
       }
     },

@@ -776,6 +776,65 @@ Read the
 complete matrix, code examples, measurements, and verification guide . jQStar is an independent project and is not affiliated with, sponsored by, endorsed by,
 or an official successor to the jQuery project or the OpenJS Foundation.
 
+### jQuery Mobile migration [jquery-mobile-migration]
+Migrate archived jQuery Mobile applications route by route to server documents, semantic HTML, responsive CSS, jQuery 4, and bounded jQStar enhancement.
+Citation: https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-mobile/
+Source: example/docs/ecosystem/jquery-mobile/index.html
+
+jQuery Mobile migration
+Move one route at a time to ordinary server documents, native links and forms, responsive
+CSS, jQuery 4, and bounded jQStar enhancement. Do not load the archived Mobile runtime in a
+modern route.
+No compatibility runtime: jQStar does not recreate the page container,
+Ajax router, virtual mouse aliases, transition catalog, theme swatches, role
+auto-initializer, or third-party plugin API.
+Verified boundary
+The machine authority maps 95 official 1.4 API entries, 60 unique data attributes with 122
+documented contexts, ten transitions, and 16 additional behaviors. Every item has one owner:
+native HTML, native CSS, a jQStar component, application code, the Datastar SDK, an optional
+approved bridge, full document navigation, or intentionally unsupported.
+The historical jquery-mobile@1.4.1 identity is evidence only. It is absent from
+dependencies, the lockfile, fixtures, CI downloads, packed files, clean consumer installs,
+and jQStar entry graphs.
+Use route boundaries
+-
+Inventory roles, attributes, events, plugins, themes, routes, forms, and server work.
+- Give every screen a direct server URL and preserve native link/form behavior.
+- Upgrade Core with the official Migrate workflow in a separate legacy-stack change.
+- Replace layout and swatches with semantic HTML and responsive CSS.
+- Migrate one widget or region to a native element or source-owned jQStar component.
+-
+Keep full documents, or select one approved host bridge for measured application need.
+-
+Remove the old initializer, assets, handlers, and dependency for that route; test and
+release.
+Keep the old and new route templates deployable until production verification passes.
+Rollback switches the whole route to its prior compatible stack. It never mixes jQuery
+Mobile with jQuery 4 in the same modern document.
+Reference application
+The server-rendered project tracker proves list, detail, GET search, edit/conflict,
+multipart upload, responsive navigation, native dialog, tabs, table/list presentation,
+official-SDK status patching, history, focus, scroll, pointer cancellation, and slow, error,
+offline, and JavaScript-disabled behavior. Four shared scenarios run in Chromium, Firefox,
+and WebKit, followed by four special-mode scenarios for 16 browser executions.
+Forms and input
+-
+Preserve action, method, names, submitters, encoding, files, constraint validation, and
+server redirects or errors.
+-
+Keep authentication, authorization, CSRF, validation, output encoding, and conflict
+handling on the server.
+- Never replay an uncertain write automatically after a disconnect.
+-
+Replace virtual input with native click/pointer/input events, pointer cancellation, and a
+keyboard-operable control that produces one activation.
+Read the complete guide
+The
+repository migration guide
+contains the complete inventory boundary, triage worksheet, Core/Migrate split, ownership
+choices, forms and pointer contracts, two application inventories, rollback procedure, exact
+measurements, sources, and unsupported behavior.
+
 ### Testing [testing-harness]
 Use an explicit DOM realm, deterministic response queue, bounded flush, disposal reports, and runner-neutral conformance.
 Citation: https://ignibyte.github.io/jqstar/docs/testing/

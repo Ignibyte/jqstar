@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 const networkProofPort = Number(process.env.JQS_NETWORK_PROOF_PORT ?? 4174);
 const interoperabilityPort = Number(process.env.JQS_INTEROP_PORT ?? 4175);
 const jqueryUiMigrationPort = Number(process.env.JQS_JQUERY_UI_MIGRATION_PORT ?? 4176);
+const jqueryMobileMigrationPort = Number(process.env.JQS_JQUERY_MOBILE_MIGRATION_PORT ?? 4177);
 const artifactDirectory = resolve(
   process.env.JQS_PLAYWRIGHT_ARTIFACT_DIRECTORY ?? ".git/jqstar/standalone/playwright",
 );
@@ -35,13 +36,13 @@ const requiredProjects = [
   },
   {
     name: "mobile-touch",
-    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@mobile/,
     use: { ...devices["Pixel 7"] },
   },
   {
     name: "reduced-motion",
-    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@motion/,
     use: {
       ...devices["Desktop Chrome"],
@@ -50,7 +51,7 @@ const requiredProjects = [
   },
   {
     name: "forced-colors",
-    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@color/,
     use: {
       ...devices["Desktop Chrome"],
@@ -65,7 +66,7 @@ const requiredProjects = [
   },
   {
     name: "javascript-disabled",
-    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@nojs/,
     use: { ...devices["Desktop Chrome"], javaScriptEnabled: false },
   },
@@ -124,6 +125,11 @@ export default defineConfig({
     {
       command: "node e2e/fixtures/jquery-ui-migration-server.mjs",
       url: `http://127.0.0.1:${jqueryUiMigrationPort}/health`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: "node e2e/fixtures/jquery-mobile-migration-server.mjs",
+      url: `http://127.0.0.1:${jqueryMobileMigrationPort}/health`,
       reuseExistingServer: !process.env.CI,
     },
   ],

@@ -34,6 +34,8 @@ The package has two public layers:
   migration roles, naming, and independent-project policy.
 - [JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md): exact jQuery UI coexistence ownership, complete
   API map, incremental migration sequence, measurements, and no-adapter decision.
+- [JQUERY_MOBILE_MIGRATION.md](JQUERY_MOBILE_MIGRATION.md): no-runtime route migration, complete
+  Mobile 1.4 inventory, modern owner map, reference app, triage worksheet, and rollback path.
 - [security/CSP_THREAT_MODEL.md](security/CSP_THREAT_MODEL.md): CSP engine assets, trust boundaries,
   abuse cases, mitigations, and downstream security gates.
 - [COMPONENT_ARCHITECTURE.md](COMPONENT_ARCHITECTURE.md): component public contracts.

@@ -1,0 +1,1738 @@
+{
+  "$schema": "../schema/jquery-mobile-migration.schema.json",
+  "schemaVersion": 1,
+  "reviewedAt": "2026-09-04T16:30:00Z",
+  "policy": {
+    "ecosystemSha256": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718",
+    "runtime": "absent",
+    "fixtureRuntime": "forbidden",
+    "defaultNavigation": "full-document",
+    "historicalPackage": {
+      "name": "jquery-mobile",
+      "version": "1.4.1",
+      "integrity": "sha512-5CIKR+jQ34GMNz8vGpiNIxQ2zfmEXpbCI0hFfyHYi/MDhdkJLpk2lFl2txjPxkAbHSvJLntNJgS//OrA1nBIkg==",
+      "shasum": "4c5eaf3d20f99973d1481ed4c9c8921d016fe198",
+      "usage": "identity-only"
+    },
+    "modernPackages": {
+      "jquery": {
+        "version": "4.0.0",
+        "integrity": "sha512-TXCHVR3Lb6TZdtw1l3RTLf8RBWVGexdxL6AC8/e0xZKEpBflBsjh9/8LXw+dkNFuOyW9B7iB3O1sP7hS0Kiacg==",
+        "shasum": "95c33ac29005ff72ec444c5ba1cf457e61404fbb"
+      },
+      "jqueryStar": {
+        "version": "0.1.0",
+        "proof": "exact-quality-tarball"
+      }
+    }
+  },
+  "sources": [
+    {
+      "id": "mobile.openjs-status",
+      "kind": "status",
+      "url": "https://github.com/openjs-foundation/cross-project-council",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.archive",
+      "kind": "maintenance",
+      "url": "https://github.com/jquery-archive/jquery-mobile",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.deprecation",
+      "kind": "maintenance",
+      "url": "https://blog.jquerymobile.com/2021/10/07/jquery-maintainers-continue-modernization-initiative-with-deprecation-of-jquery-mobile/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.api-1.4",
+      "kind": "api",
+      "url": "https://api.jquerymobile.com/1.4/category/all/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.data-attributes",
+      "kind": "data-attributes",
+      "url": "https://api.jquerymobile.com/1.4/data-attribute/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.demos-1.4.5",
+      "kind": "demos",
+      "url": "https://demos.jquerymobile.com/1.4.5/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.transitions",
+      "kind": "demos",
+      "url": "https://demos.jquerymobile.com/1.4.5/transitions/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.upgrade-1.4",
+      "kind": "upgrade",
+      "url": "https://jquerymobile.com/upgrade-guide/1.4/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "jquery.core-upgrade-4",
+      "kind": "core-upgrade",
+      "url": "https://jquery.com/upgrade-guide/4.0/",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "jquery.migrate",
+      "kind": "migrate",
+      "url": "https://github.com/jquery/jquery-migrate/blob/main/README.md",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    },
+    {
+      "id": "mobile.npm-1.4.1",
+      "kind": "package",
+      "url": "https://registry.npmjs.org/jquery-mobile/-/jquery-mobile-1.4.1.tgz",
+      "reviewedAt": "2026-09-04T16:30:00Z"
+    }
+  ],
+  "owners": [
+    "native-html",
+    "native-css",
+    "jqstar-component",
+    "application-code",
+    "datastar-sdk",
+    "turbo-bridge",
+    "htmx-bridge",
+    "full-document",
+    "unsupported"
+  ],
+  "apiInventory": [
+    {
+      "id": "api.button",
+      "title": "Button Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/button/",
+      "groupId": "buttons"
+    },
+    {
+      "id": "api.buttonMarkup",
+      "title": ".buttonMarkup()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/buttonMarkup/",
+      "groupId": "buttons"
+    },
+    {
+      "id": "api.checkboxradio",
+      "title": "Checkboxradio Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/checkboxradio/",
+      "groupId": "form-choice"
+    },
+    {
+      "id": "api.classes",
+      "title": "Classes",
+      "category": "css-framework",
+      "url": "https://api.jquerymobile.com/1.4/classes/",
+      "groupId": "theme-icons"
+    },
+    {
+      "id": "api.collapsible",
+      "title": "Collapsible Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/collapsible/",
+      "groupId": "disclosure"
+    },
+    {
+      "id": "api.collapsibleset",
+      "title": "Collapsibleset Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/collapsibleset/",
+      "groupId": "disclosure"
+    },
+    {
+      "id": "api.controlgroup",
+      "title": "Controlgroup Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/controlgroup/",
+      "groupId": "buttons"
+    },
+    {
+      "id": "api.data-attribute",
+      "title": "Data Attributes",
+      "category": "reference",
+      "url": "https://api.jquerymobile.com/1.4/data-attribute/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.dialog",
+      "title": "Dialog Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/dialog/",
+      "groupId": "overlays"
+    },
+    {
+      "id": "api.enhanceWithin",
+      "title": ".enhanceWithin()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/enhanceWithin/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.fieldcontain",
+      "title": ".fieldcontain()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/fieldcontain/",
+      "groupId": "form-layout"
+    },
+    {
+      "id": "api.filterable",
+      "title": "Filterable Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/filterable/",
+      "groupId": "lists"
+    },
+    {
+      "id": "api.fixedtoolbar",
+      "title": "Fixedtoolbar Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/fixedtoolbar/",
+      "groupId": "toolbars"
+    },
+    {
+      "id": "api.flipswitch",
+      "title": "Flipswitch Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/flipswitch/",
+      "groupId": "form-range"
+    },
+    {
+      "id": "api.footer",
+      "title": "Footer Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/footer/",
+      "groupId": "toolbars"
+    },
+    {
+      "id": "api.global-config",
+      "title": "Configuring Defaults",
+      "category": "reference",
+      "url": "https://api.jquerymobile.com/1.4/global-config/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.grid-layout",
+      "title": "Grid Layout",
+      "category": "css-framework",
+      "url": "https://api.jquerymobile.com/1.4/grid-layout/",
+      "groupId": "responsive-layout"
+    },
+    {
+      "id": "api.hashchange",
+      "title": "hashchange",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/hashchange/",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "api.header",
+      "title": "Header Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/header/",
+      "groupId": "toolbars"
+    },
+    {
+      "id": "api.icons",
+      "title": "Icons",
+      "category": "jqmicons",
+      "url": "https://api.jquerymobile.com/1.4/icons/",
+      "groupId": "theme-icons"
+    },
+    {
+      "id": "api.jqmData",
+      "title": "jqmData()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jqmData/",
+      "groupId": "data-storage"
+    },
+    {
+      "id": "api.jqmEnhanceable",
+      "title": "jqmEnhanceable()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jqmEnhanceable/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.jqmHijackable",
+      "title": "jqmHijackable()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jqmHijackable/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.jqmRemoveData",
+      "title": ".jqmRemoveData()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jqmRemoveData/",
+      "groupId": "data-storage"
+    },
+    {
+      "id": "api.jQuery.mobile.activePage",
+      "title": "jQuery.mobile.activePage",
+      "category": "properties",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.activePage/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.jQuery.mobile.changePage",
+      "title": "jQuery.mobile.changePage()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.changePage/",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "api.jQuery.mobile.degradeInputsWithin",
+      "title": "jQuery.mobile.degradeInputsWithin()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.degradeInputsWithin/",
+      "groupId": "form-text"
+    },
+    {
+      "id": "api.jQuery.mobile.getDocumentBase",
+      "title": "jQuery.mobile.getDocumentBase()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.getDocumentBase/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.getDocumentUrl",
+      "title": "jQuery.mobile.getDocumentUrl()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.getDocumentUrl/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.getInheritedTheme",
+      "title": "jQuery.mobile.getInheritedTheme()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.getInheritedTheme/",
+      "groupId": "theme-icons"
+    },
+    {
+      "id": "api.jQuery.mobile.loadPage",
+      "title": "jQuery.mobile.loadPage()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.loadPage/",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "api.jQuery.mobile.navigate",
+      "title": "jQuery.mobile.navigate()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.navigate/",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "api.jQuery.mobile.path.get",
+      "title": "jQuery.mobile.path.get()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.get/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.getDocumentBase",
+      "title": "jQuery.mobile.path.getDocumentBase()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.getDocumentBase/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.getDocumentUrl",
+      "title": "jQuery.mobile.path.getDocumentUrl()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.getDocumentUrl/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.getLocation",
+      "title": "jQuery.mobile.path.getLocation()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.getLocation/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.isAbsoluteUrl",
+      "title": "jQuery.mobile.path.isAbsoluteUrl()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.isAbsoluteUrl/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.isRelativeUrl",
+      "title": "jQuery.mobile.path.isRelativeUrl()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.isRelativeUrl/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.isSameDomain",
+      "title": "jQuery.mobile.path.isSameDomain()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.isSameDomain/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.makePathAbsolute",
+      "title": "jQuery.mobile.path.makePathAbsolute()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.makePathAbsolute/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.makeUrlAbsolute",
+      "title": "jQuery.mobile.path.makeUrlAbsolute()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.makeUrlAbsolute/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.parseLocation",
+      "title": "jQuery.mobile.path.parseLocation()",
+      "category": "path",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.parseLocation/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.path.parseUrl",
+      "title": "jQuery.mobile.path.parseUrl()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.path.parseUrl/",
+      "groupId": "url-utils"
+    },
+    {
+      "id": "api.jQuery.mobile.silentScroll",
+      "title": "jQuery.mobile.silentScroll()",
+      "category": "methods",
+      "url": "https://api.jquerymobile.com/1.4/jQuery.mobile.silentScroll/",
+      "groupId": "scroll"
+    },
+    {
+      "id": "api.listview",
+      "title": "Listview Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/listview/",
+      "groupId": "lists"
+    },
+    {
+      "id": "api.loader",
+      "title": "Loader Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/loader/",
+      "groupId": "feedback"
+    },
+    {
+      "id": "api.mobileinit",
+      "title": "mobileinit",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/mobileinit/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.navbar",
+      "title": "Navbar Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/navbar/",
+      "groupId": "buttons"
+    },
+    {
+      "id": "api.navigate",
+      "title": "navigate",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/navigate/",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "api.orientationchange",
+      "title": "orientationchange event",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/orientationchange/",
+      "groupId": "responsive-events"
+    },
+    {
+      "id": "api.page",
+      "title": "Page Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/page/",
+      "groupId": "documents"
+    },
+    {
+      "id": "api.pagebeforechange",
+      "title": "pagebeforechange",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagebeforechange/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagebeforecreate",
+      "title": "pagebeforecreate",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagebeforecreate/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.pagebeforehide",
+      "title": "pagebeforehide",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagebeforehide/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagebeforeload",
+      "title": "pagebeforeload",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagebeforeload/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagebeforeshow",
+      "title": "pagebeforeshow",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagebeforeshow/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagechange",
+      "title": "pagechange",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagechange/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagechangefailed",
+      "title": "pagechangefailed",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagechangefailed/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagecontainer",
+      "title": "Pagecontainer Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/pagecontainer/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pagecreate",
+      "title": "pagecreate",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagecreate/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.pagehide",
+      "title": "pagehide",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pagehide/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pageinit",
+      "title": "pageinit",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pageinit/",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "api.pageload",
+      "title": "pageload",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pageload/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pageloadfailed",
+      "title": "pageloadfailed",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pageloadfailed/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pageremove",
+      "title": "pageremove",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pageremove/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.pageshow",
+      "title": "pageshow",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/pageshow/",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "api.panel",
+      "title": "Panel Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/panel/",
+      "groupId": "responsive-navigation"
+    },
+    {
+      "id": "api.popup",
+      "title": "Popup Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/popup/",
+      "groupId": "overlays"
+    },
+    {
+      "id": "api.rangeslider",
+      "title": "Rangeslider Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/rangeslider/",
+      "groupId": "form-range"
+    },
+    {
+      "id": "api.responsive-grid",
+      "title": "Responsive Grid",
+      "category": "css-framework",
+      "url": "https://api.jquerymobile.com/1.4/responsive-grid/",
+      "groupId": "responsive-layout"
+    },
+    {
+      "id": "api.scrollstart",
+      "title": "scrollstart",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/scrollstart/",
+      "groupId": "scroll"
+    },
+    {
+      "id": "api.scrollstop",
+      "title": "scrollstop",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/scrollstop/",
+      "groupId": "scroll"
+    },
+    {
+      "id": "api.selectmenu",
+      "title": "Selectmenu Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/selectmenu/",
+      "groupId": "form-choice"
+    },
+    {
+      "id": "api.slider",
+      "title": "Slider Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/slider/",
+      "groupId": "form-range"
+    },
+    {
+      "id": "api.swipe",
+      "title": "swipe",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/swipe/",
+      "groupId": "gestures"
+    },
+    {
+      "id": "api.swipeleft",
+      "title": "swipeleft",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/swipeleft/",
+      "groupId": "gestures"
+    },
+    {
+      "id": "api.swiperight",
+      "title": "swiperight",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/swiperight/",
+      "groupId": "gestures"
+    },
+    {
+      "id": "api.table",
+      "title": "Table Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/table/",
+      "groupId": "tables"
+    },
+    {
+      "id": "api.table-columntoggle",
+      "title": "Column-Toggle Table Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/table-columntoggle/",
+      "groupId": "tables"
+    },
+    {
+      "id": "api.table-reflow",
+      "title": "Reflow Table Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/table-reflow/",
+      "groupId": "tables"
+    },
+    {
+      "id": "api.tabs",
+      "title": "Tabs Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/tabs/",
+      "groupId": "tabs"
+    },
+    {
+      "id": "api.tap",
+      "title": "tap",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/tap/",
+      "groupId": "gestures"
+    },
+    {
+      "id": "api.taphold",
+      "title": "taphold",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/taphold/",
+      "groupId": "gestures"
+    },
+    {
+      "id": "api.textinput",
+      "title": "Textinput Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/textinput/",
+      "groupId": "form-text"
+    },
+    {
+      "id": "api.theme",
+      "title": "Theme",
+      "category": "css-framework",
+      "url": "https://api.jquerymobile.com/1.4/theme/",
+      "groupId": "theme-icons"
+    },
+    {
+      "id": "api.throttledresize",
+      "title": "throttledresize",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/throttledresize/",
+      "groupId": "responsive-events"
+    },
+    {
+      "id": "api.toolbar",
+      "title": "Toolbar Widget",
+      "category": "widgets",
+      "url": "https://api.jquerymobile.com/1.4/toolbar/",
+      "groupId": "toolbars"
+    },
+    {
+      "id": "api.updatelayout",
+      "title": "updatelayout",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/updatelayout/",
+      "groupId": "responsive-events"
+    },
+    {
+      "id": "api.vclick",
+      "title": "vclick",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vclick/",
+      "groupId": "virtual-input"
+    },
+    {
+      "id": "api.vmousecancel",
+      "title": "vmousecancel",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vmousecancel/",
+      "groupId": "virtual-input"
+    },
+    {
+      "id": "api.vmousedown",
+      "title": "vmousedown",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vmousedown/",
+      "groupId": "virtual-input"
+    },
+    {
+      "id": "api.vmousemove",
+      "title": "vmousemove",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vmousemove/",
+      "groupId": "virtual-input"
+    },
+    {
+      "id": "api.vmouseout",
+      "title": "vmouseout",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vmouseout/",
+      "groupId": "virtual-input"
+    },
+    {
+      "id": "api.vmouseover",
+      "title": "vmouseover",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vmouseover/",
+      "groupId": "virtual-input"
+    },
+    {
+      "id": "api.vmouseup",
+      "title": "vmouseup",
+      "category": "events",
+      "url": "https://api.jquerymobile.com/1.4/vmouseup/",
+      "groupId": "virtual-input"
+    }
+  ],
+  "dataAttributes": [
+    {
+      "name": "data-add-back-btn",
+      "contexts": ["Toolbar"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-ajax",
+      "contexts": ["Enhancement", "Link"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-autodividers",
+      "contexts": ["Listview"],
+      "groupId": "lists"
+    },
+    {
+      "name": "data-back-btn-text",
+      "contexts": ["Toolbar"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-back-btn-theme",
+      "contexts": ["Toolbar"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-clear-btn",
+      "contexts": ["Textinput"],
+      "groupId": "form-text"
+    },
+    {
+      "name": "data-clear-btn-text",
+      "contexts": ["Textinput"],
+      "groupId": "form-text"
+    },
+    {
+      "name": "data-close-btn",
+      "contexts": ["Dialog"],
+      "groupId": "overlays"
+    },
+    {
+      "name": "data-close-btn-text",
+      "contexts": ["Dialog"],
+      "groupId": "overlays"
+    },
+    {
+      "name": "data-collapse-cue-text",
+      "contexts": ["Collapsible"],
+      "groupId": "disclosure"
+    },
+    {
+      "name": "data-collapsed",
+      "contexts": ["Collapsible"],
+      "groupId": "disclosure"
+    },
+    {
+      "name": "data-collapsed-icon",
+      "contexts": ["Collapsible", "Collapsible set"],
+      "groupId": "disclosure"
+    },
+    {
+      "name": "data-content-theme",
+      "contexts": ["Collapsible", "Collapsible set"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-corners",
+      "contexts": ["Button", "Dialog", "Popup"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-count-theme",
+      "contexts": ["Listview"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-direction",
+      "contexts": ["Link"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-disable-page-zoom",
+      "contexts": ["Fixed toolbar"],
+      "groupId": "toolbars"
+    },
+    {
+      "name": "data-dismissible",
+      "contexts": ["Popup"],
+      "groupId": "overlays"
+    },
+    {
+      "name": "data-divider-theme",
+      "contexts": ["Listview", "Selectmenu"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-dom-cache",
+      "contexts": ["Dialog", "Link", "Page"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-enhance",
+      "contexts": ["Enhancement"],
+      "groupId": "auto-enhancement"
+    },
+    {
+      "name": "data-exclude-invisible",
+      "contexts": ["Controlgroup"],
+      "groupId": "buttons"
+    },
+    {
+      "name": "data-expand-cue-text",
+      "contexts": ["Collapsible"],
+      "groupId": "disclosure"
+    },
+    {
+      "name": "data-expanded-icon",
+      "contexts": ["Collapsible", "Collapsible set"],
+      "groupId": "disclosure"
+    },
+    {
+      "name": "data-filter",
+      "contexts": ["Listview"],
+      "groupId": "lists"
+    },
+    {
+      "name": "data-filter-placeholder",
+      "contexts": ["Listview"],
+      "groupId": "lists"
+    },
+    {
+      "name": "data-filter-theme",
+      "contexts": ["Listview"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-filtertext",
+      "contexts": ["Listview item"],
+      "groupId": "lists"
+    },
+    {
+      "name": "data-fullscreen",
+      "contexts": ["Fixed toolbar"],
+      "groupId": "toolbars"
+    },
+    {
+      "name": "data-header-theme",
+      "contexts": ["Listview"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-highlight",
+      "contexts": ["Slider"],
+      "groupId": "form-range"
+    },
+    {
+      "name": "data-history",
+      "contexts": ["Popup"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-icon",
+      "contexts": ["Button", "Listview", "Listview item", "Selectmenu"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-iconpos",
+      "contexts": ["Button", "Collapsible", "Collapsible set", "Navbar", "Selectmenu"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-iconshadow",
+      "contexts": ["Button"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-id",
+      "contexts": ["Toolbar"],
+      "groupId": "toolbars"
+    },
+    {
+      "name": "data-inline",
+      "contexts": ["Button", "Selectmenu"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-inset",
+      "contexts": ["Collapsible", "Collapsible set", "Listview"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-mini",
+      "contexts": [
+        "Button",
+        "Checkbox",
+        "Collapsible",
+        "Collapsible set",
+        "Controlgroup",
+        "Flip toggle switch",
+        "Radio button",
+        "Selectmenu",
+        "Slider",
+        "Textinput"
+      ],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-native-menu",
+      "contexts": ["Selectmenu"],
+      "groupId": "form-choice"
+    },
+    {
+      "name": "data-overlay-theme",
+      "contexts": ["Dialog", "Page", "Popup", "Selectmenu"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-placeholder",
+      "contexts": ["Selectmenu"],
+      "groupId": "form-choice"
+    },
+    {
+      "name": "data-position",
+      "contexts": ["Toolbar"],
+      "groupId": "toolbars"
+    },
+    {
+      "name": "data-position-to",
+      "contexts": ["Link", "Popup", "Popup opener"],
+      "groupId": "overlays"
+    },
+    {
+      "name": "data-prefetch",
+      "contexts": ["Link"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-rel",
+      "contexts": ["Link", "Popup"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-role",
+      "contexts": [
+        "Checkbox",
+        "Flip toggle switch",
+        "Listview item",
+        "Radio button",
+        "Selectmenu",
+        "Slider",
+        "Textinput"
+      ],
+      "groupId": "auto-enhancement"
+    },
+    {
+      "name": "data-shadow",
+      "contexts": ["Button", "Popup"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-split-icon",
+      "contexts": ["Listview"],
+      "groupId": "lists"
+    },
+    {
+      "name": "data-split-theme",
+      "contexts": ["Listview"],
+      "groupId": "lists"
+    },
+    {
+      "name": "data-tap-toggle",
+      "contexts": ["Fixed toolbar"],
+      "groupId": "toolbars"
+    },
+    {
+      "name": "data-theme",
+      "contexts": [
+        "Button",
+        "Checkbox",
+        "Collapsible",
+        "Collapsible set",
+        "Content",
+        "Controlgroup",
+        "Dialog",
+        "Flip toggle switch",
+        "Listview",
+        "Listview item",
+        "Page",
+        "Popup",
+        "Radio button",
+        "Selectmenu",
+        "Slider",
+        "Textinput",
+        "Toolbar"
+      ],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-title",
+      "contexts": ["Dialog", "Page"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-tolerance",
+      "contexts": ["Popup"],
+      "groupId": "overlays"
+    },
+    {
+      "name": "data-track-theme",
+      "contexts": ["Flip toggle switch", "Slider"],
+      "groupId": "theme-icons"
+    },
+    {
+      "name": "data-transition",
+      "contexts": ["Link", "Popup", "Fixed toolbar", "Popup opener"],
+      "groupId": "transitions"
+    },
+    {
+      "name": "data-type",
+      "contexts": ["Controlgroup"],
+      "groupId": "buttons"
+    },
+    {
+      "name": "data-update-page-padding",
+      "contexts": ["Fixed toolbar"],
+      "groupId": "toolbars"
+    },
+    {
+      "name": "data-url",
+      "contexts": ["Page"],
+      "groupId": "navigation-history"
+    },
+    {
+      "name": "data-visible-on-page-show",
+      "contexts": ["Fixed toolbar"],
+      "groupId": "toolbars"
+    }
+  ],
+  "transitions": [
+    {
+      "name": "fade",
+      "groupId": "transitions"
+    },
+    {
+      "name": "pop",
+      "groupId": "transitions"
+    },
+    {
+      "name": "flip",
+      "groupId": "transitions"
+    },
+    {
+      "name": "turn",
+      "groupId": "transitions"
+    },
+    {
+      "name": "flow",
+      "groupId": "transitions"
+    },
+    {
+      "name": "slidefade",
+      "groupId": "transitions"
+    },
+    {
+      "name": "slide",
+      "groupId": "transitions"
+    },
+    {
+      "name": "slideup",
+      "groupId": "transitions"
+    },
+    {
+      "name": "slidedown",
+      "groupId": "transitions"
+    },
+    {
+      "name": "none",
+      "groupId": "transitions"
+    }
+  ],
+  "extraBehaviors": [
+    {
+      "id": "multipage-documents",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "ajax-link-form-interception",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "incoming-page-injection",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "incoming-head-discard",
+      "groupId": "page-framework"
+    },
+    {
+      "id": "history-cache-prefetch",
+      "groupId": "navigation-history"
+    },
+    {
+      "id": "global-loader-overlay",
+      "groupId": "feedback"
+    },
+    {
+      "id": "tag-and-data-role-auto-initialization",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "global-config-defaults",
+      "groupId": "auto-enhancement"
+    },
+    {
+      "id": "themeroller-swatches",
+      "groupId": "theme-icons"
+    },
+    {
+      "id": "downloaded-custom-themes",
+      "groupId": "theme-icons"
+    },
+    {
+      "id": "third-party-widgets-and-plugins",
+      "groupId": "custom-extensions"
+    },
+    {
+      "id": "direct-server-routes",
+      "groupId": "documents"
+    },
+    {
+      "id": "native-form-submission",
+      "groupId": "form-writes"
+    },
+    {
+      "id": "datastar-partial-update",
+      "groupId": "datastar-updates"
+    },
+    {
+      "id": "turbo-optional-navigation",
+      "groupId": "turbo-navigation"
+    },
+    {
+      "id": "htmx-optional-swap",
+      "groupId": "htmx-navigation"
+    }
+  ],
+  "groups": [
+    {
+      "id": "documents",
+      "legacyNeed": "addressable page content and direct entry",
+      "owner": "full-document",
+      "modernTarget": "one semantic server document per route",
+      "markupApiChange": "Replace the addressable page content and direct entry contract with one semantic server document per route; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The one semantic server document per route result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "multipage documents in one DOM",
+      "example": "See the mobile-reference-routes fixture or guide section.",
+      "testId": "mobile-reference-routes"
+    },
+    {
+      "id": "page-framework",
+      "legacyNeed": "client page injection, caching, lifecycle, and removal",
+      "owner": "unsupported",
+      "modernTarget": "independent documents and explicit owned roots",
+      "markupApiChange": "Replace the client page injection, caching, lifecycle, and removal contract with independent documents and explicit owned roots; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The independent documents and explicit owned roots result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "pagecontainer, activePage, and page lifecycle compatibility",
+      "example": "See the mobile-inventory-coverage fixture or guide section.",
+      "testId": "mobile-inventory-coverage"
+    },
+    {
+      "id": "navigation-history",
+      "legacyNeed": "links, forms, URL changes, history, cache, and prefetch",
+      "owner": "full-document",
+      "modernTarget": "native anchors, forms, redirects, and browser history",
+      "markupApiChange": "Replace the links, forms, URL changes, history, cache, and prefetch contract with native anchors, forms, redirects, and browser history; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native anchors, forms, redirects, and browser history result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile Ajax interception and hash routing",
+      "example": "See the mobile-reference-history fixture or guide section.",
+      "testId": "mobile-reference-history"
+    },
+    {
+      "id": "transitions",
+      "legacyNeed": "animated page and dialog transition catalog",
+      "owner": "unsupported",
+      "modernTarget": "local component CSS with reduced-motion fallback",
+      "markupApiChange": "Replace the animated page and dialog transition catalog contract with local component CSS with reduced-motion fallback; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The local component CSS with reduced-motion fallback result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "translation of the ten Mobile transition names",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "auto-enhancement",
+      "legacyNeed": "global data-role scanning, defaults, and initialization",
+      "owner": "unsupported",
+      "modernTarget": "explicit semantic data-jqs roots",
+      "markupApiChange": "Replace the global data-role scanning, defaults, and initialization contract with explicit semantic data-jqs roots; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The explicit semantic data-jqs roots result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "global auto-init and Mobile data namespaces",
+      "example": "See the mobile-runtime-absence fixture or guide section.",
+      "testId": "mobile-runtime-absence"
+    },
+    {
+      "id": "feedback",
+      "legacyNeed": "global Ajax loader and navigation errors",
+      "owner": "application-code",
+      "modernTarget": "route-local pending text and server error summaries",
+      "markupApiChange": "Replace the global Ajax loader and navigation errors contract with route-local pending text and server error summaries; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The route-local pending text and server error summaries result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "a global page loader overlay",
+      "example": "See the mobile-reference-network fixture or guide section.",
+      "testId": "mobile-reference-network"
+    },
+    {
+      "id": "data-storage",
+      "legacyNeed": "jqmData namespaced element state",
+      "owner": "application-code",
+      "modernTarget": "owned application state and documented signals",
+      "markupApiChange": "Replace the jqmData namespaced element state contract with owned application state and documented signals; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The owned application state and documented signals result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "the jqmData namespace contract",
+      "example": "See the mobile-runtime-absence fixture or guide section.",
+      "testId": "mobile-runtime-absence"
+    },
+    {
+      "id": "url-utils",
+      "legacyNeed": "document base, location, and URL helpers",
+      "owner": "native-html",
+      "modernTarget": "platform URL APIs and server-generated anchors",
+      "markupApiChange": "Replace the document base, location, and URL helpers contract with platform URL APIs and server-generated anchors; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The platform URL APIs and server-generated anchors result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile URL normalization quirks",
+      "example": "See the mobile-reference-routes fixture or guide section.",
+      "testId": "mobile-reference-routes"
+    },
+    {
+      "id": "buttons",
+      "legacyNeed": "buttons, grouped actions, and nav bars",
+      "owner": "native-html",
+      "modernTarget": "native button, submitter, anchor, nav, and fieldset elements",
+      "markupApiChange": "Replace the buttons, grouped actions, and nav bars contract with native button, submitter, anchor, nav, and fieldset elements; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native button, submitter, anchor, nav, and fieldset elements result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Widget Factory methods and disabled links",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "toolbars",
+      "legacyNeed": "headers, footers, and fixed toolbars",
+      "owner": "native-html",
+      "modernTarget": "header, nav, main, footer, and scoped sticky CSS",
+      "markupApiChange": "Replace the headers, footers, and fixed toolbars contract with header, nav, main, footer, and scoped sticky CSS; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The header, nav, main, footer, and scoped sticky CSS result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "tap-toggle and Mobile padding events",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "form-text",
+      "legacyNeed": "enhanced text, search, textarea, and degraded inputs",
+      "owner": "native-html",
+      "modernTarget": "labeled current native inputs and textareas",
+      "markupApiChange": "Replace the enhanced text, search, textarea, and degraded inputs contract with labeled current native inputs and textareas; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The labeled current native inputs and textareas result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile clear-button DOM and input degradation",
+      "example": "See the mobile-reference-forms fixture or guide section.",
+      "testId": "mobile-reference-forms"
+    },
+    {
+      "id": "form-choice",
+      "legacyNeed": "enhanced checkbox, radio, and select menus",
+      "owner": "native-html",
+      "modernTarget": "native choice controls with fieldset and legend",
+      "markupApiChange": "Replace the enhanced checkbox, radio, and select menus contract with native choice controls with fieldset and legend; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native choice controls with fieldset and legend result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "custom Mobile select overlays",
+      "example": "See the mobile-reference-forms fixture or guide section.",
+      "testId": "mobile-reference-forms"
+    },
+    {
+      "id": "form-range",
+      "legacyNeed": "slider, range pair, and flip switch",
+      "owner": "native-html",
+      "modernTarget": "native range, number, checkbox, or select controls",
+      "markupApiChange": "Replace the slider, range pair, and flip switch contract with native range, number, checkbox, or select controls; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native range, number, checkbox, or select controls result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "source-compatible two-handle and flip-switch APIs",
+      "example": "See the mobile-reference-pointer fixture or guide section.",
+      "testId": "mobile-reference-pointer"
+    },
+    {
+      "id": "form-layout",
+      "legacyNeed": "responsive label and control layout",
+      "owner": "native-css",
+      "modernTarget": "semantic fields with grid or container-query CSS",
+      "markupApiChange": "Replace the responsive label and control layout contract with semantic fields with grid or container-query CSS; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The semantic fields with grid or container-query CSS result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "exact Mobile fieldcontain breakpoints",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "form-writes",
+      "legacyNeed": "validated GET and write forms with files and submitters",
+      "owner": "native-html",
+      "modernTarget": "native forms, server validation, and PRG redirects",
+      "markupApiChange": "Replace the validated GET and write forms with files and submitters contract with native forms, server validation, and PRG redirects; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native forms, server validation, and PRG redirects result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "automatic Ajax form hijacking or write replay",
+      "example": "See the mobile-reference-forms fixture or guide section.",
+      "testId": "mobile-reference-forms"
+    },
+    {
+      "id": "disclosure",
+      "legacyNeed": "collapsible content and sets",
+      "owner": "native-html",
+      "modernTarget": "details and summary",
+      "markupApiChange": "Replace the collapsible content and sets contract with details and summary; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The details and summary result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile cue, icon, event, and refresh APIs",
+      "example": "See the mobile-reference-components fixture or guide section.",
+      "testId": "mobile-reference-components"
+    },
+    {
+      "id": "tabs",
+      "legacyNeed": "one selected panel from a labeled tab list",
+      "owner": "jqstar-component",
+      "modernTarget": "the documented semantic jQStar tabs component",
+      "markupApiChange": "Replace the one selected panel from a labeled tab list contract with the documented semantic jQStar tabs component; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The the documented semantic jQStar tabs component result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile widget options and event signatures",
+      "example": "See the mobile-reference-components fixture or guide section.",
+      "testId": "mobile-reference-components"
+    },
+    {
+      "id": "overlays",
+      "legacyNeed": "dialog and popup tasks",
+      "owner": "jqstar-component",
+      "modernTarget": "native dialog through the documented jQStar component",
+      "markupApiChange": "Replace the dialog and popup tasks contract with native dialog through the documented jQStar component; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native dialog through the documented jQStar component result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "popup positioning and dialog-page history",
+      "example": "See the mobile-reference-components fixture or guide section.",
+      "testId": "mobile-reference-components"
+    },
+    {
+      "id": "responsive-navigation",
+      "legacyNeed": "a sliding mobile navigation panel",
+      "owner": "native-html",
+      "modernTarget": "details navigation that becomes a wide-screen nav",
+      "markupApiChange": "Replace the a sliding mobile navigation panel contract with details navigation that becomes a wide-screen nav; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The details navigation that becomes a wide-screen nav result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "reveal and push panel animation",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "lists",
+      "legacyNeed": "listviews, dividers, split actions, and filtering",
+      "owner": "application-code",
+      "modernTarget": "semantic lists plus GET search and an owned filter signal",
+      "markupApiChange": "Replace the listviews, dividers, split actions, and filtering contract with semantic lists plus GET search and an owned filter signal; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The semantic lists plus GET search and an owned filter signal result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "automatic dividers and themed split icons",
+      "example": "See the mobile-reference-search fixture or guide section.",
+      "testId": "mobile-reference-search"
+    },
+    {
+      "id": "tables",
+      "legacyNeed": "reflow and column-toggle tables",
+      "owner": "native-css",
+      "modernTarget": "semantic tables in responsive overflow regions",
+      "markupApiChange": "Replace the reflow and column-toggle tables contract with semantic tables in responsive overflow regions; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The semantic tables in responsive overflow regions result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "generated reflow labels and column chooser UI",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "responsive-layout",
+      "legacyNeed": "grid classes and breakpoint layouts",
+      "owner": "native-css",
+      "modernTarget": "CSS grid, flex, media, and container queries",
+      "markupApiChange": "Replace the grid classes and breakpoint layouts contract with CSS grid, flex, media, and container queries; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The CSS grid, flex, media, and container queries result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile grid class names and exact breakpoints",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "theme-icons",
+      "legacyNeed": "swatches, ThemeRoller output, icons, and visual options",
+      "owner": "native-css",
+      "modernTarget": "application tokens and forced-color-safe CSS",
+      "markupApiChange": "Replace the swatches, ThemeRoller output, icons, and visual options contract with application tokens and forced-color-safe CSS; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The application tokens and forced-color-safe CSS result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "swatch letters, sprite assets, and theme inheritance",
+      "example": "See the mobile-runtime-absence fixture or guide section.",
+      "testId": "mobile-runtime-absence"
+    },
+    {
+      "id": "scroll",
+      "legacyNeed": "scroll lifecycle and silent scrolling",
+      "owner": "full-document",
+      "modernTarget": "browser scroll, fragments, and bounded scrollIntoView",
+      "markupApiChange": "Replace the scroll lifecycle and silent scrolling contract with browser scroll, fragments, and bounded scrollIntoView; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The browser scroll, fragments, and bounded scrollIntoView result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "a synthetic silent-scroll event contract",
+      "example": "See the mobile-reference-history fixture or guide section.",
+      "testId": "mobile-reference-history"
+    },
+    {
+      "id": "responsive-events",
+      "legacyNeed": "orientation, throttled resize, and layout events",
+      "owner": "native-css",
+      "modernTarget": "responsive CSS and narrowly scoped matchMedia",
+      "markupApiChange": "Replace the orientation, throttled resize, and layout events contract with responsive CSS and narrowly scoped matchMedia; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The responsive CSS and narrowly scoped matchMedia result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile event timing and orientation labels",
+      "example": "See the mobile-reference-responsive fixture or guide section.",
+      "testId": "mobile-reference-responsive"
+    },
+    {
+      "id": "gestures",
+      "legacyNeed": "tap, hold, and swipe shortcuts",
+      "owner": "application-code",
+      "modernTarget": "click plus bounded Pointer Events with keyboard alternatives",
+      "markupApiChange": "Replace the tap, hold, and swipe shortcuts contract with click plus bounded Pointer Events with keyboard alternatives; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The click plus bounded Pointer Events with keyboard alternatives result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "Mobile timing and distance thresholds",
+      "example": "See the mobile-reference-pointer fixture or guide section.",
+      "testId": "mobile-reference-pointer"
+    },
+    {
+      "id": "virtual-input",
+      "legacyNeed": "virtual touch and mouse aliases",
+      "owner": "unsupported",
+      "modernTarget": "native click, input, keyboard, and Pointer Events",
+      "markupApiChange": "Replace the virtual touch and mouse aliases contract with native click, input, keyboard, and Pointer Events; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The native click, input, keyboard, and Pointer Events result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "vclick and vmouse event emission",
+      "example": "See the mobile-reference-pointer fixture or guide section.",
+      "testId": "mobile-reference-pointer"
+    },
+    {
+      "id": "datastar-updates",
+      "legacyNeed": "a partial server update",
+      "owner": "datastar-sdk",
+      "modernTarget": "one named status patch from the official Datastar SDK",
+      "markupApiChange": "Replace the a partial server update contract with one named status patch from the official Datastar SDK; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The one named status patch from the official Datastar SDK result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "a page router or generic Ajax adapter",
+      "example": "See the mobile-reference-datastar fixture or guide section.",
+      "testId": "mobile-reference-datastar"
+    },
+    {
+      "id": "turbo-navigation",
+      "legacyNeed": "optional enhanced document navigation",
+      "owner": "turbo-bridge",
+      "modernTarget": "Turbo with the explicit ticket-0036 lifecycle bridge",
+      "markupApiChange": "Replace the optional enhanced document navigation contract with Turbo with the explicit ticket-0036 lifecycle bridge; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The Turbo with the explicit ticket-0036 lifecycle bridge result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "a common Mobile-like navigation facade",
+      "example": "See the mobile-bridge-boundaries fixture or guide section.",
+      "testId": "mobile-bridge-boundaries"
+    },
+    {
+      "id": "htmx-navigation",
+      "legacyNeed": "optional targeted server swaps",
+      "owner": "htmx-bridge",
+      "modernTarget": "htmx with the explicit ticket-0037 lifecycle bridge",
+      "markupApiChange": "Replace the optional targeted server swaps contract with htmx with the explicit ticket-0037 lifecycle bridge; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The htmx with the explicit ticket-0037 lifecycle bridge result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "a pagecontainer or common Ajax facade",
+      "example": "See the mobile-bridge-boundaries fixture or guide section.",
+      "testId": "mobile-bridge-boundaries"
+    },
+    {
+      "id": "custom-extensions",
+      "legacyNeed": "third-party Mobile widgets, themes, and plugins",
+      "owner": "unsupported",
+      "modernTarget": "application-specific inventory, replacement, and tests",
+      "markupApiChange": "Replace the third-party Mobile widgets, themes, and plugins contract with application-specific inventory, replacement, and tests; do not translate Mobile plugin signatures or data attributes.",
+      "accessibilityFallback": "The application-specific inventory, replacement, and tests result must retain keyboard, focus, screen-reader, zoom, touch, and no-JavaScript behavior where the need applies.",
+      "securityOwnership": "The named owner controls lifecycle and presentation; the server retains authorization, CSRF, validation, redirects, and output handling.",
+      "unsupported": "automatic compatibility for undocumented extensions",
+      "example": "See the mobile-inventory-worksheets fixture or guide section.",
+      "testId": "mobile-inventory-worksheets"
+    }
+  ],
+  "bridgeDecisions": [
+    {
+      "id": "full-document",
+      "status": "default",
+      "decision": "Normal documents own routes, history, head, focus, scroll, errors, reloads, links, and forms.",
+      "sourceTicket": null
+    },
+    {
+      "id": "datastar",
+      "status": "available",
+      "decision": "The official SDK may produce a bounded server update without taking over document navigation.",
+      "sourceTicket": "0012"
+    },
+    {
+      "id": "turbo",
+      "status": "optional",
+      "decision": "Turbo may own enhanced navigation when explicitly installed with the completed lifecycle bridge.",
+      "sourceTicket": "0036"
+    },
+    {
+      "id": "htmx",
+      "status": "optional",
+      "decision": "htmx may own a bounded swap when explicitly installed with the completed lifecycle bridge.",
+      "sourceTicket": "0037"
+    },
+    {
+      "id": "native-navigation",
+      "status": "not-approved",
+      "decision": "Ticket 0023 remains planned, so no native jQStar navigation example or promise is included.",
+      "sourceTicket": "0023"
+    }
+  ],
+  "applicationInventories": [
+    {
+      "id": "project-tracker",
+      "routes": 6,
+      "dataRoles": 18,
+      "events": 14,
+      "plugins": 3,
+      "themes": 2,
+      "transitions": 4,
+      "migrationUnits": [
+        "project list and GET search",
+        "project detail",
+        "project edit and conflict",
+        "attachment upload",
+        "responsive navigation",
+        "status update"
+      ],
+      "applicationSpecificRisks": [
+        "custom swipe action on list rows",
+        "theme swatch used as workflow state",
+        "pagebeforeshow handler reloads project data"
+      ]
+    },
+    {
+      "id": "field-service",
+      "routes": 9,
+      "dataRoles": 27,
+      "events": 22,
+      "plugins": 4,
+      "themes": 3,
+      "transitions": 6,
+      "migrationUnits": [
+        "job queue",
+        "job detail",
+        "inspection form",
+        "photo upload",
+        "offline error route",
+        "technician menu",
+        "completion status"
+      ],
+      "applicationSpecificRisks": [
+        "third-party signature widget",
+        "virtual-mouse drawing handler",
+        "cached multipage document",
+        "automatic write retry after reconnect"
+      ]
+    }
+  ],
+  "referenceApp": {
+    "baseUrl": "/jquery-mobile-migration/",
+    "routes": [
+      "/jquery-mobile-migration/",
+      "/jquery-mobile-migration/projects",
+      "/jquery-mobile-migration/projects/alpha",
+      "/jquery-mobile-migration/projects/alpha/edit",
+      "/jquery-mobile-migration/projects/new",
+      "/jquery-mobile-migration/help"
+    ],
+    "capabilities": [
+      "direct and reloadable documents",
+      "GET search with local removable enhancement",
+      "native validated edit with conflict response",
+      "multipart attachment submission",
+      "responsive details navigation",
+      "native dialog task",
+      "semantic table and list",
+      "Datastar SDK status patch",
+      "history focus and scroll",
+      "slow error and offline fallback"
+    ],
+    "measurements": {
+      "runtimeDependencies": 2,
+      "historicalRuntimeDependencies": 0,
+      "sourceLines": {
+        "server": 483,
+        "application": 103,
+        "styles": 214,
+        "browserSpec": 274
+      },
+      "assetBytes": {
+        "jquery": 255967,
+        "jqueryStar": 464183,
+        "application": 3680,
+        "styles": 3393
+      },
+      "serverRoutes": 10,
+      "browserCases": 16
+    },
+    "unsupported": [
+      "jQuery Mobile runtime and CSS",
+      "pagecontainer and Ajax route abstraction",
+      "virtual mouse aliases",
+      "theme swatches and transition catalog",
+      "automatic data-role enhancement",
+      "third-party Mobile plugin compatibility",
+      "automatic replay of indeterminate writes"
+    ]
+  },
+  "decision": {
+    "runtime": false,
+    "compatibilityLayer": false,
+    "migrationUnit": "route-or-semantic-region",
+    "outcome": "no-runtime-route-by-route-migration",
+    "recheckTriggers": [
+      "An OpenJS status change",
+      "A change to the official archived repository statement",
+      "A completed native-navigation decision",
+      "A documented application need not covered by normal documents, Datastar, Turbo, or htmx"
+    ]
+  }
+}

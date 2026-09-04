@@ -68,6 +68,15 @@ current owner disposes it. jQStar does not import UI, patch Widget Factory, adop
 cleanup from legacy markup. The complete map and no-adapter decision are in
 [JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md).
 
+jQuery Mobile migration uses a route boundary, not a runtime seam. Legacy routes remain isolated on
+their compatible stack while modern routes are complete server documents using native links/forms,
+responsive CSS, jQuery 4, and optional local jQStar regions. Full document navigation owns history,
+head, focus, scroll, errors, reload, and new tabs. A named Datastar update may patch one region with
+official-SDK SSE. Turbo or htmx may instead own navigation only through its explicit lifecycle
+bridge. The architecture has no Mobile page container, Ajax router, virtual input layer, role
+initializer, transition/theme runtime, or generic bridge facade. See
+[JQUERY_MOBILE_MIGRATION.md](JQUERY_MOBILE_MIGRATION.md).
+
 ## Public testing boundary
 
 `src/testing/` owns a consumer-facing harness around `installStarCore()`. Creation validates one

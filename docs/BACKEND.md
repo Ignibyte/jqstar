@@ -144,6 +144,22 @@ const response = ServerSentEventGenerator.stream((stream) => {
 Do not construct SSE fields by hand. The SDK owns protocol event names, data encoding, retry
 metadata, and event IDs.
 
+## jQuery Mobile migration reference endpoint
+
+The ticket-0040 browser fixture is a separate synthetic server, not a production package route. It
+serves complete documents for the migration home, project list/search, project detail, edit, new
+project, and help URLs. Native edit and multipart forms remain authoritative with JavaScript off.
+The server checks a fixture CSRF token, validates names and files, enforces a version field, escapes
+returned values, uses 303 after successful writes, and renders deliberate 403, 409, 422, and 503
+responses. It never queues or automatically replays an uncertain write.
+
+Only the project-status control uses a partial update.
+`POST /jquery-mobile-migration/projects/alpha/status` returns an element patch created by
+`ServerSentEventGenerator.stream()`. The request and patch do not own route history, the document
+head, scroll, or full-page errors. The fixture includes slow and error documents so browser tests
+can verify that normal navigation keeps those responsibilities. Full implementation and route
+ownership are documented in [JQUERY_MOBILE_MIGRATION.md](JQUERY_MOBILE_MIGRATION.md).
+
 ## Project Browser endpoint
 
 `GET /api/demo/projects` is the reference Data Table endpoint. The client sends the complete query

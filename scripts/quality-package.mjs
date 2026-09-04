@@ -734,8 +734,19 @@ try {
       "Packed package must not declare a jQuery UI runtime dependency.",
     );
     assert(
+      manifest.dependencies?.["jquery-mobile"] === undefined &&
+        manifest.devDependencies?.["jquery-mobile"] === undefined &&
+        manifest.peerDependencies?.["jquery-mobile"] === undefined &&
+        manifest.optionalDependencies?.["jquery-mobile"] === undefined,
+      "Packed package must not declare a jQuery Mobile dependency.",
+    );
+    assert(
       pack.files.every(({ path }) => !/(?:^|\/)(?:jquery-ui|ui-icons)(?:[./-]|$)/iu.test(path)),
       "Packed package contains a jQuery UI runtime, theme, icon, or source path.",
+    );
+    assert(
+      pack.files.every(({ path }) => !/(?:^|\/)(?:jquery-mobile)(?:[./-]|$)/iu.test(path)),
+      "Packed package contains a jQuery Mobile runtime, theme, icon, or source path.",
     );
     for (const path of [
       "dist/core.cjs",
@@ -1031,6 +1042,10 @@ try {
     assert(
       !existsSync(join(consumer, "node_modules/jquery-ui")),
       "Installed production consumer unexpectedly contains jQuery UI.",
+    );
+    assert(
+      !existsSync(join(consumer, "node_modules/jquery-mobile")),
+      "Installed production consumer unexpectedly contains jQuery Mobile.",
     );
     const cliVersion = command(
       "installed CLI version",
@@ -2019,6 +2034,7 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "/registry/",
       "/server-dist/",
       "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
     ]) {
       assert(
         !coreModules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2079,6 +2095,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/@playwright",
       "node_modules/@starfederation/datastar-sdk",
       "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
       "/dist/datastar-testing",
       "/dist/htmx",
       "/dist/turbo",
@@ -2107,6 +2124,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/vitest",
       "node_modules/@playwright",
       "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
       "/dist/csp",
       "/dist/htmx",
       "/dist/turbo",
@@ -2142,6 +2160,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/htmx.js",
       "/dist/turbo.js",
       "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
     ]) {
       assert(
         !cspBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2173,6 +2192,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/htmx",
       "/dist/csp",
       "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
     ]) {
       assert(
         !turboBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2199,6 +2219,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/turbo",
       "/dist/csp",
       "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
     ]) {
       assert(
         !htmxBundle.modules.some((moduleId) => moduleId.includes(forbidden)),

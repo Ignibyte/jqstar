@@ -168,6 +168,7 @@
     "schema",
     "!schema/external-bridge-contract.schema.json",
     "!schema/jquery-ecosystem.schema.json",
+    "!schema/jquery-mobile-migration.schema.json",
     "!schema/jquery-ui-migration.schema.json",
     "server-dist"
   ],

@@ -13,6 +13,7 @@ const publicRoutes = [
   "example/docs/csp/index.html",
   "example/docs/interoperability/index.html",
   "example/docs/ecosystem/index.html",
+  "example/docs/ecosystem/jquery-mobile/index.html",
   "example/docs/plugins/index.html",
   "example/docs/testing/index.html",
   "example/docs/components/index.html",

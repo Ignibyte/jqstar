@@ -9,7 +9,7 @@
     "guideCharacters": 16000,
     "exampleCharacters": 8000,
     "fullTextBytes": 120000,
-    "indexBytes": 161000
+    "indexBytes": 165000
   },
   "surfaces": [
     {
@@ -153,6 +153,23 @@
         "destroy"
       ],
       "source": "example/docs/ecosystem/jquery-ui/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "jquery-mobile-migration",
+      "title": "jQuery Mobile migration",
+      "path": "docs/ecosystem/jquery-mobile/",
+      "summary": "Migrate archived jQuery Mobile applications route by route to server documents, semantic HTML, responsive CSS, jQuery 4, and bounded jQStar enhancement.",
+      "keywords": [
+        "jquery mobile",
+        "route migration",
+        "no runtime",
+        "data-role",
+        "virtual mouse",
+        "responsive",
+        "native forms"
+      ],
+      "source": "example/docs/ecosystem/jquery-mobile/index.html",
       "contentRoot": "article"
     },
     {

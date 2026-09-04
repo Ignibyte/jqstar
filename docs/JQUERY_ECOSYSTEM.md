@@ -108,7 +108,10 @@ Ticket 0040 preserves these needs in a modern reference application:
 
 The Mobile router, page container, virtual mouse, transition catalog, themes, widgets, and data-role
 auto-initializer do not enter jQStar. Migration keeps legacy and modern routes isolated until each
-route is released on its compatible stack.
+route is released on its compatible stack. The
+[jQuery Mobile migration guide](JQUERY_MOBILE_MIGRATION.md) publishes the 95-entry API inventory,
+60-attribute map, nine modern owners, staged worksheet, exact no-runtime reference app, browser and
+package evidence, measurements, and rollback path.
 
 ## Sizzle stays separate
 

@@ -24,6 +24,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 - [Turbo and htmx interoperability](https://ignibyte.github.io/jqstar/docs/interoperability/): Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.
 - [jQuery ecosystem](https://ignibyte.github.io/jqstar/docs/ecosystem/): Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.
 - [jQuery UI coexistence and migration](https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-ui/): Isolate application-owned jQuery UI regions and migrate them feature by feature to semantic HTML and native jQStar components.
+- [jQuery Mobile migration](https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-mobile/): Migrate archived jQuery Mobile applications route by route to server documents, semantic HTML, responsive CSS, jQuery 4, and bounded jQStar enhancement.
 - [Testing](https://ignibyte.github.io/jqstar/docs/testing/): Use an explicit DOM realm, deterministic response queue, bounded flush, disposal reports, and runner-neutral conformance.
 - [Components](https://ignibyte.github.io/jqstar/docs/components/): Native component semantics, data-jqs roots, data-part slots, state attributes, and source-owned recipes.
 - [Dialog](https://ignibyte.github.io/jqstar/docs/components/dialog/): Native modal dialog markup, focus containment and return, lifecycle events, and named actions.
