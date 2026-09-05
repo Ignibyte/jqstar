@@ -38,6 +38,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 - [Toast](https://ignibyte.github.io/jqstar/docs/components/toast/): Accessible non-modal notifications with timers, actions, focus, and swipe dismissal.
 - [Component Lab](https://ignibyte.github.io/jqstar/components/lab/): The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.
 - [Agent support](https://ignibyte.github.io/jqstar/docs/agents/): Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.
+- [Persisted preferences](https://ignibyte.github.io/jqstar/docs/persistence/): Persist selected browser preferences with synchronous hydration before boot, codecs, migrations, explicit recovery, and revision ordering.
 
 ## Required invariants
 

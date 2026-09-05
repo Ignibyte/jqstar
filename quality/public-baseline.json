@@ -650,6 +650,7 @@
       "./datastar",
       "./datastar/testing",
       "./htmx",
+      "./persist",
       "./stores",
       "./testing",
       "./turbo",
@@ -658,15 +659,15 @@
     ],
     "formats": ["browser-module", "commonjs", "esm", "types-bundler", "types-nodenext", "umd"],
     "observedArtifact": {
-      "files": 226,
-      "packedBytes": 3007317,
-      "unpackedBytes": 10533848
+      "files": 233,
+      "packedBytes": 3062943,
+      "unpackedBytes": 10723795
     },
     "bundleBytes": {
       "dist/core.cjs": 962,
       "dist/core.js": 882,
-      "dist/csp.cjs": 156715,
-      "dist/csp.js": 158647,
+      "dist/csp.cjs": 156998,
+      "dist/csp.js": 158930,
       "dist/datastar.cjs": 265,
       "dist/datastar.js": 181,
       "dist/datastar-testing.cjs": 5562,
@@ -676,7 +677,7 @@
       "dist/jquery-star-ui.css": 169958,
       "dist/jquery-star.cjs": 1252,
       "dist/jquery-star.js": 1258,
-      "dist/jquery-star.umd.cjs": 464041,
+      "dist/jquery-star.umd.cjs": 464322,
       "dist/stores.cjs": 12757,
       "dist/stores.js": 12918,
       "dist/testing.cjs": 12907,
@@ -684,7 +685,9 @@
       "dist/turbo.cjs": 7781,
       "dist/turbo.js": 7795,
       "dist/ui.cjs": 316616,
-      "dist/ui.js": 317757
+      "dist/ui.js": 317757,
+      "dist/persist.js": 13780,
+      "dist/persist.cjs": 13726
     },
     "releaseSha256": "a04f153365acd8ea61dd486c886d66ea61e965c32d78907883a6c42128cd2cf3"
   },

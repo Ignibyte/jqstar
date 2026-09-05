@@ -11,6 +11,7 @@ export default defineConfig({
         datastar: resolve(__dirname, "src/datastar.ts"),
         htmx: resolve(__dirname, "src/htmx.ts"),
         stores: resolve(__dirname, "src/stores.ts"),
+        persist: resolve(__dirname, "src/persist.ts"),
         testing: resolve(__dirname, "src/testing/index.ts"),
         turbo: resolve(__dirname, "src/turbo.ts"),
         "datastar-testing": resolve(__dirname, "src/datastar/testing.ts"),

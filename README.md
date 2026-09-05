@@ -84,8 +84,9 @@ The UMD build installs itself on the global `jQuery` object, so a script-tag bui
 
 The root entry remains the compatibility path: importing it installs the complete core, Datastar
 profile, and UI plugin. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`,
-and `turbo` subpaths are stable from 1.0; the optional `stores` subpath is stable in 1.1. They are
-explicit and side-effect-free, so importing them does not touch a document or jQuery instance:
+and `turbo` subpaths are stable from 1.0; the optional `stores` and `persist` subpaths are stable in
+1.1. They are explicit and side-effect-free, so importing them does not touch a document or jQuery
+instance:
 
 ```ts
 import $ from "jquery";
@@ -119,6 +120,7 @@ contract.
 | `jquery-star/testing`          | ESM, CommonJS           | No side effect; caller supplies DOM, jQuery, runner    |
 | `jquery-star/datastar/testing` | ESM, CommonJS           | No side effect; official-SDK Datastar test fixtures    |
 | `jquery-star/htmx`             | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
+| `jquery-star/persist`          | ESM, CommonJS           | No side effect; install `persistPlugin` after stores   |
 | `jquery-star/stores`           | ESM, CommonJS           | No side effect; install `storesPlugin`                 |
 | `jquery-star/turbo`            | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
 | `jquery-star/ui.css`           | CSS                     | Explicit stylesheet import; never injected by JS       |
@@ -130,6 +132,12 @@ Shared stores are per-document client coordination, not persistence or server au
 continues to mean an application-local signal; shared expressions use `stores.name`. See the
 [shared stores guide](docs/STORES.md) for the data contract, transactions, setup ownership, CSP
 semantics, and security boundaries.
+
+Use [`jquery-star/persist`](docs/PERSISTENCE.md) to save explicitly selected browser preferences.
+Attach it before applications start so the first UI effect sees hydrated state. It supports memory,
+local storage, session storage, synchronous custom adapters, schema migrations, explicit recovery,
+and whole-envelope revision ordering across participating pages. Browser data remains visible to
+scripts and users. Never persist secrets or authorization decisions.
 
 ### Stable testing entries
 
@@ -221,8 +229,8 @@ by `npm run test:public-baseline` plus the installed-package gate.
 The recorded 0.1 root surface is the compatibility baseline for 1.0. A stable 1.x item receives at
 least one minor release of deprecation notice before removal unless a security issue makes continued
 support unsafe. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and
-`turbo` subpaths are stable 1.0 contracts; `stores` is stable in 1.1. Private source imports and
-undeclared subpaths receive no compatibility promise. See
+`turbo` subpaths are stable 1.0 contracts; `stores` and `persist` are stable in 1.1. Private source
+imports and undeclared subpaths receive no compatibility promise. See
 [the compatibility policy](docs/COMPATIBILITY.md) and [the 1.0 migration guide](MIGRATING_TO_1.md).
 
 ## Source registry

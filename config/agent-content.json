@@ -302,6 +302,23 @@
       "keywords": ["agent", "webmcp", "llms.txt", "corpus", "tools", "provenance"],
       "source": "config/agent-content.json",
       "contentRoot": "summary"
+    },
+    {
+      "id": "persistence",
+      "title": "Persisted preferences",
+      "path": "docs/persistence/",
+      "summary": "Persist selected browser preferences with synchronous hydration before boot, codecs, migrations, explicit recovery, and revision ordering.",
+      "keywords": [
+        "persistence",
+        "preferences",
+        "local storage",
+        "session storage",
+        "migration",
+        "recovery",
+        "Lamport"
+      ],
+      "source": "example/docs/persistence/index.html",
+      "contentRoot": "article"
     }
   ],
   "invariants": [
@@ -534,6 +551,13 @@
       "expectedIds": ["component-lab", "copy-registry-recipes"],
       "requiredTerms": ["Component Lab", "jqstar doctor"],
       "path": "components/lab/"
+    },
+    {
+      "id": "persistence",
+      "question": "How do I persist selected browser preferences before jQStar applications start and recover corrupt stored data?",
+      "expectedIds": ["persistence"],
+      "requiredTerms": ["jquery-star/persist", "before", "reset()", "secrets"],
+      "path": "docs/persistence/"
     }
   ],
   "agentGuide": {

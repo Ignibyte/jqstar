@@ -801,7 +801,9 @@ persistence, or authoritative entity caching.
 Choose the right owner
 - Use $name when one application root owns the value.
 - Use stores.name when several roots coordinate temporary client state.
-- Use an explicit storage adapter for durable browser preferences.
+-
+Use the persistence plugin for selected browser
+preferences.
 - Keep permissions, validation, records, and server-state resources on the server.
 Install and define a store
 The stores entry is side-effect-free. Install it before the first application starts, then
@@ -1534,6 +1536,67 @@ Citation: https://ignibyte.github.io/jqstar/docs/agents/
 Source: config/agent-content.json
 
 Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.
+
+### Persisted preferences [persistence]
+Persist selected browser preferences with synchronous hydration before boot, codecs, migrations, explicit recovery, and revision ordering.
+Citation: https://ignibyte.github.io/jqstar/docs/persistence/
+Source: example/docs/persistence/index.html
+
+Persisted preferences
+Save selected shared-store preferences with the optional
+jquery-star/persist plugin. Hydration finishes before the first application
+starts.
+Install before boot
+Install core and stores, define your store, then attach persistence. Use frozen options with
+a required namespace, positive schema version, and explicit field codec.
+```
+import { createFieldCodec, createLocalStorageAdapter, persistPlugin } from "jquery-star/persist";
+const persisted = installed.star.use(persistPlugin);
+const attachment = persisted.attach("preferences", Object.freeze({
+namespace: "example.preferences",
+version: 1,
+adapter: createLocalStorageAdapter(window),
+ownAdapter: true,
+codec: createFieldCodec([
+{ path: "theme", validate: (value) => value === "light" || value === "dark" },
+]),
+}));
+installed.star.boot(document);
+```
+Adapters and selected data
+Memory adapters share only when you share the same instance. Local storage supports
+same-origin pages and reloads. Session storage persists reloads within one top-level page.
+Custom adapters must be synchronous. Web adapters use the exact kernel Window.
+Declare each safe path and validator. Codecs reject unspecified fields, unknown paths,
+methods, undefined, unsupported objects, cycles, and oversized data. JSON null is explicit.
+The default complete-envelope limit is 65,536 UTF-8 bytes.
+Migrations and recovery
+Integer schema migrations run in ascending steps on detached data. The full decode commits
+once. Missing data keeps defaults. Expired data is removed. Corrupt, future-version,
+migration, decode, unavailable, and write failures preserve data and disable persistence by
+default.
+retry() reads storage again. reset() explicitly removes stored
+bytes and writes current selected values. flush() writes the latest selected
+snapshot. Strict mode rejects hydration failures before application startup.
+Conflicts and disposal
+Whole envelopes use last-write-wins ordering by Lamport counter then origin, independent of
+wall-clock skew. Concurrent edits can lose another page's selected changes. Split unrelated
+preferences into separate stores when needed. This is not a merge algorithm or a cross-key
+transaction.
+One trailing timer defaults to 100 ms with a 1,000 ms maximum delay. Disposal flushes by
+default, then releases the timer, subscriptions, listeners, and owned adapter. It attempts
+every cleanup and returns a typed report. Borrowed adapters remain caller owned.
+Browser state and server authority
+Browser storage is readable and mutable by page scripts and users and can fail because of
+quotas or privacy settings. Never persist secrets, credentials, tokens, private keys, or
+authorization decisions. Keep server records, permissions, validation, and resource caches
+under server authority.
+Use local signals for one root, shared stores for client coordination, and persistence for
+selected preferences. Persistence does not change real jQuery $ , local
+$name signals, native forms, focus, or component-specific storage.
+See the
+complete persistence contract
+for types, envelopes, limits, custom adapters, migrations, status, and failure codes.
 
 ## Verified examples
 

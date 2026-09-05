@@ -170,10 +170,10 @@ describe("jQuery ecosystem evidence", () => {
 
     const packageQuality = read("scripts/quality-package.mjs");
     expect(packageQuality).toContain('"qunit@2.26.0"');
-    expect(packageQuality.match(/QUnit\.test\(/gu)).toHaveLength(3);
+    expect(packageQuality.match(/QUnit\.test\(/gu)).toHaveLength(4);
     expect(packageQuality).toContain('"node_modules/qunit"');
     expect(packageQuality).toContain(
-      'return "3 installed-package extension, testing, and CSP tests"',
+      'return "4 installed-package extension, testing, CSP, and persistence tests"',
     );
   });
 

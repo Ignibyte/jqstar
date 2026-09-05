@@ -13,7 +13,8 @@
     "bundles",
     "consumerBundles",
     "browser",
-    "generatedOutputs"
+    "generatedOutputs",
+    "persistPackage"
   ],
   "properties": {
     "$schema": { "const": "jqstar-quality-budgets/1" },
@@ -91,7 +92,9 @@
         "htmxImportBytes",
         "htmxImportGzipBytes",
         "turboImportBytes",
-        "turboImportGzipBytes"
+        "turboImportGzipBytes",
+        "persistImportBytes",
+        "persistImportGzipBytes"
       ],
       "properties": {
         "coreImportBytes": { "$ref": "#/$defs/positiveBudget" },
@@ -109,7 +112,9 @@
         "htmxImportBytes": { "$ref": "#/$defs/positiveBudget" },
         "htmxImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
         "turboImportBytes": { "$ref": "#/$defs/positiveBudget" },
-        "turboImportGzipBytes": { "$ref": "#/$defs/positiveBudget" }
+        "turboImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "persistImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "persistImportGzipBytes": { "$ref": "#/$defs/positiveBudget" }
       },
       "additionalProperties": false
     },
@@ -140,6 +145,15 @@
       "required": ["changedFiles"],
       "properties": {
         "changedFiles": { "$ref": "#/$defs/nonnegativeBudget" }
+      },
+      "additionalProperties": false
+    },
+    "persistPackage": {
+      "type": "object",
+      "required": ["packedBytes", "unpackedBytes"],
+      "properties": {
+        "packedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "unpackedBytes": { "$ref": "#/$defs/positiveBudget" }
       },
       "additionalProperties": false
     }

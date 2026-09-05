@@ -5,6 +5,14 @@ or GitHub release claim.
 
 ## 1.1.0 - Unreleased
 
+### Selected preference persistence
+
+- Add optional `jquery-star/persist` with synchronous hydration before application startup, explicit
+  field codecs, schema migrations, recoverable storage failures, and typed status.
+- Add memory, local, session, and custom synchronous adapters with revision ordering, bounded
+  writes, explicit reset/retry/flush, and owned disposal.
+- Add declared plugin dependency-facade lookup and a durable pre-application assertion.
+
 ### Shared stores
 
 - Add the side-effect-free `jquery-star/stores` ESM and CommonJS entry with one explicit official

@@ -33,6 +33,7 @@ export const packageDocumentationPaths = Object.freeze([
   "docs/JQUERY_ECOSYSTEM.md",
   "docs/JQUERY_MOBILE_MIGRATION.md",
   "docs/JQUERY_UI_MIGRATION.md",
+  "docs/PERSISTENCE.md",
   "docs/SELF_HOSTING.md",
   "docs/STORES.md",
 ]);

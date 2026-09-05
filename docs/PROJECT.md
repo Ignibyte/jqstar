@@ -209,3 +209,10 @@ Separate realms can own separate kernels. Shadow-root applications remain unsupp
 browser behavior is blocking in Chromium, Firefox, and WebKit rather than being promised by an
 untested brand-version range. The complete mutable-state and disposal boundary is recorded in
 [RUNTIME_OWNERSHIP.md](RUNTIME_OWNERSHIP.md).
+
+## Persisted preferences
+
+`jquery-star/persist` is the optional 1.1 persistence entry over shared stores. Applications select
+fields through a codec and attach before boot. Browser adapters remain client state with explicit
+migrations, recovery, and whole-envelope conflicts. They do not establish server authority or
+replace component-specific storage. See [PERSISTENCE.md](PERSISTENCE.md).

@@ -45,11 +45,11 @@ assigned to later extension tickets.
 
 The package has stable root and modular JavaScript boundaries. The root is auto-installing
 ESM/CommonJS and the only UMD global. `core`, `ui`, `datastar`, `csp`, `testing`,
-`datastar/testing`, `htmx`, `stores`, and `turbo` are stable, side-effect-free ESM/CommonJS entries
-with isolated declarations. Core declarations return a typed installed jQuery value and do not
-augment global jQuery; only root declarations retain ambient augmentation. Generic testing imports
-core but no DOM implementation, runner, UI, or Datastar code. Datastar test fixtures stay in the
-separate SDK-backed entry. UI CSS remains a separate explicit import.
+`datastar/testing`, `htmx`, `stores`, `persist`, and `turbo` are stable, side-effect-free
+ESM/CommonJS entries with isolated declarations. Core declarations return a typed installed jQuery
+value and do not augment global jQuery; only root declarations retain ambient augmentation. Generic
+testing imports core but no DOM implementation, runner, UI, or Datastar code. Datastar test fixtures
+stay in the separate SDK-backed entry. UI CSS remains a separate explicit import.
 
 ## Shared-store boundary
 
@@ -398,3 +398,16 @@ the reference server-driven block: Data Table owns table semantics and selection
 navigation semantics, the block owns request and presentation state, and the server owns validated
 queries, grouping, page/virtual slicing, aggregates, and versioned writes. `server/project-store.ts`
 isolates the migration-managed SQLite implementation so a host can inject another database adapter.
+
+## Store persistence
+
+`jquery-star/persist` depends on the installed stores facade through
+`registrar.dependency("core.stores")`. Dependency lookup is restricted to declared dependencies and
+can resolve earlier plugins in a staged installation. `registrar.assertBeforeApplications()` uses
+the durable plugin lock, including after a failed or destroyed first application.
+
+Persistence selects data through synchronous codecs, validates an entire detached migration/decode
+pipeline, and commits through the public store transaction. It owns no store dependency internals.
+Each attachment owns one subscription, bounded trailing timer, storage listener, accepted revision,
+and redacted status subscribers. Kernel services dispose attachments before shared stores become
+terminal. [PERSISTENCE.md](PERSISTENCE.md) defines recovery, revisions, and adapter boundaries.

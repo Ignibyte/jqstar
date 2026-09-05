@@ -81,6 +81,7 @@ interface QualityBudgets {
   cspPackage: { packedBytes: number; unpackedBytes: number };
   htmxPackage: { packedBytes: number; unpackedBytes: number };
   storesPackage: { packedBytes: number; unpackedBytes: number };
+  persistPackage: { packedBytes: number; unpackedBytes: number };
   turboPackage: { packedBytes: number; unpackedBytes: number };
   bundles: Record<string, number>;
 }
@@ -190,6 +191,7 @@ describe("public 0.1 baseline", () => {
         budgets.cspPackage.packedBytes +
         budgets.htmxPackage.packedBytes +
         budgets.storesPackage.packedBytes +
+        budgets.persistPackage.packedBytes +
         budgets.turboPackage.packedBytes,
     );
     expect(baseline.package.observedArtifact.unpackedBytes).toBeLessThanOrEqual(
@@ -197,6 +199,7 @@ describe("public 0.1 baseline", () => {
         budgets.cspPackage.unpackedBytes +
         budgets.htmxPackage.unpackedBytes +
         budgets.storesPackage.unpackedBytes +
+        budgets.persistPackage.unpackedBytes +
         budgets.turboPackage.unpackedBytes,
     );
     for (const [path, bytes] of Object.entries(baseline.package.bundleBytes)) {

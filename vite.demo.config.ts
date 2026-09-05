@@ -18,6 +18,7 @@ const siteEntries = [
   "docs/api/index.html",
   "docs/csp/index.html",
   "docs/stores/index.html",
+  "docs/persistence/index.html",
   "docs/interoperability/index.html",
   "docs/ecosystem/index.html",
   "docs/ecosystem/jquery-ui/index.html",

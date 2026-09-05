@@ -667,7 +667,11 @@ export interface StarPluginRegistrar {
     // (undocumented)
     application(hook: StarPluginApplicationHook): void;
     // (undocumented)
+    assertBeforeApplications(): void;
+    // (undocumented)
     cleanup(cleanup: StarPluginCleanup): void;
+    // (undocumented)
+    dependency<Facade = unknown>(name: string): Facade;
     // (undocumented)
     directive<Parsed = string>(directive: StarDirective<Parsed>): void;
     // (undocumented)

@@ -217,7 +217,7 @@ describe("stable release candidate contract", () => {
       contract.stableEntries.map(({ subpath }) => subpath).toSorted(),
     );
     expect(new Set(Object.values(manifest.jqstar.entrypoints))).toEqual(new Set(["stable"]));
-    expect(new Set(contract.stableEntries.map(({ id }) => id)).size).toBe(11);
+    expect(new Set(contract.stableEntries.map(({ id }) => id)).size).toBe(12);
     expect(new Set(contract.policies.map(({ kind }) => kind)).size).toBe(contract.policies.length);
     for (const policy of contract.policies) {
       await expect(readFile(resolve(root, policy.path), "utf8"), policy.path).resolves.not.toBe("");

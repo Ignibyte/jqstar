@@ -6,9 +6,9 @@ a store without merging their local signals or creating a process global.
 
 Use a local signal when one application owns a value. Use a shared store for client-side state that
 several roots must read or change, such as an open workspace, a temporary selection, or a page-wide
-preference. Persist durable preferences through an explicit storage adapter. Keep authoritative
-records, permissions, validation, and server-state caches on the server or behind a purpose-built
-resource API.
+preference. Persist browser preferences through [the optional persistence plugin](PERSISTENCE.md),
+attached before any application starts. Keep authoritative records, permissions, validation, and
+server-state caches on the server or behind a purpose-built resource API.
 
 Shared stores are visible to page scripts and browser tools. Never put credentials or other secrets
 in them, and never use a store value as proof of authentication, authorization, tenancy, or record

@@ -257,6 +257,35 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
         </script>`);
       return;
     }
+    if (url.pathname === "/persist") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      response.end(`<!doctype html><section id="app"><output></output></section><button id="proof">Run persistence</button><output id="result"></output>
+        <script type="importmap">{"imports":{"jquery":"/jquery-module.js"}}</script>
+        <script type="module">
+          import $ from "jquery";
+          import { installStarCore } from "/core.js";
+          import { defineStore, storesPlugin } from "/stores.js";
+          import { createFieldCodec, createLocalStorageAdapter, persistPlugin } from "/persist.js";
+          const installed = installStarCore($);
+          const stores = installed.star.use(storesPlugin);
+          const store = stores.define("prefs", defineStore({ initial: { count: 1 } }));
+          const adapter = createLocalStorageAdapter(window);
+          const key = "jqstar:package:prefs";
+          adapter.replace(key, JSON.stringify({ format: "jquery-star-persist/1", namespace: "package", store: "prefs", version: 1,
+            savedAt: 1, expiresAt: null, revision: { counter: 1, origin: "seed" }, codec: { id: "fields", version: 1 }, data: { count: 5 } }));
+          const attachment = installed.star.use(persistPlugin).attach("prefs", Object.freeze({ namespace: "package", version: 1, adapter,
+            codec: createFieldCodec([{ path: "count", validate: (value) => typeof value === "number" }]) }));
+          $("#app").star({ state: {}, ui: { output: { text: () => store.count } } });
+          document.querySelector("#proof").addEventListener("click", () => {
+            const first = document.querySelector("#app output").textContent;
+            store.count = 7;
+            const report = installed.star.dispose();
+            document.querySelector("#result").textContent = [first, JSON.parse(adapter.read(key)).data.count, report.failed.length, attachment.dispose().ok].join(":");
+            adapter.dispose();
+          });
+        </script>`);
+      return;
+    }
     if (url.pathname === "/stores") {
       response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       response.end(`<!doctype html>
@@ -419,6 +448,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
           ],
           ["/testing", "3:3"],
           ["/stores", "missing:2,5:local:0:true"],
+          ["/persist", "5:7:0:true"],
         ]) {
           await page.goto(`http://127.0.0.1:${address.port}${path}`);
           await page.locator("#proof").click();
@@ -611,7 +641,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
     }
     return {
       subject: "installed-tarball",
-      consumers: ["module", "umd", "testing", "stores", "csp"],
+      consumers: ["module", "umd", "testing", "stores", "persist", "csp"],
       lifecycle: "boot-and-dispose",
       engines,
       csp: {
@@ -723,7 +753,8 @@ try {
           cspPackageBudget.packedBytes +
           turboPackageBudget.packedBytes +
           htmxPackageBudget.packedBytes +
-          storesPackageBudget.packedBytes,
+          storesPackageBudget.packedBytes +
+          budgets.persistPackage.packedBytes,
       `Packed bytes ${pack.size} exceed the base and optional-entry allowances.`,
     );
     assert(
@@ -732,7 +763,8 @@ try {
           cspPackageBudget.unpackedBytes +
           turboPackageBudget.unpackedBytes +
           htmxPackageBudget.unpackedBytes +
-          storesPackageBudget.unpackedBytes,
+          storesPackageBudget.unpackedBytes +
+          budgets.persistPackage.unpackedBytes,
       `Unpacked bytes ${pack.unpackedSize} exceed the base and optional-entry allowances.`,
     );
     assert(
@@ -828,6 +860,12 @@ try {
       "dist/jquery-star.umd.cjs",
       "dist/jquery-star.umd.cjs.map",
       "dist/jquery-star-ui.css",
+      "dist/persist.cjs",
+      "dist/persist.cjs.map",
+      "dist/persist.d.cts",
+      "dist/persist.d.ts",
+      "dist/persist.js",
+      "dist/persist.js.map",
       "dist/stores.cjs",
       "dist/stores.cjs.map",
       "dist/stores.d.cts",
@@ -889,7 +927,7 @@ try {
       manifest.exports?.["."]?.require?.types === "./dist/index.d.cts",
       "Root CommonJS type export is wrong.",
     );
-    for (const entry of ["core", "csp", "ui", "datastar", "htmx", "stores", "turbo"]) {
+    for (const entry of ["core", "csp", "ui", "datastar", "htmx", "stores", "persist", "turbo"]) {
       const exported = manifest.exports?.[`./${entry}`];
       assert(exported?.import?.default === `./dist/${entry}.js`, `${entry} ESM export is wrong.`);
       assert(
@@ -956,6 +994,7 @@ try {
       "./testing",
       "./htmx",
       "./stores",
+      "./persist",
       "./turbo",
       "./datastar/testing",
     ]);
@@ -1296,6 +1335,20 @@ if (disposal.failed.length !== 0 || disposal.remaining.length !== 0) throw new E
     command("core-only ESM consumer", process.execPath, ["core-esm.mjs"], { cwd: consumer });
 
     await writeFile(
+      join(consumer, "persist-import.mjs"),
+      `
+for (const key of ["window", "document", "localStorage", "sessionStorage"]) {
+  Object.defineProperty(globalThis, key, { configurable: true, get() { throw new Error("Import accessed " + key); } });
+}
+const entry = await import("jquery-star/persist");
+if (!Object.isFrozen(entry.persistPlugin) || entry.persistPlugin.dependencies["core.stores"] !== "=1.1.0") throw new Error("Persistence manifest differs");
+`,
+    );
+    command("side-effect-free persistence import", process.execPath, ["persist-import.mjs"], {
+      cwd: consumer,
+    });
+
+    await writeFile(
       join(consumer, "modular-esm.mjs"),
       `${globals}
 const { default: $ } = await import("jquery");
@@ -1304,11 +1357,16 @@ const uiEntry = await import("jquery-star/ui");
 const datastarEntry = await import("jquery-star/datastar");
 const htmxEntry = await import("jquery-star/htmx");
 const storesEntry = await import("jquery-star/stores");
+const persistEntry = await import("jquery-star/persist");
 const turboEntry = await import("jquery-star/turbo");
 if ($.star !== undefined || $.fn.star !== undefined) throw new Error("Modular imports installed jQStar");
 const installed = core.installStarCore($);
 const stores = installed.star.use(storesEntry.storesPlugin);
 const shared = stores.define("session", storesEntry.defineStore({ initial: { count: 1 } }));
+const persisted = installed.star.use(persistEntry.persistPlugin);
+const persistence = persisted.attach("session", Object.freeze({ namespace: "package", version: 1,
+  codec: persistEntry.createFieldCodec([{ path: "count", validate: (value) => typeof value === "number" }]) }));
+if (persistence.status().outcome !== "missing" || persistEntry.persistPlugin.version !== installed.star.version) throw new Error("Persistence installed contract failed");
 const datastar = installed.star.use(datastarEntry.datastarPlugin);
 const ui = installed.star.use(uiEntry.uiPlugin);
 const htmx = installed.star.use(htmxEntry.createHtmxBridge({ $, htmx: { version: "2.0.10", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }, version: "2.0.10" }));
@@ -1336,11 +1394,16 @@ const uiEntry = require("jquery-star/ui");
 const datastarEntry = require("jquery-star/datastar");
 const htmxEntry = require("jquery-star/htmx");
 const storesEntry = require("jquery-star/stores");
+const persistEntry = require("jquery-star/persist");
 const turboEntry = require("jquery-star/turbo");
 if ($.star !== undefined || $.fn.star !== undefined) throw new Error("CommonJS modular imports installed jQStar");
 const installed = core.installStarCore($);
 const stores = installed.star.use(storesEntry.storesPlugin);
 const shared = stores.define("session", storesEntry.defineStore({ initial: { count: 1 } }));
+const persisted = installed.star.use(persistEntry.persistPlugin);
+const persistence = persisted.attach("session", Object.freeze({ namespace: "package", version: 1,
+  codec: persistEntry.createFieldCodec([{ path: "count", validate: (value) => typeof value === "number" }]) }));
+if (persistence.status().outcome !== "missing" || persistEntry.persistPlugin.version !== installed.star.version) throw new Error("Persistence installed contract failed");
 const datastar = installed.star.use(datastarEntry.datastarPlugin);
 const ui = installed.star.use(uiEntry.uiPlugin);
 const htmx = installed.star.use(htmxEntry.createHtmxBridge({ $, htmx: { version: "2.0.0", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }, version: "2.0.0" }));
@@ -1688,6 +1751,7 @@ import { uiPlugin, type StarUIStatic } from "jquery-star/ui";
 import { datastarPlugin } from "jquery-star/datastar";
 import { createHtmxBridge, type StarHtmxBridge, type StarHtmxCapability } from "jquery-star/htmx";
 import { defineStore, storesPlugin, type StarStoresFacade } from "jquery-star/stores";
+import { createFieldCodec, persistPlugin, type StarPersistAttachment, type StarPersistFacade } from "jquery-star/persist";
 import { createTurboBridge, type StarTurboBridge, type StarTurboCapability } from "jquery-star/turbo";
 type ArbitraryJQueryHasStar = JQueryStatic extends { star: unknown } ? true : false;
 const arbitraryJQueryHasStar: ArbitraryJQueryHasStar = false;
@@ -1695,6 +1759,10 @@ const installed: StarInstalledJQuery = installStarCore($);
 const core: StarCoreStatic = installed.star;
 const stores: StarStoresFacade = core.use(storesPlugin);
 const shared = stores.define("session", defineStore({ initial: { count: 1 } }));
+const persisted: StarPersistFacade = core.use(persistPlugin);
+const persistence: StarPersistAttachment = persisted.attach("session", Object.freeze({ namespace: "types", version: 1,
+  codec: createFieldCodec<typeof shared>([{ path: "count", validate: (value) => typeof value === "number" }]) }));
+void persistence.status();
 const renderAdapter: StarRenderAdapter = createRenderAdapter(installed);
 const renderTransaction: StarRenderTransaction = renderAdapter.begin(document.documentElement);
 const datastar = core.use(datastarPlugin);
@@ -1974,12 +2042,32 @@ QUnit.test("installed CSP entry stays explicit", async (assert) => {
   assert.strictEqual($("#csp-qunit output").text(), "3");
   installed.star.dispose();
 });
+QUnit.test("installed persistence hydrates and flushes selected preferences", (assert) => {
+  const $ = require("jquery");
+  const { installStarCore } = require("jquery-star/core");
+  const { defineStore, storesPlugin } = require("jquery-star/stores");
+  const { createFieldCodec, createMemoryStorageAdapter, persistPlugin } = require("jquery-star/persist");
+  const installed = installStarCore($);
+  const stores = installed.star.use(storesPlugin);
+  const store = stores.define("prefs", defineStore({ initial: { count: 1, privateValue: "private" } }));
+  const adapter = createMemoryStorageAdapter();
+  const attachment = installed.star.use(persistPlugin).attach("prefs", Object.freeze({ namespace: "qunit", version: 1, adapter,
+    codec: createFieldCodec([{ path: "count", validate: (value) => typeof value === "number" }]) }));
+  store.count = 4;
+  assert.true(attachment.flush().ok);
+  assert.deepEqual(JSON.parse(adapter.read("jqstar:qunit:prefs")).data, { count: 4 });
+  store.count = 5;
+  installed.star.dispose();
+  assert.strictEqual(JSON.parse(adapter.read("jqstar:qunit:prefs")).data.count, 5);
+  assert.true(attachment.dispose().ok);
+  adapter.dispose();
+});
 QUnit.on("runEnd", ({ testCounts }) => { if (testCounts.failed) process.exitCode = 1; });
 QUnit.start();
 `,
     );
     command("QUnit installed consumer", process.execPath, ["qunit.cjs"], { cwd: consumer });
-    return "3 installed-package extension, testing, and CSP tests";
+    return "4 installed-package extension, testing, CSP, and persistence tests";
   });
 
   await record("browser-consumers", async () => {
@@ -2035,6 +2123,7 @@ QUnit.start();
     );
     const bundledSource = await readFile(join(bundle, "dist/assets", path), "utf8");
     for (const forbidden of [
+      "jquery-star-persist/1",
       "Self-hosting operations console",
       "better-sqlite",
       "jqstar source registry",
@@ -2098,6 +2187,7 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "/dist/csp.js",
       "/dist/csp-",
       "/dist/stores",
+      "/dist/persist",
       "/registry/",
       "/server-dist/",
       "node_modules/jquery-ui",
@@ -2168,6 +2258,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/turbo",
       "/dist/csp",
       "/dist/stores",
+      "/dist/persist",
     ]) {
       assert(
         !testingBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2197,6 +2288,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/htmx",
       "/dist/turbo",
       "/dist/stores",
+      "/dist/persist",
     ]) {
       assert(
         !datastarTestingBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2262,6 +2354,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/htmx",
       "/dist/csp",
       "/dist/stores",
+      "/dist/persist",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
     ]) {
@@ -2297,6 +2390,48 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
         `Installed stores graph contains ${forbidden}.`,
       );
     }
+    assert(
+      !storesBundle.modules.some((moduleId) => moduleId.includes("/dist/persist")),
+      "Stores graph includes persistence.",
+    );
+    const persistBundle = await buildOptionalGraph(
+      "persist",
+      'import $ from "jquery"; import { installStarCore } from "jquery-star/core"; import { storesPlugin, defineStore } from "jquery-star/stores"; import { persistPlugin, createFieldCodec, createLocalStorageAdapter } from "jquery-star/persist"; window.__persist = () => { const installed = installStarCore($); const shared = installed.star.use(storesPlugin); shared.define("prefs", defineStore({ initial: { count: 1 } })); return installed.star.use(persistPlugin).attach("prefs", Object.freeze({ namespace: "bundle", version: 1, adapter: createLocalStorageAdapter(window), codec: createFieldCodec([{ path: "count", validate: (value) => typeof value === "number" }]) })); };\n',
+    );
+    assert(
+      persistBundle.bytes <= budgets.consumerBundles.persistImportBytes,
+      "Persistence bundle exceeds its raw budget.",
+    );
+    assert(
+      persistBundle.gzipBytes <= budgets.consumerBundles.persistImportGzipBytes,
+      "Persistence bundle exceeds its gzip budget.",
+    );
+    for (const forbidden of [
+      "/dist/ui",
+      "/dist/datastar",
+      "/dist/testing",
+      "/dist/htmx",
+      "/dist/turbo",
+      "/dist/csp",
+    ]) {
+      assert(
+        !persistBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
+        `Persistence graph contains ${forbidden}.`,
+      );
+    }
+    for (const entry of [
+      coreSource.toString("utf8"),
+      storesBundle.source,
+      testingBundle.source,
+      datastarTestingBundle.source,
+      cspBundle.source,
+      turboBundle.source,
+    ]) {
+      assert(
+        !entry.includes("jquery-star-persist/1"),
+        "An unrelated consumer includes persistence code.",
+      );
+    }
     const htmxBundle = await buildOptionalGraph(
       "htmx",
       'import $ from "jquery"; import { installStarCore } from "jquery-star/core"; import { createHtmxBridge } from "jquery-star/htmx"; window.__htmxBridge = () => { const installed = installStarCore($); const htmx = { version: "2.0.10", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }; return installed.star.use(createHtmxBridge({ $, htmx, version: "2.0.10" })); };\n',
@@ -2317,6 +2452,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/turbo",
       "/dist/csp",
       "/dist/stores",
+      "/dist/persist",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
     ]) {
@@ -2378,6 +2514,14 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
         gzipBudget: budgets.consumerBundles.turboImportGzipBytes,
         modules: turboBundle.modules.length,
         hostPackage: "absent",
+      },
+      persist: {
+        bytes: persistBundle.bytes,
+        budget: budgets.consumerBundles.persistImportBytes,
+        gzipBytes: persistBundle.gzipBytes,
+        gzipBudget: budgets.consumerBundles.persistImportGzipBytes,
+        modules: persistBundle.modules.length,
+        unrelatedOptionalModules: "absent",
       },
       stores: {
         bytes: storesBundle.bytes,

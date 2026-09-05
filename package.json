@@ -26,7 +26,8 @@
       "./stores": "stable",
       "./testing": "stable",
       "./turbo": "stable",
-      "./ui": "stable"
+      "./ui": "stable",
+      "./persist": "stable"
     }
   },
   "engines": {
@@ -152,7 +153,17 @@
         "default": "./dist/datastar-testing.cjs"
       }
     },
-    "./ui.css": "./dist/jquery-star-ui.css"
+    "./ui.css": "./dist/jquery-star-ui.css",
+    "./persist": {
+      "import": {
+        "types": "./dist/persist.d.ts",
+        "default": "./dist/persist.js"
+      },
+      "require": {
+        "types": "./dist/persist.d.cts",
+        "default": "./dist/persist.cjs"
+      }
+    }
   },
   "bin": {
     "jqstar": "bin/jqstar.mjs"
@@ -190,7 +201,8 @@
     "!schema/jquery-ui-migration.schema.json",
     "!schema/release-candidate.schema.json",
     "!schema/release-contract.schema.json",
-    "server-dist"
+    "server-dist",
+    "docs/PERSISTENCE.md"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:js && npm run build:css",

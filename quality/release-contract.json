@@ -11,7 +11,7 @@
     "cspGrammarVersion": "jqstar-csp-expression/1"
   },
   "source": {
-    "ticket": "0018",
+    "ticket": "0019",
     "expectedBranch": "feat/shared-stores",
     "expectedTag": "v1.1.0"
   },
@@ -85,6 +85,13 @@
       "formats": ["esm", "commonjs"],
       "install": "explicit",
       "composition": ["stores"]
+    },
+    {
+      "id": "persist",
+      "subpath": "./persist",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["persist"]
     },
     {
       "id": "ui-css",
@@ -205,7 +212,6 @@
     }
   ],
   "optionalExclusions": [
-    "persistence",
     "resources",
     "resource-mutations",
     "native-navigation",

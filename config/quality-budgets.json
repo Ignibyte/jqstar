@@ -47,7 +47,9 @@
     "dist/turbo.js": 8192,
     "dist/ui.cjs": 318464,
     "dist/ui.js": 318464,
-    "dist/jquery-star-ui.css": 169984
+    "dist/jquery-star-ui.css": 169984,
+    "dist/persist.js": 16384,
+    "dist/persist.cjs": 16384
   },
   "consumerBundles": {
     "coreImportBytes": 197632,
@@ -65,7 +67,9 @@
     "htmxImportBytes": 240000,
     "htmxImportGzipBytes": 75000,
     "turboImportBytes": 220000,
-    "turboImportGzipBytes": 70000
+    "turboImportGzipBytes": 70000,
+    "persistImportBytes": 245760,
+    "persistImportGzipBytes": 78000
   },
   "browser": {
     "domNodes": 2300,
@@ -78,5 +82,9 @@
   },
   "generatedOutputs": {
     "changedFiles": 0
+  },
+  "persistPackage": {
+    "packedBytes": 64000,
+    "unpackedBytes": 240000
   }
 }

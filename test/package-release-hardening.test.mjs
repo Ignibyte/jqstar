@@ -61,6 +61,7 @@ function packageReport() {
       "./turbo",
       "./datastar/testing",
       "./ui.css",
+      "./persist",
     ],
     version: "1.0.0",
     documentation: [...packageDocumentationPaths],
@@ -98,7 +99,7 @@ function packageReport() {
   };
   checks[10].detail = {
     subject: "installed-tarball",
-    consumers: ["module", "umd", "testing", "stores", "csp"],
+    consumers: ["module", "umd", "testing", "stores", "persist", "csp"],
     lifecycle: "boot-and-dispose",
     engines: ["chromium", "firefox", "webkit"].map((name) => ({
       name,
@@ -186,6 +187,14 @@ function packageReport() {
       hostPackage: "absent",
     },
     stores: {
+      bytes: 1,
+      budget: 1,
+      gzipBytes: 1,
+      gzipBudget: 1,
+      modules: 1,
+      unrelatedOptionalModules: "absent",
+    },
+    persist: {
       bytes: 1,
       budget: 1,
       gzipBytes: 1,

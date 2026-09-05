@@ -30,6 +30,7 @@ jQStar 1.x stabilizes the package surfaces listed here. The executable authority
 | `jquery-star/datastar/testing` | ESM, CommonJS      | Official-SDK Datastar test fixtures.                                  |
 | `jquery-star/turbo`            | ESM, CommonJS      | Explicit Turbo lifecycle bridge.                                      |
 | `jquery-star/htmx`             | ESM, CommonJS      | Explicit htmx lifecycle bridge.                                       |
+| `jquery-star/persist`          | ESM, CommonJS      | Explicit synchronous persistence plugin over shared stores.           |
 | `jquery-star/stores`           | ESM, CommonJS      | Explicit per-kernel shared reactive stores plugin.                    |
 | `jquery-star/ui.css`           | CSS                | Explicit compiled component theme.                                    |
 
@@ -79,7 +80,7 @@ and the repository's
 Version 1.1 has no deprecated package entry, plugin API member, directive, action, component method,
 or stable error code. The root 0.1 behavior recorded in `quality/public-baseline.json` remains the
 compatibility baseline. The modular entries that carried a `0.4-preview` label are stable in 1.0;
-`jquery-star/stores` is stable in 1.1.
+`jquery-star/stores` and `jquery-star/persist` are stable in 1.1.
 
 A future removal from a stable 1.x surface requires a documented replacement and at least one minor
 release of deprecation unless a security issue makes continued support unsafe. Security removals
@@ -87,10 +88,11 @@ must be called out in the changelog, security advisory, and migration instructio
 
 ## Features outside 1.1
 
-Persistence, native resources and mutations, native navigation and regions, prefetching, inspection,
-an in-page DevTools UI, and package-upgrade diagnostics are not 1.1 package entries. Their planned
-tickets do not block 1.1 and must not appear in stable bundle graphs. Shared stores are
-client-visible coordination state only; see [STORES.md](STORES.md).
+Native resources and mutations, native navigation and regions, prefetching, inspection, an in-page
+DevTools UI, and package-upgrade diagnostics are not 1.1 package entries. Their planned tickets do
+not block 1.1 and must not appear in stable bundle graphs. Shared stores are client-visible
+coordination state only; see [STORES.md](STORES.md). Selected browser preferences use the separate
+[persistence contract](PERSISTENCE.md).
 
 ## Verification
 

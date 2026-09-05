@@ -15,8 +15,8 @@ separate kernel.
 
 The root package keeps its 0.1 auto-install behavior. `jquery-star/core` explicitly installs the
 same kernel without UI or Datastar; `jquery-star/ui`, `jquery-star/datastar`, and
-`jquery-star/stores` are immutable official plugins. `jquery-star/testing` and
-`jquery-star/datastar/testing` are caller-operated test adapters. These modular entries have no
+`jquery-star/stores` and `jquery-star/persist` are immutable official plugins. `jquery-star/testing`
+and `jquery-star/datastar/testing` are caller-operated test adapters. These modular entries have no
 import-time document work.
 
 The testing harness does not change the runtime topology. A harness owns the core installation it
@@ -199,3 +199,12 @@ moves, validates promised roots after mutation, restores focus, and boots only e
 roots. Missing promised roots are cleaned and reported. `whenEnhanced()` waits for all pending
 render transactions, observer delivery, directive/UI enhancement, finite registered directive tasks,
 and reactive work; `nextUpdate()` remains limited to reactive scheduling.
+
+## Persistence ownership
+
+`src/persist.ts` owns a per-kernel attachment map, default memory adapter, and random origin. Each
+attachment owns its store subscription, one trailing timer, external adapter subscription, accepted
+revision/content, and redacted observers. The kernel registers one attachment service after its
+store service. Reverse disposal makes persistence terminal and flushes before the store is released.
+All cleanup paths run even when writes or adapter cleanup fail. Borrowed adapters remain caller
+owned. No persistence map, timer, storage listener, or browser-storage access is created by import.
