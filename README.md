@@ -1576,6 +1576,24 @@ data: elements <li data-text="$count"></li>
 
 ```
 
+### Coordinating reads across application roots
+
+Use one named backend action in a registry block when several regions need the same server record.
+Put the coordinator around independent `data-jqs` consumer roots, share the selected ID through an
+optional store, and patch stable content targets with the official Datastar SDK. Backend patches
+stay within the initiating application's boundary. Keep native links, initial HTML and form actions
+useful before JavaScript runs.
+
+The block owns request cancellation and subscriptions. Removing one consumer should retain work
+needed by another; removing the last consumer or disposing the kernel should release it. Refresh
+canonical HTML after a successful write. Server validation, permissions and record versions remain
+authoritative. HTTP caching may reduce repeated reads, but correctness must hold when the browser
+contacts the server again.
+
+jQStar does not ship a resource cache or mutation package. The Project Inspector comparison retained
+server patches under its predeclared decision rule. An application that needs a shared JSON cache
+can evaluate an external core behind its own plugin, with explicit ownership and disposal.
+
 ### Official Datastar SDK
 
 The server can generate those events with the official SDK. No jQStar adapter is needed:

@@ -208,3 +208,19 @@ revision/content, and redacted observers. The kernel registers one attachment se
 store service. Reverse disposal makes persistence terminal and flushes before the store is released.
 All cleanup paths run even when writes or adapter cleanup fail. Borrowed adapters remain caller
 owned. No persistence map, timer, storage listener, or browser-storage access is created by import.
+
+## Resource strategy research boundary
+
+The [resource comparison](decisions/RESOURCE_STRATEGY.md) adds no production cache owner. Its three
+prototypes live under `test/fixtures/resource-strategy/` and are rejected by production import and
+package checks. The private external package has its own exact lock and never enters root manifests.
+
+For the supported registry composition, application hooks own consumer subscriptions and the
+coordinator owns its backend read. One consumer leaving cannot abort another consumer's work. The
+last release cancels outstanding work, and kernel disposal releases all subscriptions. Immediate
+registrar cleanup must cover allocations made before plugin activation, even when a document service
+will also own them after activation. Identity or tenant changes must dispose old application work
+and load canonical server output; the fixture proves this with full navigation.
+
+Browser evidence measures actual timeout/interval residue alongside public disposal reports. The
+native research cache also rejects timer allocation from a retained lease after disposal.

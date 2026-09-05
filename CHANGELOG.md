@@ -5,6 +5,12 @@ or GitHub release claim.
 
 ## 1.1.0 - Unreleased
 
+### Server data guidance
+
+- Document one registry coordinator and SDK response for related application regions, with native
+  links/forms, owned cancellation and canonical refresh after writes.
+- Retain server patches after the Project Inspector comparison; no resource or mutation API ships.
+
 ### Selected preference persistence
 
 - Add optional `jquery-star/persist` with synchronous hydration before application startup, explicit

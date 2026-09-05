@@ -411,3 +411,16 @@ pipeline, and commits through the public store transaction. It owns no store dep
 Each attachment owns one subscription, bounded trailing timer, storage listener, accepted revision,
 and redacted status subscribers. Kernel services dispose attachments before shared stores become
 terminal. [PERSISTENCE.md](PERSISTENCE.md) defines recovery, revisions, and adapter boundaries.
+
+## Coordinated asynchronous reads
+
+Ticket [0020](tickets/0020-prove-resource-strategy.md) retains server patches and declines native
+resources and mutations. The [decision and measurements](decisions/RESOURCE_STRATEGY.md) compare one
+coordinated SDK response with external and native cache prototypes. These remain test fixtures.
+
+A registry block can place independently owned consumer applications inside an outer coordinator
+application. One named action requests canonical HTML for their stable content targets. This
+respects the existing initiating-application patch boundary. A store shares selection, while the
+block owns the request and subscription lifecycle. Initial HTML, native navigation and versioned
+form submissions remain usable without JavaScript. Successful writes trigger canonical refresh. No
+new runtime service, export or global facade is part of this decision.

@@ -216,3 +216,11 @@ untested brand-version range. The complete mutable-state and disposal boundary i
 fields through a codec and attach before boot. Browser adapters remain client state with explicit
 migrations, recovery, and whole-envelope conflicts. They do not establish server authority or
 replace component-specific storage. See [PERSISTENCE.md](PERSISTENCE.md).
+
+## Asynchronous data disposition
+
+The [Project Inspector decision](decisions/RESOURCE_STRATEGY.md) keeps server-rendered reads and
+writes as the supported default. A registry block coordinates a shared selection and one backend
+response across independently owned regions. Native resource and mutation packages were declined by
+ticket 0020. External cache integration remains an application choice; an official adapter would
+require a separate implementation ticket. The research prototypes are excluded from the package.

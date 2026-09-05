@@ -487,6 +487,15 @@ handled by a small bridge.
 
 ## Optional application-service tracks
 
+### Recorded resource decision
+
+[Ticket 0020](tickets/0020-prove-resource-strategy.md) selected server patches with no official
+resource package. The [comparison](decisions/RESOURCE_STRATEGY.md) found a one-point nominal
+external advantage, within the frozen two-point inconclusive range; reasonable weight changes alter
+the ranking. Native did not meet the additional approval conditions. Tickets 0021 and 0022 are
+declined. Later conditional designs in this plan remain historical proposals, not available APIs or
+authorization to implement them. New evidence and a new decision are required to reopen that track.
+
 ### Stores and persistence
 
 `jquery-star/stores` is the first post-1.0 service because multiple application roots have a direct

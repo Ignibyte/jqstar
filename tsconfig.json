@@ -9,6 +9,7 @@
     "paths": {
       "jquery-star": ["./src/index.ts"],
       "jquery-star/core": ["./src/core.ts"],
+      "jquery-star/stores": ["./src/stores.ts"],
       "jquery-star/datastar": ["./src/datastar.ts"],
       "jquery-star/testing": ["./src/testing/index.ts"],
       "jquery-star/datastar/testing": ["./src/datastar/testing.ts"],

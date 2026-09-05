@@ -235,7 +235,16 @@ const ticket0044SelfTest = gate("ticket-0044-detector-self-test", "test:quality:
   },
 });
 
-const common = [ticket, runnerSelfTest, format, unit];
+const resourceResearchDependency = gate(
+  "resource-research-dependency",
+  "research:resources:prepare",
+  {
+    args: ["--", "--install-only"],
+    stage: 0,
+  },
+);
+
+const common = [ticket, runnerSelfTest, resourceResearchDependency, format, unit];
 const withoutChangeSelection = (configuredGate) => {
   const copy = { ...configuredGate };
   delete copy.when;
@@ -266,7 +275,13 @@ const fullAuditOnly = [
   withoutChangeSelection(ticket0044SelfTest),
 ];
 
-const fullAuditCommon = [ticket, withoutChangeSelection(runnerSelfTest), format, unit];
+const fullAuditCommon = [
+  ticket,
+  withoutChangeSelection(runnerSelfTest),
+  resourceResearchDependency,
+  format,
+  unit,
+];
 
 export const qualityConfig = {
   schema: "jqstar-quality-config/1",

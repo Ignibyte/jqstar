@@ -105,15 +105,16 @@ authorization or entity databases.
 
 ## Release 1.2: asynchronous data decision
 
-| Ticket                                  | Outcome                                                                                              | Depends on                  |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- |
-| [0020](0020-prove-resource-strategy.md) | Reference use case and decision among server patches, an external query client, or native resources. | 0014, 0017                  |
-| [0021](0021-build-resource-client.md)   | Conditional native cache, leases, keys, loaders, invalidation, cancellation, stale state, and GC.    | 0020 approves native client |
-| [0022](0022-add-resource-mutations.md)  | Conditional overlapping mutation state, ordered optimism, rollback, conflicts, and invalidation.     | 0021 approves mutations     |
+| Ticket                                  | Outcome                                                                                       | Depends on                  |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------- |
+| [0020](0020-prove-resource-strategy.md) | Measured Project Inspector decision: retain server patches with no official resource package. | 0014, 0017                  |
+| [0021](0021-build-resource-client.md)   | Declined by 0020: server patches remain the supported composition.                            | 0020 approves native client |
+| [0022](0022-add-resource-mutations.md)  | Declined by 0020: canonical server writes and refresh remain the supported composition.       | 0021 approves mutations     |
 
-Release gate: ticket 0020 may close the track without 0021 or 0022. Ticket 0021 may close 0022 as
-`declined` when the completed reference application has no native mutation need. If implemented,
-resources have a specific reference application and retain server-rendered HTML as the authority.
+Ticket 0020 closes the track with server patches. Tickets 0021 and 0022 are `declined`, with
+criterion dispositions and package/import absence checks. The
+[decision](../decisions/RESOURCE_STRATEGY.md) records the external adapter's one-point nominal lead,
+the frozen inconclusive rule, browser cache differences and evidence required to reopen the track.
 
 ## Release 1.3: native navigation decision
 
@@ -166,7 +167,7 @@ behavior.
 0001..0016 + 0034..0050 -> 0017
 
 0014 + 0017 -> 0018 -> 0019
-0014 + 0017 -> 0020 -> [resource decision] -> 0021 -> [mutation decision] -> 0022
+0014 + 0017 -> 0020 -> [server patches; 0021 + 0022 declined]
 0017 + 0036 + 0037 -> 0023 -> [decision] -> 0024 -> 0025 -> 0026 -> 0027
                                                                     |
                                                                     +-> 0028 -> 0029

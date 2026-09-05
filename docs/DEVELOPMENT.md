@@ -187,3 +187,12 @@ whether the run is green or red.
 - Patch narrow stable targets and make replacement markup safe to enhance repeatedly.
 - Cover the action module with a mocked SDK response, the endpoint with server tests, and the full
   workflow with Playwright.
+
+## Private resource research dependency
+
+`npm run research:resources:prepare` installs the exact locked query core under the private
+`test/fixtures/resource-strategy/external` package if needed, with install scripts disabled, and
+builds the comparison bundles. Use it before direct focused research tests. Canonical quality modes
+verify this dependency automatically with `--install-only` before tests and static analysis. It is
+absent from root dependencies, public entries and tarballs. See the
+[comparison contract](decisions/RESOURCE_STRATEGY.md) before changing or remeasuring a prototype.

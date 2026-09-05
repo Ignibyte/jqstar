@@ -5,6 +5,7 @@ const networkProofPort = Number(process.env.JQS_NETWORK_PROOF_PORT ?? 4174);
 const interoperabilityPort = Number(process.env.JQS_INTEROP_PORT ?? 4175);
 const jqueryUiMigrationPort = Number(process.env.JQS_JQUERY_UI_MIGRATION_PORT ?? 4176);
 const jqueryMobileMigrationPort = Number(process.env.JQS_JQUERY_MOBILE_MIGRATION_PORT ?? 4177);
+const resourceStrategyPort = Number(process.env.JQS_RESOURCE_STRATEGY_PORT ?? 4178);
 const artifactDirectory = resolve(
   process.env.JQS_PLAYWRIGHT_ARTIFACT_DIRECTORY ?? ".git/jqstar/standalone/playwright",
 );
@@ -36,13 +37,15 @@ const requiredProjects = [
   },
   {
     name: "mobile-touch",
-    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@mobile/,
     use: { ...devices["Pixel 7"] },
   },
   {
     name: "reduced-motion",
-    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@motion/,
     use: {
       ...devices["Desktop Chrome"],
@@ -51,7 +54,8 @@ const requiredProjects = [
   },
   {
     name: "forced-colors",
-    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@color/,
     use: {
       ...devices["Desktop Chrome"],
@@ -60,13 +64,14 @@ const requiredProjects = [
   },
   {
     name: "zoom-reflow",
-    testMatch: /(jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch: /(resource-strategy|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@zoom/,
     use: { ...devices["Desktop Chrome"] },
   },
   {
     name: "javascript-disabled",
-    testMatch: /(jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@nojs/,
     use: { ...devices["Desktop Chrome"], javaScriptEnabled: false },
   },
@@ -130,6 +135,12 @@ export default defineConfig({
     {
       command: "node e2e/fixtures/jquery-mobile-migration-server.mjs",
       url: `http://127.0.0.1:${jqueryMobileMigrationPort}/health`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command:
+        "node scripts/prepare-resource-strategy.mjs && node e2e/fixtures/resource-strategy-server.mjs",
+      url: `http://127.0.0.1:${resourceStrategyPort}/health`,
       reuseExistingServer: !process.env.CI,
     },
   ],

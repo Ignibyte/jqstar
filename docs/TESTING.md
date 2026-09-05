@@ -495,3 +495,24 @@ before UI, reload, local sharing, session partitioning, clock-controlled expiry,
 disposal flush. Package consumers exercise ESM, CommonJS, NodeNext, Bundler, QUnit, and the
 installed browser entry. Optional graph checks reject persistence code from consumers that do not
 import it.
+
+## Resource strategy comparison
+
+Ticket 0020's unshipped Project Inspector uses one markup and scenario driver for server SDK
+patches, an exact private query-core adapter and a minimal native cache. See the frozen contract and
+reproduction steps in [RESOURCE_STRATEGY.md](decisions/RESOURCE_STRATEGY.md). The closed dataset is
+`quality/resource-strategy.json`; contract tests recompute scores, sensitivity and fixture digests.
+
+Run `npm run research:resources:prepare` before direct focused tests on a clean checkout. It
+verifies or installs the exact private dependency with scripts disabled, then builds isolated
+research entries. All canonical quality modes run its `--install-only` step before unit/static
+checks. Root installation and published consumers do not acquire a query-core dependency.
+
+The focused unit files are `test/resource-strategy{,-server,-contract}.test.*`. The common
+Playwright suite is `e2e/resource-strategy.spec.ts`: desktop Chromium, Firefox and WebKit plus
+mobile, reduced motion, forced colors, zoom and JavaScript-disabled profiles. Assertions cover
+racing selection, consumer teardown, canonical writes/conflicts, accessible state, preserved roots,
+identity change and terminal cleanup. Timing collection runs separately with five fresh contexts per
+engine and strategy; it records origin reads and settled DOM latency, including browser HTTP cache
+differences. Measurement and scoring commands write the reviewed dataset only when passed
+`--record`.

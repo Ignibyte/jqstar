@@ -32,6 +32,8 @@ The package has two public layers:
   transactions, subscriptions, lifecycle, and authority boundaries.
 - [PERSISTENCE.md](PERSISTENCE.md): selected browser preferences, synchronous hydration, codecs,
   migrations, recovery, revision ordering, storage adapters, and disposal.
+- [decisions/RESOURCE_STRATEGY.md](decisions/RESOURCE_STRATEGY.md): measured server-patch decision,
+  unshipped cache alternatives, supported coordination pattern and revisit criteria.
 - [INTEROPERABILITY.md](INTEROPERABILITY.md): approved Turbo and htmx versions, external render
   state machine, event mappings, preservation, ownership, and downstream bridge requirements.
 - [COMPATIBILITY.md](COMPATIBILITY.md): stable 1.0 entries, environments, version boundaries,

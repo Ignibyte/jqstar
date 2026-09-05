@@ -140,10 +140,18 @@ function fixtureGate(behavior, extra = {}) {
 
 test("canonical quality modes keep fixed, collision-free semantics", () => {
   const expected = {
-    fast: ["ticket-workflow", "quality-runner-self-test", "format", "unit", "static-fast"],
+    fast: [
+      "ticket-workflow",
+      "quality-runner-self-test",
+      "resource-research-dependency",
+      "format",
+      "unit",
+      "static-fast",
+    ],
     delivery: [
       "ticket-workflow",
       "quality-runner-self-test",
+      "resource-research-dependency",
       "format",
       "unit",
       "coverage",
@@ -158,6 +166,7 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
     "full-audit": [
       "ticket-workflow",
       "quality-runner-self-test",
+      "resource-research-dependency",
       "format",
       "unit",
       "unit-repeated-audit",
@@ -180,6 +189,15 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
       `${mode} gate membership drifted`,
     );
     assert.equal(new Set(gates.map((gate) => gate.id)).size, gates.length);
+    const preparation = gates.find((gate) => gate.id === "resource-research-dependency");
+    assert.deepEqual(preparation.args, [
+      "run",
+      "research:resources:prepare",
+      "--",
+      "--install-only",
+    ]);
+    assert.equal(preparation.enforced, true);
+    assert.ok(preparation.stage < gates.find((gate) => gate.id === "unit").stage);
   }
 
   for (const mode of ["delivery", "full-audit"]) {

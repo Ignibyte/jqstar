@@ -1,0 +1,75 @@
+body {
+  color: #17212b;
+  background: #fff;
+  font:
+    1rem/1.5 system-ui,
+    sans-serif;
+  margin: 0 auto;
+  padding: 1rem;
+  max-width: 64rem;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid currentcolor;
+  padding: 0.5rem;
+}
+
+button,
+input,
+a {
+  font: inherit;
+}
+
+button,
+input {
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+a {
+  display: inline-block;
+  padding: 0.5rem;
+  color: #154a83;
+}
+
+label {
+  display: block;
+}
+
+#panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+
+section {
+  border: 1px solid currentcolor;
+  padding: 1rem;
+  overflow-wrap: anywhere;
+}
+
+[aria-busy="true"] {
+  border-style: dashed;
+}
+
+[data-state="error"] {
+  border-width: 2px;
+}
+
+:focus-visible {
+  outline: 3px solid currentcolor;
+  outline-offset: 3px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}

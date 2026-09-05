@@ -201,6 +201,7 @@
     "!schema/jquery-ui-migration.schema.json",
     "!schema/release-candidate.schema.json",
     "!schema/release-contract.schema.json",
+    "!schema/resource-strategy.schema.json",
     "server-dist",
     "docs/PERSISTENCE.md"
   ],
@@ -245,6 +246,9 @@
     "quality:tool:qunit": "qunit --help",
     "quality:census": "node scripts/quality/verify-production-census.mjs",
     "registry:list": "node ./bin/jqstar.mjs list",
+    "research:resources:measure": "node scripts/measure-resource-strategy.mjs",
+    "research:resources:score": "node scripts/score-resource-strategy.mjs",
+    "research:resources:prepare": "node scripts/prepare-resource-strategy.mjs",
     "release:candidate": "node scripts/release/candidate.mjs",
     "release:handoff": "node scripts/release/handoff.mjs",
     "release:prepare": "node scripts/release/prepare.mjs",
@@ -270,7 +274,8 @@
     "test:watch": "vitest",
     "ticket:validate": "node scripts/quality/validate-ticket.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.registry.json",
-    "serve:self-hosted": "node server-dist/index.mjs"
+    "serve:self-hosted": "node server-dist/index.mjs",
+    "research:resources:record-browser": "node scripts/record-resource-strategy-browser.mjs"
   },
   "peerDependencies": {
     "@hotwired/turbo": ">=8.0.21 <8.1.0",

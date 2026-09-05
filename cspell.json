@@ -103,6 +103,8 @@
     "untrusted",
     "tree-shaking",
     "source-owned",
-    "worktree"
+    "worktree",
+    "nonblank",
+    "noncomment"
   ]
 }

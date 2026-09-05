@@ -451,6 +451,19 @@ mode: "append",
 });
 });
 ```
+One read for several regions
+Put a named backend action in a registry block when several regions need the same record. An
+outer data-jqs coordinator can contain independently owned consumer roots.
+Share the selected ID through an optional store and return one SDK response that patches
+their stable content targets. Patches stay inside the initiating application's boundary.
+The block owns cancellation and subscriptions. Retain a request while another consumer still
+needs it, and release it when the last consumer leaves or the kernel is disposed. Keep
+initial HTML, native links and form actions useful without JavaScript. After a write,
+refresh canonical output; validation, permissions and versions stay on the server.
+jQStar does not ship a resource cache or mutation package. HTTP caching can reduce origin
+work, but correctness must hold when a browser requests the record again. Applications
+needing a shared JSON cache can evaluate an external core in an application-owned plugin
+with explicit lifecycle cleanup.
 Enhancement after a patch
 Inserted HTML is scanned immediately. New directives, bindings, component roots, named
 actions, and cleanup hooks work without calling .star() again. Outer morphs

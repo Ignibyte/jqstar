@@ -791,6 +791,21 @@ try {
   await record("exports-and-files", async () => {
     const manifest = JSON.parse(await readFile(join(extracted, "package.json"), "utf8"));
     assert(manifest.name === "jquery-star", "Packed package name changed.");
+    for (const field of [
+      "dependencies",
+      "devDependencies",
+      "optionalDependencies",
+      "peerDependencies",
+    ]) {
+      assert(
+        !Object.keys(manifest[field] ?? {}).some((name) => name.includes("query-core")),
+        "Packed package declares an unselected resource research dependency.",
+      );
+    }
+    assert(
+      pack.files.every(({ path }) => !path.includes("resource-strategy")),
+      "Packed package contains resource research artifacts.",
+    );
     assert(
       manifest.scripts?.prepack === "npm run build:self-hosted",
       "Packed prepack contract is missing.",
@@ -2192,6 +2207,8 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "/server-dist/",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
     ]) {
       assert(
         !coreModules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2253,6 +2270,8 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/@starfederation/datastar-sdk",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
       "/dist/datastar-testing",
       "/dist/htmx",
       "/dist/turbo",
@@ -2284,6 +2303,8 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/@playwright",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
       "/dist/csp",
       "/dist/htmx",
       "/dist/turbo",
@@ -2323,6 +2344,8 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/stores.js",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
     ]) {
       assert(
         !cspBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2357,6 +2380,8 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/persist",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
     ]) {
       assert(
         !turboBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2384,6 +2409,8 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/csp",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
     ]) {
       assert(
         !storesBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2455,6 +2482,8 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/persist",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
+      "node_modules/@tanstack/query-core",
+      "/test/fixtures/resource-strategy/",
     ]) {
       assert(
         !htmxBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
