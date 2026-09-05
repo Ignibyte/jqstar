@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
+import { qualityConfig } from "../quality/gates.mjs";
 
 import {
   assertRedacted,
@@ -222,14 +223,25 @@ describe("stable release candidate contract", () => {
     for (const policy of contract.policies) {
       await expect(readFile(resolve(root, policy.path), "utf8"), policy.path).resolves.not.toBe("");
     }
+    for (const mode of contract.qualityModes) {
+      expect(mode.requiredGates).toEqual(qualityConfig.modes[mode.mode].map(({ id }) => id));
+    }
+    for (const [entry, ticket, policy] of [
+      ["./stores", "0018", "docs/STORES.md"],
+      ["./persist", "0019", "docs/PERSISTENCE.md"],
+    ]) {
+      expect(manifest.exports[entry]).toBeDefined();
+      expect(contract.prerequisites.tickets).toContain(ticket);
+      expect(contract.policies.map(({ path }) => path)).toContain(policy);
+    }
   });
 
   it("audits every prerequisite ticket and criterion from current source", async () => {
     const { contract } = await loadReleaseContract(root);
     const audit = await auditPrerequisiteTickets(root, contract);
-    expect(audit.required).toBe(34);
-    expect(audit.audited).toBe(34);
-    expect(audit.criterionCount).toBeGreaterThan(34);
+    expect(audit.required).toBe(36);
+    expect(audit.audited).toBe(36);
+    expect(audit.criterionCount).toBeGreaterThan(36);
     expect(audit.tickets.map(({ id }) => id)).toEqual(contract.prerequisites.tickets);
     expect(audit.tickets.every(({ status }) => status === "done")).toBe(true);
     expect(

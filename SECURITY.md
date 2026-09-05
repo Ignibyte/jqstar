@@ -25,8 +25,9 @@ agreement. The project will credit reporters who want attribution and will not p
 contact information.
 
 The latest published 1.x minor and patch line receives security fixes. The previous 1.x minor
-receives security fixes for six months after the next minor release. Before `1.0.0` is published,
-the repository is a candidate and makes no registry support claim. See [SUPPORT.md](SUPPORT.md).
+receives security fixes for six months after the next minor release. Repository candidate metadata
+and local receipts do not imply registry availability or support for an unpublished version. See
+[SUPPORT.md](SUPPORT.md).
 
 ## Threat model and trust boundaries
 

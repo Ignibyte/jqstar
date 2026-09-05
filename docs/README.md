@@ -36,7 +36,7 @@ The package has two public layers:
   unshipped cache alternatives, supported coordination pattern and revisit criteria.
 - [INTEROPERABILITY.md](INTEROPERABILITY.md): approved Turbo and htmx versions, external render
   state machine, event mappings, preservation, ownership, and downstream bridge requirements.
-- [COMPATIBILITY.md](COMPATIBILITY.md): stable 1.0 entries, environments, version boundaries,
+- [COMPATIBILITY.md](COMPATIBILITY.md): stable 1.x entries, environments, version boundaries,
   deprecation policy, and executable evidence map.
 - [../MIGRATING_TO_1.md](../MIGRATING_TO_1.md): complete 0.1-to-1.0 package migration.
 - [../SUPPORT.md](../SUPPORT.md): maintained release lines and support expectations.

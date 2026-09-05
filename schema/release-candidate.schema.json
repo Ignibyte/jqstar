@@ -277,13 +277,13 @@
       "type": "object",
       "required": ["required", "audited", "criterionCount", "tickets"],
       "properties": {
-        "required": { "const": 34 },
-        "audited": { "const": 34 },
-        "criterionCount": { "type": "integer", "minimum": 34 },
+        "required": { "const": 36 },
+        "audited": { "const": 36 },
+        "criterionCount": { "type": "integer", "minimum": 36 },
         "tickets": {
           "type": "array",
-          "minItems": 34,
-          "maxItems": 34,
+          "minItems": 36,
+          "maxItems": 36,
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/ticket" }
         }

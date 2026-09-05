@@ -64,7 +64,8 @@ cleanup reports failures.
 
 Server-rendered HTML remains the authority. jQStar enhances `data-jqs` roots and can consume JSON,
 HTML, or Datastar SDK event streams. It does not define application routes, authentication,
-authorization, CSRF policy, or persistence.
+authorization, CSRF policy, or server-data persistence. Selected browser preferences use the
+optional `jquery-star/persist` entry.
 
 ## Expression compatibility
 

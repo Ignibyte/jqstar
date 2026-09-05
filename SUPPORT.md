@@ -1,7 +1,7 @@
 # Support policy
 
-This policy applies when `jquery-star@1.0.0` is published. Until then, the repository contains a
-release candidate and no npm availability is implied.
+This policy covers published jQStar 1.x releases. Repository candidate metadata and local receipts
+do not imply npm availability.
 
 ## Supported line
 
@@ -10,9 +10,9 @@ The latest 1.x minor and patch line receives compatibility fixes and security up
 early only when an upstream runtime or browser security boundary can no longer be supported safely.
 That change requires a security notice and migration path.
 
-The 0.1 line is the executable migration baseline. Once 1.0.0 is published, 0.1 receives no new
-features. A security fix may be backported when the change is safe and users cannot move to 1.x
-immediately, but no backport is promised.
+The 0.1 line is the executable migration baseline. Once a stable 1.x release is published, 0.1
+receives no new features. A security fix may be backported when the change is safe and users cannot
+move to 1.x immediately, but no backport is promised.
 
 Node, jQuery, browser, document, module, and bridge ranges are listed in
 [the compatibility policy](docs/COMPATIBILITY.md). jQuery UI and jQuery Mobile are migration inputs,

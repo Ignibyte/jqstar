@@ -55,8 +55,8 @@ application with `$(root).star(definition)` or boot declarative markup with `$.s
 The package exports:
 
 - an auto-installing compatibility root plus stable, side-effect-free `core`, `ui`, `datastar`,
-  `csp`, `testing`, `datastar/testing`, `htmx`, `stores`, and `turbo` entries; only the root
-  composes runtime plugins and publishes a UMD global
+  `csp`, `testing`, `datastar/testing`, `htmx`, `stores`, `persist`, and `turbo` entries; only the
+  root composes runtime plugins and publishes a UMD global
 - application lifecycle and typed definitions
 - the trusted expression-engine factory, installer capability, structured failures, and cache
   controls; explicit core installation selects the engine before document ownership
@@ -65,6 +65,8 @@ The package exports:
 - reactive state scheduling through `nextUpdate`
 - optional per-kernel shared reactive stores with staged transactions, subscriptions, and owned
   setup work
+- optional selected-preference persistence with explicit codecs, adapters, versioning, expiry and
+  owned cleanup
 - complete server-patch commits through `whenEnhanced`
 - named frontend and backend actions
 - typed kernel, application, and plugin operation observations with action/request parentage
@@ -169,38 +171,38 @@ fixtures define the approved inputs for the shipped Turbo and htmx bridges.
 ## Release shape
 
 The npm package exposes the compatibility root as ESM, CommonJS, and UMD; modular
-core/UI/Datastar/testing/htmx/stores/Turbo entries as ESM and CommonJS; matched declarations and
-source maps; explicit compiled UI CSS; the CLI; registry sources; schema; deployment examples; the
-public guides linked from the package README; the static agent corpus and guide; and one
-deterministic Brotli archive of the self-hosted website. The server uses that archive only when
-loose deployment files are absent; local development and GitHub Pages retain ordinary nested HTML
-routes. Repository brain, quality, accessibility-release, and ticket documents remain
+core/UI/CSP/Datastar/testing/htmx/stores/persistence/Turbo entries as ESM and CommonJS; matched
+declarations and source maps; explicit compiled UI CSS; the CLI; registry sources; schema;
+deployment examples; the public guides linked from the package README; the static agent corpus and
+guide; and one deterministic Brotli archive of the self-hosted website. The server uses that archive
+only when loose deployment files are absent; local development and GitHub Pages retain ordinary
+nested HTML routes. Repository brain, quality, accessibility-release, and ticket documents remain
 source-repository material. Node 24 or newer is required.
 
-Version `1.0.0` is the first stable platform contract and `1.1.0` adds optional shared stores.
-`package.json` is the runtime version source; `quality/release-contract.json` records the stable
-entries and candidate policy. Candidate tooling under `scripts/release/` binds two reproducible
-tarball builds, installed consumers, complete quality runs, prerequisite evidence, and a
-non-publishing handoff to one clean committed source tree. Generated receipts live below
-`.git/jqstar/releases/` and are never package inputs. Tagging, pushing, publishing, signing, and
-release creation require separate explicit authorization.
+Version `1.0.0` is the first stable platform contract and `1.1.0` adds optional shared stores and
+selected-preference persistence. `package.json` is the runtime version source;
+`quality/release-contract.json` records the stable entries and candidate policy. Candidate tooling
+under `scripts/release/` binds two reproducible tarball builds, installed consumers, complete
+quality runs, prerequisite evidence, and a non-publishing handoff to one clean committed source
+tree. Generated receipts live below `.git/jqstar/releases/` and are never package inputs. Tagging,
+pushing, publishing, signing, and release creation require separate explicit authorization.
 
 ## Compatibility policy
 
 `quality/public-baseline.json` is the executable 0.1 compatibility index. Public root exports,
 declarations, jQuery members, component APIs, directives, named actions, request and event
-contracts, package entries, formats, and supported environments are stable for the 0.x line. A
+contracts, package entries, formats, and supported environments are stable for the 1.x line. A
 stable item must remain deprecated for at least one minor release before removal.
 
-Version 0.1 has no deprecated entries and publishes no stable error codes. Error message intent is
-consumer-visible, but callers must not parse message text as an identifier. Plugin API 0.1.0 is
-public through the root entry, including transactional directive, helper, request-middleware,
-protocol-profile, and operation-observer registration. The root entry also publishes kernel and
-application operation subscriptions; request descriptor, outcome, and middleware contracts; protocol
-request/response, matcher, lease, and capability contracts; and typed errors. `core`, `ui`,
-`datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and `turbo` are stable 1.0 package
-contracts. `stores` is stable in 1.1. Source-only modules and undeclared package subpaths remain
-internal until a later ticket publishes and tests them.
+The 1.1 candidate has no deprecated entries. Use documented error codes where supplied; callers must
+not parse message text as an identifier. Plugin API 0.1.0 is public through the root entry,
+including transactional directive, helper, request-middleware, protocol-profile, and
+operation-observer registration. The root entry also publishes kernel and application operation
+subscriptions; request descriptor, outcome, and middleware contracts; protocol request/response,
+matcher, lease, and capability contracts; and typed errors. `core`, `ui`, `datastar`, `csp`,
+`testing`, `datastar/testing`, `htmx`, and `turbo` are stable 1.0 package contracts. `stores` and
+`persist` are stable in 1.1. Source-only modules and undeclared package subpaths remain internal
+until a later ticket publishes and tests them.
 
 The supported document host is an ordinary HTML document, including an explicitly supplied
 same-origin frame document, with one live jQStar kernel and one canonical jQuery instance. A second

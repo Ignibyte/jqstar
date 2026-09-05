@@ -103,6 +103,10 @@ agreement; it is not assumed by this roadmap.
 Release gate: stores and persistence are optional, dispose completely, and do not become application
 authorization or entity databases.
 
+Current release cleanup: [0051](0051-align-current-release-guidance.md) aligns 1.1 candidate
+instructions, support wording, required quality gates, and stores/persistence prerequisite evidence
+before continuing navigation and inspection work.
+
 ## Release 1.2: asynchronous data decision
 
 | Ticket                                  | Outcome                                                                                       | Depends on                  |
