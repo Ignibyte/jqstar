@@ -12,6 +12,7 @@ import {
   type StarOperationSubscriptionOptions,
   type StarOperationUnsubscribe,
   type StarPluginOperationRegistration,
+  type StarStoreOperationObservation,
   validateOperationSubscription,
 } from "./observation";
 import type { ActionRegistry, NamespacedActionSet } from "./registry";
@@ -31,7 +32,8 @@ import type { ComputedRecord, StarAction, StarInstance, StateRecord } from "./ty
 export const STAR_PLUGIN_API_VERSION = "0.1.0";
 
 export type StarPluginCleanup = () => void;
-export type StarPluginResourceKind = "listener" | "observer" | "service" | "subscription" | "task";
+export type StarPluginResourceKind =
+  "effect" | "listener" | "observer" | "service" | "subscription" | "task";
 
 export interface StarPluginDocumentHost {
   readonly document: Document;
@@ -48,6 +50,9 @@ export interface StarPluginDocumentHost {
     options: MutationObserverInit,
   ): MutationObserver;
   own(kind: StarPluginResourceKind, owner: string, cleanup: () => void): () => void;
+  operation?(observation: StarStoreOperationObservation): void;
+  readonly services?: Pick<StarPluginDocumentHost, "operation" | "own" | "task">;
+  task?(owner: string, task: PromiseLike<unknown>, onError: (error: unknown) => void): () => void;
 }
 
 export type StarPluginActivation = () => void | StarPluginCleanup;
@@ -115,6 +120,7 @@ interface StagedPlugin extends InstalledPlugin {
 export interface PluginHost {
   applicationSetup(application: StarInstance): () => void;
   dispose(): void;
+  facade(name: string): unknown;
   lock(): void;
   names(): readonly string[];
   use<Facade>(plugin: StarPlugin<Facade>): Facade;
@@ -127,6 +133,10 @@ const pluginNamePattern = /^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+$/;
 const officialPluginNamePattern = /^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)*$/;
 const stableVersionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const officialPlugins = jqstarRealmState[2] as WeakSet<StarPlugin>;
+
+function pluginError(name: string, detail: string): Error {
+  return new Error(`Plugin ${name} ${detail}.`);
+}
 
 export function defineOfficialPlugin<Facade, Plugin extends StarPlugin<Facade>>(
   plugin: Plugin,
@@ -234,12 +244,12 @@ function dependencyEntries(plugin: StarPlugin): readonly (readonly [string, stri
     Array.isArray(dependencies) ||
     ![Object.prototype, null].includes(Object.getPrototypeOf(dependencies) as object | null)
   ) {
-    throw new Error(`Plugin ${plugin.name} dependencies must be a name-to-range record.`);
+    throw pluginError(plugin.name, "dependencies must be a name-to-range record");
   }
   return Object.entries(dependencies).map(([name, range]) => {
     assertPluginName(name, `Plugin ${plugin.name} dependency`);
     if (typeof range !== "string") {
-      throw new Error(`Plugin ${plugin.name} dependency ${name} needs a version range.`);
+      throw pluginError(plugin.name, `dependency ${name} needs a version range`);
     }
     satisfiesPluginVersionRange("0.0.0", range);
     return [name, range] as const;
@@ -250,29 +260,29 @@ function validatePlugin(plugin: StarPlugin): void {
   if (!plugin || typeof plugin !== "object") throw new Error("A jQStar plugin must be an object.");
   assertPluginName(plugin.name, "Plugin name", officialPlugins.has(plugin));
   if (typeof plugin.version !== "string") {
-    throw new Error(`Plugin ${plugin.name} version must be a string.`);
+    throw pluginError(plugin.name, "version must be a string");
   }
   parseStableVersion(plugin.version, `Plugin ${plugin.name} version`);
   if (typeof plugin.apiVersion !== "string") {
-    throw new Error(`Plugin ${plugin.name} needs an API version range.`);
+    throw pluginError(plugin.name, "needs an API version range");
   }
   if (!satisfiesPluginVersionRange(STAR_PLUGIN_API_VERSION, plugin.apiVersion)) {
-    throw new Error(
-      `Plugin ${plugin.name} requires jQStar plugin API ${plugin.apiVersion}; this kernel provides ${STAR_PLUGIN_API_VERSION}.`,
+    throw pluginError(
+      plugin.name,
+      `requires jQStar plugin API ${plugin.apiVersion}; this kernel provides ${STAR_PLUGIN_API_VERSION}`,
     );
   }
   if (typeof plugin.install !== "function") {
-    throw new Error(`Plugin ${plugin.name} needs an install function.`);
+    throw pluginError(plugin.name, "needs an install function");
   }
   dependencyEntries(plugin);
   const before = assertStringList(plugin.before, `Plugin ${plugin.name} before`);
   const after = assertStringList(plugin.after, `Plugin ${plugin.name} after`);
   if (before.includes(plugin.name) || after.includes(plugin.name)) {
-    throw new Error(`Plugin ${plugin.name} cannot order itself.`);
+    throw pluginError(plugin.name, "cannot order itself");
   }
   const conflict = before.find((name) => after.includes(name));
-  if (conflict)
-    throw new Error(`Plugin ${plugin.name} cannot be both before and after ${conflict}.`);
+  if (conflict) throw pluginError(plugin.name, `cannot be both before and after ${conflict}`);
 }
 
 function addEdge(edges: Map<string, Set<string>>, from: string, to: string): void {
@@ -291,11 +301,11 @@ function planPlugins(
       const candidateDependency = candidateByName.get(name);
       const installedDependency = installed.get(name);
       const dependencyVersion = candidateDependency?.version ?? installedDependency?.version;
-      if (!dependencyVersion)
-        throw new Error(`Plugin ${plugin.name} is missing dependency ${name}.`);
+      if (!dependencyVersion) throw pluginError(plugin.name, `is missing dependency ${name}`);
       if (!satisfiesPluginVersionRange(dependencyVersion, range)) {
-        throw new Error(
-          `Plugin ${plugin.name} requires ${name} ${range}; version ${dependencyVersion} is available.`,
+        throw pluginError(
+          plugin.name,
+          `requires ${name} ${range}; version ${dependencyVersion} is available`,
         );
       }
       if (candidateByName.has(name)) addEdge(edges, name, plugin.name);
@@ -304,14 +314,14 @@ function planPlugins(
     for (const name of assertStringList(plugin.after, `Plugin ${plugin.name} after`)) {
       if (candidateByName.has(name)) addEdge(edges, name, plugin.name);
       else if (!installed.has(name)) {
-        throw new Error(`Plugin ${plugin.name} has unknown after target ${name}.`);
+        throw pluginError(plugin.name, `has unknown after target ${name}`);
       }
     }
     for (const name of assertStringList(plugin.before, `Plugin ${plugin.name} before`)) {
       if (candidateByName.has(name)) addEdge(edges, plugin.name, name);
       else if (installed.has(name)) {
-        throw new Error(`Plugin ${plugin.name} cannot be ordered before installed plugin ${name}.`);
-      } else throw new Error(`Plugin ${plugin.name} has unknown before target ${name}.`);
+        throw pluginError(plugin.name, `cannot be ordered before installed plugin ${name}`);
+      } else throw pluginError(plugin.name, `has unknown before target ${name}`);
     }
   }
 
@@ -339,8 +349,7 @@ function planPlugins(
 }
 
 function assertRegistrarActive(active: boolean, plugin: StarPlugin): void {
-  if (!active)
-    throw new Error(`Plugin ${plugin.name} used its registrar after installation ended.`);
+  if (!active) throw pluginError(plugin.name, "used its registrar after installation ended");
 }
 
 function unavailableDocumentHost(): StarPluginDocumentHost {
@@ -424,6 +433,7 @@ function stagePlugin(
         else cleanup();
       };
     },
+    ...(official ? { services: sourceHost } : {}),
   });
   let active = true;
   const registrar = Object.freeze<StarPluginRegistrar>({
@@ -434,42 +444,42 @@ function stagePlugin(
     >(name: string, action: StarAction<State, Computed>) {
       assertRegistrarActive(active, plugin);
       if (typeof name !== "string" || typeof action !== "function") {
-        throw new Error(`Plugin ${plugin.name} action registrations need a name and function.`);
+        throw pluginError(plugin.name, "action registrations need a name and function");
       }
       actions.push([name, action as StarAction]);
     },
     application(hook: StarPluginApplicationHook) {
       assertRegistrarActive(active, plugin);
       if (typeof hook !== "function") {
-        throw new Error(`Plugin ${plugin.name} application hook must be a function.`);
+        throw pluginError(plugin.name, "application hook must be a function");
       }
       applicationHooks.push(hook);
     },
     activate(setup) {
       assertRegistrarActive(active, plugin);
       if (typeof setup !== "function") {
-        throw new Error(`Plugin ${plugin.name} activation must be a function.`);
+        throw pluginError(plugin.name, "activation must be a function");
       }
       activations.push(setup);
     },
     cleanup(cleanup: StarPluginCleanup) {
       assertRegistrarActive(active, plugin);
       if (typeof cleanup !== "function") {
-        throw new Error(`Plugin ${plugin.name} cleanup must be a function.`);
+        throw pluginError(plugin.name, "cleanup must be a function");
       }
       cleanups.push(cleanup);
     },
     directive<Parsed = string>(directive: StarDirective<Parsed>) {
       assertRegistrarActive(active, plugin);
       if (!directive || typeof directive !== "object") {
-        throw new Error(`Plugin ${plugin.name} directive registrations must be objects.`);
+        throw pluginError(plugin.name, "directive registrations must be objects");
       }
       directives.push(directive as StarDirective);
     },
     helper<Value>(name: string, value: Value) {
       assertRegistrarActive(active, plugin);
       if (typeof name !== "string") {
-        throw new Error(`Plugin ${plugin.name} helper registrations need a string name.`);
+        throw pluginError(plugin.name, "helper registrations need a string name");
       }
       helpers.push([name, value]);
     },
@@ -481,14 +491,14 @@ function stagePlugin(
     protocolProfile(profile) {
       assertRegistrarActive(active, plugin);
       if (!profile || typeof profile !== "object") {
-        throw new Error(`Plugin ${plugin.name} protocol profile registrations must be objects.`);
+        throw pluginError(plugin.name, "protocol profile registrations must be objects");
       }
       protocolProfiles.push(profile);
     },
     requestMiddleware(definition) {
       assertRegistrarActive(active, plugin);
       if (!definition || typeof definition !== "object") {
-        throw new Error(`Plugin ${plugin.name} request middleware registrations must be objects.`);
+        throw pluginError(plugin.name, "request middleware registrations must be objects");
       }
       requestMiddleware.push(definition);
     },
@@ -501,7 +511,7 @@ function stagePlugin(
       (typeof facade === "object" || typeof facade === "function") &&
       typeof (facade as { then?: unknown }).then === "function"
     ) {
-      throw new Error(`Plugin ${plugin.name} returned an asynchronous facade.`);
+      throw pluginError(plugin.name, "returned an asynchronous facade");
     }
     return {
       activations,
@@ -652,7 +662,7 @@ export function createPluginHost(
           for (const activation of record.activations) {
             const cleanup = activation();
             if (cleanup !== undefined && typeof cleanup !== "function") {
-              throw new Error(`Plugin ${record.name} activation returned an invalid cleanup.`);
+              throw pluginError(record.name, "activation returned an invalid cleanup");
             }
             if (cleanup) (record.cleanups as StarPluginCleanup[]).push(cleanup);
           }
@@ -700,6 +710,7 @@ export function createPluginHost(
   return {
     use: <Facade>(plugin: StarPlugin<Facade>) => useMany([plugin] as const)[0],
     useMany,
+    facade: (name) => installed.get(name)?.facade,
     names: () => installationOrder.map((record) => record.name),
     lock: () => {
       locked = true;

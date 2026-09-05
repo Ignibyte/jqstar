@@ -294,6 +294,8 @@ export interface StarContext<State extends StateRecord = StateRecord, Computed e
     root: Element;
     // (undocumented)
     state: State;
+    // (undocumented)
+    readonly stores?: StarStoresScope | undefined;
 }
 
 // @public (undocumented)
@@ -567,10 +569,10 @@ export interface StarOperationError {
 }
 
 // @public (undocumented)
-export type StarOperationKind = "action" | "request";
+export type StarOperationKind = "action" | "request" | "store";
 
 // @public (undocumented)
-export type StarOperationObservation = StarActionOperationObservation | StarRequestOperationObservation;
+export type StarOperationObservation = StarActionOperationObservation | StarRequestOperationObservation | StarStoreOperationObservation;
 
 // @public (undocumented)
 export type StarOperationObserver = (observation: StarOperationObservation) => void | PromiseLike<void>;
@@ -583,7 +585,7 @@ export interface StarOperationOwner {
     // (undocumented)
     readonly id: string;
     // (undocumented)
-    readonly mode: "attributes" | "behavior";
+    readonly mode: "attributes" | "behavior" | "kernel";
 }
 
 // @public (undocumented)
@@ -642,7 +644,13 @@ export interface StarPluginDocumentHost {
     // (undocumented)
     observe(target: Node, callback: MutationCallback, options: MutationObserverInit): MutationObserver;
     // (undocumented)
+    operation?(observation: StarStoreOperationObservation): void;
+    // (undocumented)
     own(kind: StarPluginResourceKind, owner: string, cleanup: () => void): () => void;
+    // (undocumented)
+    readonly services?: Pick<StarPluginDocumentHost, "operation" | "own" | "task">;
+    // (undocumented)
+    task?(owner: string, task: PromiseLike<unknown>, onError: (error: unknown) => void): () => void;
     // (undocumented)
     readonly window: Window;
 }
@@ -675,7 +683,7 @@ export interface StarPluginRegistrar {
 }
 
 // @public (undocumented)
-export type StarPluginResourceKind = "listener" | "observer" | "service" | "subscription" | "task";
+export type StarPluginResourceKind = "effect" | "listener" | "observer" | "service" | "subscription" | "task";
 
 // @public (undocumented)
 export interface StarProtocolBodyLease {
@@ -1070,6 +1078,51 @@ export interface StarRequestStartedObservation extends StarRequestOperationBase 
 
 // @public (undocumented)
 export type StarStatementEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+
+// Warning: (ae-forgotten-export) The symbol "StarStoreOperationBase" needs to be exported by the entry point core.d.ts
+//
+// @public (undocumented)
+export interface StarStoreCancelledObservation extends StarStoreOperationBase {
+    // (undocumented)
+    readonly phase: "cancelled";
+    // (undocumented)
+    readonly reason: "cleanup";
+}
+
+// @public (undocumented)
+export interface StarStoreCompletedObservation extends StarStoreOperationBase {
+    // (undocumented)
+    readonly phase: "completed";
+}
+
+// @public (undocumented)
+export interface StarStoreFailedObservation extends StarStoreOperationBase {
+    // (undocumented)
+    readonly error: StarOperationError;
+    // (undocumented)
+    readonly phase: "failed";
+}
+
+// @public (undocumented)
+export type StarStoreOperationCategory = "cleanup" | "definition" | "effect" | "setup" | "subscription" | "task" | "change";
+
+// @public (undocumented)
+export interface StarStoreOperationMetadata {
+    // (undocumented)
+    readonly category: StarStoreOperationCategory;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly resource: string;
+}
+
+// @public (undocumented)
+export type StarStoreOperationObservation = StarStoreCompletedObservation | StarStoreCancelledObservation | StarStoreFailedObservation;
+
+// Warning: (ae-forgotten-export) The symbol "StarStoreObject" needs to be exported by the entry point core.d.ts
+//
+// @public (undocumented)
+export type StarStoresScope = Readonly<Record<string, StarStoreObject | undefined>>;
 
 // @public (undocumented)
 export type StarValueEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;

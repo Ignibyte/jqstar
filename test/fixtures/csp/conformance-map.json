@@ -173,7 +173,7 @@
     {
       "id": "public-101759c2a381",
       "source": "\n    $count++;\n    $(el).addClass('used');\n    console.log($.fn.jquery, evt.type);\n  ",
-      "locations": [{ "path": "README.md", "line": 1139, "attribute": "data-on:click" }],
+      "locations": [{ "path": "README.md", "line": 1149, "attribute": "data-on:click" }],
       "disposition": "migration-required",
       "caseId": "migration-registered-diagnostic",
       "reason": "Ambient console access is outside the finite scope.",
@@ -252,7 +252,7 @@
     {
       "id": "public-cb5bb406516c",
       "source": "!$valid",
-      "locations": [{ "path": "README.md", "line": 1688, "attribute": "data-prop:disabled" }],
+      "locations": [{ "path": "README.md", "line": 1698, "attribute": "data-prop:disabled" }],
       "disposition": "exact-parity",
       "caseId": "csp-value-expression",
       "reason": "The source uses finite literals, signals, paths, and reviewed operators."
@@ -300,7 +300,7 @@
     {
       "id": "public-84139d54de84",
       "source": "{ active: $open }",
-      "locations": [{ "path": "README.md", "line": 1686, "attribute": "data-class" }],
+      "locations": [{ "path": "README.md", "line": 1696, "attribute": "data-class" }],
       "disposition": "exact-parity",
       "caseId": "csp-state-literal",
       "reason": "The source is a bounded state object literal."
@@ -505,6 +505,7 @@
         { "path": "example/docs/migration/index.html", "line": 18, "attribute": "data-signals" },
         { "path": "example/docs/plugins/index.html", "line": 15, "attribute": "data-signals" },
         { "path": "example/docs/security/index.html", "line": 21, "attribute": "data-signals" },
+        { "path": "example/docs/stores/index.html", "line": 21, "attribute": "data-signals" },
         { "path": "example/docs/testing/index.html", "line": 15, "attribute": "data-signals" },
         { "path": "example/index.html", "line": 35, "attribute": "data-signals" }
       ],
@@ -513,9 +514,20 @@
       "reason": "The source is a bounded state object literal."
     },
     {
+      "id": "public-e428c3cea47f",
+      "source": "{ store: 'local' }",
+      "locations": [
+        { "path": "e2e/stores.spec.ts", "line": 40, "attribute": "data-signals" },
+        { "path": "example/docs/stores/index.html", "line": 84, "attribute": "data-signals" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
       "id": "public-0e52ab67703d",
       "source": "{ user: { firstName: 'Ada' }, count: 1 }",
-      "locations": [{ "path": "README.md", "line": 1662, "attribute": "data-signals" }],
+      "locations": [{ "path": "README.md", "line": 1672, "attribute": "data-signals" }],
       "disposition": "exact-parity",
       "caseId": "csp-state-literal",
       "reason": "The source is a bounded state object literal."
@@ -593,7 +605,7 @@
       "id": "public-e4ceeb0fd393",
       "source": "@get('/autocomplete', {\n    pending: 'searching',\n    requestCancellation: 'auto'\n  })",
       "locations": [
-        { "path": "README.md", "line": 674, "attribute": "data-on:input__debounce.180ms" }
+        { "path": "README.md", "line": 684, "attribute": "data-on:input__debounce.180ms" }
       ],
       "disposition": "exact-parity",
       "caseId": "csp-request-action",
@@ -603,7 +615,7 @@
       "id": "public-c3a1bbf55b60",
       "source": "@get('/items')",
       "locations": [
-        { "path": "README.md", "line": 1445, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 1455, "attribute": "data-on:click" },
         { "path": "example/docs/datastar/index.html", "line": 40, "attribute": "data-on:click" }
       ],
       "disposition": "exact-parity",
@@ -625,7 +637,7 @@
       "id": "public-b110e3da9600",
       "source": "@measure",
       "locations": [
-        { "path": "README.md", "line": 1712, "attribute": "data-on:scroll__window__passive" }
+        { "path": "README.md", "line": 1722, "attribute": "data-on:scroll__window__passive" }
       ],
       "disposition": "exact-parity",
       "caseId": "csp-named-action",
@@ -676,7 +688,7 @@
     {
       "id": "public-8ea28db9e282",
       "source": "@post('/items', {\n  payload: {title: $title},\n  params: {source: 'toolbar'},\n  pending: 'saving',\n  error: 'saveError',\n  retry: 'error',\n  retryMaxCount: 2,\n  requestCancellation: 'cleanup'\n})",
-      "locations": [{ "path": "README.md", "line": 1601, "attribute": "data-on:click" }],
+      "locations": [{ "path": "README.md", "line": 1611, "attribute": "data-on:click" }],
       "disposition": "exact-parity",
       "caseId": "csp-request-action",
       "reason": "The source calls a registered backend action with finite arguments."
@@ -685,7 +697,7 @@
       "id": "public-0af5d662b57b",
       "source": "@post('/items', { contentType: 'form' })",
       "locations": [
-        { "path": "README.md", "line": 1447, "attribute": "data-on:submit__prevent" },
+        { "path": "README.md", "line": 1457, "attribute": "data-on:submit__prevent" },
         {
           "path": "example/docs/datastar/index.html",
           "line": 42,
@@ -710,7 +722,7 @@
       "id": "public-2b9d6d5936af",
       "source": "@post('/profile', { contentType: 'form' })",
       "locations": [
-        { "path": "README.md", "line": 345, "attribute": "data-on:submit__prevent" },
+        { "path": "README.md", "line": 355, "attribute": "data-on:submit__prevent" },
         {
           "path": "registry/components/form.html",
           "line": 4,
@@ -1129,8 +1141,8 @@
       "id": "public-f835169ea392",
       "source": "@removeItem",
       "locations": [
-        { "path": "README.md", "line": 1409, "attribute": "data-on:click" },
-        { "path": "README.md", "line": 1780, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 1419, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 1790, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3265, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3271, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3275, "attribute": "data-on:click" },
@@ -1145,7 +1157,7 @@
     {
       "id": "public-e57d011430b6",
       "source": "@removeItem($itemId, 'archive')",
-      "locations": [{ "path": "README.md", "line": 1425, "attribute": "data-on:click" }],
+      "locations": [{ "path": "README.md", "line": 1435, "attribute": "data-on:click" }],
       "disposition": "exact-parity",
       "caseId": "csp-named-action",
       "reason": "The source uses the named-action statement form."
@@ -1154,7 +1166,7 @@
       "id": "public-5adb08f7ad33",
       "source": "@save",
       "locations": [
-        { "path": "README.md", "line": 1706, "attribute": "data-on:submit__prevent__once" }
+        { "path": "README.md", "line": 1716, "attribute": "data-on:submit__prevent__once" }
       ],
       "disposition": "exact-parity",
       "caseId": "csp-named-action",
@@ -1178,7 +1190,7 @@
       "id": "public-249b7be346a6",
       "source": "@search($el.val())",
       "locations": [
-        { "path": "README.md", "line": 1708, "attribute": "data-on:input__debounce.250ms" }
+        { "path": "README.md", "line": 1718, "attribute": "data-on:input__debounce.250ms" }
       ],
       "disposition": "exact-parity",
       "caseId": "csp-named-action",
@@ -1286,6 +1298,9 @@
         { "path": "example/docs/migration/index.html", "line": 46, "attribute": "data-on:click" },
         { "path": "example/docs/plugins/index.html", "line": 34, "attribute": "data-on:click" },
         { "path": "example/docs/plugins/index.html", "line": 73, "attribute": "data-on:click" },
+        { "path": "example/docs/stores/index.html", "line": 52, "attribute": "data-on:click" },
+        { "path": "example/docs/stores/index.html", "line": 82, "attribute": "data-on:click" },
+        { "path": "example/docs/stores/index.html", "line": 112, "attribute": "data-on:click" },
         { "path": "example/docs/testing/index.html", "line": 43, "attribute": "data-on:click" }
       ],
       "disposition": "exact-parity",
@@ -1335,7 +1350,7 @@
     {
       "id": "public-dc7ec3eea448",
       "source": "@submit",
-      "locations": [{ "path": "README.md", "line": 1714, "attribute": "data-on:keydown__enter" }],
+      "locations": [{ "path": "README.md", "line": 1724, "attribute": "data-on:keydown__enter" }],
       "disposition": "exact-parity",
       "caseId": "csp-named-action",
       "reason": "The source uses the named-action statement form."
@@ -1413,7 +1428,7 @@
     {
       "id": "public-049f97e37827",
       "source": "@ui.calendar.select('#release-calendar', '2026-08-31')",
-      "locations": [{ "path": "README.md", "line": 697, "attribute": "data-on:click" }],
+      "locations": [{ "path": "README.md", "line": 707, "attribute": "data-on:click" }],
       "disposition": "exact-parity",
       "caseId": "csp-named-action",
       "reason": "The source uses the named-action statement form."
@@ -1444,7 +1459,7 @@
       "id": "public-bb1fafc7ef4b",
       "source": "@ui.clipboard.copy",
       "locations": [
-        { "path": "README.md", "line": 904, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 914, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3124, "attribute": "data-on:click" },
         {
           "path": "registry/blocks/profile-settings.html",
@@ -1461,7 +1476,7 @@
       "id": "public-df646376db7f",
       "source": "@ui.code-block.copy",
       "locations": [
-        { "path": "README.md", "line": 887, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 897, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 2788, "attribute": "data-on:click" },
         { "path": "registry/components/code-block.html", "line": 10, "attribute": "data-on:click" }
       ],
@@ -1505,7 +1520,7 @@
       "id": "public-1c773c1f1b22",
       "source": "@ui.dialog.close('cancelled')",
       "locations": [
-        { "path": "README.md", "line": 303, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 313, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 125, "attribute": "data-on:click" },
         {
           "path": "example/docs/components/dialog/index.html",
@@ -1574,7 +1589,7 @@
       "id": "public-157178fafab4",
       "source": "@ui.dialog.close('saved')",
       "locations": [
-        { "path": "README.md", "line": 307, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 317, "attribute": "data-on:click" },
         {
           "path": "example/docs/components/dialog/index.html",
           "line": 57,
@@ -1594,7 +1609,7 @@
       "id": "public-42203f3a8f2f",
       "source": "@ui.dialog.open('#account-dialog', '#dialog-cancel')",
       "locations": [
-        { "path": "README.md", "line": 286, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 296, "attribute": "data-on:click" },
         {
           "path": "example/docs/components/dialog/index.html",
           "line": 74,
@@ -1727,7 +1742,7 @@
       "id": "public-81111269db3c",
       "source": "@ui.editable.cancel",
       "locations": [
-        { "path": "README.md", "line": 926, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 936, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3173, "attribute": "data-on:click" },
         {
           "path": "registry/blocks/profile-settings.html",
@@ -1749,7 +1764,7 @@
       "id": "public-3989fb48a637",
       "source": "@ui.editable.commit",
       "locations": [
-        { "path": "README.md", "line": 925, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 935, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3164, "attribute": "data-on:click" },
         {
           "path": "registry/blocks/profile-settings.html",
@@ -1771,7 +1786,7 @@
       "id": "public-54f83fa26750",
       "source": "@ui.editable.edit",
       "locations": [
-        { "path": "README.md", "line": 921, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 931, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 3144, "attribute": "data-on:click" },
         {
           "path": "registry/blocks/profile-settings.html",
@@ -1851,7 +1866,7 @@
       "id": "public-b2f17bb157ee",
       "source": "@ui.log-viewer.toggle",
       "locations": [
-        { "path": "README.md", "line": 945, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 955, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 2983, "attribute": "data-on:click" },
         {
           "path": "registry/blocks/operations-dashboard.html",
@@ -1868,7 +1883,7 @@
       "id": "public-a9caa3dc9a92",
       "source": "@ui.popover.close",
       "locations": [
-        { "path": "README.md", "line": 462, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 472, "attribute": "data-on:click" },
         { "path": "example/components/lab/index.html", "line": 2330, "attribute": "data-on:click" }
       ],
       "disposition": "exact-parity",
@@ -1927,7 +1942,7 @@
       "id": "public-9b61a5db9ef1",
       "source": "@ui.toast.show({ title: 'Saved', description: 'Your changes are live.', variant: 'success' })",
       "locations": [
-        { "path": "README.md", "line": 1043, "attribute": "data-on:click" },
+        { "path": "README.md", "line": 1053, "attribute": "data-on:click" },
         { "path": "registry/components/toast.html", "line": 4, "attribute": "data-on:click" }
       ],
       "disposition": "exact-parity",
@@ -1948,7 +1963,7 @@
     {
       "id": "public-85478bba5d89",
       "source": "$(el).datepicker()",
-      "locations": [{ "path": "README.md", "line": 1692, "attribute": "data-init" }],
+      "locations": [{ "path": "README.md", "line": 1702, "attribute": "data-init" }],
       "disposition": "migration-required",
       "caseId": "migration-registered-integration",
       "reason": "Method datepicker is not an approved jQuery or string method.",
@@ -1967,7 +1982,7 @@
     {
       "id": "public-ecf2071713c5",
       "source": "$(el).text($count)",
-      "locations": [{ "path": "README.md", "line": 1691, "attribute": "data-effect" }],
+      "locations": [{ "path": "README.md", "line": 1701, "attribute": "data-effect" }],
       "disposition": "exact-parity",
       "caseId": "csp-jquery-supported",
       "reason": "Every jQuery call uses the reviewed constructor and method table."
@@ -2074,7 +2089,7 @@
     {
       "id": "public-863b76353b0d",
       "source": "$color",
-      "locations": [{ "path": "README.md", "line": 1689, "attribute": "data-style:color" }],
+      "locations": [{ "path": "README.md", "line": 1699, "attribute": "data-style:color" }],
       "disposition": "exact-parity",
       "caseId": "csp-value-expression",
       "reason": "The source uses finite literals, signals, paths, and reviewed operators."
@@ -2278,9 +2293,9 @@
       "source": "$count",
       "locations": [
         { "path": "README.md", "line": 26, "attribute": "data-text" },
-        { "path": "README.md", "line": 1557, "attribute": "data-text" },
-        { "path": "README.md", "line": 1585, "attribute": "data-text" },
-        { "path": "README.md", "line": 1682, "attribute": "data-text" },
+        { "path": "README.md", "line": 1567, "attribute": "data-text" },
+        { "path": "README.md", "line": 1595, "attribute": "data-text" },
+        { "path": "README.md", "line": 1692, "attribute": "data-text" },
         { "path": "e2e/fixtures/csp-proof/index.html", "line": 39, "attribute": "data-text" },
         { "path": "e2e/quality-contracts.spec.ts", "line": 420, "attribute": "data-text" },
         { "path": "example/components/lab/index.html", "line": 3258, "attribute": "data-text" },
@@ -2295,7 +2310,7 @@
       "id": "public-099d90d974a0",
       "source": "$count * 2",
       "locations": [
-        { "path": "README.md", "line": 1662, "attribute": "data-computed:double" },
+        { "path": "README.md", "line": 1672, "attribute": "data-computed:double" },
         {
           "path": "e2e/fixtures/csp-proof/index.html",
           "line": 25,
@@ -2319,7 +2334,7 @@
     {
       "id": "public-679280f4e3b5",
       "source": "$count++",
-      "locations": [{ "path": "README.md", "line": 1735, "attribute": "data-on:click" }],
+      "locations": [{ "path": "README.md", "line": 1745, "attribute": "data-on:click" }],
       "disposition": "exact-parity",
       "caseId": "csp-signal-write",
       "reason": "The source writes only approved signal l-values."
@@ -2360,7 +2375,7 @@
       "id": "public-5e092bdc6c18",
       "source": "$double",
       "locations": [
-        { "path": "README.md", "line": 1664, "attribute": "data-text" },
+        { "path": "README.md", "line": 1674, "attribute": "data-text" },
         { "path": "e2e/fixtures/csp-proof/index.html", "line": 40, "attribute": "data-text" }
       ],
       "disposition": "exact-parity",
@@ -2584,8 +2599,8 @@
       "id": "public-a1a786ba8e39",
       "source": "$open",
       "locations": [
-        { "path": "README.md", "line": 1684, "attribute": "data-show" },
-        { "path": "README.md", "line": 1685, "attribute": "data-class:active" }
+        { "path": "README.md", "line": 1694, "attribute": "data-show" },
+        { "path": "README.md", "line": 1695, "attribute": "data-class:active" }
       ],
       "disposition": "exact-parity",
       "caseId": "csp-value-expression",
@@ -2594,7 +2609,7 @@
     {
       "id": "public-a9b98ef32849",
       "source": "$open = false",
-      "locations": [{ "path": "README.md", "line": 1710, "attribute": "data-on:click__outside" }],
+      "locations": [{ "path": "README.md", "line": 1720, "attribute": "data-on:click__outside" }],
       "disposition": "exact-parity",
       "caseId": "csp-signal-write",
       "reason": "The source writes only approved signal l-values."
@@ -2602,7 +2617,7 @@
     {
       "id": "public-c0ddea7d2dc8",
       "source": "$open = true",
-      "locations": [{ "path": "README.md", "line": 1681, "attribute": "data-on:click" }],
+      "locations": [{ "path": "README.md", "line": 1691, "attribute": "data-on:click" }],
       "disposition": "exact-parity",
       "caseId": "csp-signal-write",
       "reason": "The source writes only approved signal l-values."
@@ -2970,9 +2985,20 @@
       "reason": "The source uses finite literals, signals, paths, and reviewed operators."
     },
     {
+      "id": "public-0c00e4beab18",
+      "source": "$store",
+      "locations": [
+        { "path": "e2e/stores.spec.ts", "line": 43, "attribute": "data-text" },
+        { "path": "example/docs/stores/index.html", "line": 87, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
       "id": "public-b19c95b9e55d",
       "source": "$trustedHtml",
-      "locations": [{ "path": "README.md", "line": 1683, "attribute": "data-html" }],
+      "locations": [{ "path": "README.md", "line": 1693, "attribute": "data-html" }],
       "disposition": "exact-parity",
       "caseId": "csp-value-expression",
       "reason": "The source uses finite literals, signals, paths, and reviewed operators."
@@ -2980,7 +3006,7 @@
     {
       "id": "public-238a716c8c88",
       "source": "$user.firstName",
-      "locations": [{ "path": "README.md", "line": 1663, "attribute": "data-text" }],
+      "locations": [{ "path": "README.md", "line": 1673, "attribute": "data-text" }],
       "disposition": "exact-parity",
       "caseId": "csp-value-expression",
       "reason": "The source uses finite literals, signals, paths, and reviewed operators."
@@ -3111,6 +3137,35 @@
       "source": "published",
       "locations": [
         { "path": "registry/components/switch.html", "line": 2, "attribute": "data-bind:checked" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-8e21f553f611",
+      "source": "stores.session && stores.session.count",
+      "locations": [{ "path": "e2e/stores.spec.ts", "line": 42, "attribute": "data-text" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-8995a0e7dc1c",
+      "source": "stores.session &amp;&amp; stores.session.count",
+      "locations": [
+        { "path": "example/docs/stores/index.html", "line": 86, "attribute": "data-text" }
+      ],
+      "disposition": "exact-parity",
+      "caseId": "csp-value-expression",
+      "reason": "The source uses finite literals, signals, paths, and reviewed operators."
+    },
+    {
+      "id": "public-893ec2b65323",
+      "source": "stores.session.count++",
+      "locations": [
+        { "path": "e2e/stores.spec.ts", "line": 41, "attribute": "data-on:click" },
+        { "path": "example/docs/stores/index.html", "line": 85, "attribute": "data-on:click" }
       ],
       "disposition": "exact-parity",
       "caseId": "csp-value-expression",

@@ -176,7 +176,7 @@ export async function prepareRelease(arguments_ = process.argv.slice(2)) {
           inspected.identity,
         );
         assert(
-          first.metadata.filename === "jquery-star-1.0.0.tgz",
+          first.metadata.filename === `jquery-star-${inspected.identity.version}.tgz`,
           "Candidate filename is incorrect.",
         );
         assert(first.metadata.filename === second.metadata.filename, "Candidate filenames differ.");

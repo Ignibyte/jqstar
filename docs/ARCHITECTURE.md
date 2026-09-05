@@ -43,13 +43,34 @@ expression engine remains permanently claimed and cannot be installed into anoth
 [RUNTIME_OWNERSHIP.md](RUNTIME_OWNERSHIP.md) for the complete retained-state matrix and the work
 assigned to later extension tickets.
 
-The package has six JavaScript boundaries. The root is auto-installing ESM/CommonJS and the only UMD
-global. `core`, `ui`, `datastar`, `csp`, `testing`, and `datastar/testing` are stable,
-side-effect-free ESM/CommonJS entries with isolated declarations. Core declarations return a typed
-installed jQuery value and do not augment global jQuery; only root declarations retain ambient
-augmentation. Generic testing imports core but no DOM implementation, runner, UI, or Datastar code.
-Datastar test fixtures stay in the separate SDK-backed entry. UI CSS remains a separate explicit
-import.
+The package has stable root and modular JavaScript boundaries. The root is auto-installing
+ESM/CommonJS and the only UMD global. `core`, `ui`, `datastar`, `csp`, `testing`,
+`datastar/testing`, `htmx`, `stores`, and `turbo` are stable, side-effect-free ESM/CommonJS entries
+with isolated declarations. Core declarations return a typed installed jQuery value and do not
+augment global jQuery; only root declarations retain ambient augmentation. Generic testing imports
+core but no DOM implementation, runner, UI, or Datastar code. Datastar test fixtures stay in the
+separate SDK-backed entry. UI CSS remains a separate explicit import.
+
+## Shared-store boundary
+
+`jquery-star/stores` installs one official plugin before the first application starts. The plugin
+commits a fixed optional `stores` context binding and returns a frozen per-kernel facade. Its stable
+reactive namespace can publish a store after applications mount, so an effect that read a missing
+name runs again when that definition commits. The namespace is read-only, while each published store
+is a mutable reactive proxy.
+
+Definitions and setup stage before namespace publication. Accepted initial data is cloned from
+descriptor-checked plain acyclic graphs; function leaves retain identity as ordinary methods. Failed
+setup aborts finite work and releases registered subscriptions, effects, tasks, and cleanup in
+reverse order. Successful records live until kernel disposal. Application destruction stops
+application-owned store readers without removing the kernel-owned store. See [STORES.md](STORES.md)
+for the public API and authority boundary.
+
+The fixed context seam is separate from the committed helper tree. `stores` therefore cannot be
+shadowed by a plugin helper and resolves to `undefined` when the stores plugin is absent. `$store`
+continues to resolve through the current application's signal state. Kernel operation observers can
+receive value-free store definition, setup, change, subscription, task, effect, and cleanup records;
+application observers do not receive those kernel-only records.
 
 ## jQuery ecosystem boundary
 
@@ -143,12 +164,15 @@ cycles fail, and installers do not run until the graph is valid. Reentrant insta
 
 Each installer receives only a staging registrar for namespaced actions, exact or prefix directives,
 expression helpers, request middleware, protocol profiles, application hooks, operation observers,
-and cleanup callbacks. `src/registry.ts`, `src/directive.ts`, `src/request-middleware.ts`,
-`src/protocol.ts`, and `src/observation.ts` prepare replacement action, directive, helper,
-namespace, middleware, profile, and inactive observer records without publishing them. After all
-synchronous installers return, the plugin host commits those snapshots with its installed-plugin,
-hook, cleanup, and facade snapshots. A failure runs represented cleanup in reverse order and exposes
-none of the staged state.
+cleanup callbacks, and staged document-host work. The document host exposes optional task and
+kernel-observation hooks only to framework-marked official plugins. The kernel derives its fixed
+`stores` context binding from the atomically committed official facade; external plugins cannot
+publish fixed bindings or access those optional hooks. `src/registry.ts`, `src/directive.ts`,
+`src/request-middleware.ts`, `src/protocol.ts`, and `src/observation.ts` prepare replacement action,
+directive, helper, namespace, middleware, profile, and inactive observer records without publishing
+them. After all synchronous installers return, the plugin host commits those snapshots with its
+installed-plugin, hook, cleanup, and facade snapshots. A failure runs represented cleanup in reverse
+order and exposes none of the staged state.
 
 The first application identity allocation closes structural installation. Application construction
 still happens first; `Kernel.trackApplication()` then runs plugin hooks before committing the kernel
@@ -180,12 +204,13 @@ One engine object cannot be shared between kernels. The scope keeps these meanin
 - `$name` reads or writes `state.name`.
 - `el`, `$el`, `evt`, `root`, and `$root` describe the current element and application.
 - `state`, `signals`, and `computed` expose explicit state objects.
+- `stores` exposes the fixed optional read-only namespace; `$store` remains local state.
 - `@name(arguments)` resolves through the named action registry.
 - `<plugin>.<helper>` resolves through the committed per-kernel helper snapshot.
 
-Helper roots enter the scope before fixed bindings, so `$`, state, context, language, and browser
-authorities cannot be shadowed even if registry validation regresses. The helper scope travels in
-`StarContext`, which keeps custom expression engines on the same conformance contract.
+Helper roots enter the scope before fixed bindings, so `$`, stores, state, context, language, and
+browser authorities cannot be shadowed even if registry validation regresses. The helper scope
+travels in `StarContext`, which keeps custom expression engines on the same conformance contract.
 
 Compilation accepts an optional authored attribute plus parser-provided line and column. Trusted
 engine failures preserve the expression source and distinguish compilation, synchronous evaluation,
@@ -318,6 +343,11 @@ publishes one start and one terminal record, and connects a child request to its
 observer with `registrar.observeOperations()`. Every subscription is a kernel ledger resource.
 Application destruction, plugin disposal or rollback, and kernel disposal release the corresponding
 records through idempotent cleanup functions.
+
+The stores plugin also publishes terminal `kind: "store"` records for definition, setup, change,
+subscription, effect, task, and cleanup work. These records use a kernel owner and carry stable
+category, name, and resource identifiers without store values or callbacks, so application-scoped
+observers do not receive them.
 
 Delivery is synchronous and uses a stable subscriber snapshot. Observer return values are not
 awaited. A throw or rejected promise goes only to that subscription's optional `onError` handler and

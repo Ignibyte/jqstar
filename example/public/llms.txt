@@ -2,8 +2,8 @@
 
 > HTML-first reactive framework for server-rendered applications, powered by jQuery.
 
-Package: jquery-star@1.0.0
-Corpus: jqstar-agent-content/4
+Package: jquery-star@1.1.0
+Corpus: jqstar-agent-content/5
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Agent surfaces
@@ -25,6 +25,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 - [Core API](https://ignibyte.github.io/jqstar/docs/api/): Applications, named actions, backend actions, UI methods, scheduling, version, and lifecycle.
 - [CSP expressions](https://ignibyte.github.io/jqstar/docs/csp/): The shipped jquery-star/csp installer, finite expression grammar, capability boundary, deterministic limits, server policy, diagnostics, and compatibility migrations.
 - [Plugins](https://ignibyte.github.io/jqstar/docs/plugins/): Build transactional public plugins and verify packed-package rollback, use, rendering, observation, and cleanup behavior.
+- [Shared stores](https://ignibyte.github.io/jqstar/docs/stores/): Install per-kernel shared reactive state, keep local signals separate, and preserve server authority and owned cleanup.
 - [Turbo and htmx interoperability](https://ignibyte.github.io/jqstar/docs/interoperability/): Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.
 - [jQuery ecosystem](https://ignibyte.github.io/jqstar/docs/ecosystem/): Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.
 - [jQuery UI coexistence and migration](https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-ui/): Isolate application-owned jQuery UI regions and migrate them feature by feature to semantic HTML and native jQStar components.

@@ -21,7 +21,7 @@
         "shasum": "95c33ac29005ff72ec444c5ba1cf457e61404fbb"
       },
       "jqueryStar": {
-        "version": "1.0.0",
+        "version": "1.1.0",
         "proof": "exact-quality-tarball"
       }
     }
@@ -1706,7 +1706,7 @@
       },
       "assetBytes": {
         "jquery": 255967,
-        "jqueryStar": 464183,
+        "jqueryStar": 464041,
         "application": 3680,
         "styles": 3393
       },

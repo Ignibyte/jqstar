@@ -3,6 +3,22 @@
 This file records user-visible package changes. A version marked Unreleased is not an npm, git tag,
 or GitHub release claim.
 
+## 1.1.0 - Unreleased
+
+### Shared stores
+
+- Add the side-effect-free `jquery-star/stores` ESM and CommonJS entry with one explicit official
+  plugin, `defineStore()`, matched declarations, source maps, and installed-package proof.
+- Add one reactive store namespace per document kernel, descriptor-safe data cloning, ordinary
+  function-valued methods, atomic synchronous transactions, selector subscriptions, and
+  lifecycle-owned setup work.
+- Expose the fixed optional `stores` binding to behavior, declarative, trusted, and CSP contexts
+  while preserving `$store` as an application-local signal.
+- Add value-free store operation observations, terminal disposal, two-root browser coverage, and
+  raw/gzip optional-graph budgets.
+- Document that stores hold inspectable client coordination state, not secrets, authorization,
+  persistence, authoritative records, or a server-state entity cache.
+
 ## 1.0.0 - Unreleased
 
 ### Stable package surface

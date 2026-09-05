@@ -1,6 +1,6 @@
 {
   "name": "jquery-star",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "HTML-first reactive framework for server-rendered applications, powered by jQuery",
   "type": "module",
   "license": "MIT",
@@ -23,6 +23,7 @@
       "./datastar": "stable",
       "./datastar/testing": "stable",
       "./htmx": "stable",
+      "./stores": "stable",
       "./testing": "stable",
       "./turbo": "stable",
       "./ui": "stable"
@@ -121,6 +122,16 @@
         "default": "./dist/htmx.cjs"
       }
     },
+    "./stores": {
+      "import": {
+        "types": "./dist/stores.d.ts",
+        "default": "./dist/stores.js"
+      },
+      "require": {
+        "types": "./dist/stores.d.cts",
+        "default": "./dist/stores.cjs"
+      }
+    },
     "./turbo": {
       "import": {
         "types": "./dist/turbo.d.ts",
@@ -162,6 +173,7 @@
     "docs/JQUERY_MOBILE_MIGRATION.md",
     "docs/JQUERY_UI_MIGRATION.md",
     "docs/SELF_HOSTING.md",
+    "docs/STORES.md",
     "!docs/README.md",
     "LICENSE",
     "MIGRATING_TO_1.md",

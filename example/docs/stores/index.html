@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shared stores · jQStar</title>
+    <meta
+      name="description"
+      content="Share reactive client coordination across jQStar roots without confusing local signals, persistence, or server authority."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Shared stores · jQStar" />
+    <meta
+      property="og:description"
+      content="Install the optional jQStar stores plugin and use its lifecycle-safe shared state contract."
+    />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Shared stores</h1>
+      <p class="docs-lede">
+        The optional <code>jquery-star/stores</code> plugin gives applications in one document a
+        shared reactive namespace while keeping every root's local signals independent.
+      </p>
+
+      <div class="docs-callout">
+        <p>
+          <strong>Authority boundary:</strong> stores are inspectable client coordination state.
+          Never put secrets in them or use them for authentication, authorization, tenancy, durable
+          persistence, or authoritative entity caching.
+        </p>
+      </div>
+
+      <h2>Choose the right owner</h2>
+      <ul>
+        <li>Use <code>$name</code> when one application root owns the value.</li>
+        <li>Use <code>stores.name</code> when several roots coordinate temporary client state.</li>
+        <li>Use an explicit storage adapter for durable browser preferences.</li>
+        <li>Keep permissions, validation, records, and server-state resources on the server.</li>
+      </ul>
+
+      <h2>Install and define a store</h2>
+      <p>
+        The stores entry is side-effect-free. Install it before the first application starts, then
+        define stores either before or after roots mount.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>main.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { defineStore, storesPlugin } from "jquery-star/stores";
+
+const installed = installStarCore($);
+const shared = installed.star.use(storesPlugin);
+
+const sessionDefinition = defineStore({
+  initial: {
+    count: 0,
+    increment() {
+      this.count += 1;
+    },
+  },
+});
+
+const session = shared.define("session", sessionDefinition);</code></pre>
+      </div>
+      <p>
+        A definition object owns one lower-camel ASCII name for the kernel lifetime. Repeating the
+        same definition and name returns the existing reactive store. A different definition,
+        another name for the same definition, or redefinition after publication fails.
+      </p>
+
+      <h2>Use shared and local state together</h2>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>counter.html</span
+          ><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>&lt;section data-signals="{ store: 'local' }"&gt;
+  &lt;button data-on:click="stores.session.count++"&gt;Increment shared&lt;/button&gt;
+  &lt;output data-text="stores.session &amp;&amp; stores.session.count"&gt;&lt;/output&gt;
+  &lt;output data-text="$store"&gt;&lt;/output&gt;
+&lt;/section&gt;</code></pre>
+      </div>
+      <p>
+        <code>$store</code> always means the current root's local signal named <code>store</code>.
+        The fixed <code>stores</code> root is the read-only shared namespace in trusted and CSP
+        expressions. Without the plugin it is <code>undefined</code>, not an ambient global. The CSP
+        grammar permits safe data writes below a store name; call named actions instead of store
+        methods when using CSP expressions.
+      </p>
+
+      <h2>Accepted values and transactions</h2>
+      <p>
+        Store data accepts finite primitives, arrays, plain or null-prototype records, and ordinary
+        function leaves. jQStar clones the caller's acyclic graph and preserves shared references.
+        It rejects cycles, accessors, symbol keys, promises, DOM values, class instances, dates,
+        maps, sets, and other live objects before publication.
+      </p>
+      <p>
+        Function leaves keep their identity and normal member-call <code>this</code>. jQStar does
+        not bind, serialize, inspect by invocation, or register them as actions. Writes cannot add,
+        remove, or replace a method.
+      </p>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>restore.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>shared.transaction&lt;typeof session&gt;("session", (draft) =&gt; {
+  draft.count = 10;
+});</code></pre>
+      </div>
+      <p>
+        A transaction edits a detached validated draft and commits all data before one reactive
+        flush. A throw, thenable, invalid graph, or method change leaves the live store unchanged.
+      </p>
+
+      <h2>Subscribe and own setup work</h2>
+      <p>
+        <code>subscribe(name, selector, listener, options)</code> compares selections with
+        <code>Object.is</code> by default. Use <code>{ immediate: true }</code> for the initial
+        value and call the returned idempotent release function to stop. Batched writes deliver one
+        later selection; one listener failure is observed without stopping siblings.
+      </p>
+      <p>
+        A definition's synchronous <code>setup</code> callback receives a frozen context with the
+        store, its lifetime <code>AbortSignal</code>, and owned <code>cleanup</code>,
+        <code>effect</code>, <code>subscribe</code>, and finite <code>task</code> helpers. Failed
+        setup releases registered work in reverse order and never publishes the name. Kernel
+        disposal makes the facade and stores terminal, aborts tasks, and attempts every cleanup
+        once. Destroying one application stops its own store-dependent effects without removing the
+        shared store or affecting another root.
+      </p>
+
+      <p>
+        Read the complete API, name and graph limits, observation metadata, and lifecycle details in
+        the packaged
+        <a href="https://github.com/Ignibyte/jqstar/blob/main/docs/STORES.md">stores contract</a>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

@@ -28,6 +28,8 @@ The package has two public layers:
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
+- [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,
+  transactions, subscriptions, lifecycle, and authority boundaries.
 - [INTEROPERABILITY.md](INTEROPERABILITY.md): approved Turbo and htmx versions, external render
   state machine, event mappings, preservation, ownership, and downstream bridge requirements.
 - [COMPATIBILITY.md](COMPATIBILITY.md): stable 1.0 entries, environments, version boundaries,
@@ -65,6 +67,7 @@ The package has two public layers:
 | Testing adapters | `src/testing/`, `src/datastar/testing.ts`           | Explicit-realm harness, fixtures, and runner-neutral conformance.                  |
 | Declarative mode | `src/declarative.ts`                                | Compiles `data-*` attributes into application behavior.                            |
 | Expressions      | `src/expression.ts`, `src/csp/`, `src/csp.ts`       | Keeps trusted JavaScript as the root default and publishes the finite CSP profile. |
+| Shared stores    | `src/stores.ts`, `src/stores/`                      | Optional per-kernel reactive coordination with owned setup and disposal.           |
 | Reactivity       | `src/reactivity.ts`                                 | Owned effects, dependency tracking, and contained microtask scheduling.            |
 | Requests         | `src/fetch.ts`                                      | Backend actions, cancellation, retries, JSON, and SSE response handling.           |
 | Patching         | `src/patch.ts`, `src/sse.ts`                        | Transactional DOM/signal patches, preservation, and SSE parsing.                   |

@@ -21,7 +21,7 @@
   "properties": {
     "$schema": { "const": "../schema/release-contract.schema.json" },
     "schema": { "const": "jqstar-release-contract/1" },
-    "version": { "const": "1.0.0" },
+    "version": { "const": "1.1.0" },
     "package": {
       "type": "object",
       "required": [
@@ -46,16 +46,16 @@
       "type": "object",
       "required": ["ticket", "expectedBranch", "expectedTag"],
       "properties": {
-        "ticket": { "const": "0017" },
-        "expectedBranch": { "const": "feat/stable-platform-release" },
-        "expectedTag": { "const": "v1.0.0" }
+        "ticket": { "const": "0018" },
+        "expectedBranch": { "const": "feat/shared-stores" },
+        "expectedTag": { "const": "v1.1.0" }
       },
       "additionalProperties": false
     },
     "stableEntries": {
       "type": "array",
-      "minItems": 10,
-      "maxItems": 10,
+      "minItems": 11,
+      "maxItems": 11,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/stableEntry" }
     },
@@ -138,8 +138,8 @@
         "criterionRule": { "const": "criterion-has-one-matching-terminal-evidence-row" },
         "tickets": {
           "type": "array",
-          "minItems": 33,
-          "maxItems": 33,
+          "minItems": 34,
+          "maxItems": 34,
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^[0-9]{4}$" }
         }
@@ -182,8 +182,8 @@
     },
     "optionalExclusions": {
       "type": "array",
-      "minItems": 10,
-      "maxItems": 10,
+      "minItems": 9,
+      "maxItems": 9,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/nonemptyString" }
     },
@@ -255,7 +255,7 @@
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }
         },
-        "outputRoot": { "const": ".git/jqstar/releases/1.0.0" }
+        "outputRoot": { "const": ".git/jqstar/releases/1.1.0" }
       },
       "additionalProperties": false
     },

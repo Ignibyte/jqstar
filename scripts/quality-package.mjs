@@ -257,6 +257,42 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
         </script>`);
       return;
     }
+    if (url.pathname === "/stores") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      response.end(`<!doctype html>
+        <section id="behavior"><output></output></section>
+        <section id="declarative" data-signals="{ store: 'local' }"><button data-on:click="stores.session.count++">Increment</button><output data-text="stores.session && stores.session.count"></output><span data-text="$store"></span></section>
+        <button id="proof">Run stores</button><output id="result"></output>
+        <script type="importmap">{"imports":{"jquery":"/jquery-module.js"}}</script>
+        <script type="module">
+          import $ from "jquery";
+          import { installStarCore } from "/core.js";
+          import { defineStore, storesPlugin } from "/stores.js";
+          const installed = installStarCore($);
+          const shared = installed.star.use(storesPlugin);
+          const behavior = document.querySelector("#behavior");
+          const declarative = document.querySelector("#declarative");
+          $(behavior).star({ state: { store: "behavior-local" }, ui: { output: { text: ({ stores }) => stores?.session?.count ?? "missing" } } });
+          $(declarative).star();
+          document.querySelector("#proof").addEventListener("click", async () => {
+            const before = behavior.querySelector("output").textContent;
+            const session = shared.define("session", defineStore({ initial: { count: 1 } }));
+            await installed.star.nextUpdate();
+            declarative.querySelector("button").click();
+            await installed.star.nextUpdate();
+            $(behavior).star("destroy");
+            session.count = 5;
+            await installed.star.nextUpdate();
+            const values = [...document.querySelectorAll("section output")].map(({ textContent }) => textContent).join(",");
+            const local = declarative.querySelector("span").textContent;
+            const report = installed.star.dispose();
+            let terminal = false;
+            try { void session.count; } catch { terminal = true; }
+            document.querySelector("#result").textContent = [before, values, local, report.failed.length, terminal].join(":");
+          });
+        </script>`);
+      return;
+    }
     if (url.pathname === "/module") {
       response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       response.end(`${html}<script type="importmap">{"imports":{"jquery":"/jquery-module.js"}}</script><script type="module">
@@ -382,6 +418,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
             "function:function:function:function:true:1:true:READY:1:1:function:datastar:true:function",
           ],
           ["/testing", "3:3"],
+          ["/stores", "missing:2,5:local:0:true"],
         ]) {
           await page.goto(`http://127.0.0.1:${address.port}${path}`);
           await page.locator("#proof").click();
@@ -574,7 +611,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
     }
     return {
       subject: "installed-tarball",
-      consumers: ["module", "umd", "testing", "csp"],
+      consumers: ["module", "umd", "testing", "stores", "csp"],
       lifecycle: "boot-and-dispose",
       engines,
       csp: {
@@ -678,22 +715,25 @@ try {
       sabotage === "package-budget" ? { ...budgets.package, packedBytes: 1 } : budgets.package;
     const cspPackageBudget = budgets.cspPackage;
     const htmxPackageBudget = budgets.htmxPackage;
+    const storesPackageBudget = budgets.storesPackage;
     const turboPackageBudget = budgets.turboPackage;
     assert(
       pack.size <=
         packageBudget.packedBytes +
           cspPackageBudget.packedBytes +
           turboPackageBudget.packedBytes +
-          htmxPackageBudget.packedBytes,
-      `Packed bytes ${pack.size} exceed ${packageBudget.packedBytes} base plus ${cspPackageBudget.packedBytes} CSP, ${turboPackageBudget.packedBytes} Turbo, and ${htmxPackageBudget.packedBytes} htmx allowances.`,
+          htmxPackageBudget.packedBytes +
+          storesPackageBudget.packedBytes,
+      `Packed bytes ${pack.size} exceed the base and optional-entry allowances.`,
     );
     assert(
       pack.unpackedSize <=
         packageBudget.unpackedBytes +
           cspPackageBudget.unpackedBytes +
           turboPackageBudget.unpackedBytes +
-          htmxPackageBudget.unpackedBytes,
-      `Unpacked bytes ${pack.unpackedSize} exceed ${packageBudget.unpackedBytes} base plus ${cspPackageBudget.unpackedBytes} CSP, ${turboPackageBudget.unpackedBytes} Turbo, and ${htmxPackageBudget.unpackedBytes} htmx allowances.`,
+          htmxPackageBudget.unpackedBytes +
+          storesPackageBudget.unpackedBytes,
+      `Unpacked bytes ${pack.unpackedSize} exceed the base and optional-entry allowances.`,
     );
     assert(
       pack.files.length <= packageBudget.files,
@@ -788,6 +828,12 @@ try {
       "dist/jquery-star.umd.cjs",
       "dist/jquery-star.umd.cjs.map",
       "dist/jquery-star-ui.css",
+      "dist/stores.cjs",
+      "dist/stores.cjs.map",
+      "dist/stores.d.cts",
+      "dist/stores.d.ts",
+      "dist/stores.js",
+      "dist/stores.js.map",
       "dist/testing.cjs",
       "dist/testing.cjs.map",
       "dist/testing.d.cts",
@@ -818,6 +864,7 @@ try {
       "docs/JQUERY_MOBILE_MIGRATION.md",
       "docs/JQUERY_UI_MIGRATION.md",
       "docs/SELF_HOSTING.md",
+      "docs/STORES.md",
       "MIGRATING_TO_1.md",
       "RELEASING.md",
       "SECURITY.md",
@@ -842,7 +889,7 @@ try {
       manifest.exports?.["."]?.require?.types === "./dist/index.d.cts",
       "Root CommonJS type export is wrong.",
     );
-    for (const entry of ["core", "csp", "ui", "datastar", "htmx", "turbo"]) {
+    for (const entry of ["core", "csp", "ui", "datastar", "htmx", "stores", "turbo"]) {
       const exported = manifest.exports?.[`./${entry}`];
       assert(exported?.import?.default === `./dist/${entry}.js`, `${entry} ESM export is wrong.`);
       assert(
@@ -908,10 +955,11 @@ try {
       "./datastar",
       "./testing",
       "./htmx",
+      "./stores",
       "./turbo",
       "./datastar/testing",
     ]);
-    return "node16 profile across root, core, CSP, UI, Datastar, testing, htmx, and Turbo entries";
+    return "node16 profile across root, core, CSP, UI, Datastar, testing, htmx, stores, and Turbo entries";
   });
 
   await record("refresh-package-subject", () => {
@@ -1255,9 +1303,12 @@ const core = await import("jquery-star/core");
 const uiEntry = await import("jquery-star/ui");
 const datastarEntry = await import("jquery-star/datastar");
 const htmxEntry = await import("jquery-star/htmx");
+const storesEntry = await import("jquery-star/stores");
 const turboEntry = await import("jquery-star/turbo");
 if ($.star !== undefined || $.fn.star !== undefined) throw new Error("Modular imports installed jQStar");
 const installed = core.installStarCore($);
+const stores = installed.star.use(storesEntry.storesPlugin);
+const shared = stores.define("session", storesEntry.defineStore({ initial: { count: 1 } }));
 const datastar = installed.star.use(datastarEntry.datastarPlugin);
 const ui = installed.star.use(uiEntry.uiPlugin);
 const htmx = installed.star.use(htmxEntry.createHtmxBridge({ $, htmx: { version: "2.0.10", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }, version: "2.0.10" }));
@@ -1266,6 +1317,7 @@ if (datastar.id !== "core.datastar") throw new Error("Datastar plugin facade fai
 if (htmx.host !== "htmx" || htmx.version !== "2.0.10") throw new Error("htmx plugin facade failed");
 if (turbo.host !== "turbo" || turbo.version !== "8.0.23") throw new Error("Turbo plugin facade failed");
 if (installed.star.ui !== ui) throw new Error("UI plugin did not attach $.star.ui");
+if (shared.count !== 1 || stores.stores.session !== shared) throw new Error("Stores plugin facade failed");
 if (uiEntry.uiPlugin.version !== installed.star.version || datastarEntry.datastarPlugin.version !== installed.star.version) throw new Error("Modular versions differ");
 if ($.ui !== undefined || $.widget !== undefined) throw new Error("UI plugin claimed jQuery UI");
 document.body.innerHTML = '<button id="toggle" data-jqs="toggle">Toggle</button>';
@@ -1283,14 +1335,18 @@ const core = require("jquery-star/core");
 const uiEntry = require("jquery-star/ui");
 const datastarEntry = require("jquery-star/datastar");
 const htmxEntry = require("jquery-star/htmx");
+const storesEntry = require("jquery-star/stores");
 const turboEntry = require("jquery-star/turbo");
 if ($.star !== undefined || $.fn.star !== undefined) throw new Error("CommonJS modular imports installed jQStar");
 const installed = core.installStarCore($);
+const stores = installed.star.use(storesEntry.storesPlugin);
+const shared = stores.define("session", storesEntry.defineStore({ initial: { count: 1 } }));
 const datastar = installed.star.use(datastarEntry.datastarPlugin);
 const ui = installed.star.use(uiEntry.uiPlugin);
 const htmx = installed.star.use(htmxEntry.createHtmxBridge({ $, htmx: { version: "2.0.0", config: { defaultSwapStyle: "innerHTML" }, ajax() {}, off() {}, on() {}, process() {}, swap() {}, trigger() {} }, version: "2.0.0" }));
 const turbo = installed.star.use(turboEntry.createTurboBridge({ $, Turbo: { cache: {}, session: {}, start() {}, visit() {} }, version: "8.0.21" }));
 if (installed !== $ || datastar.id !== "core.datastar" || installed.star.ui !== ui) throw new Error("CommonJS modular composition failed");
+if (shared.count !== 1 || stores.get("session") !== shared) throw new Error("CommonJS stores facade failed");
 if (turbo.host !== "turbo" || turbo.version !== "8.0.21") throw new Error("CommonJS Turbo plugin facade failed");
 if (htmx.host !== "htmx" || htmx.version !== "2.0.0") throw new Error("CommonJS htmx plugin facade failed");
 if ($.ui !== undefined || $.widget !== undefined) throw new Error("CommonJS UI plugin claimed jQuery UI");
@@ -1631,11 +1687,14 @@ import { createRenderAdapter, installStarCore, type StarCoreStatic, type StarIns
 import { uiPlugin, type StarUIStatic } from "jquery-star/ui";
 import { datastarPlugin } from "jquery-star/datastar";
 import { createHtmxBridge, type StarHtmxBridge, type StarHtmxCapability } from "jquery-star/htmx";
+import { defineStore, storesPlugin, type StarStoresFacade } from "jquery-star/stores";
 import { createTurboBridge, type StarTurboBridge, type StarTurboCapability } from "jquery-star/turbo";
 type ArbitraryJQueryHasStar = JQueryStatic extends { star: unknown } ? true : false;
 const arbitraryJQueryHasStar: ArbitraryJQueryHasStar = false;
 const installed: StarInstalledJQuery = installStarCore($);
 const core: StarCoreStatic = installed.star;
+const stores: StarStoresFacade = core.use(storesPlugin);
+const shared = stores.define("session", defineStore({ initial: { count: 1 } }));
 const renderAdapter: StarRenderAdapter = createRenderAdapter(installed);
 const renderTransaction: StarRenderTransaction = renderAdapter.begin(document.documentElement);
 const datastar = core.use(datastarPlugin);
@@ -1644,7 +1703,7 @@ const htmxCapability: StarHtmxCapability = { version: "2.0.10", config: { defaul
 const htmx: StarHtmxBridge = core.use(createHtmxBridge({ $, htmx: htmxCapability, version: "2.0.10" }));
 const Turbo: StarTurboCapability = { cache: {}, session: {}, start() {}, visit() {} };
 const turbo: StarTurboBridge = core.use(createTurboBridge({ $, Turbo, version: "8.0.23" }));
-void [arbitraryJQueryHasStar, datastar.id, ui.enhance, htmx.observations, turbo.observations, core.version, renderTransaction.operationId];
+void [arbitraryJQueryHasStar, datastar.id, ui.enhance, htmx.observations, turbo.observations, stores.get("session"), shared.count, core.version, renderTransaction.operationId];
 `,
     );
     for (const resolution of ["NodeNext", "Bundler"]) {
@@ -1981,6 +2040,7 @@ QUnit.start();
       "jqstar source registry",
       "jqstar-csp-expression/1",
       "jQuery UI",
+      "Store transactions must be synchronous",
       "ui-widget",
     ]) {
       assert(!bundledSource.includes(forbidden), `Installed root bundle contains ${forbidden}.`);
@@ -2037,6 +2097,7 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "/dist/turbo-",
       "/dist/csp.js",
       "/dist/csp-",
+      "/dist/stores",
       "/registry/",
       "/server-dist/",
       "node_modules/jquery-ui",
@@ -2106,6 +2167,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/htmx",
       "/dist/turbo",
       "/dist/csp",
+      "/dist/stores",
     ]) {
       assert(
         !testingBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2134,6 +2196,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/csp",
       "/dist/htmx",
       "/dist/turbo",
+      "/dist/stores",
     ]) {
       assert(
         !datastarTestingBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2165,6 +2228,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/testing.js",
       "/dist/htmx.js",
       "/dist/turbo.js",
+      "/dist/stores.js",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
     ]) {
@@ -2197,12 +2261,40 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/testing",
       "/dist/htmx",
       "/dist/csp",
+      "/dist/stores",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
     ]) {
       assert(
         !turboBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
         `Installed Turbo graph contains ${forbidden}.`,
+      );
+    }
+    const storesBundle = await buildOptionalGraph(
+      "stores",
+      'import $ from "jquery"; import { installStarCore } from "jquery-star/core"; import { defineStore, storesPlugin } from "jquery-star/stores"; window.__stores = () => { const installed = installStarCore($); const stores = installed.star.use(storesPlugin); return stores.define("session", defineStore({ initial: { count: 1 } })); };\n',
+    );
+    assert(
+      storesBundle.bytes <= budgets.consumerBundles.storesImportBytes,
+      `Installed stores bundle is ${storesBundle.bytes} bytes; budget is ${budgets.consumerBundles.storesImportBytes}.`,
+    );
+    assert(
+      storesBundle.gzipBytes <= budgets.consumerBundles.storesImportGzipBytes,
+      `Installed stores gzip bundle is ${storesBundle.gzipBytes} bytes; budget is ${budgets.consumerBundles.storesImportGzipBytes}.`,
+    );
+    for (const forbidden of [
+      "/dist/ui",
+      "/dist/datastar",
+      "/dist/testing",
+      "/dist/htmx",
+      "/dist/turbo",
+      "/dist/csp",
+      "node_modules/jquery-ui",
+      "node_modules/jquery-mobile",
+    ]) {
+      assert(
+        !storesBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
+        `Installed stores graph contains ${forbidden}.`,
       );
     }
     const htmxBundle = await buildOptionalGraph(
@@ -2224,6 +2316,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "/dist/testing",
       "/dist/turbo",
       "/dist/csp",
+      "/dist/stores",
       "node_modules/jquery-ui",
       "node_modules/jquery-mobile",
     ]) {
@@ -2285,6 +2378,14 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
         gzipBudget: budgets.consumerBundles.turboImportGzipBytes,
         modules: turboBundle.modules.length,
         hostPackage: "absent",
+      },
+      stores: {
+        bytes: storesBundle.bytes,
+        budget: budgets.consumerBundles.storesImportBytes,
+        gzipBytes: storesBundle.gzipBytes,
+        gzipBudget: budgets.consumerBundles.storesImportGzipBytes,
+        modules: storesBundle.modules.length,
+        unrelatedOptionalModules: "absent",
       },
     };
   });

@@ -302,7 +302,7 @@
       "required": ["subject", "consumers", "lifecycle", "engines", "csp"],
       "properties": {
         "subject": { "const": "installed-tarball" },
-        "consumers": { "const": ["module", "umd", "testing", "csp"] },
+        "consumers": { "const": ["module", "umd", "testing", "stores", "csp"] },
         "lifecycle": { "const": "boot-and-dispose" },
         "engines": {
           "type": "array",
@@ -442,8 +442,8 @@
       "properties": {
         "exports": {
           "type": "array",
-          "minItems": 10,
-          "maxItems": 10,
+          "minItems": 11,
+          "maxItems": 11,
           "prefixItems": [
             { "const": "." },
             { "const": "./core" },
@@ -452,6 +452,7 @@
             { "const": "./datastar" },
             { "const": "./testing" },
             { "const": "./htmx" },
+            { "const": "./stores" },
             { "const": "./turbo" },
             { "const": "./datastar/testing" },
             { "const": "./ui.css" }
@@ -461,8 +462,8 @@
         "version": { "type": "string", "minLength": 1 },
         "documentation": {
           "type": "array",
-          "minItems": 9,
-          "maxItems": 9,
+          "minItems": 10,
+          "maxItems": 10,
           "prefixItems": [
             { "const": "docs/BACKEND.md" },
             { "const": "docs/COMPATIBILITY.md" },
@@ -472,7 +473,8 @@
             { "const": "docs/JQUERY_ECOSYSTEM.md" },
             { "const": "docs/JQUERY_MOBILE_MIGRATION.md" },
             { "const": "docs/JQUERY_UI_MIGRATION.md" },
-            { "const": "docs/SELF_HOSTING.md" }
+            { "const": "docs/SELF_HOSTING.md" },
+            { "const": "docs/STORES.md" }
           ],
           "items": false
         }
@@ -481,7 +483,7 @@
     },
     "bundleSentinelEvidence": {
       "type": "object",
-      "required": ["root", "core", "csp", "testing", "datastarTesting", "htmx", "turbo"],
+      "required": ["root", "core", "csp", "testing", "datastarTesting", "htmx", "turbo", "stores"],
       "properties": {
         "root": {
           "type": "object",
@@ -603,6 +605,26 @@
             "gzipBudget": { "type": "integer", "minimum": 1 },
             "modules": { "type": "integer", "minimum": 1 },
             "hostPackage": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "stores": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "unrelatedOptionalModules"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "unrelatedOptionalModules": { "const": "absent" }
           },
           "additionalProperties": false
         }

@@ -57,6 +57,7 @@ function packageReport() {
       "./datastar",
       "./testing",
       "./htmx",
+      "./stores",
       "./turbo",
       "./datastar/testing",
       "./ui.css",
@@ -97,7 +98,7 @@ function packageReport() {
   };
   checks[10].detail = {
     subject: "installed-tarball",
-    consumers: ["module", "umd", "testing", "csp"],
+    consumers: ["module", "umd", "testing", "stores", "csp"],
     lifecycle: "boot-and-dispose",
     engines: ["chromium", "firefox", "webkit"].map((name) => ({
       name,
@@ -183,6 +184,14 @@ function packageReport() {
       gzipBudget: 1,
       modules: 1,
       hostPackage: "absent",
+    },
+    stores: {
+      bytes: 1,
+      budget: 1,
+      gzipBytes: 1,
+      gzipBudget: 1,
+      modules: 1,
+      unrelatedOptionalModules: "absent",
     },
   };
   return {

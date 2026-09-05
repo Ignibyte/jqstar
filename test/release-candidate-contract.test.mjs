@@ -59,8 +59,8 @@ function candidate(contract) {
     generatedAt: "2026-09-04T19:00:00.000Z",
     identity: {
       package: "jquery-star",
-      version: "1.0.0",
-      branch: "feat/stable-platform-release",
+      version: contract.version,
+      branch: contract.source.expectedBranch,
       commit: sha1,
       tree: sha1,
       sourceDateEpoch: 1,
@@ -94,7 +94,7 @@ function candidate(contract) {
       },
     },
     artifact: {
-      filename: "jquery-star-1.0.0.tgz",
+      filename: `jquery-star-${contract.version}.tgz`,
       bytes: 1,
       sha256,
       sha512,
@@ -133,10 +133,10 @@ function candidate(contract) {
       names: ["esm", "commonjs", "typescript", "qunit", "browser", "umd", "cli"],
     },
     security: {
-      sbom: { path: ".git/jqstar/releases/1.0.0/sbom.cdx.json", sha256 },
-      licenses: { path: ".git/jqstar/releases/1.0.0/licenses.json", sha256 },
+      sbom: { path: `${contract.candidate.outputRoot}/sbom.cdx.json`, sha256 },
+      licenses: { path: `${contract.candidate.outputRoot}/licenses.json`, sha256 },
       audit: {
-        path: ".git/jqstar/releases/1.0.0/audit.json",
+        path: `${contract.candidate.outputRoot}/audit.json`,
         sha256,
         source: "npm audit --omit=dev",
         retrievedAt: "2026-09-04T19:00:00.000Z",
@@ -152,12 +152,12 @@ function candidate(contract) {
       ]),
     ),
     handoff: {
-      expectedTag: "v1.0.0",
+      expectedTag: contract.source.expectedTag,
       npmDistTag: "latest",
       releaseNotes: "CHANGELOG.md",
-      readOnlyCommands: ["npm view jquery-star@1.0.0 --json"],
-      approvalRequiredCommands: ["npm publish jquery-star-1.0.0.tgz --tag latest"],
-      rollback: ["npm deprecate jquery-star@1.0.0 reason"],
+      readOnlyCommands: [`npm view jquery-star@${contract.version} --json`],
+      approvalRequiredCommands: [`npm publish jquery-star-${contract.version}.tgz --tag latest`],
+      rollback: [`npm deprecate jquery-star@${contract.version} reason`],
     },
     redactions: {
       absolutePaths: "absent",
@@ -174,16 +174,16 @@ async function makeCandidateRepository(contract) {
   await mkdir(join(directory, "quality"), { recursive: true });
   await writeFile(
     join(directory, "package.json"),
-    `${JSON.stringify({ name: "jquery-star", version: "1.0.0" }, null, 2)}\n`,
+    `${JSON.stringify({ name: "jquery-star", version: contract.version }, null, 2)}\n`,
   );
   await writeFile(
     join(directory, "package-lock.json"),
     `${JSON.stringify(
       {
         name: "jquery-star",
-        version: "1.0.0",
+        version: contract.version,
         lockfileVersion: 3,
-        packages: { "": { name: "jquery-star", version: "1.0.0" } },
+        packages: { "": { name: "jquery-star", version: contract.version } },
       },
       null,
       2,
@@ -203,7 +203,7 @@ async function makeCandidateRepository(contract) {
 }
 
 describe("stable release candidate contract", () => {
-  it("closes the hand-authored 1.0 authority over the shipped package", async () => {
+  it("closes the hand-authored 1.1 authority over the shipped package", async () => {
     const validate = await compileSchema("schema/release-contract.schema.json");
     const { contract } = await loadReleaseContract(root);
     const manifest = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
@@ -217,7 +217,7 @@ describe("stable release candidate contract", () => {
       contract.stableEntries.map(({ subpath }) => subpath).toSorted(),
     );
     expect(new Set(Object.values(manifest.jqstar.entrypoints))).toEqual(new Set(["stable"]));
-    expect(new Set(contract.stableEntries.map(({ id }) => id)).size).toBe(10);
+    expect(new Set(contract.stableEntries.map(({ id }) => id)).size).toBe(11);
     expect(new Set(contract.policies.map(({ kind }) => kind)).size).toBe(contract.policies.length);
     for (const policy of contract.policies) {
       await expect(readFile(resolve(root, policy.path), "utf8"), policy.path).resolves.not.toBe("");
@@ -227,9 +227,9 @@ describe("stable release candidate contract", () => {
   it("audits every prerequisite ticket and criterion from current source", async () => {
     const { contract } = await loadReleaseContract(root);
     const audit = await auditPrerequisiteTickets(root, contract);
-    expect(audit.required).toBe(33);
-    expect(audit.audited).toBe(33);
-    expect(audit.criterionCount).toBeGreaterThan(33);
+    expect(audit.required).toBe(34);
+    expect(audit.audited).toBe(34);
+    expect(audit.criterionCount).toBeGreaterThan(34);
     expect(audit.tickets.map(({ id }) => id)).toEqual(contract.prerequisites.tickets);
     expect(audit.tickets.every(({ status }) => status === "done")).toBe(true);
     expect(
@@ -285,7 +285,7 @@ describe("stable release candidate contract", () => {
     try {
       const inspected = await inspectCandidateSource(directory, contract, { CI: "true" });
       expect(inspected).toMatchObject({
-        identity: { package: "jquery-star", version: "1.0.0" },
+        identity: { package: "jquery-star", version: contract.version },
         preflight: {
           cleanWorkingTree: true,
           expectedBranch: true,
@@ -332,7 +332,7 @@ describe("stable release candidate contract", () => {
         "lockfile root version does not match",
       );
 
-      lockfile.packages[""].version = "1.0.0";
+      lockfile.packages[""].version = contract.version;
       await writeFile(
         join(directory, "package-lock.json"),
         `${JSON.stringify(lockfile, null, 2)}\n`,

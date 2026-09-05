@@ -66,6 +66,12 @@ export type {
   StarRequestProgressObservation,
   StarRequestRetryingObservation,
   StarRequestStartedObservation,
+  StarStoreCancelledObservation,
+  StarStoreCompletedObservation,
+  StarStoreFailedObservation,
+  StarStoreOperationCategory,
+  StarStoreOperationMetadata,
+  StarStoreOperationObservation,
 } from "./observation";
 export {
   StarProtocolBodyOwnershipError,
@@ -118,6 +124,7 @@ export {
 export { patchElements, patchSignals } from "./patch";
 export { effect, nextUpdate, reactive, stop } from "./reactivity";
 export type { ReactiveEffect } from "./reactivity";
+export type { StarStoresScope } from "./stores/types";
 export { StarDisposalError } from "./disposal";
 export type {
   StarDisposalCategory,

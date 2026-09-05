@@ -55,14 +55,16 @@ application with `$(root).star(definition)` or boot declarative markup with `$.s
 The package exports:
 
 - an auto-installing compatibility root plus stable, side-effect-free `core`, `ui`, `datastar`,
-  `csp`, `testing`, `datastar/testing`, `htmx`, and `turbo` entries; only the root composes runtime
-  plugins and publishes a UMD global
+  `csp`, `testing`, `datastar/testing`, `htmx`, `stores`, and `turbo` entries; only the root
+  composes runtime plugins and publishes a UMD global
 - application lifecycle and typed definitions
 - the trusted expression-engine factory, installer capability, structured failures, and cache
   controls; explicit core installation selects the engine before document ownership
 - transactional plugins with versioned manifests, dependency/order graphs, namespaced actions,
   exact/prefix directives, expression helpers, typed facades, application hooks, and owned cleanup
 - reactive state scheduling through `nextUpdate`
+- optional per-kernel shared reactive stores with staged transactions, subscriptions, and owned
+  setup work
 - complete server-patch commits through `whenEnhanced`
 - named frontend and backend actions
 - typed kernel, application, and plugin operation observations with action/request parentage
@@ -112,7 +114,7 @@ and trusted installed extensions, and is not a sandbox. The `jquery-star/csp` su
 explicit installer and engine factory. The exact packed entry is tested under a strict response
 policy in Chromium, Firefox, and WebKit.
 
-The 1.0 website publishes compatibility, migration, security, and download routes from the same
+The 1.1 website publishes compatibility, migration, security, and download routes from the same
 self-hosted archive. Download copy distinguishes the prepared candidate from an npm or Git tag and
 does not turn candidate preparation into a publication claim.
 
@@ -167,20 +169,21 @@ fixtures define the approved inputs for the shipped Turbo and htmx bridges.
 ## Release shape
 
 The npm package exposes the compatibility root as ESM, CommonJS, and UMD; modular
-core/UI/Datastar/testing/htmx/Turbo entries as ESM and CommonJS; matched declarations and source
-maps; explicit compiled UI CSS; the CLI; registry sources; schema; deployment examples; the public
-guides linked from the package README; the static agent corpus and guide; and one deterministic
-Brotli archive of the self-hosted website. The server uses that archive only when loose deployment
-files are absent; local development and GitHub Pages retain ordinary nested HTML routes. Repository
-brain, quality, accessibility-release, and ticket documents remain source-repository material. Node
-24 or newer is required.
+core/UI/Datastar/testing/htmx/stores/Turbo entries as ESM and CommonJS; matched declarations and
+source maps; explicit compiled UI CSS; the CLI; registry sources; schema; deployment examples; the
+public guides linked from the package README; the static agent corpus and guide; and one
+deterministic Brotli archive of the self-hosted website. The server uses that archive only when
+loose deployment files are absent; local development and GitHub Pages retain ordinary nested HTML
+routes. Repository brain, quality, accessibility-release, and ticket documents remain
+source-repository material. Node 24 or newer is required.
 
-Version `1.0.0` is the first stable platform contract. `package.json` is the runtime version source;
-`quality/release-contract.json` records the stable entries and candidate policy. Candidate tooling
-under `scripts/release/` binds two reproducible tarball builds, installed consumers, complete
-quality runs, prerequisite evidence, and a non-publishing handoff to one clean committed source
-tree. Generated receipts live below `.git/jqstar/releases/` and are never package inputs. Tagging,
-pushing, publishing, signing, and release creation require separate explicit authorization.
+Version `1.0.0` is the first stable platform contract and `1.1.0` adds optional shared stores.
+`package.json` is the runtime version source; `quality/release-contract.json` records the stable
+entries and candidate policy. Candidate tooling under `scripts/release/` binds two reproducible
+tarball builds, installed consumers, complete quality runs, prerequisite evidence, and a
+non-publishing handoff to one clean committed source tree. Generated receipts live below
+`.git/jqstar/releases/` and are never package inputs. Tagging, pushing, publishing, signing, and
+release creation require separate explicit authorization.
 
 ## Compatibility policy
 
@@ -196,8 +199,8 @@ protocol-profile, and operation-observer registration. The root entry also publi
 application operation subscriptions; request descriptor, outcome, and middleware contracts; protocol
 request/response, matcher, lease, and capability contracts; and typed errors. `core`, `ui`,
 `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and `turbo` are stable 1.0 package
-contracts. Source-only modules and undeclared package subpaths remain internal until a later ticket
-publishes and tests them.
+contracts. `stores` is stable in 1.1. Source-only modules and undeclared package subpaths remain
+internal until a later ticket publishes and tests them.
 
 The supported document host is an ordinary HTML document, including an explicitly supplied
 same-origin frame document, with one live jQStar kernel and one canonical jQuery instance. A second

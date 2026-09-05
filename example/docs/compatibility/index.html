@@ -6,11 +6,11 @@
     <title>Compatibility · jQStar</title>
     <meta
       name="description"
-      content="Stable jQStar 1.0 package entries, supported environments, and compatibility policy."
+      content="Stable jQStar 1.1 package entries, supported environments, and compatibility policy."
     />
     <meta name="robots" content="index, follow" />
     <meta property="og:title" content="Compatibility · jQStar" />
-    <meta property="og:description" content="The tested jQStar 1.0 support contract." />
+    <meta property="og:description" content="The tested jQStar 1.1 support contract." />
     <meta property="og:type" content="article" />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
     <link rel="stylesheet" href="/site.css" />
@@ -19,9 +19,9 @@
     <article class="docs-article">
       <h1>Compatibility</h1>
       <p class="docs-lede">
-        jQStar 1.0 stabilizes the root package, modular runtime entries, testing harnesses, CSP
-        runtime, and Turbo and htmx bridges. The package is tested from its packed tarball, not from
-        repository-only imports.
+        jQStar 1.1 preserves the stable root and modular runtime entries and adds optional shared
+        stores. The testing harnesses, CSP runtime, and Turbo and htmx bridges are tested from the
+        packed tarball, not from repository-only imports.
       </p>
 
       <h2>Stable package entries</h2>
@@ -80,6 +80,11 @@
             <td>Explicit bridge</td>
           </tr>
           <tr>
+            <th scope="row"><code>jquery-star/stores</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit plugin</td>
+          </tr>
+          <tr>
             <th scope="row"><code>jquery-star/ui.css</code></th>
             <td>CSS</td>
             <td>Optional stylesheet</td>
@@ -103,7 +108,7 @@
 
       <h2>Version boundaries</h2>
       <p>
-        The npm package version is <code>1.0.0</code>. The plugin registrar remains independently
+        The npm package version is <code>1.1.0</code>. The plugin registrar remains independently
         versioned as <code>0.1.0</code>, and the finite CSP grammar remains
         <code>jqstar-csp-expression/1</code>. A package release does not silently change either
         contract.

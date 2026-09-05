@@ -302,6 +302,20 @@ official Datastar/UI composition, failed UI rollback, reserved jQuery UI names, 
 installation in two document realms. API Extractor reviews root, core, UI, and Datastar separately;
 the modular type consumers prove that importing core types does not augment unrelated jQuery.
 
+## Shared-store conformance
+
+`test/stores.test.ts` covers import/install identity, descriptor-safe cloning, definition ownership,
+late namespace reactivity, ordinary method receivers, atomic transactions, subscription batching,
+setup rollback, value-free observations, terminal disposal, and `$store` separation. The same suite
+mounts behavior and declarative roots against trusted and CSP engines, defines their common store
+after mount, destroys one root, and verifies that the sibling and store remain active.
+
+`test/property/stores.property.test.ts` generates bounded accepted graphs and transaction rollback
+values under the standard replay contract. `e2e/stores.spec.ts` repeats the two-root lifecycle in
+real Chromium, Firefox, and WebKit realms with live-region output. Package quality resolves ESM,
+CommonJS, NodeNext, and Bundler declarations, runs installed consumers, and records the optional
+store graph's raw and gzip sizes while proving store code remains absent from every earlier entry.
+
 `test/render-adapter.test.ts` covers wrong-document/disconnected inputs, marked and caller-supplied
 preservation, repeated/overlapping removal boundaries, deepest-first exact-once teardown, incoming
 boot, mutation failure, missing promised roots, focus/value/handler/state identity, terminal reuse,

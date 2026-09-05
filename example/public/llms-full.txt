@@ -1,7 +1,7 @@
 # jQStar reviewed agent corpus
 
-Package: jquery-star@1.0.0
-Corpus version: 4
+Package: jquery-star@1.1.0
+Corpus version: 5
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Framework invariants
@@ -120,7 +120,7 @@ Design philosophy: your backend generates HTML, jQStar enhances local
 interaction, and Datastar can stream server changes. No virtual DOM or duplicated browser
 router is required.
 Install the package
-jQStar 1.0 supports jQuery 4 and Node 24 or newer for package consumers and tooling. Review
+jQStar 1.1 supports jQuery 4 and Node 24 or newer for package consumers and tooling. Review
 the complete compatibility contract before
 adopting an optional entry.
 Terminal
@@ -175,7 +175,8 @@ npx jqstar doctor
 ```
 Continue with Datastar integration , inspect the
 stable API , review the
-finite CSP expression contract , verify an
+finite CSP expression contract , coordinate roots with
+shared stores , verify an
 external plugin , use the
 testing harness , follow the
 1.0 migration guide , or open the
@@ -187,9 +188,9 @@ Citation: https://ignibyte.github.io/jqstar/docs/compatibility/
 Source: example/docs/compatibility/index.html
 
 Compatibility
-jQStar 1.0 stabilizes the root package, modular runtime entries, testing harnesses, CSP
-runtime, and Turbo and htmx bridges. The package is tested from its packed tarball, not from
-repository-only imports.
+jQStar 1.1 preserves the stable root and modular runtime entries and adds optional shared
+stores. The testing harnesses, CSP runtime, and Turbo and htmx bridges are tested from the
+packed tarball, not from repository-only imports.
 Stable package entries
 Entry
 Formats
@@ -221,6 +222,9 @@ Explicit bridge
 jquery-star/htmx
 ESM, CommonJS
 Explicit bridge
+jquery-star/stores
+ESM, CommonJS
+Explicit plugin
 jquery-star/ui.css
 CSS
 Optional stylesheet
@@ -234,7 +238,7 @@ Shadow-root applications are not supported. Turbo support is
 >=8.0.21 <8.1.0 ; htmx support is >=2.0.0 <2.1.0 . Both
 hosts are optional and injected explicitly.
 Version boundaries
-The npm package version is 1.0.0 . The plugin registrar remains independently
+The npm package version is 1.1.0 . The plugin registrar remains independently
 versioned as 0.1.0 , and the finite CSP grammar remains
 jqstar-csp-expression/1 . A package release does not silently change either
 contract.
@@ -356,7 +360,7 @@ Citation: https://ignibyte.github.io/jqstar/docs/download/
 Source: example/docs/download/index.html
 
 Download
-This site describes the jQStar 1.0.0 release candidate. A candidate receipt proves local
+This site describes the jQStar 1.1.0 release candidate. A candidate receipt proves local
 packed bytes; it does not mean that version has been published to npm or tagged in Git.
 Install the current npm release
 Terminal Copy
@@ -366,13 +370,13 @@ npm install jquery-star jquery
 npm resolves the currently published package. Check the returned version before relying on
 1.0 behavior; this page does not claim that an unpublished candidate is available there.
 Use a reviewed candidate tarball
-A maintainer can provide the exact jquery-star-1.0.0.tgz named by the immutable
+A maintainer can provide the exact jquery-star-1.1.0.tgz named by the immutable
 candidate receipt. Verify both hashes before installation.
 Terminal Copy
 ```
-shasum -a 256 jquery-star-1.0.0.tgz
-shasum -a 512 jquery-star-1.0.0.tgz
-npm install ./jquery-star-1.0.0.tgz jquery
+shasum -a 256 jquery-star-1.1.0.tgz
+shasum -a 512 jquery-star-1.1.0.tgz
+npm install ./jquery-star-1.1.0.tgz jquery
 ```
 Package formats
 The package contains ESM and CommonJS entries, a root UMD build for no-build applications,
@@ -381,9 +385,9 @@ and a self-hosted website archive. jQuery remains an external peer; it is not ve
 Verify an authorized publication
 Terminal Copy
 ```
-npm view jquery-star@1.0.0 --json
-git rev-parse v1.0.0^{commit}
-gh release view v1.0.0 --json tagName,targetCommitish,isDraft,isPrerelease,url
+npm view jquery-star@1.1.0 --json
+git rev-parse v1.1.0^{commit}
+gh release view v1.1.0 --json tagName,targetCommitish,isDraft,isPrerelease,url
 ```
 Compare registry integrity, tag target, release assets, and receipt hashes. Publication,
 tagging, signing, and announcements require separate maintainer authorization.
@@ -782,6 +786,91 @@ rollback, and disposal contracts. It does not certify the plugin's product logic
 accessibility, arbitrary timers, network services, or memory use. Add focused tests for
 those claims and use the runner adapter described in the
 testing guide .
+
+### Shared stores [shared-stores]
+Install per-kernel shared reactive state, keep local signals separate, and preserve server authority and owned cleanup.
+Citation: https://ignibyte.github.io/jqstar/docs/stores/
+Source: example/docs/stores/index.html
+
+Shared stores
+The optional jquery-star/stores plugin gives applications in one document a
+shared reactive namespace while keeping every root's local signals independent.
+Authority boundary: stores are inspectable client coordination state.
+Never put secrets in them or use them for authentication, authorization, tenancy, durable
+persistence, or authoritative entity caching.
+Choose the right owner
+- Use $name when one application root owns the value.
+- Use stores.name when several roots coordinate temporary client state.
+- Use an explicit storage adapter for durable browser preferences.
+- Keep permissions, validation, records, and server-state resources on the server.
+Install and define a store
+The stores entry is side-effect-free. Install it before the first application starts, then
+define stores either before or after roots mount.
+main.ts Copy
+```
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { defineStore, storesPlugin } from "jquery-star/stores";
+const installed = installStarCore($);
+const shared = installed.star.use(storesPlugin);
+const sessionDefinition = defineStore({
+initial: {
+count: 0,
+increment() {
+this.count += 1;
+},
+},
+});
+const session = shared.define("session", sessionDefinition);
+```
+A definition object owns one lower-camel ASCII name for the kernel lifetime. Repeating the
+same definition and name returns the existing reactive store. A different definition,
+another name for the same definition, or redefinition after publication fails.
+Use shared and local state together
+counter.html Copy
+```
+<section data-signals="{ store: 'local' }">
+<button data-on:click="stores.session.count++">Increment shared</button>
+<output data-text="stores.session && stores.session.count"></output>
+<output data-text="$store"></output>
+</section>
+```
+$store always means the current root's local signal named store .
+The fixed stores root is the read-only shared namespace in trusted and CSP
+expressions. Without the plugin it is undefined , not an ambient global. The CSP
+grammar permits safe data writes below a store name; call named actions instead of store
+methods when using CSP expressions.
+Accepted values and transactions
+Store data accepts finite primitives, arrays, plain or null-prototype records, and ordinary
+function leaves. jQStar clones the caller's acyclic graph and preserves shared references.
+It rejects cycles, accessors, symbol keys, promises, DOM values, class instances, dates,
+maps, sets, and other live objects before publication.
+Function leaves keep their identity and normal member-call this . jQStar does
+not bind, serialize, inspect by invocation, or register them as actions. Writes cannot add,
+remove, or replace a method.
+restore.ts Copy
+```
+shared.transaction<typeof session>("session", (draft) => {
+draft.count = 10;
+});
+```
+A transaction edits a detached validated draft and commits all data before one reactive
+flush. A throw, thenable, invalid graph, or method change leaves the live store unchanged.
+Subscribe and own setup work
+subscribe(name, selector, listener, options) compares selections with
+Object.is by default. Use { immediate: true } for the initial
+value and call the returned idempotent release function to stop. Batched writes deliver one
+later selection; one listener failure is observed without stopping siblings.
+A definition's synchronous setup callback receives a frozen context with the
+store, its lifetime AbortSignal , and owned cleanup ,
+effect , subscribe , and finite task helpers. Failed
+setup releases registered work in reverse order and never publishes the name. Kernel
+disposal makes the facade and stores terminal, aborts tasks, and attempts every cleanup
+once. Destroying one application stops its own store-dependent effects without removing the
+shared store or affecting another root.
+Read the complete API, name and graph limits, observation metadata, and lifecycle details in
+the packaged
+stores contract .
 
 ### Turbo and htmx interoperability [external-interoperability]
 Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.

@@ -80,6 +80,12 @@ export type {
   StarRequestProgressObservation,
   StarRequestRetryingObservation,
   StarRequestStartedObservation,
+  StarStoreCancelledObservation,
+  StarStoreCompletedObservation,
+  StarStoreFailedObservation,
+  StarStoreOperationCategory,
+  StarStoreOperationMetadata,
+  StarStoreOperationObservation,
 } from "./observation";
 export {
   StarProtocolBodyOwnershipError,
@@ -131,6 +137,7 @@ export {
 } from "./fetch";
 export { patchElements, patchSignals } from "./patch";
 export { nextUpdate } from "./reactivity";
+export type { StarStoresScope } from "./stores/types";
 export { parseSSE, SSEParser, sseDataFields } from "./sse";
 export type {
   BackendActionOptions,

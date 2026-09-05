@@ -1,7 +1,7 @@
 {
   "$schema": "../schema/release-contract.schema.json",
   "schema": "jqstar-release-contract/1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "package": {
     "name": "jquery-star",
     "cli": "jqstar",
@@ -11,9 +11,9 @@
     "cspGrammarVersion": "jqstar-csp-expression/1"
   },
   "source": {
-    "ticket": "0017",
-    "expectedBranch": "feat/stable-platform-release",
-    "expectedTag": "v1.0.0"
+    "ticket": "0018",
+    "expectedBranch": "feat/shared-stores",
+    "expectedTag": "v1.1.0"
   },
   "stableEntries": [
     {
@@ -80,6 +80,13 @@
       "composition": ["htmx"]
     },
     {
+      "id": "stores",
+      "subpath": "./stores",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["stores"]
+    },
+    {
       "id": "ui-css",
       "subpath": "./ui.css",
       "formats": ["css"],
@@ -137,6 +144,7 @@
       "0014",
       "0015",
       "0016",
+      "0017",
       "0034",
       "0035",
       "0036",
@@ -197,7 +205,6 @@
     }
   ],
   "optionalExclusions": [
-    "shared-stores",
     "persistence",
     "resources",
     "resource-mutations",
@@ -223,7 +230,7 @@
     "manifestFields": ["path", "mode", "bytes", "sha256"],
     "sourceDate": "git-commit-timestamp",
     "environmentNames": ["CI", "GITHUB_ACTIONS", "NODE_ENV", "SOURCE_DATE_EPOCH"],
-    "outputRoot": ".git/jqstar/releases/1.0.0"
+    "outputRoot": ".git/jqstar/releases/1.1.0"
   },
   "publication": {
     "authorized": false,

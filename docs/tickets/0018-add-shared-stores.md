@@ -1,9 +1,9 @@
 ---
 id: 0018
 title: Add optional shared reactive stores
-status: planned
+status: done
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-04
 ---
 
 # 0018: Add optional shared reactive stores
@@ -34,6 +34,9 @@ jQStar's per-document ownership and disposal model without turning every signal 
   deep-reactivity behavior.
 - No package export, public store definition/handle type, subscription contract, duplicate policy,
   or two-root installed proof exists.
+- Ticket 0017 is complete on commit `6b78a3090dd25577c96acc675bd4f160249c8d48`. Its clean 1.0
+  candidate passed all 14 full-audit and 12 delivery gates, so this ticket starts from the stable
+  platform surface rather than changing the 1.0 release candidate.
 
 ### Scope
 
@@ -89,55 +92,55 @@ jQStar's per-document ownership and disposal model without turning every signal 
 
 ### Acceptance criteria
 
-- [ ] [AC-01] `jquery-star/stores` publishes side-effect-free ESM/CommonJS, matched types/maps, one
+- [x] [AC-01] `jquery-star/stores` publishes side-effect-free ESM/CommonJS, matched types/maps, one
       frozen official plugin, `defineStore()`, and public definition/facade/store/subscription/setup
       types. Import alone performs no jQuery/core installation, global/document access, listener/
       effect creation, store definition, or root-bundle augmentation.
-- [ ] [AC-02] Installing the plugin transactionally returns one typed facade for that kernel;
+- [x] [AC-02] Installing the plugin transactionally returns one typed facade for that kernel;
       repeated compatible `use()` returns the same identity. Failed install leaves no `stores`
       context binding, helper reservation change, service, observation, resource, or partial facade,
       and another document/kernel remains independent.
-- [ ] [AC-03] Store names follow one documented safe-key grammar and reject empty/magic/reserved/
+- [x] [AC-03] Store names follow one documented safe-key grammar and reject empty/magic/reserved/
       normalized-collision names. `define(name, definition)` clones accepted primitive/array/plain-
       object data, retains declared function leaves, rejects cycles/accessors/symbol keys/DOM/class/
       collection/promise values before mutation, and never mutates or freezes caller input.
-- [ ] [AC-04] One definition object may be defined repeatedly under the same name and returns the
+- [x] [AC-04] One definition object may be defined repeatedly under the same name and returns the
       exact existing reactive value; a different definition object, changed name, or disposed
       definition fails without comparison by serialization or partial replacement. `get`, `has`, and
       sorted immutable name listing have exact missing/disposed behavior.
-- [ ] [AC-05] Definition setup is transactional and runs exactly once with a frozen, kernel-owned
+- [x] [AC-05] Definition setup is transactional and runs exactly once with a frozen, kernel-owned
       context. Cleanup/effects/subscriptions/finite tasks register before use, roll back in reverse
       order after setup failure, continue after cleanup failures, observe errors without leaking
       state values, and are attempted exactly once at kernel disposal.
-- [ ] [AC-06] Store reads/writes/deletes use the existing reactive scheduler and batch semantics.
+- [x] [AC-06] Store reads/writes/deletes use the existing reactive scheduler and batch semantics.
       `transaction()` mutates a detached validated draft, rejects throws/thenables/invalid graphs
       without changing live state, and commits all changed data before one reactive flush. Function
       leaves retain identity and standard member-call `this` as the reactive store; they are not
       bound, serialized, registered as actions, or invoked during inspection.
-- [ ] [AC-07] Selector subscriptions record dependencies, compare with documented default
+- [x] [AC-07] Selector subscriptions record dependencies, compare with documented default
       `Object.is` or caller equality, deliver exact previous/current references after one batch,
       support an explicit immediate option, contain/report one listener failure without skipping
       others, and stop on idempotent release or kernel disposal.
-- [ ] [AC-08] Two behavior/declarative roots read and mutate one store through JavaScript and
+- [x] [AC-08] Two behavior/declarative roots read and mutate one store through JavaScript and
       expressions while their local signals remain independent. A store defined after mount wakes an
       expression that observed that missing name; destroying one root stops its store-dependent
       effects/listeners without changing the store or the other root.
-- [ ] [AC-09] `StarContext.stores` and the fixed `stores` expression root expose the same read-only
+- [x] [AC-09] `StarContext.stores` and the fixed `stores` expression root expose the same read-only
       namespace in trusted and CSP conformance. Store values remain mutable/reactive, namespace
       assignment/deletion fails, absence resolves only to `undefined`, and committed helpers cannot
       shadow `stores`.
-- [ ] [AC-10] A local signal named `store` continues to read/write as `$store` in both engines even
+- [x] [AC-10] A local signal named `store` continues to read/write as `$store` in both engines even
       when a shared store also exists. `$`, other `$name` signals, `state`, `signals`, `computed`,
       actions, and helper precedence remain unchanged from the public baseline.
-- [ ] [AC-11] Public observations/disposal reports identify store/setup/subscription/task/effect
+- [x] [AC-11] Public observations/disposal reports identify store/setup/subscription/task/effect
       owners and outcomes with stable IDs/categories but contain no store values, selectors,
       callbacks, DOM, or live references. Kernel disposal invalidates facade/store-owned operations,
       aborts finite work, removes the context namespace, and reports exact terminal cleanup.
-- [ ] [AC-12] Installed Node/browser consumers resolve import/require/types for
+- [x] [AC-12] Installed Node/browser consumers resolve import/require/types for
       `jquery-star/stores`, run two-root and external-plugin conformance, verify one package
       version, and record raw/gzip sizes. Graph/sentinel execution proves store code is absent from
       every pre-1.1 root/modular/CSP/testing/bridge consumer unless explicitly imported.
-- [ ] [AC-13] Public docs distinguish local signals, shared client coordination, persisted
+- [x] [AC-13] Public docs distinguish local signals, shared client coordination, persisted
       preferences, server authority, and server-state resources; warn against secrets/authorization/
       entity-cache use; document method/duplicate/lifecycle semantics; and pass focused, coverage/
       property/static/browser/package/release, `npm run check`, and `git diff --check` gates without
@@ -280,30 +283,116 @@ the setup task capability.
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File or group                                                                                                                       | Purpose                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `src/stores.ts`, `src/stores/types.ts`                                                                                              | Implement definitions, cloning, facade, reactive values, transactions, setup, and disposal.           |
+| `src/{plugin,kernel,observation,types}.ts`                                                                                          | Add atomic facade lookup, official resource ownership, store observations, and typed application use. |
+| `src/{runtime,declarative,directive,expression}.ts`, `src/csp/{ast,parser,evaluator}.ts`                                            | Expose and reserve `stores` in both engines while preserving local `$store`.                          |
+| `src/{index,core}.ts`                                                                                                               | Publish the added observation, plugin-context, and store-scope types.                                 |
+| `package.json`, `package-lock.json`, `.prettierignore`                                                                              | Set 1.1.0, export/package the stores entry, and classify its generated API report.                    |
+| `vite.config.ts`, `vitest.config.ts`, `scripts/build-types.mjs`, `config/api-extractor.stores.json`                                 | Build, alias, roll up, and API-review the optional entry.                                             |
+| `etc/jquery-star{,-core,-stores}.api.md`, `quality/public-baseline.json`                                                            | Record the reviewed public type and artifact surface.                                                 |
+| `config/quality-budgets.json`, `schema/quality-budgets.schema.json`, `vite.umd.config.ts`                                           | Bound stores artifacts/consumer graphs and retain the immutable UMD ceiling.                          |
+| `scripts/quality-package.mjs`, `schema/package-report.schema.json`                                                                  | Exercise installed format/type/browser consumers and prove optional graph exclusion.                  |
+| `scripts/quality/package-release-contracts.mjs`, `scripts/smoke-package-files.mjs`                                                  | Require the stores guide and built entry in the packed artifact.                                      |
+| `quality/release-contract.json`, `schema/release-{contract,candidate}.schema.json`                                                  | Advance the candidate authority to 1.1 and add stores as a stable entry.                              |
+| `scripts/release/prepare.mjs`, `test/release-candidate-contract.test.mjs`                                                           | Derive the 1.1 artifact name and validate updated prerequisite/entry counts.                          |
+| `quality/jquery-mobile-migration.json`, version assertion tests                                                                     | Keep existing migration/runtime evidence aligned with the package version.                            |
+| `test/stores.test.ts`, `test/property/stores.property.test.ts`, `e2e/stores.spec.ts`                                                | Prove validation, transactions, ownership, two-root trusted/CSP behavior, and disposal.               |
+| `test/{agent-content,package-release-hardening,public-baseline,site-structure,webmcp}.test.*`                                       | Align public corpus, package schema, version, and API expectations.                                   |
+| `README.md`, `CHANGELOG.md`, `docs/{README,STORES,ARCHITECTURE,CSP_EXPRESSIONS,PROJECT,RUNTIME_OWNERSHIP,TESTING,COMPATIBILITY}.md` | Publish user, architecture, security, lifecycle, and evidence contracts.                              |
+| `example/docs/stores/index.html`, `example/docs/{index,compatibility,download}/index.html`                                          | Publish the browser store guide and current 1.1 release guidance.                                     |
+| `config/agent-content.json`, `example/agent-content.generated.json`, `example/public/*`                                             | Add shared stores to corpus version 5 and regenerate reviewed agent artifacts.                        |
+| `example/docs-shell.html`, `example/docs/agents/index.html`, `vite.demo.config.ts`                                                  | Link, generate, and build the new documentation route.                                                |
+| `test/fixtures/csp/*`                                                                                                               | Refresh the authoritative public-expression inventory after adding store examples.                    |
 
 ### Design changes
 
-None recorded.
+- The kernel derives the fixed reactive namespace from the atomically committed official
+  `core.stores` facade. Its staged document host exposes ownership and observation hooks only to
+  official plugins; external plugins cannot publish fixed bindings or access those hooks.
+- Store lifecycle events use a new value-free `kind: "store"` terminal observation owned by the
+  kernel. Application observers remain scoped to their application action/request records.
+- CSP expressions can read and mutate data below a store name, but cannot replace the namespace or
+  invoke function-valued store methods. Named actions remain the CSP method-authority seam.
+- The package and release authority advance to 1.1.0 because the ticket publishes a new stable
+  optional entry. No tag, publication, or release is performed by this ticket.
+- The existing UMD ceiling remains fixed; additional Terser passes recover generated-byte margin
+  without changing the root composition.
 
 ## Test
 
-| Command   | Result  | Evidence                                 |
-| --------- | ------- | ---------------------------------------- |
-| _Not run_ | Planned | Verification commands are defined above. |
+| Command                                                                                               | Result | Evidence                                                                                            |
+| ----------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
+| `npm run ticket:validate -- --phase plan --ticket docs/tickets/0018-add-shared-stores.md`             | Pass   | The 13-criterion plan and planned-file manifest passed before implementation.                       |
+| Focused store, kernel, plugin, observation, expression, CSP, API, corpus, and package-contract suites | Pass   | New unit/property matrices and dependent conformance suites passed after implementation.            |
+| `npx playwright test e2e/stores.spec.ts --project desktop-chromium`                                   | Pass   | The real-browser trusted/CSP two-root lifecycle passed in Chromium.                                 |
+| `npm run quality:fast`, initial runs                                                                  | Fail   | Corrected generated version expectations, API-report classification, formatting, and lint findings. |
+| `npm run quality:fast`                                                                                | Pass   | All five fast gates passed against the completed code-phase tree.                                   |
+| `npm run ticket:validate -- --phase code ... --report <02-35-12-report>`                              | Pass   | Code-phase validation accepted the current ledger and exact passing fast report.                    |
+| `npm run test:package:quality`, initial                                                               | Fail   | Found excess package bytes, a packed-store identity mismatch, and a 580-byte root-budget overage.   |
+| Focused store, plugin, kernel, package-contract, public-baseline, release, site, and corpus suites    | Pass   | All 134 runtime-focused and 39 package/public focused tests passed after corrections.               |
+| `npm run test:package:quality`, final                                                                 | Pass   | All 13 installed-package checks passed for 226 files and the 1.1.0 tarball.                         |
+| `npm run check`, initial delivery                                                                     | Fail   | Nine substantive gates passed; changed-line coverage and the package-budget detector found gaps.    |
+| `npx vitest run test/stores.test.ts`                                                                  | Pass   | Twelve tests cover accepted behavior plus every changed validation, reflection, and cleanup path.   |
+| `npm run test:coverage`                                                                               | Pass   | Store implementation reached 100% changed-line, statement, and function coverage.                   |
+| `npm run test:quality:0044`                                                                           | Pass   | All 16 detector-liveness cases passed with the additive optional-package budget message.            |
+| `npm run check`, final Test-phase delivery                                                            | Pass   | All 12 enforced gates passed in run `2026-09-05T02-56-20-701Z-20994` on one unchanged fingerprint.  |
+| `npm run quality:delivery` through the final Test-phase `npm run check`                               | Pass   | The delivery runner wrote the authorized report and receipt for the same passing run.               |
+| `npm run ticket:validate -- --phase test ... --report <02-56-20-report>`                              | Pass   | Test-phase validation accepted the exact delivery report and authorized receipt.                    |
+
+### Inspection ledger
+
+| Finding                                                                                                        | Resolution                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Publishing the live store through a second reactive boundary changed its proxy identity in the packed browser. | Publish the one reactive proxy through the namespace and assert `facade.stores.session === facade.define(...)` in source and pack. |
+| The staged document host did not own resources created through the facade after plugin commit.                 | Give official plugins a narrow live service view after atomic commit; store tasks, effects, subscriptions, and cleanup are owned.  |
+| The first complete package exceeded its new package allowance and immutable root-import ceiling.               | Bound the optional package separately, compress repeated plugin errors without changing messages, and retain the root ceiling.     |
+| Placeholder store consumer limits were wider than the measured installed graph.                                | Ratchet raw/gzip limits to 208,896/66,560 bytes, the next 1 KiB bounds above the passing measurements.                             |
+| Store values or callbacks could have leaked through lifecycle evidence.                                        | Inspect the bounded store observations and package reports; they contain only stable IDs, categories, phases, and generic errors.  |
+| The first delivery lacked negative-path coverage for descriptor, graph, reflection, and cleanup guards.        | Add focused tests for every rejected input and terminal branch; changed-line coverage now passes at 100% for `src/stores.ts`.      |
+| Package-budget sabotage expected the former single-ceiling diagnostic after optional allowances were added.    | Match the additive budget diagnostic while retaining the same forced-red evidence check; all 16 detector cases are live.           |
 
 ## Document
 
 ### Documentation changed
 
-Pending.
+- `README.md`, `CHANGELOG.md`, and `docs/STORES.md` publish installation, definitions, shared/local
+  state boundaries, transactions, subscriptions, setup ownership, CSP behavior, security limits, and
+  disposal.
+- `docs/README.md`, `docs/ARCHITECTURE.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/PROJECT.md`,
+  `docs/TESTING.md`, `docs/CSP_EXPRESSIONS.md`, and `docs/COMPATIBILITY.md` record the 1.1 entry,
+  fixed capability, lifecycle, package, testing, and compatibility contracts in the project brain.
+- The native stores example, documentation navigation, compatibility/download pages, and reviewed
+  agent corpus expose the same guidance in the built website and package.
+- Package, API, release, quality-budget, and ticket evidence document the optional graph and 1.1.0
+  authority without tagging, publishing, or creating a release.
 
 ### Acceptance evidence
 
-Pending implementation.
+| Criterion | Result | Evidence                                                                                                                                                                                                                   |
+| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass   | Package exports, Vite/type builds, the reviewed stores API report, and installed import/require/type checks prove the inert optional entry and frozen official plugin.                                                     |
+| AC-02     | Pass   | Plugin/kernel tests prove same-facade identity, atomic official-service publication, rollback, per-document isolation, and no partial failed install.                                                                      |
+| AC-03     | Pass   | Store and property tests cover the safe name grammar, descriptor-only cloning, shared acyclic references, and rejection of every excluded graph type without caller mutation.                                              |
+| AC-04     | Pass   | Unit and packed-browser assertions prove exact definition/store identity, incompatible-name and definition rejection, sorted frozen names, lookup behavior, and terminal disposal errors.                                  |
+| AC-05     | Pass   | Setup tests cover the frozen context, reverse rollback, owned effects/subscriptions/tasks/cleanup, failure aggregation, observation, and exact-once kernel disposal.                                                       |
+| AC-06     | Pass   | Transaction, property, reactivity, and method tests prove detached synchronous staging, unchanged failure state, one batched commit, ordinary method receivers, and method-graph protection.                               |
+| AC-07     | Pass   | Subscription tests cover immediate/deferred delivery, previous/current values, `Object.is`, caller equality, batching, listener/selector failure containment, release, and disposal.                                       |
+| AC-08     | Pass   | Trusted/CSP unit integration, installed-package browsers, and `e2e/stores.spec.ts` prove late definition and shared updates across behavior/declarative roots with independent teardown.                                   |
+| AC-09     | Pass   | Context, expression, reflection, CSP, and package tests prove one read-only fixed namespace, mutable values, absent-plugin `undefined`, and reserved-helper protection.                                                    |
+| AC-10     | Pass   | Trusted/CSP two-root tests and the unchanged public baseline prove `$store` remains local while `$`, signals, state, computed values, actions, and helper precedence remain intact.                                        |
+| AC-11     | Pass   | Kernel observations and disposal reports prove value-free stable store categories/owners, task abort and cleanup, terminal facade/value behavior, and continued cleanup after failures.                                    |
+| AC-12     | Pass   | Package quality's 13 checks cover Node, TypeScript, QUnit, Chromium/Firefox/WebKit, version identity, maps, raw/gzip limits, and graph exclusion from all unrelated entries.                                               |
+| AC-13     | Pass   | Public/project/website/agent documentation distinguishes coordination, persistence, server authority, resources, security limits, methods, duplicates, and lifecycle; all 12 delivery gates pass without mutation testing. |
 
 ### Completion audit
 
-Pending.
+All 13 criteria have one current passing evidence row. The accepted package contains 226 files; its
+stores consumer measures 208,404 raw and 65,774 gzip bytes, within ratcheted 1 KiB bounds. The root
+consumer remains below its immutable ceiling. Store code has 100% changed-line coverage, installed
+and source two-root proofs pass in trusted and CSP modes, and the full delivery run passes all 12
+enforced gates across Chromium, Firefox, and WebKit. The ticket performs no tag, npm publication,
+GitHub release, or mutation testing. No unresolved finding remains.
+
+Status: Complete

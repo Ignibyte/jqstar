@@ -1,6 +1,6 @@
 {
   "$schema": "jqstar-agent-content/1",
-  "corpusVersion": 4,
+  "corpusVersion": 5,
   "canonicalBaseUrl": "https://ignibyte.github.io/jqstar/",
   "webMcpDraft": "2026-08-26",
   "limits": {
@@ -147,6 +147,22 @@
       "summary": "Build transactional public plugins and verify packed-package rollback, use, rendering, observation, and cleanup behavior.",
       "keywords": ["plugin", "conformance", "registrar", "rollback", "cleanup", "render adapter"],
       "source": "example/docs/plugins/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "shared-stores",
+      "title": "Shared stores",
+      "path": "docs/stores/",
+      "summary": "Install per-kernel shared reactive state, keep local signals separate, and preserve server authority and owned cleanup.",
+      "keywords": [
+        "stores",
+        "shared state",
+        "local signals",
+        "transaction",
+        "subscription",
+        "server authority"
+      ],
+      "source": "example/docs/stores/index.html",
       "contentRoot": "article"
     },
     {
@@ -462,6 +478,13 @@
       "expectedIds": ["plugin-conformance"],
       "requiredTerms": ["failed installation", "cleanup", "packed"],
       "path": "docs/plugins/"
+    },
+    {
+      "id": "shared-stores",
+      "question": "When should several jQStar roots use a shared store, and can it hold secrets or authorize server work?",
+      "expectedIds": ["shared-stores"],
+      "requiredTerms": ["client coordination", "local signals", "server authority", "secrets"],
+      "path": "docs/stores/"
     },
     {
       "id": "datastar-transport",

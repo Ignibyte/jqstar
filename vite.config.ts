@@ -10,6 +10,7 @@ export default defineConfig({
         ui: resolve(__dirname, "src/ui.ts"),
         datastar: resolve(__dirname, "src/datastar.ts"),
         htmx: resolve(__dirname, "src/htmx.ts"),
+        stores: resolve(__dirname, "src/stores.ts"),
         testing: resolve(__dirname, "src/testing/index.ts"),
         turbo: resolve(__dirname, "src/turbo.ts"),
         "datastar-testing": resolve(__dirname, "src/datastar/testing.ts"),
@@ -20,7 +21,7 @@ export default defineConfig({
     minify: "terser",
     terserOptions: {
       compress: {
-        passes: 2,
+        passes: 5,
       },
     },
     rollupOptions: {

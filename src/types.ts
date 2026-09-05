@@ -1,4 +1,5 @@
 import type { StarPlugin, StarPluginFacade } from "./plugin";
+import type { StarStoresScope } from "./stores/types";
 import type { StarExpressionHelperScope } from "./directive";
 import type { StarDisposalReport } from "./disposal";
 import type {
@@ -88,6 +89,7 @@ export interface StarContext<
   state: State;
   computed: Readonly<Computed>;
   readonly helpers?: StarExpressionHelperScope;
+  readonly stores?: StarStoresScope | undefined;
   root: Element;
   $root: JQuery<Element>;
   element?: Element;

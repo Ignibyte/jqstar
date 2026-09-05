@@ -14,9 +14,10 @@ engine stays claimed because its lifecycle is terminal. A separate same-origin d
 separate kernel.
 
 The root package keeps its 0.1 auto-install behavior. `jquery-star/core` explicitly installs the
-same kernel without UI or Datastar; `jquery-star/ui` and `jquery-star/datastar` are immutable
-official plugins. `jquery-star/testing` and `jquery-star/datastar/testing` are caller-operated test
-adapters. These modular entries are stable in 1.0 and have no import-time document work.
+same kernel without UI or Datastar; `jquery-star/ui`, `jquery-star/datastar`, and
+`jquery-star/stores` are immutable official plugins. `jquery-star/testing` and
+`jquery-star/datastar/testing` are caller-operated test adapters. These modular entries have no
+import-time document work.
 
 The testing harness does not change the runtime topology. A harness owns the core installation it
 creates, its application handles, public operation snapshots, finite harness tasks, and an optional
@@ -35,6 +36,7 @@ registered through a jQStar or harness capability.
 | Request            | Active request by element/action key, abort controllers by application root, selected profile, middleware invocation/abort listener, validated descriptor, private body, retry attempt, delay and visibility listener, response lease/reader, progress counters, and one operation handle     | `src/fetch.ts` uses element/root keyed module maps plus per-request closures. Kernel middleware and protocol registries supply frozen snapshots; the observation hub owns request identity. Application destruction and directive removal cancel the relevant work, body owner, and unsettled middleware/profile task.                        | Observation, middleware, profile, adapter, and response-body ownership are kernel-owned. Request bytes and retry state remain request-local.                                                    |
 | Expression engine  | Compiled value and statement functions, structural source locations, and source caches                                                                                                                                                                                                        | Each kernel permanently claims one unique `StarExpressionEngine`; cache clearing and idempotent disposal route only to that engine. A disposed engine cannot be reclaimed by another kernel. Retained evaluators refuse work after disposal. Root-level compiler exports retain a separate compatibility engine for the frozen 0.1 functions. | Explicit initial selection is public through `installStarCore`; the trusted engine remains the compatibility default.                                                                           |
 | Reactive scheduler | Proxy/raw-value indexes, dependency sets, current effect, pending effect set, pending unowned failures, and microtask flush flag                                                                                                                                                              | `src/reactivity.ts` batches through compatibility module storage. Each application effect carries an owner/error sink and is stopped by rollback or destruction. One failure cannot skip later scheduled effects.                                                                                                                             | Owned effect lifetime and failure containment are present; modular scheduler publication remains later work.                                                                                    |
+| Shared stores      | Definition identities and names; reactive namespace and values; subscriptions, effects, finite tasks, abort controllers, and cleanup callbacks                                                                                                                                                | `src/stores.ts` creates one record per name inside the official plugin facade. Setup stages before publication. Application teardown stops application effects; kernel disposal makes facades and values terminal, aborts work, and attempts every store release in reverse order.                                                            | Stable optional client coordination in 1.1. Persistence, server resources, authorization, and individual store removal remain outside this boundary.                                            |
 | UI controller      | Per-element controller record, generated ID sequence, component listeners, component observer, component timers, active/open status, and transient interaction state                                                                                                                          | Module-private records in `src/ui/`, keyed by controller roots where possible. Persistent document/window behavior is injected through `DocumentHost`. Active-record services filter by owner document and release that document's entries on kernel disposal.                                                                                | The official UI plugin stages all actions and document work transactionally; import and failed install retain nothing.                                                                          |
 | SSE parser         | Partial line buffer, event name, data fields, last event ID, and retry value                                                                                                                                                                                                                  | One `SSEParser` instance per consumed stream. The selected Datastar adapter owns the parser through the request's exclusive body lease.                                                                                                                                                                                                       | The parser remains a public utility; live request parsing belongs to `core.datastar`.                                                                                                           |
 | Process            | Public constants, selectors, attribute lists, regular expressions, immutable empty computed data, and type metadata                                                                                                                                                                           | Module constants only.                                                                                                                                                                                                                                                                                                                        | Final target. Temporary module indexes and compatibility schedulers listed above have named migration tickets.                                                                                  |
@@ -68,8 +70,8 @@ registered through a jQStar or harness capability.
   without retaining history.
 - `src/plugin.ts`: per-kernel installed-name and object-identity records, stable installation order,
   application hooks, plugin cleanup, structural/disposed/installing flags, and transient staged
-  action/directive/helper/request-middleware/protocol-profile/observer transactions. Failed stages
-  are released and never enter installed maps.
+  action/directive/helper/context/request-middleware/protocol-profile/observer transactions. Failed
+  stages are released and never enter installed maps.
 - `src/request-middleware.ts`: each kernel's immutable ordered middleware snapshot, registration
   ordinal, tracked-application set, and transient prepared install/cleanup records. A module
   `WeakMap` connects live applications to their owning registry without retaining disposed
@@ -84,6 +86,9 @@ registered through a jQStar or harness capability.
 - `src/directive.ts`: the per-kernel immutable directive list, helper leaf map, and frozen helper
   namespace snapshot. It starts with `core.text` and `core.destroy`; prepared plugin extensions stay
   private until the shared plugin transaction commits.
+- `src/stores.ts`: one plugin-owned definition map, stable reactive namespace, per-store reactive
+  graph, release stack, abort controller, and operation sequence. No store record exists at process
+  scope, and failed setup is removed before the name can be observed.
 - `src/expression.ts`: trusted location-keyed value and statement maps plus disposed state inside
   each created engine; one root-export compatibility engine.
 - `src/csp/`: immutable contract tables and AST records; each CSP engine retains a successful-only
@@ -142,20 +147,23 @@ Additional retained UI state is explicit:
 
 ## Capability boundaries
 
-Applications receive only expression compilation, the committed helper snapshot, directive
-definitions, action resolution, identity allocation, an owned DOM-observer factory, action boundary,
-operation subscription, finite task registration, active render-preservation roots, and
-creation/destruction notifications. UI controller factories receive the plugin's explicit action
-registrar. Persistent UI work uses the staged document host and activates only after the complete
-plugin transaction validates. Neither applications nor UI factories receive the kernel object.
+Applications receive only expression compilation, the committed helper and fixed-capability
+snapshots, directive definitions, action resolution, identity allocation, an owned DOM-observer
+factory, action boundary, operation subscription, finite task registration, active
+render-preservation roots, and creation/destruction notifications. UI controller factories receive
+the plugin's explicit action registrar. Persistent UI work uses the staged document host and
+activates only after the complete plugin transaction validates. Neither applications nor UI
+factories receive the kernel object.
 
 Plugin installers receive only a synchronous staging registrar. It can stage actions, directives,
 expression helpers below the plugin's namespace, request middleware, operation observers, protocol
 profiles, per-application hooks, activation, document-host work, and kernel cleanup. It cannot
 access the kernel, live registries, another facade, or a commit function. The registrar refuses
-later use. Request middleware receives only frozen request metadata, one guarded `next()`, branded
-terminal factories, and the request's read-only abort signal; it never receives the kernel or
-application context.
+later use. The kernel derives the fixed `stores` capability from the atomically committed official
+facade. Optional task and kernel-observation hooks on the staged document host are present only for
+framework-marked official plugins; external plugins cannot access them. Request middleware receives
+only frozen request metadata, one guarded `next()`, branded terminal factories, and the request's
+read-only abort signal; it never receives the kernel or application context.
 
 A profile request preparer receives frozen metadata, serialized filtered signals, form encoding but
 not entries, and a bounded writer. A response adapter receives frozen response metadata, one body

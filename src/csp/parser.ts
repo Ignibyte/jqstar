@@ -40,6 +40,7 @@ const bindings = new Set([
   "root",
   "signals",
   "state",
+  "stores",
 ]);
 const unsupportedWords = new Set([
   "break",
@@ -606,7 +607,10 @@ class Parser {
     if (value.kind !== "member") return false;
     let root: CSPExpressionNode = value;
     while (root.kind === "member") root = root.object;
-    return root.kind === "binding" && (root.name === "state" || root.name === "signals");
+    return (
+      root.kind === "binding" &&
+      (root.name === "state" || root.name === "signals" || root.name === "stores")
+    );
   }
 
   private incrementPath(value: CSPExpressionNode, span: CSPSourceSpan): number {

@@ -45,7 +45,17 @@ export interface CSPObjectPropertyNode extends CSPNodeBase {
 export interface CSPBindingNode extends CSPNodeBase {
   readonly kind: "binding";
   readonly name:
-    "$" | "$el" | "$root" | "args" | "computed" | "el" | "evt" | "root" | "signals" | "state";
+    | "$"
+    | "$el"
+    | "$root"
+    | "args"
+    | "computed"
+    | "el"
+    | "evt"
+    | "root"
+    | "signals"
+    | "state"
+    | "stores";
 }
 
 export interface CSPSignalNode extends CSPNodeBase {

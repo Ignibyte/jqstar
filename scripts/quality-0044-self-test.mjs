@@ -238,7 +238,7 @@ record(
     JQS_QUALITY_SABOTAGE: "package-budget",
   }),
   "red",
-  /package-budgets: Packed bytes \d+ exceed 1/u,
+  /package-budgets: Packed bytes \d+ exceed the base and optional-entry allowances/u,
   { path: packageEvidence, failure: "package-budgets" },
 );
 

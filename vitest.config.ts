@@ -12,6 +12,7 @@ export default defineConfig({
         replacement: resolve("src/datastar/testing.ts"),
       },
       { find: /^jquery-star\/datastar$/, replacement: resolve("src/datastar.ts") },
+      { find: /^jquery-star\/stores$/, replacement: resolve("src/stores.ts") },
       { find: /^jquery-star\/testing$/, replacement: resolve("src/testing/index.ts") },
       { find: /^jquery-star\/turbo$/, replacement: resolve("src/turbo.ts") },
       { find: /^jquery-star\/ui$/, replacement: resolve("src/ui.ts") },

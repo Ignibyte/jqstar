@@ -95,6 +95,7 @@ const reservedHelperRoots = new Set([
   "root",
   "signals",
   "state",
+  "stores",
   "this",
   "window",
 ]);

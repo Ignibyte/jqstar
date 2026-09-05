@@ -1,6 +1,6 @@
 # Compatibility policy
 
-jQStar 1.0 stabilizes the package surfaces listed here. The executable authority is
+jQStar 1.x stabilizes the package surfaces listed here. The executable authority is
 `quality/release-contract.json`; this page explains that contract for package users.
 
 ## Package names and versions
@@ -11,7 +11,7 @@ jQStar 1.0 stabilizes the package surfaces listed here. The executable authority
 - Component roots use `data-jqs`.
 - `$` is the application-owned jQuery instance. `$name` is the reactive signal named `name`.
 - `$.star.version`, modular plugin facades, package metadata, declarations, and built artifacts use
-  the package version. For this candidate that value is `1.0.0`.
+  the package version. For this candidate that value is `1.1.0`.
 - `STAR_PLUGIN_API_VERSION` remains `0.1.0`. It versions the plugin registrar contract, not the npm
   package.
 - The finite CSP grammar remains `jqstar-csp-expression/1`. Grammar changes require their own
@@ -30,6 +30,7 @@ jQStar 1.0 stabilizes the package surfaces listed here. The executable authority
 | `jquery-star/datastar/testing` | ESM, CommonJS      | Official-SDK Datastar test fixtures.                                  |
 | `jquery-star/turbo`            | ESM, CommonJS      | Explicit Turbo lifecycle bridge.                                      |
 | `jquery-star/htmx`             | ESM, CommonJS      | Explicit htmx lifecycle bridge.                                       |
+| `jquery-star/stores`           | ESM, CommonJS      | Explicit per-kernel shared reactive stores plugin.                    |
 | `jquery-star/ui.css`           | CSS                | Explicit compiled component theme.                                    |
 
 Only the root entry installs at import time and publishes the `jQueryStar` UMD global. Modular
@@ -75,19 +76,21 @@ and the repository's
 
 ## Deprecation and breaking changes
 
-Version 1.0 has no deprecated package entry, plugin API member, directive, action, component method,
+Version 1.1 has no deprecated package entry, plugin API member, directive, action, component method,
 or stable error code. The root 0.1 behavior recorded in `quality/public-baseline.json` remains the
-compatibility baseline. The modular entries that carried a `0.4-preview` label are stable in 1.0.
+compatibility baseline. The modular entries that carried a `0.4-preview` label are stable in 1.0;
+`jquery-star/stores` is stable in 1.1.
 
 A future removal from a stable 1.x surface requires a documented replacement and at least one minor
 release of deprecation unless a security issue makes continued support unsafe. Security removals
 must be called out in the changelog, security advisory, and migration instructions.
 
-## Features outside 1.0
+## Features outside 1.1
 
-Shared stores, persistence, native resources and mutations, native navigation and regions,
-prefetching, inspection, an in-page DevTools UI, and package-upgrade diagnostics are not 1.0 package
-entries. Their planned tickets do not block 1.0 and must not appear in stable bundle graphs.
+Persistence, native resources and mutations, native navigation and regions, prefetching, inspection,
+an in-page DevTools UI, and package-upgrade diagnostics are not 1.1 package entries. Their planned
+tickets do not block 1.1 and must not appear in stable bundle graphs. Shared stores are
+client-visible coordination state only; see [STORES.md](STORES.md).
 
 ## Verification
 

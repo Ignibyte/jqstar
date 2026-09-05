@@ -21,6 +21,10 @@
     "packedBytes": 60000,
     "unpackedBytes": 240000
   },
+  "storesPackage": {
+    "packedBytes": 52000,
+    "unpackedBytes": 190000
+  },
   "bundles": {
     "dist/core.cjs": 1024,
     "dist/core.js": 1024,
@@ -35,6 +39,8 @@
     "dist/jquery-star.cjs": 2048,
     "dist/jquery-star.js": 2048,
     "dist/jquery-star.umd.cjs": 464896,
+    "dist/stores.cjs": 13312,
+    "dist/stores.js": 13312,
     "dist/testing.cjs": 13000,
     "dist/testing.js": 13000,
     "dist/turbo.cjs": 8192,
@@ -50,6 +56,8 @@
     "cspImportGzipBytes": 45000,
     "cspImportBrotliBytes": 39000,
     "rootImportBytes": 542720,
+    "storesImportBytes": 208896,
+    "storesImportGzipBytes": 66560,
     "testingImportBytes": 260000,
     "testingImportGzipBytes": 85000,
     "datastarTestingImportBytes": 80000,

@@ -277,10 +277,12 @@ construction they are inert data unless assigned into state through an approved 
 
 ## L-values and mutation
 
-The only l-values are `$name` and safe paths rooted at `state` or `signals`. The last path segment
-may be created. Earlier segments must exist as state or inert plain data. Computed bracket keys must
-evaluate to a safe string or an in-range nonnegative array index. Fixed bindings, computed values,
-events, arguments, DOM, jQuery values, literals, helpers, actions, and call results are read-only.
+The l-values are `$name`, safe paths rooted at `state` or `signals`, and safe paths below a named
+store in an installed `stores` namespace. The store namespace and each store-name slot remain
+read-only. The last data path segment may be created. Earlier segments must exist as state, store
+data, or inert plain data. Computed bracket keys must evaluate to a safe string or an in-range
+nonnegative array index. Other fixed bindings, computed values, events, arguments, DOM, jQuery
+values, literals, helpers, actions, and call results are read-only.
 
 Assignment supports `=`, `+=`, `-=`, `*=`, `/=`, and `%=`. Postfix `++` and `--` require a finite
 number. Prefix update is not in the grammar. Deletion and object spread are unsupported.
@@ -301,6 +303,7 @@ escaped, concatenated, helper-returned, action-returned, and result-derived valu
 | `$name`               | Named state value                                       | Same signal                          | Never callable                          |
 | `state`, `signals`    | Safe framework state path                               | Safe state path                      | Never callable                          |
 | `computed`            | Safe committed computed path                            | None                                 | Never callable                          |
+| `stores`              | Safe installed store names and accepted data paths      | Below a store name only              | Store methods are not CSP capabilities  |
 | `args`                | `length`, indexes `0` through `127`                     | None                                 | Reviewed array methods                  |
 | `evt`                 | Reviewed event members                                  | None                                 | `preventDefault()`, `stopPropagation()` |
 | `el`, `root`          | Reviewed same-realm DOM members                         | None                                 | Wrap with `$()` for mutation            |
@@ -320,6 +323,13 @@ operation, and treats a thrown trap as `CSP_CAPABILITY_ACCESSOR`.
 Cross-realm values do not gain authority through `instanceof`. DOM and jQuery capability adapters
 bind to the kernel's supplied window, document, and canonical jQuery peer. Foreign DOM/jQuery values
 fail with `CSP_CAPABILITY_VALUE`.
+
+`stores` is a fixed optional binding. Without `jquery-star/stores`, it is `undefined` and cannot
+fall through to a browser global. Installed store values use the same read and safe-key checks as
+state. Expressions can assign data below `stores.name`, but cannot assign, delete, or replace the
+namespace or its name slots. `$store` remains the local signal named `store`. Function-valued store
+methods are intentionally not callable from the finite CSP grammar; use a registered action for that
+authority. See [STORES.md](STORES.md).
 
 ### DOM and event members
 

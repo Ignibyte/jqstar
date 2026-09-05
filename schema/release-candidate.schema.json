@@ -72,8 +72,8 @@
       ],
       "properties": {
         "package": { "const": "jquery-star" },
-        "version": { "const": "1.0.0" },
-        "branch": { "const": "feat/stable-platform-release" },
+        "version": { "const": "1.1.0" },
+        "branch": { "const": "feat/shared-stores" },
         "commit": { "$ref": "#/$defs/sha1" },
         "tree": { "$ref": "#/$defs/sha1" },
         "sourceDateEpoch": { "type": "integer", "minimum": 1 },
@@ -182,7 +182,7 @@
         "licenseNotices"
       ],
       "properties": {
-        "filename": { "const": "jquery-star-1.0.0.tgz" },
+        "filename": { "const": "jquery-star-1.1.0.tgz" },
         "bytes": { "type": "integer", "minimum": 1 },
         "sha256": { "$ref": "#/$defs/sha256" },
         "sha512": { "$ref": "#/$defs/sha512" },
@@ -277,13 +277,13 @@
       "type": "object",
       "required": ["required", "audited", "criterionCount", "tickets"],
       "properties": {
-        "required": { "const": 33 },
-        "audited": { "const": 33 },
-        "criterionCount": { "type": "integer", "minimum": 33 },
+        "required": { "const": 34 },
+        "audited": { "const": 34 },
+        "criterionCount": { "type": "integer", "minimum": 34 },
         "tickets": {
           "type": "array",
-          "minItems": 33,
-          "maxItems": 33,
+          "minItems": 34,
+          "maxItems": 34,
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/ticket" }
         }
@@ -410,7 +410,7 @@
         "rollback"
       ],
       "properties": {
-        "expectedTag": { "const": "v1.0.0" },
+        "expectedTag": { "const": "v1.1.0" },
         "npmDistTag": { "const": "latest" },
         "releaseNotes": { "const": "CHANGELOG.md" },
         "readOnlyCommands": { "$ref": "#/$defs/stringArray" },

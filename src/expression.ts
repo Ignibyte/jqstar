@@ -72,6 +72,7 @@ function scopeFor(context: ExpressionContext): object {
       $root: context.$root,
       $el: context.$element,
       args: context.args ?? [],
+      stores: context.stores,
       action: (name: string, ...args: unknown[]) =>
         context.instance.run(name, { ...context, args }),
     },

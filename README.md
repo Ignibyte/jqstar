@@ -55,7 +55,7 @@ themes, transitions, or plugins.
 
 ## Setup
 
-The repository currently prepares the `1.0.0` release candidate. Candidate status is not a claim
+The repository currently prepares the `1.1.0` release candidate. Candidate status is not a claim
 that the version is published. See [compatibility](docs/COMPATIBILITY.md),
 [migration](MIGRATING_TO_1.md), [support](SUPPORT.md), [security](SECURITY.md), and
 [release verification](RELEASING.md) before adopting or publishing it.
@@ -84,27 +84,31 @@ The UMD build installs itself on the global `jQuery` object, so a script-tag bui
 
 The root entry remains the compatibility path: importing it installs the complete core, Datastar
 profile, and UI plugin. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`,
-and `turbo` subpaths are stable in 1.0. They are explicit and side-effect-free, so importing them
-does not touch a document or jQuery instance:
+and `turbo` subpaths are stable from 1.0; the optional `stores` subpath is stable in 1.1. They are
+explicit and side-effect-free, so importing them does not touch a document or jQuery instance:
 
 ```ts
 import $ from "jquery";
 import { createRenderAdapter, installStarCore } from "jquery-star/core";
 import { datastarPlugin } from "jquery-star/datastar";
+import { defineStore, storesPlugin } from "jquery-star/stores";
 import { uiPlugin } from "jquery-star/ui";
 import "jquery-star/ui.css";
 
 const installed = installStarCore($);
 installed.star.use(datastarPlugin);
+const stores = installed.star.use(storesPlugin);
+stores.define("session", defineStore({ initial: { count: 0 } }));
 const ui = installed.star.use(uiPlugin);
 const renderAdapter = createRenderAdapter(installed);
 ```
 
 Core alone includes applications, directives/helpers, observations, middleware, HTML/JSON patches,
 the `core.generic` request profile, render coordination, and terminal disposal. Add Datastar only
-when its request/SSE contract is needed. Add UI and its CSS only when the component controllers are
-needed. Installing the UI plugin creates `installed.star.ui`; it never claims `$.ui`, `$.widget`,
-jQuery UI identity, or a Widget Factory contract.
+when its request/SSE contract is needed. Add stores only for client state shared by multiple roots.
+Add UI and its CSS only when the component controllers are needed. Installing the UI plugin creates
+`installed.star.ui`; it never claims `$.ui`, `$.widget`, jQuery UI identity, or a Widget Factory
+contract.
 
 | Entry                          | Formats                 | Import behavior                                        |
 | ------------------------------ | ----------------------- | ------------------------------------------------------ |
@@ -115,11 +119,17 @@ jQuery UI identity, or a Widget Factory contract.
 | `jquery-star/testing`          | ESM, CommonJS           | No side effect; caller supplies DOM, jQuery, runner    |
 | `jquery-star/datastar/testing` | ESM, CommonJS           | No side effect; official-SDK Datastar test fixtures    |
 | `jquery-star/htmx`             | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
+| `jquery-star/stores`           | ESM, CommonJS           | No side effect; install `storesPlugin`                 |
 | `jquery-star/turbo`            | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
 | `jquery-star/ui.css`           | CSS                     | Explicit stylesheet import; never injected by JS       |
 
 Only the composed root has a UMD/script-tag build. Every JavaScript entry has matched ESM and
 CommonJS declarations and source maps.
+
+Shared stores are per-document client coordination, not persistence or server authority. `$name`
+continues to mean an application-local signal; shared expressions use `stores.name`. See the
+[shared stores guide](docs/STORES.md) for the data contract, transactions, setup ownership, CSP
+semantics, and security boundaries.
 
 ### Stable testing entries
 
@@ -211,9 +221,9 @@ by `npm run test:public-baseline` plus the installed-package gate.
 The recorded 0.1 root surface is the compatibility baseline for 1.0. A stable 1.x item receives at
 least one minor release of deprecation notice before removal unless a security issue makes continued
 support unsafe. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and
-`turbo` subpaths are stable 1.0 contracts. Private source imports and undeclared subpaths receive no
-compatibility promise. See [the compatibility policy](docs/COMPATIBILITY.md) and
-[the 1.0 migration guide](MIGRATING_TO_1.md).
+`turbo` subpaths are stable 1.0 contracts; `stores` is stable in 1.1. Private source imports and
+undeclared subpaths receive no compatibility promise. See
+[the compatibility policy](docs/COMPATIBILITY.md) and [the 1.0 migration guide](MIGRATING_TO_1.md).
 
 ## Source registry
 

@@ -269,6 +269,7 @@ class Application<
       state: this.state,
       computed,
       helpers: this.capabilities.helpers,
+      stores: this.capabilities.stores,
       root: this.root,
       $root: this.$root,
       instance: this,

@@ -39,7 +39,7 @@ it("installs one complete runtime into a fresh document and tears applications d
   const star = installStar($, { expressionEngine: expressions });
   const kernel = kernelForDocument(owner)!;
 
-  expect(star.version).toBe("1.0.0");
+  expect(star.version).toBe("1.1.0");
   expect(kernel.expressions).toBe(expressions);
   expect(installStar($)).toBe(star);
   expect(kernel.actions.names()).toEqual(

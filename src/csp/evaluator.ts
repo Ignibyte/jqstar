@@ -39,6 +39,7 @@ interface TrackedValue {
   readonly writableState?: boolean;
   readonly promise?: Promise<TrackedValue>;
   readonly sourceCall?: StarExpressionCallResult;
+  readonly store?: boolean;
 }
 
 interface PendingValue {
@@ -349,6 +350,8 @@ class EvaluationFrame {
         });
       case "computed":
         return tracked("computed", this.context.computed);
+      case "stores":
+        return tracked("data", this.context.stores, { store: true });
       case "args": {
         const args = this.context.args ?? [];
         if (!Array.isArray(args)) this.fail("CSP_CAPABILITY_VALUE", this.fullSpan());
@@ -453,7 +456,7 @@ class EvaluationFrame {
     if (!isObject(object.value)) this.fail("CSP_CAPABILITY_PROPERTY", node.span);
     const member = this.readDescriptor(object.value, key, node.span);
     if (!member.found) return tracked("primitive", undefined);
-    return this.dataValue(member.value, object, false);
+    return this.dataValue(member.value, object, object.store === true);
   }
 
   private readDescriptor(

@@ -28,7 +28,8 @@ import { ProtocolProfileRegistry } from "./protocol";
 import { RequestMiddlewareRegistry } from "./request-middleware";
 import type { StarAction, StarContext, StarInstance } from "./types";
 
-export type KernelResourceKind = "listener" | "observer" | "service" | "subscription" | "task";
+export type KernelResourceKind =
+  "effect" | "listener" | "observer" | "service" | "subscription" | "task";
 
 export interface KernelResourceSummary {
   readonly kind: KernelResourceKind;
@@ -41,6 +42,7 @@ export interface ApplicationCapabilities {
   readonly directives: DirectiveRegistry;
   readonly expressions: StarExpressionEngine;
   readonly helpers: StarExpressionHelperScope;
+  readonly stores: StarContext["stores"];
   applicationCreated(application: StarInstance): void;
   applicationDestroyed(application: StarInstance): void;
   nextApplicationId(): number;
@@ -194,6 +196,8 @@ export class Kernel {
       directives: this.extensions,
       expressions: this.expressions,
       helpers: this.extensions.helpers(),
+      stores: (this.plugins.facade("core.stores") as { stores?: StarContext["stores"] } | undefined)
+        ?.stores,
       applicationCreated: (application) => {
         this.observations.trackApplication(application);
         this.requestMiddleware.trackApplication(application);
@@ -633,11 +637,11 @@ export class Kernel {
     }
     this.applications.clear();
 
-    run([resource("subscription", "kernel:operations")], () => this.observations.dispose());
-
     for (const record of [...this.resources].reverse()) {
       run([resource(record.kind, record.owner)], () => record.release());
     }
+
+    run([resource("subscription", "kernel:operations")], () => this.observations.dispose());
 
     const pluginResources = this.plugins.names().map((name) => resource("plugin", name));
     run(pluginResources, () => this.plugins.dispose());
@@ -737,6 +741,8 @@ export class Kernel {
         return observer;
       },
       own: (kind, owner, cleanup) => this.own(kind, owner, cleanup),
+      operation: (observation) => this.observations.emit(observation),
+      task: (owner, task, onError) => this.createOwnedTask(owner, task, onError),
     };
   }
 }

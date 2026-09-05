@@ -279,6 +279,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       state: this.state,
       computed: this.computed,
       helpers: this.capabilities.helpers,
+      stores: this.capabilities.stores,
       root: this.root,
       $root: this.$root,
       element,

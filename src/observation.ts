@@ -1,12 +1,12 @@
 import type { BackendMethod, StarAction, StarContext, StarInstance } from "./types";
 
-export type StarOperationKind = "action" | "request";
+export type StarOperationKind = "action" | "request" | "store";
 export type StarOperationTerminalPhase = "completed" | "cancelled" | "failed";
 export type StarOperationCancellationReason = "superseded" | "cleanup" | "external" | "aborted";
 
 export interface StarOperationOwner {
   readonly id: string;
-  readonly mode: "attributes" | "behavior";
+  readonly mode: "attributes" | "behavior" | "kernel";
 }
 
 export interface StarOperationError {
@@ -100,8 +100,40 @@ export type StarRequestOperationObservation =
   | StarRequestCancelledObservation
   | StarRequestFailedObservation;
 
+export type StarStoreOperationCategory =
+  "cleanup" | "definition" | "effect" | "setup" | "subscription" | "task" | "change";
+
+export interface StarStoreOperationMetadata {
+  readonly category: StarStoreOperationCategory;
+  readonly name: string;
+  readonly resource: string;
+}
+
+interface StarStoreOperationBase extends StarOperationBase {
+  readonly kind: "store";
+  readonly phase: StarOperationTerminalPhase;
+  readonly store: StarStoreOperationMetadata;
+}
+
+export interface StarStoreCompletedObservation extends StarStoreOperationBase {
+  readonly phase: "completed";
+}
+
+export interface StarStoreCancelledObservation extends StarStoreOperationBase {
+  readonly phase: "cancelled";
+  readonly reason: "cleanup";
+}
+
+export interface StarStoreFailedObservation extends StarStoreOperationBase {
+  readonly phase: "failed";
+  readonly error: StarOperationError;
+}
+
+export type StarStoreOperationObservation =
+  StarStoreCompletedObservation | StarStoreCancelledObservation | StarStoreFailedObservation;
+
 export type StarOperationObservation =
-  StarActionOperationObservation | StarRequestOperationObservation;
+  StarActionOperationObservation | StarRequestOperationObservation | StarStoreOperationObservation;
 
 export type StarOperationObserver = (
   observation: StarOperationObservation,
@@ -155,7 +187,7 @@ interface ActionScope {
 }
 
 interface InternalObservation {
-  readonly application: StarInstance;
+  readonly application?: StarInstance;
   readonly value: StarOperationObservation;
 }
 
@@ -185,7 +217,7 @@ export interface ActionOperation {
 const applicationHubs = new WeakMap<StarInstance, OperationHub>();
 const actionScopes = new WeakMap<object, ActionScope>();
 const operationSubscriptionOwners = new WeakMap<OperationHub, OwnOperationSubscription>();
-const operationKinds = new Set<StarOperationKind>(["action", "request"]);
+const operationKinds = new Set<StarOperationKind>(["action", "request", "store"]);
 const noopRequestOperation: RequestOperation = Object.freeze({
   id: "operation-unobserved",
   progress: () => undefined,
@@ -571,6 +603,10 @@ export class OperationHub {
         });
       },
     });
+  }
+
+  emit(value: StarOperationObservation): void {
+    this.publish({ value });
   }
 
   dispose(): void {
