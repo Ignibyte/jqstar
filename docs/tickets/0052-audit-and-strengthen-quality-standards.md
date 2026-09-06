@@ -220,12 +220,32 @@ fixture correction and stronger font-variation evidence. Its existing zoom and a
 assertions stay required for all three strategies. Return this ticket to testing only after a fresh
 fast report, then require delivery and another hosted full audit before closure.
 
+### Shared-store generator correction, 2026-09-06
+
+The 0033 requirement review reproduced another generated-input mismatch in
+`stores-clone-safe-graphs`. The existing generator admits reserved field names, while the test
+expects every graph to clone. A read-only domain probe found seed `430043`, path `5887:2:12:11:10`,
+counterexample `[{"el":0}]`. Replaying that exact path through the canonical property command fails
+the shared-store property while the other 53 cases pass. Source inspection confirms that the
+existing runtime rejects reserved keys before publishing a definition.
+
+Return this ticket to Code. Preserve the generator and replay identity. Independently classify
+reserved keys at every depth, require rejection without changing caller input or publishing a name,
+and retain clone/alias assertions for accepted graphs. Add a named recorded regression and generated
+nested rejection for all twelve reserved fields. No input filtering, runtime behavior change, or
+mutation execution is part of this correction. Run focused property replay, fast, delivery, and a
+hosted full audit for the resulting committed source before closure.
+
 ## Code
 
 Follow-up changes: `test/property/persist.property.test.ts`, `test/property/regressions.json`, and
 `test/persist-data.test.ts` correct the property contract and retain nested prototype-key
 regressions. `docs/TESTING.md` records the accepted-data and rejection obligations. Owner 0020
 tracks the shared fixture reflow correction.
+
+Follow-up shared-store files: `test/property/stores.property.test.ts` adds independent generated
+acceptance/rejection assertions; `test/property/regressions.json` preserves the discovered seed,
+path, and literal input; `docs/TESTING.md` states the corrected generated-data contract.
 
 ### Changed-file ledger
 
@@ -353,6 +373,17 @@ browser execution passed as recorded above. Package detector controls and delive
 `2026-09-06T06-34-06-391Z-92532`. Hosted full audit `34017660083` subsequently failed the random
 property and repeated browser lanes; a corrected hosted pass remains required. The compiled core
 correction is tracked under reopened owner 0013.
+
+Fast run `2026-09-06T12-55-16-545Z-36924` passes all five executed gates and 1,256 unit tests; the
+unchanged runner self-test is conditionally skipped. Code validation accepted that exact report
+before returning this ticket to testing. A new delivery must cover the closure ledger.
+
+Shared-store correction verification: the exact seed/path replay now passes all 56 property-suite
+cases and records one replay consumer with zero skips. The nested rejection property executes all
+twelve reserved fields per generated case. Focused ESLint passes. Retained before/after reports are
+under `.git/jqstar/program-audit/stores-domain-replay-before/` and `stores-domain-replay-after/`.
+The earlier delivery `2026-09-06T12-30-22-478Z-89670` passed 1,254 unit tests and 484 browser cases
+before this additional test correction; a fresh receipt is required for the changed tree.
 
 ### Inspection ledger
 

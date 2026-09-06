@@ -328,11 +328,14 @@ setup rollback, value-free observations, terminal disposal, and `$store` separat
 mounts behavior and declarative roots against trusted and CSP engines, defines their common store
 after mount, destroys one root, and verifies that the sibling and store remain active.
 
-`test/property/stores.property.test.ts` generates bounded accepted graphs and transaction rollback
-values under the standard replay contract. `e2e/stores.spec.ts` repeats the two-root lifecycle in
-real Chromium, Firefox, and WebKit realms with live-region output. Package quality resolves ESM,
-CommonJS, NodeNext, and Bundler declarations, runs installed consumers, and records the optional
-store graph's raw and gzip sizes while proving store code remains absent from every earlier entry.
+`test/property/stores.property.test.ts` generates bounded graphs and transaction rollback values
+under the standard replay contract. Accepted graphs clone without changing caller input. Generated
+reserved fields at any depth must reject without publishing a store name or changing that input. The
+generator remains unfiltered; a retained counterexample and a nested rejection property cover all
+twelve reserved fields. `e2e/stores.spec.ts` repeats the two-root lifecycle in real Chromium,
+Firefox, and WebKit realms with live-region output. Package quality resolves ESM, CommonJS,
+NodeNext, and Bundler declarations, runs installed consumers, and records the optional store graph's
+raw and gzip sizes while proving store code remains absent from every earlier entry.
 
 `test/render-adapter.test.ts` covers wrong-document/disconnected inputs, marked and caller-supplied
 preservation, repeated/overlapping removal boundaries, deepest-first exact-once teardown, incoming

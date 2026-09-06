@@ -1,7 +1,7 @@
 ---
 id: 0020
 title: Prove the asynchronous resource strategy
-status: testing
+status: done
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -120,7 +120,7 @@ itself evidence that jQStar should own another server-state system.
       bytes, direct/transitive dependencies/licenses/advisories, production/test/docs/type source
       footprint, public concepts, setup/upgrade work, debugging/inspection needs, browser support,
       and an explicit annual maintenance estimate with measurement method and uncertainty.
-- [ ] [AC-05] All strategies preserve useful server-rendered initial/no-JavaScript HTML, server
+- [x] [AC-05] All strategies preserve useful server-rendered initial/no-JavaScript HTML, server
       validation/authorization/version authority, native forms, stable focus, accessible loading/
       error/empty/live updates, cancellation, render preservation, and correct behavior after one or
       every root is removed. A cache never becomes the write authority.
@@ -151,7 +151,7 @@ itself evidence that jQStar should own another server-state system.
       leases, request/cancellation ownership, stale/GC clocks, invalidation, initial HTML/data,
       reactive/render integration, observation/redaction, disposal, package graph, and frozen
       reference metrics. It does not activate mutations.
-- [ ] [AC-12] The decision, evidence dataset, schemas, fixture/prototype exclusions, public/project-
+- [x] [AC-12] The decision, evidence dataset, schemas, fixture/prototype exclusions, public/project-
       brain docs, roadmap dispositions, focused/browser/package checks, `npm run check`, and
       `git diff --check` pass without mutation testing or unselected production code.
 
@@ -415,6 +415,12 @@ Historical implementation evidence:
 | `git diff --check`                                                                                                                      | Pass                                   | No whitespace errors in the completed implementation and guidance.                                                                                                                                                                                        |
 | Final delivery attempt `2026-09-05T20-49-00-053Z-58005`                                                                                 | Interrupted, corrected                 | Stopped at startup to remove a stale pending-verification label in the decision document. The earlier complete delivery passed; the corrected terminal tree is verified by the final receipt.                                                             |
 
+| Corrected full delivery `2026-09-06T12-30-22-478Z-89670` | Pass | Twelve executed gates pass with
+1,254 unit tests and 484 browser cases. The unchanged 0044 detector is conditionally skipped, not
+counted as a pass. Resource source digests, package and release checks pass. | | Corrected Test
+phase before commit `e6a57ca` | Pass | Validator accepted the exact delivery report and current
+receipt before the corrected source was committed and pushed. |
+
 ### Inspection ledger
 
 | Inspection                    | Finding                                                                                          | Resolution                                                                                                     |
@@ -441,20 +447,20 @@ tickets record the declined native track. Generated agent content follows public
 
 ### Acceptance evidence
 
-| Criterion | Result               | Evidence                                                                                                                                                                                                        |
-| --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass                 | Frozen `project-inspector/1` contract and SHA-256 in `docs/decisions/RESOURCE_STRATEGY.md` and `quality/resource-strategy.json`; Plan validation preceded implementation.                                       |
-| AC-02     | Pass                 | Common HTML/server/driver in `test/fixtures/resource-strategy/` and `e2e/resource-strategy.spec.ts`; three independent measured module graphs and production import boundaries.                                 |
-| AC-03     | Pass                 | 45 fresh measurements and 87 retained browser observations cover request counts, races, state, latency and residue. Nine browser disposal reports plus public-conformance tests prove cleanup.                  |
-| AC-04     | Pass                 | Dataset records bundles/graphs, package integrity/size/license/audit, fixture and shared support footprints, named concepts/transitions, annual estimates and uncertainty.                                      |
-| AC-05     | Pass                 | Shared browser matrix proves initial/no-JavaScript HTML, native forms, canonical writes/conflicts/permissions, focus, live regions, teardown, identity changes and preservation.                                |
-| AC-06     | Pass                 | Private exact query-core 5.102.8 lock, verified tarball SHA-512, dated official sources/audit and public QueryClient/QueryObserver adapter. Empty-install preparation succeeded.                                |
-| AC-07     | Pass                 | Native prototype remains test-only. Public conformance and direct retained-lease/last-release tests prove failed-install rollback, cancellation and terminal timer ownership.                                   |
-| AC-08     | Pass                 | Frozen rubric, explicit inspection inputs, hard-gate rejection tests, exact score recomputation and all 177147 sensitivity cases are retained and validated.                                                    |
-| AC-09     | Pass                 | Decision selects server patches under the predeclared inconclusive rule: server/external/native 91/92/90. It records tradeoffs, ranking sensitivity, uncertainty, owner/cadence and revisit triggers.           |
-| AC-10     | Pass                 | Tickets 0021 and 0022 are declined. Public composition docs, root manifest/lock checks, production import restrictions and installed-package graphs/files prove no native API or unselected dependency ships.   |
-| AC-11     | Approved-Disposition | Native was not selected and fails the three additional approval findings. The frozen decision and activation rules reject this conditional branch; neither native resources nor mutations are activated.        |
-| AC-12     | Pass                 | Closed schema/contract, focused tests, 448 delivery browser executions, package/release checks, public/brain/generated docs, roadmap dispositions, `npm run check` and `git diff --check`; no mutation testing. |
+| Criterion | Result               | Evidence                                                                                                                                                                                                                                                                                                       |
+| --------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass                 | Frozen `project-inspector/1` contract and SHA-256 in `docs/decisions/RESOURCE_STRATEGY.md` and `quality/resource-strategy.json`; Plan validation preceded implementation.                                                                                                                                      |
+| AC-02     | Pass                 | Common HTML/server/driver in `test/fixtures/resource-strategy/` and `e2e/resource-strategy.spec.ts`; three independent measured module graphs and production import boundaries.                                                                                                                                |
+| AC-03     | Pass                 | 45 fresh measurements and 87 retained browser observations cover request counts, races, state, latency and residue. Nine browser disposal reports plus public-conformance tests prove cleanup.                                                                                                                 |
+| AC-04     | Pass                 | Dataset records bundles/graphs, package integrity/size/license/audit, fixture and shared support footprints, named concepts/transitions, annual estimates and uncertainty.                                                                                                                                     |
+| AC-05     | Pass                 | Corrected 87-case browser matrix proves initial/no-JavaScript HTML, native forms, canonical writes/conflicts/permissions, focus, live regions, teardown, identity changes and preservation. S15 passes both system and monospace fonts at the existing zoom settings; no clipping or assertion relaxation.     |
+| AC-06     | Pass                 | Private exact query-core 5.102.8 lock, verified tarball SHA-512, dated official sources/audit and public QueryClient/QueryObserver adapter. Empty-install preparation succeeded.                                                                                                                               |
+| AC-07     | Pass                 | Native prototype remains test-only. Public conformance and direct retained-lease/last-release tests prove failed-install rollback, cancellation and terminal timer ownership.                                                                                                                                  |
+| AC-08     | Pass                 | Frozen rubric, explicit inspection inputs, hard-gate rejection tests, exact score recomputation and all 177147 sensitivity cases are retained and validated.                                                                                                                                                   |
+| AC-09     | Pass                 | Decision selects server patches under the predeclared inconclusive rule: server/external/native 91/92/90. It records tradeoffs, ranking sensitivity, uncertainty, owner/cadence and revisit triggers.                                                                                                          |
+| AC-10     | Pass                 | Tickets 0021 and 0022 are declined. Public composition docs, root manifest/lock checks, production import restrictions and installed-package graphs/files prove no native API or unselected dependency ships.                                                                                                  |
+| AC-11     | Approved-Disposition | Native was not selected and fails the three additional approval findings. The frozen decision and activation rules reject this conditional branch; neither native resources nor mutations are activated.                                                                                                       |
+| AC-12     | Pass                 | Delivery `2026-09-06T12-30-22-478Z-89670` passes 1,254 unit tests, all 484 browser cases, 13 package checks and seven release checks. Current schema/digests, 45 measurements, 87 resource browser cases, scores and sensitivity pass; Test validation succeeded before commit `e6a57ca`. No mutation testing. |
 
 ### Previous completion audit (superseded 2026-09-06)
 
@@ -475,4 +481,18 @@ Historical status: Complete
 
 ### Completion audit
 
-Pending the shared reflow correction, current browser evidence, and required quality validation.
+The shared fixture now wraps long text at the existing 640px viewport, 200% root font size and 2x
+zoom. System and monospace font checks preserve content, the original width assertion, and axe
+checks for every strategy. All 87 focused browser cases and 45 fresh measurement samples pass. The
+recorded browser digest is `27912eadc8b567407698e0cb900f228010656f54f7bc512b01405885e8d51259`; the
+raw measurement digest is `03b11a71ea16bce61e4aaef77555a7cd2cd0056630c1b52c4c5fe0b39f3906bf`.
+Fixture digests match and score/sensitivity calculations remain unchanged at 91/92/90.
+
+The corrected local delivery and Test validator passed before commit `e6a57ca`. Its package remains
+byte-identical to the preceding artifact, so the private research correction adds no published
+runtime surface. All twelve criteria have direct evidence or the explicit AC-11 native rejection.
+The decision, current measurement tables, testing guidance and declined children agree. Ticket 0052
+separately owns the hosted full-audit requirement and later property-test correction. A fresh
+delivery must cover this closure text before committing it.
+
+Status: Complete

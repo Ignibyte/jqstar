@@ -298,6 +298,27 @@ Reports are retained under `.git/jqstar/hosted-audit-34012438886/`. They are fai
 program acceptance proof. The earlier Node 26 local delivery remains evidence only for its own
 source and environment.
 
+### Owner correction checkpoint, 2026-09-06
+
+Owners 0002 and 0013 closed after current delivery and their Document validations in commit
+`fc3622a`. The subsequent `e6a57ca` correction fixes the shared research fixture's zoom overflow and
+the persistence property expectation. Its local delivery `2026-09-06T12-30-22-478Z-89670` passes
+1,254 unit tests, all 484 browser cases, 13 package checks and seven release checks. The resource
+comparison additionally passes 87 browser cases and 45 fresh measurements without changing its
+decision. Owner 0020's Document closure now passes.
+
+Direct shared-store requirement review reproduced a second property expectation mismatch with seed
+`430043`, path `5887:2:12:11:10`, and reserved field `el`. Owner 0052 records the failing replay,
+independent generated acceptance/rejection correction, passing 56-case replay and fresh 1,256-test
+fast gate. Hosted run `34034049302` still audits the preceding committed source. The new test
+correction needs delivery and hosted verification before 0052 can close.
+
+There are 189 planning requirement mappings under `.git/jqstar/program-audit/`, including twelve new
+bridge rows with 101 verified literal selectors. These are reviewed candidate citations, not current
+frozen acceptance results. The final manifest/execution index, remaining mappings, whole
+public-claim review and actual manual accessibility records are still required. Final program
+acceptance remains pending; no mutation command has run.
+
 ### Risks
 
 - A huge matrix can hide missing mappings. Enforce unique machine IDs, owner/criterion completeness,
