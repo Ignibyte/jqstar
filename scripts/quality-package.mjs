@@ -1,3 +1,4 @@
+import { verifyMobileReferenceUMD } from "./quality/mobile-reference.mjs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createServer } from "node:http";
@@ -825,6 +826,13 @@ try {
   });
 
   await record("exports-and-files", async () => {
+    const mobileReference = JSON.parse(
+      await readFile(join(root, "quality/jquery-mobile-migration.json"), "utf8"),
+    );
+    await verifyMobileReferenceUMD(
+      join(extracted, "dist/jquery-star.umd.cjs"),
+      mobileReference.referenceApp.measurements.assetBytes.jqueryStar,
+    );
     const manifest = JSON.parse(await readFile(join(extracted, "package.json"), "utf8"));
     assert(manifest.name === "jquery-star", "Packed package name changed.");
     for (const field of [

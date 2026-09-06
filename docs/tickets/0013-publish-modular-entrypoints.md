@@ -1,9 +1,9 @@
 ---
 id: 0013
 title: Publish modular core, UI, and Datastar entry points
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-06
 ---
 
 # 0013: Publish modular core, UI, and Datastar entry points
@@ -122,7 +122,7 @@ current required `StarStatic.ui` and global jQuery declarations.
 - [x] [AC-08] `sideEffects` marks only the auto-installing root artifacts and UI CSS. Core, UI, and
       Datastar plugin modules remain side-effect-free; bundlers retain explicitly installed plugins
       and remove unreferenced ones.
-- [x] [AC-09] A packed core-only consumer executes applications, helpers/directives, observations,
+- [ ] [AC-09] A packed core-only consumer executes applications, helpers/directives, observations,
       middleware, generic JSON/HTML requests, patches, and render lifecycle while excluding UI,
       Datastar, persistence, resources, navigation, CSP, testing, inspection, registry, server, and
       website sentinels. Raw/gzip bundle budgets ratchet from the first reviewed artifact.
@@ -145,7 +145,7 @@ current required `StarStatic.ui` and global jQuery declarations.
       no jQuery UI successor or stable-1.0 claim. Full focused and installed-package matrices,
       coverage/property/static/browser/package/release gates, `npm run check`, and
       `git diff --check` pass without mutation testing.
-- [x] [AC-14] Core and root expose the same idempotent public disposal operation. It attempts every
+- [ ] [AC-14] Core and root expose the same idempotent public disposal operation. It attempts every
       application, plugin, request, task, observer, listener, subscription, effect, hook, and
       service cleanup; releases installation ownership; and returns a frozen, JSON-safe report of
       attempted, released, failed, and remaining resources by exact category and owner. A cleanup
@@ -340,6 +340,47 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 - `docs/tickets/0013-publish-modular-entrypoints.md`: Phase state, ledger, commands, findings, and
   criterion evidence.
 
+### Reopening decision: supported-toolchain core budget, 2026-09-06
+
+The final program audit found that AC-09 exceeds the existing core gzip budget on official Node
+24.20.0. Hosted run `34012438886` measured 63,113 bytes against 63,000. An isolated installed
+consumer produces exactly the same 195,103 JavaScript bytes on the local diagnostic; compressing
+those bytes with Homebrew zlib gives 62,995, while official Node 24 gives the hosted 63,113. The
+reports are `.git/jqstar/program-audit/core-gzip-homebrew.json` and
+`core-gzip-official-node24.json`. Reopen this owner to Plan; the prior completion is historical.
+
+Restore the existing budget by sharing equivalent internal value checks and bounded-text handling
+currently duplicated across core modules. Review exact semantics before extraction: object prototype
+checks, thenable access, control-character replacement, Unicode truncation, and error fallback
+wording must remain unchanged. Do not combine helpers whose getter behavior differs. Keep public
+types, entry exports, optional-module exclusions, compiler settings, consumer workload, and gzip
+settings unchanged. New helpers remain internal and import no optional code.
+
+Planned correction files: a small internal value helper, its core call sites, focused boundary
+fixtures, necessary derived measurement records, modular architecture/testing documentation, and
+this ticket. Verify public behavior and hostile-value boundaries, compiled entry graphs, official
+Node 24 and Homebrew gzip sizes, fast and complete delivery gates, and current phase validators. Any
+optimization that fails a contract or still exceeds the existing budget is not accepted.
+
+### Additional disposal correction, 2026-09-06
+
+Direct AC-14 review reproduced an incomplete cleanup sweep when a callback throws
+`Object.create(null)`. Formatting the thrown value raises a second TypeError, skips a later cleanup,
+and retains its resource. The failing fixture and JSON report are retained under
+`.git/jqstar/program-audit/disposal-value*`. Delivery run `2026-09-06T06-04-04-409Z-6542` passed all
+13 gates before this correction, but its existing tests do not cover this defect. AC-14 is unchecked
+and this already reopened ticket returns to Code.
+
+Share guarded error-field extraction between disposal and operation diagnostics. Read each Error
+field once, contain prototype and conversion failures, and retain the original thrown values in the
+aggregate. Preserve each caller's ordinary name/message fallbacks, empty-message policy, truncation,
+and control-character handling. Disposal must finish the sweep, release the document, and return the
+same terminal aggregate on repeated calls for unprintable values, revoked proxies, and changing
+accessors. Add kernel and diagnostic regressions before implementation. Planned files are
+`src/{disposal,value-checks}.ts`, `test/{kernel,value-checks}.test.ts`, ownership and architecture
+documentation, derived size measurements, and this ticket. Verify focused failures and passes,
+existing operation diagnostics, unchanged core budgets, coverage, and a fresh complete delivery.
+
 ## Code
 
 ### Changed-file ledger
@@ -393,6 +434,29 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 | `vitest.coverage.config.ts`, `quality/production-census.json`                          | Exercise source self-imports through one runtime under coverage and classify the separate UMD build.     |
 | `schema/package-report.schema.json`                                                    | Validate the active modular exports, consumers, and core bundle sentinel in package evidence.            |
 
+### Current correction ledger
+
+- `src/value-checks.ts`, `src/declarative.ts`, `src/directive.ts`, `src/expression.ts`,
+  `src/observation.ts`, `src/protocol.ts`, `src/request-middleware.ts`: share exactly equivalent
+  value checks and diagnostic text normalization. The protocol-specific thenable getter remains
+  separate because its membership behavior differs.
+- `src/request-headers.ts`: one unchanged browser-owned header predicate shared by protocol and
+  middleware policy.
+- `test/value-checks.test.ts`: plain/null prototypes, hostile proxy/accessor behavior, function
+  thenables, whitespace, control characters, Unicode, and truncation boundaries.
+- `quality/jquery-mobile-migration.json`: refresh the measured UMD bytes after the compiled
+  implementation changes; the migration outcome and supported behavior are unchanged.
+- `test/protocol.test.ts`, `test/request-middleware.test.ts`: mixed-case browser-owned headers,
+  permitted application headers, and retained authored-header policy.
+- `docs/ARCHITECTURE.md` and this ticket: internal helper ownership and supported-toolchain proof.
+- `src/disposal.ts`, `src/value-checks.ts`: contain prototype/conversion failures and read Error
+  fields once while preserving caller-specific formatting and original aggregate values.
+- `test/kernel.test.ts`, `test/value-checks.test.ts`: reproduce five hostile-value failures, then
+  verify complete cleanup, reusable document ownership, stable repeated errors, and safe
+  diagnostics.
+- `README.md`, `docs/RUNTIME_OWNERSHIP.md`: document bounded disposal formatting and cleanup after
+  unprintable failures.
+
 ### Design changes
 
 - A kernel now starts with `core.generic` only. The official Datastar plugin registers
@@ -405,6 +469,26 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
   manifest-derived `--version` path and prove both the source CLI and the installed tarball output.
 
 ## Test
+
+The budget correction passed delivery `2026-09-06T06-04-04-409Z-6542` under official Node 24.20.0:
+all 13 gates, 1,239 unit tests, 484 browser cases, 13 installed-package groups, and seven release
+checks passed. This is evidence for that exact earlier source; the additional disposal correction
+requires fresh fast, coverage, and delivery evidence before phase closure.
+
+Five added hostile-value regressions failed against the previous source. After guarded extraction,
+all 89 kernel, value-boundary, observation, and middleware tests pass. Exact before/after JSON is
+retained as `.git/jqstar/program-audit/disposal-boundaries-{before,after}.json`. The revised core
+consumer is 193,511 raw / 62,994 gzip bytes on official Node 24, below the unchanged 63,000 gzip
+ceiling. `core-gzip-disposal-node24.json` records the diagnostic toolchain and bytes; the installed
+package gate must confirm the final artifact.
+
+Fast run `2026-09-06T06-30-16-748Z-67113` passed unit and static checks but failed formatting of the
+refreshed UMD measurement JSON. Format that record without changing its value or any rule, then
+repeat the fast gate. This failed run cannot close Code.
+
+Corrected fast run `2026-09-06T06-32-11-544Z-79781` passes all six gates and 1,244 unit tests on
+official Node 24. Code validation accepted this exact current-tree report before the transition to
+testing. Fresh coverage and complete delivery remain required for the additional disposal fix.
 
 | Command                                                                                                                                                                                                     | Result                     | Evidence                                                                                                                                                                                                                             |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -441,6 +525,18 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 | Code-phase validation against the exact fast report                                                                                                                                                         | Pass                       | The validator accepted the updated plan, changed-file ledger, design record, current fast report, and transition back through Code.                                                                                                  |
 | Version-complete `npm run quality:delivery`                                                                                                                                                                 | Pass                       | Run `2026-09-01T18-56-04-795Z-14492` passed all 12 gates on an unchanged 495-file fingerprint: 734 unit tests, 1,930 effective property cases, 263 browser cases, and the package and release matrices.                              |
 | Test-phase validation against run `2026-09-01T18-56-04-795Z-14492`                                                                                                                                          | Pass                       | The validator accepted the current testing tree, immutable delivery report and receipt, command/evidence table, and independent inspection ledger.                                                                                   |
+
+Current correction verification: 137 focused value, protocol, middleware, directive, observation,
+Mobile-contract, and preparation tests passed; the subsequent header-policy extension passed 76
+focused tests. Typecheck and ESLint passed. The first sharing diagnostic remained above budget
+(63,017 bytes); shared diagnostic formatting measured 63,022. Sharing the equivalent header policy
+then produced 193,624 raw and 62,988 gzip bytes under official Node 24.20.0, with a 463,391-byte
+UMD. Current official Node 24 fast run `2026-09-06T06-00-38-593Z-87431` passes all six gates and
+1,239 unit tests. Coverage passes with every changed executable line/function covered: 94.48% lines,
+93.45% functions, and 84.88% branches. The clean-checkout unit and three-engine table checks also
+pass. The measured bundle sizes are compiled-consumer diagnostics, not final installed-package or
+delivery proof. Retained reports and build logs are under `.git/jqstar/program-audit/`. Complete
+current verification remains required before closure.
 
 ### Inspection ledger
 
@@ -494,7 +590,7 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 | AC-13 | Public metadata and documentation mark all subpaths as `0.4-preview` and distinguish them from root compatibility; delivery run `2026-09-01T18-56-04-795Z-14492` passed all 12 gates, including 734 unit tests, coverage, 1,930 property cases, 263 browser cases, package, and reproducible release checks. | Pass   |
 | AC-14 | `src/disposal.ts`, `src/kernel.ts`, runtime and modular tests prove the shared public disposal operation, exhaustive cleanup, ownership release, frozen JSON-safe reports, stable repeated/recursive results, reinstall after disposal, and typed aggregate failure after the complete cleanup sweep.        | Pass   |
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-06)
 
 The audit traced all 14 criteria from the public entry points through declarations, runtime
 ownership, installed consumers, browser execution, package metadata, public documentation, and the
@@ -509,4 +605,8 @@ bytes, and reproduces across two clean installations with SHA-256
 contains 12 passing gates and excludes mutation testing. Package and release cleanup handlers leave
 zero matching temporary workspaces after success and failure paths.
 
-Status: Complete
+Historical status: Complete
+
+### Completion audit
+
+Pending current delivery evidence for the core-budget and hostile-value disposal corrections.

@@ -65,6 +65,8 @@ The package has two public layers:
   the extension kernel and optional application services.
 - [QUALITY_PROGRAM.md](QUALITY_PROGRAM.md): evidence-gated workflow, JavaScript quality stack,
   coverage, browser, package, and release standards.
+- [PROGRAM_AUDIT.md](PROGRAM_AUDIT.md): requirement inventory, direct evidence validation, and the
+  remaining work for the final program audit.
 - [tickets/README.md](tickets/README.md): the required Plan → Code → Test → Document workflow.
 - [tickets/ROADMAP.md](tickets/ROADMAP.md): ordered library-expansion tickets and dependency gates.
 

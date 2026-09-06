@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import Ajv2020 from "ajv/dist/2020.js";
@@ -247,6 +247,20 @@ describe("stable release candidate contract", () => {
 
   it("audits every prerequisite ticket and criterion from current source", async () => {
     const { contract } = await loadReleaseContract(root);
+    const names = await readdir(join(root, "docs/tickets"));
+    for (const id of contract.prerequisites.tickets) {
+      const name = names.find((candidate) => candidate.startsWith(`${id}-`));
+      expect(name).toBeDefined();
+      const source = await readFile(join(root, "docs/tickets", name), "utf8");
+      const status = /^status: (.+)$/mu.exec(source)?.[1];
+      if (status !== "done") {
+        // A reopened owner must fail candidate readiness, while its correction can run unit tests.
+        await expect(auditPrerequisiteTickets(root, contract)).rejects.toThrow(
+          `Prerequisite ${id} has status ${status}; expected done.`,
+        );
+        return;
+      }
+    }
     const audit = await auditPrerequisiteTickets(root, contract);
     expect(audit.required).toBe(40);
     expect(audit.audited).toBe(40);

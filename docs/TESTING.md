@@ -434,6 +434,18 @@ that passes only on retry fail the gate. After retries, the first failed test st
 a broken browser launch cannot restart once per selected test. Partial shards are refused until an
 all-shard result aggregator exists.
 
+`npm run test:e2e` prepares the self-hosted assets and both research fixtures before starting
+Playwright. The browser quality runner and detector harness use the same preparation. Build and
+installation failures stop execution and name the failed preparation step; they are outside the
+unchanged 60-second HTTP readiness check. Quality selection and direct `npx playwright test --list`
+do not build. For repeated direct `npx playwright test` invocations, first run
+`node scripts/prepare-browser-fixtures.mjs` after source changes or a clean checkout. Each
+preparation step has a ten-minute execution bound.
+
+Mobile migration unit tests compare source-file bytes and lines without requiring a prior build. The
+enforced package contents check compares the extracted UMD byte size with the reviewed Mobile
+reference measurement, rejecting missing or mismatched artifacts.
+
 Every browser project writes its test results, retained traces, and HTML report to a distinct
 directory under `JQS_QUALITY_RUN_DIRECTORY`. The JSON report records those paths, the quality run
 ID, seed, worker settings, selected and executed counts, pass/fail/flaky/skip counts, and execution

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "program", "tickets", "expectedRequirements", "claimSources", "baselines"],
+  "properties": {
+    "schema": {
+      "const": "jqstar-program-audit-inputs/1"
+    },
+    "program": {
+      "const": "docs/LIBRARY_EXPANSION_PLAN.md"
+    },
+    "tickets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}$"
+      },
+      "minItems": 53,
+      "maxItems": 53,
+      "uniqueItems": true
+    },
+    "expectedRequirements": {
+      "const": 613
+    },
+    "claimSources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"
+      },
+      "minItems": 1,
+      "maxItems": 500,
+      "uniqueItems": true
+    },
+    "baselines": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"
+      },
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true
+    }
+  }
+}

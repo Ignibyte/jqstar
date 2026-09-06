@@ -657,11 +657,12 @@ expand to a semantic companion row containing the description, stored version, a
 `PATCH /api/demo/projects/:id` uses the form's expected version; a conflict reloads the canonical
 row, announces the failure, and focuses the refreshed editor.
 
-Column visibility, order, and left pinning are client-owned presentation state. The block normalizes
-and stores a versioned layout, reapplies it after patches, supports drag/drop and explicit move
-buttons, and never hides the selection or Project column. Virtual mode requests at most 80 fixed
-height data rows, renders spacer rows for the complete result height, aborts superseded requests,
-and disables variable-height grouping and expansion.
+The block persists column visibility, order, and left pinning in a normalized versioned layout. It
+reapplies the layout after patches, supports drag/drop and move buttons, and keeps selection and
+Project columns visible. Virtual mode renders at most 80 fixed-height rows plus spacers for the
+complete result height, with grouping and expansion disabled. Each root owns one current query
+controller across controls. Superseded queries and save refreshes cannot finalize the current UI
+state. Pending edits keep loading active.
 
 ## Access Manager
 

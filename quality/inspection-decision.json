@@ -1,20 +1,20 @@
 {
   "schema": "jqstar-inspection-investigations/1",
-  "recordedAt": "2026-09-06T03:33:14.787Z",
+  "recordedAt": "2026-09-06T06:30:03.067Z",
   "rows": [
     {
       "engine": "chromium",
       "version": "151.0.7922.34",
       "app": "project-browser",
       "id": "project-browser-ownership",
-      "elapsedMs": 4.600000001490116,
+      "elapsedMs": 5.299999997019768,
       "resolved": true,
       "publicReads": 4,
       "diagnosis": "hidden-root-remains-owned",
       "before": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "kernelId": "kernel-350e9a9140ddc0b49c7f0b2f4488b5e0",
         "sequence": 1,
         "lifecycle": "active",
         "kernel": {
@@ -79,7 +79,7 @@
       "fault": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "kernelId": "kernel-350e9a9140ddc0b49c7f0b2f4488b5e0",
         "sequence": 2,
         "lifecycle": "active",
         "kernel": {
@@ -147,7 +147,7 @@
       "corrected": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "kernelId": "kernel-350e9a9140ddc0b49c7f0b2f4488b5e0",
         "sequence": 3,
         "lifecycle": "active",
         "kernel": {
@@ -212,7 +212,7 @@
       "terminal": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "kernelId": "kernel-350e9a9140ddc0b49c7f0b2f4488b5e0",
         "sequence": 4,
         "lifecycle": "disposed",
         "kernel": null,
@@ -307,14 +307,14 @@
       "version": "151.0.7922.34",
       "app": "audit-log",
       "id": "audit-log-request",
-      "elapsedMs": 10.800000004470348,
+      "elapsedMs": 11.699999995529652,
       "resolved": true,
       "publicReads": 4,
       "diagnosis": "backend-http-503-action-was-registered",
       "before": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "kernelId": "kernel-ed94c9a29e5991f888ef40c8be859c34",
         "sequence": 1,
         "lifecycle": "active",
         "kernel": {
@@ -378,7 +378,7 @@
       },
       "fault": {
         "schema": "jqstar-inspection-trace/1",
-        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "kernelId": "kernel-ed94c9a29e5991f888ef40c8be859c34",
         "trace": {
           "enabled": true,
           "maxEntries": 64,
@@ -416,7 +416,7 @@
             "kind": "action",
             "phase": "started",
             "outcome": "pending",
-            "elapsedMs": 0,
+            "elapsedMs": 1,
             "id": "operation-1",
             "ownerId": "application-1"
           },
@@ -425,7 +425,7 @@
             "kind": "request",
             "phase": "started",
             "outcome": "pending",
-            "elapsedMs": 1,
+            "elapsedMs": 2,
             "id": "operation-2",
             "ownerId": "application-1",
             "method": "GET",
@@ -437,7 +437,7 @@
             "kind": "request",
             "phase": "failed",
             "outcome": "failed",
-            "elapsedMs": 4,
+            "elapsedMs": 5,
             "id": "operation-2",
             "ownerId": "application-1",
             "method": "GET",
@@ -450,7 +450,7 @@
             "kind": "action",
             "phase": "failed",
             "outcome": "failed",
-            "elapsedMs": 4,
+            "elapsedMs": 5,
             "id": "operation-1",
             "ownerId": "application-1"
           }
@@ -458,7 +458,7 @@
       },
       "corrected": {
         "schema": "jqstar-inspection-trace/1",
-        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "kernelId": "kernel-ed94c9a29e5991f888ef40c8be859c34",
         "trace": {
           "enabled": true,
           "maxEntries": 64,
@@ -496,7 +496,7 @@
             "kind": "action",
             "phase": "started",
             "outcome": "pending",
-            "elapsedMs": 4,
+            "elapsedMs": 5,
             "id": "operation-3",
             "ownerId": "application-1"
           },
@@ -505,7 +505,7 @@
             "kind": "request",
             "phase": "started",
             "outcome": "pending",
-            "elapsedMs": 4,
+            "elapsedMs": 5,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -517,7 +517,7 @@
             "kind": "request",
             "phase": "progress",
             "outcome": "pending",
-            "elapsedMs": 7,
+            "elapsedMs": 8,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -530,7 +530,7 @@
             "kind": "request",
             "phase": "completed",
             "outcome": "completed",
-            "elapsedMs": 7,
+            "elapsedMs": 8,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -543,7 +543,7 @@
             "kind": "action",
             "phase": "completed",
             "outcome": "completed",
-            "elapsedMs": 7,
+            "elapsedMs": 8,
             "id": "operation-3",
             "ownerId": "application-1"
           }
@@ -552,7 +552,7 @@
       "terminal": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "kernelId": "kernel-ed94c9a29e5991f888ef40c8be859c34",
         "sequence": 11,
         "lifecycle": "disposed",
         "kernel": null,
@@ -654,7 +654,7 @@
       "before": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "kernelId": "kernel-429b253160927c6349d49913cbd2bfe3",
         "sequence": 1,
         "lifecycle": "active",
         "kernel": {
@@ -719,7 +719,7 @@
       "fault": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "kernelId": "kernel-429b253160927c6349d49913cbd2bfe3",
         "sequence": 2,
         "lifecycle": "active",
         "kernel": {
@@ -787,7 +787,7 @@
       "corrected": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "kernelId": "kernel-429b253160927c6349d49913cbd2bfe3",
         "sequence": 3,
         "lifecycle": "active",
         "kernel": {
@@ -852,7 +852,7 @@
       "terminal": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "kernelId": "kernel-429b253160927c6349d49913cbd2bfe3",
         "sequence": 4,
         "lifecycle": "disposed",
         "kernel": null,
@@ -947,14 +947,14 @@
       "version": "153.0",
       "app": "audit-log",
       "id": "audit-log-request",
-      "elapsedMs": 9,
+      "elapsedMs": 10,
       "resolved": true,
       "publicReads": 4,
       "diagnosis": "backend-http-503-action-was-registered",
       "before": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "kernelId": "kernel-0db04f8e69ddcc8c8d2bef4e6df6f6dd",
         "sequence": 1,
         "lifecycle": "active",
         "kernel": {
@@ -1018,7 +1018,7 @@
       },
       "fault": {
         "schema": "jqstar-inspection-trace/1",
-        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "kernelId": "kernel-0db04f8e69ddcc8c8d2bef4e6df6f6dd",
         "trace": {
           "enabled": true,
           "maxEntries": 64,
@@ -1077,7 +1077,7 @@
             "kind": "request",
             "phase": "failed",
             "outcome": "failed",
-            "elapsedMs": 4,
+            "elapsedMs": 3,
             "id": "operation-2",
             "ownerId": "application-1",
             "method": "GET",
@@ -1098,7 +1098,7 @@
       },
       "corrected": {
         "schema": "jqstar-inspection-trace/1",
-        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "kernelId": "kernel-0db04f8e69ddcc8c8d2bef4e6df6f6dd",
         "trace": {
           "enabled": true,
           "maxEntries": 64,
@@ -1136,7 +1136,7 @@
             "kind": "action",
             "phase": "started",
             "outcome": "pending",
-            "elapsedMs": 5,
+            "elapsedMs": 4,
             "id": "operation-3",
             "ownerId": "application-1"
           },
@@ -1145,7 +1145,7 @@
             "kind": "request",
             "phase": "started",
             "outcome": "pending",
-            "elapsedMs": 5,
+            "elapsedMs": 4,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -1157,7 +1157,7 @@
             "kind": "request",
             "phase": "progress",
             "outcome": "pending",
-            "elapsedMs": 7,
+            "elapsedMs": 6,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -1170,7 +1170,7 @@
             "kind": "request",
             "phase": "completed",
             "outcome": "completed",
-            "elapsedMs": 7,
+            "elapsedMs": 6,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -1192,7 +1192,7 @@
       "terminal": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "kernelId": "kernel-0db04f8e69ddcc8c8d2bef4e6df6f6dd",
         "sequence": 11,
         "lifecycle": "disposed",
         "kernel": null,
@@ -1294,7 +1294,7 @@
       "before": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "kernelId": "kernel-31154fcf268df268e1e5b3f4d74699c6",
         "sequence": 1,
         "lifecycle": "active",
         "kernel": {
@@ -1359,7 +1359,7 @@
       "fault": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "kernelId": "kernel-31154fcf268df268e1e5b3f4d74699c6",
         "sequence": 2,
         "lifecycle": "active",
         "kernel": {
@@ -1427,7 +1427,7 @@
       "corrected": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "kernelId": "kernel-31154fcf268df268e1e5b3f4d74699c6",
         "sequence": 3,
         "lifecycle": "active",
         "kernel": {
@@ -1492,7 +1492,7 @@
       "terminal": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "kernelId": "kernel-31154fcf268df268e1e5b3f4d74699c6",
         "sequence": 4,
         "lifecycle": "disposed",
         "kernel": null,
@@ -1587,14 +1587,14 @@
       "version": "26.5",
       "app": "audit-log",
       "id": "audit-log-request",
-      "elapsedMs": 13,
+      "elapsedMs": 12,
       "resolved": true,
       "publicReads": 4,
       "diagnosis": "backend-http-503-action-was-registered",
       "before": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "kernelId": "kernel-6cecb5852b5920d26b65a9f29b21c4a1",
         "sequence": 1,
         "lifecycle": "active",
         "kernel": {
@@ -1658,7 +1658,7 @@
       },
       "fault": {
         "schema": "jqstar-inspection-trace/1",
-        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "kernelId": "kernel-6cecb5852b5920d26b65a9f29b21c4a1",
         "trace": {
           "enabled": true,
           "maxEntries": 64,
@@ -1738,7 +1738,7 @@
       },
       "corrected": {
         "schema": "jqstar-inspection-trace/1",
-        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "kernelId": "kernel-6cecb5852b5920d26b65a9f29b21c4a1",
         "trace": {
           "enabled": true,
           "maxEntries": 64,
@@ -1797,7 +1797,7 @@
             "kind": "request",
             "phase": "progress",
             "outcome": "pending",
-            "elapsedMs": 8,
+            "elapsedMs": 7,
             "id": "operation-4",
             "ownerId": "application-1",
             "method": "GET",
@@ -1832,7 +1832,7 @@
       "terminal": {
         "schema": "jqstar-inspection-snapshot/1",
         "version": "1.1.0",
-        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "kernelId": "kernel-6cecb5852b5920d26b65a9f29b21c4a1",
         "sequence": 11,
         "lifecycle": "disposed",
         "kernel": null,
@@ -1926,13 +1926,13 @@
   "package": {
     "name": "jquery-star",
     "version": "1.1.0",
-    "sha256": "08fac88a32da4ba7834aaa2d3ad8b58daaa58484894bceb9833ebdd86a7d1971"
+    "sha256": "f5523c95d35c6c4aedc02fd9dad752f12df5de27c4ed9ac442d02ee116376ce1"
   },
-  "source": "0d51340f4b134b8c3557ea777c86c0e20c2dcf3e",
+  "source": "6bdc789aef23ae161ede524947e622e46a25a01f",
   "inputs": {
     "test/fixtures/inspection-investigations.mjs": "fa4ac2726bee7e821147ee058ad703f8ea111d35947f0873d5404d61e5417e62",
     "scripts/measure-inspection-investigations.mjs": "999d09247dbce6b6c52df58e67e4b2bb8302abe5041d8aadae8475aa6dc48669",
-    "registry/blocks/project-browser.ts": "c752903746c92bb21b5967cbd5543a5c52c9952a4f548808387a8047d06fa4c5",
+    "registry/blocks/project-browser.ts": "93bae49e40a7ed3353b1e5d34b6123e679ada722f6a3a602c9667b9d22439693",
     "registry/blocks/project-browser.html": "07034b206effd944c98c434f770a78abe36d08c7775bace6751abab96b5ec4d5",
     "registry/blocks/audit-log.ts": "69fed1c8403868b44e35da82812f1d8c7416470989b0fe8cf40356267f47075c",
     "registry/blocks/audit-log.html": "80f094d76dae98a7de9d27e5ef748b403ef1267b631ae305222e87f8d162e3b5",
@@ -1942,10 +1942,10 @@
   "graphs": {
     "project-browser": [
       "investigations.mjs",
-      "node_modules/jquery-star/dist/datastar-DzHbAsT6.js",
+      "node_modules/jquery-star/dist/datastar-C77Xngdy.js",
       "node_modules/jquery-star/dist/inspect.js",
       "node_modules/jquery-star/dist/jquery-star.js",
-      "node_modules/jquery-star/dist/render-adapter-bjdCWt5j.js",
+      "node_modules/jquery-star/dist/render-adapter-BUdf1-b9.js",
       "node_modules/jquery-star/dist/ui.js",
       "node_modules/jquery/dist-module/jquery.module.js",
       "project-browser.mjs",
@@ -1955,10 +1955,10 @@
       "audit-log.mjs",
       "audit-log.ts",
       "investigations.mjs",
-      "node_modules/jquery-star/dist/datastar-DzHbAsT6.js",
+      "node_modules/jquery-star/dist/datastar-C77Xngdy.js",
       "node_modules/jquery-star/dist/inspect.js",
       "node_modules/jquery-star/dist/jquery-star.js",
-      "node_modules/jquery-star/dist/render-adapter-bjdCWt5j.js",
+      "node_modules/jquery-star/dist/render-adapter-BUdf1-b9.js",
       "node_modules/jquery-star/dist/ui.js",
       "node_modules/jquery/dist-module/jquery.module.js"
     ]

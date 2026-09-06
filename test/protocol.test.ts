@@ -76,6 +76,29 @@ function source(changes: Partial<ProtocolRequestSource> = {}): ProtocolRequestSo
   };
 }
 
+it("rejects normalized browser-owned protocol headers while retaining application headers", () => {
+  for (const name of ["hOsT", "CoOkIe", "SeC-Fetch-Site", "pRoXy-Authorization"]) {
+    const unsafe = profile("acme.protocol.header-policy", {
+      prepareRequest(_input, writer) {
+        writer.setHeader(name, "value");
+        writer.none();
+      },
+    });
+    expect(() => prepareProtocolRequest(unsafe, source())).toThrow(
+      `browser-owned header ${name.toLowerCase()}`,
+    );
+  }
+  const allowed = prepareProtocolRequest(
+    genericProtocolProfile,
+    source({
+      headers: { "X-Application": "value" },
+    }),
+  );
+  expect(new Headers(allowed.descriptor.headers as [string, string][]).get("X-Application")).toBe(
+    "value",
+  );
+});
+
 function descriptor(profileId = "acme.protocol.custom"): StarRequestDescriptor {
   return Object.freeze({
     schema: "jquery-star-request/1",

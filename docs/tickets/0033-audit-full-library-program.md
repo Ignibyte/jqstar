@@ -1,7 +1,7 @@
 ---
 id: 0033
 title: Audit the full library program
-status: planned
+status: coding
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -203,6 +203,52 @@ bucket.
 - The audit does not change product behavior or authorize an external release.
 - Mutation testing remains excluded unless a future user-requested ticket restores it.
 
+### Activation design recorded 2026-09-06
+
+The prerequisite baseline is committed and pushed as `6bdc789aef23ae161ede524947e622e46a25a01f`,
+tree `b9bfb578359cfb39f35feddfc91463066eb3efd1`. All 51 prerequisites are terminal. Strict
+derivation finds 588 prerequisite criteria and 25 program criteria. It must retain a criterion whose
+text begins after its ID on the next line, as 0034 AC-06 does; the initial space-only planning
+parser missed that row and is superseded. Declined tickets receive the same complete
+criterion/evidence validation as done tickets.
+
+The clean prerequisite candidate is `jquery-star-1.1.0.tgz`, SHA-256
+`69dac90139e8b47bdd89749487b65085e863901f0c9c6def516036794d3e11a3`. Preparatory release run
+`2026-09-06T04-47-10-924Z-27110` reproduced its 257 files and 3,165,124 packed bytes in two
+independent clean clones. This is an implementation baseline, not the final program-audit verdict.
+`.git/jqstar/program-audit/implementation-baseline.json` records the immutable prerequisite source,
+artifact, baseline hashes, and complete ticket/program inventory. Freeze the final audited source
+again after the audit implementation and documentation are ready.
+
+Implement separate requirement derivation, evidence validation, and report orchestration modules.
+Keep internal audit schemas and reviewed mappings under `quality/program-audit/` so audit tooling
+does not enter or change the public package. Inventory authoritative public/brain/site/API inputs as
+well as ticket criteria. Each reviewed mapping states required evidence kinds, exact selectors,
+source locations and its rationale. A generic green suite, a weaker documentation reference, or an
+incomplete mapping must not silently satisfy a behavior requirement.
+
+Reuse the existing clean release preparation and proof adapters for immutable source, toolchain,
+two-build artifact and quality/subordinate report identities. Verify every referenced file and
+digest, and expand unit/property/browser selectors to the actual named executed results. Require
+current decision, supported-alternative, source/export/type/graph evidence for declined work. Write
+deterministic JSON and a human report outside the artifact with exclusive creation. Unknown,
+duplicate, stale, ambiguous, weaker, skipped-required and unmapped evidence stays a failure.
+
+Manual accessibility remains an explicit unresolved input. No executed NVDA/Windows or
+VoiceOver/Safari records were found in repository/release evidence or GitHub issue searches. The
+Computer Use skill requires a `node_repl` tool that this session does not expose, so no live
+VoiceOver action was performed. Synthetic schema controls are not assistive-technology evidence.
+Require both real charter records to match the exact candidate and receipt, with environment,
+tester/date/profile, all steps, observations, and per-step VoiceOver Quick Nav settings. Do not
+relabel an old-artifact record or treat axe as spoken-output proof. Structural validators establish
+record completeness and identity; they cannot establish the truth of a human attestation or replace
+semantic review of requirement-to-test mappings.
+
+The existing Node 24 Ubuntu full-audit workflow was dispatched for the prerequisite commit as run
+`34012438886`. Its result is separate from the local Node 26 delivery evidence and is not yet a
+program-audit acceptance result. No mutation tooling, publication, tag, or hosted configuration
+change is part of this work.
+
 ### Security and accessibility
 
 - Audit artifacts can contain paths, logs, URLs, environment data, and fixture secrets. Schemas
@@ -213,6 +259,44 @@ bucket.
   locked dependency/install contract.
 - Accessibility claims require semantic/browser evidence; visual snapshots or axe alone cannot prove
   keyboard, focus, announcements, reduced motion, zoom, and no-JavaScript behavior.
+
+### Prerequisite regression found 2026-09-06
+
+The direct mapping review of 0002 AC-12 exposed a real stale-window race. Completing requests for
+offsets 80 then 0 restores the older offset 0. Source review confirms the echoed request number has
+no suppression check, and generic cancellation uses the distinct serialized query URL. The isolated
+regression fixture fails its final `80` assertion with actual `0` after the newer response has
+already succeeded. Initial hidden-directory and module-alias harness failures are retained
+separately and are not counted as product evidence.
+
+Ticket 0002 is reopened to Plan under this audit's owner-correction rule. Final program acceptance
+is stopped until that owner closes again. The first review inventory
+`54d99b6e9e3efb9c08ef47f501f14da06b7bece4fa3a2f57d937b13e2484367b` contains 613 requirements and
+3,560 unreviewed authored units; it predates the reopening and is not a final verdict. Fast run
+`2026-09-06T05-05-05-029Z-34926` passed all six gates and 1,218 unit tests. The following delivery
+run was deliberately interrupted after the product defect was reproduced and cannot authorize a
+commit. Keep the actual inventory command's rejection of unfinished prerequisites while making its
+unit test verify that rejection during an owning-ticket correction.
+
+### Disposal prerequisite failure found 2026-09-06
+
+Direct 0013 AC-14 review found that an unprintable thrown object escapes disposal-report formatting,
+skips later cleanup, and retains a service. The isolated `disposal-value.test.ts` fails all three
+public assertions; its fixture and JSON evidence remain under `.git/jqstar/program-audit/`. Owner
+0013 now includes the correction and leaves AC-14 unchecked. Delivery
+`2026-09-06T06-04-04-409Z-6542` passed all 13 gates, but that does not resolve this newly reproduced
+contract failure. Final acceptance remains stopped until the owner fixes and verifies it.
+
+### Hosted prerequisite failures found 2026-09-06
+
+Hosted full audit `34012438886` failed on Node `v24.20.0`/Ubuntu. Unit and coverage tests lacked a
+required built UMD artifact; the installed core consumer exceeded its gzip ceiling by 113 bytes; and
+configured browser servers failed readiness before tests could execute. Several failure-detector
+controls also failed because of those real faults. Ticket 0052 is reopened to Plan to diagnose and
+correct the quality setup and supported-environment results without reducing coverage or budgets.
+Reports are retained under `.git/jqstar/hosted-audit-34012438886/`. They are failing evidence, not
+program acceptance proof. The earlier Node 26 local delivery remains evidence only for its own
+source and environment.
 
 ### Risks
 
@@ -249,30 +333,67 @@ bucket.
 - Final public/project documentation corrections and ticket evidence only after owning behavior
   already matches.
 - This ticket's changed-file, command, report, and criterion evidence ledgers.
+- `scripts/program-audit/requirements.mjs`, evidence/manual adapters, and command orchestration.
+- `quality/program-audit/` internal schemas, expected inventories, and reviewed requirement
+  mappings.
+- `test/program-audit*.test.mjs` and generated property cases for malformed or stale evidence.
+- Internal audit usage guidance and the project-brain index, without changing public behavior.
 
 ## Code
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File                                                     | Purpose                                                                                                                                                           |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/program-audit/requirements.mjs`                 | Derive every declared ticket/program criterion, enforce the expected roster, and validate exact evidence mappings.                                                |
+| `scripts/program-audit/contracts.mjs`                    | Shared bounded fields, closed objects, safe relative paths, timestamps, and digest validation.                                                                    |
+| `scripts/program-audit/manual-evidence.mjs`              | Check exact candidate/receipt and frozen environment identities, complete charter steps, and per-step Quick Nav settings with fixed diagnostics.                  |
+| `scripts/program-audit/evidence.mjs`                     | Resolve named unit/browser/property/static/package/source proof; reject wrong identities, missing/duplicate results, skips, retries, and insufficient executions. |
+| `scripts/program-audit/files.mjs`                        | Bounded regular UTF-8 reads, digest checks, symbolic-link refusal, deterministic exclusive snapshots, and bounded output cleanup.                                 |
+| `scripts/program-audit/claims.mjs`                       | Extract authored Markdown and HTML claim candidates before evidence selection; preserve code examples and duplicate occurrences.                                  |
+| `scripts/program-audit/inventory.mjs`                    | Produce a schema-valid review inventory outside the artifact, with complete source inputs and an explicit unresolved-work list.                                   |
+| `quality/program-audit/inputs.json` and internal schemas | Fix the 53-ticket roster, 613 requirement count, 74 claim source files, 22 baseline inputs, and closed inventory/mapping structures.                              |
+| `test/program-audit*.test.mjs`                           | Exercise incomplete/ambiguous/stale/weaker evidence, identity mismatch, file boundaries, immutable output, and actual repository inventory.                       |
+| `test/property/program-audit.property.test.mjs`          | Generated roster/order/wrapping and duplicate claim occurrence controls using the existing property runner.                                                       |
+| `docs/PROGRAM_AUDIT.md` and `docs/README.md`             | Explain the internal commands, evidence boundaries, and remaining integration/manual review work.                                                                 |
+| This ticket                                              | Keep the baseline, design, changed files, verification results, and unresolved acceptance work current.                                                           |
+
+Additional audit fixture maintenance: `test/release-candidate-contract.test.mjs` now verifies the
+existing readiness rejection when an owner is reopened, allowing its corrective unit tests to run.
+The candidate preparation function still requires every declared prerequisite to be done.
 
 ### Design changes
 
-None recorded.
+The activation Plan passed before maintained audit code was added. The preliminary inventory parser
+missed 0034 AC-06 because its description starts on the next line. Strict count reconciliation
+exposed the omission; derivation now retains the criterion and an explicit regression case. Internal
+audit code and synthetic control records are distinct from final program acceptance evidence.
+
+The inventory command deliberately produces `jqstar-program-audit-inventory/1` with
+`review-required` status. It is not the final `jqstar-program-audit/1` manifest or verdict. Authored
+Markdown/HTML units include supporting text and examples that still need semantic classification.
+The complete input roster is checked before extraction, and every candidate starts unreviewed. The
+final report loader, reviewed mappings, declined-service decisions/absence integration, and
+clean-source orchestration remain unfinished. No current criterion has been relabeled complete.
 
 ## Test
 
-| Command   | Result  | Evidence                                 |
-| --------- | ------- | ---------------------------------------- |
-| _Not run_ | Planned | Verification commands are defined above. |
+| Command                                                  | Result                                      | Evidence                                                                                                                                                                                                   |
+| -------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan validator for 0033 before maintained implementation | Pass                                        | Activation design and immutable prerequisite baseline recorded before Code.                                                                                                                                |
+| Focused Vitest audit tests                               | Pass, 18 cases                              | Requirement/mapping/manual checks; named report adapters; file boundaries; actual full repository inventory; two generated property cases. These are auditor controls, not final program acceptance proof. |
+| Focused ESLint                                           | Initial failure corrected; subsequent pass  | Replaced a control-character regular expression with explicit character-code checks. No rule or scope was weakened.                                                                                        |
+| `npm run check` for this audit implementation            | Interrupted after a reproduced owner defect | Run `2026-09-06T05-06-50-063Z-47835` passed unit, coverage, and static checks before SIGINT. It has no delivery receipt. Ticket 0002 must be corrected first.                                              |
+| Node 24 hosted full-audit run `34012438886`              | Failed; 0052 reopened                       | Clean built-asset setup, core gzip budget, and browser-server readiness failures are retained in `.git/jqstar/hosted-audit-34012438886/`.                                                                  |
+| Real NVDA/Windows and VoiceOver/Safari charters          | Missing                                     | No executed current-artifact records were found. User location question is pending; synthetic fixtures are excluded.                                                                                       |
 
 ## Document
 
 ### Documentation changed
 
-Pending.
+`docs/PROGRAM_AUDIT.md` documents the internal review inventory, direct evidence adapters, file
+boundaries, manual-record limitations, and unfinished work. `docs/README.md` links this guidance.
+Public package/runtime contracts are unchanged.
 
 ### Acceptance evidence
 
@@ -281,3 +402,20 @@ Pending implementation.
 ### Completion audit
 
 Pending.
+
+The supported-toolchain gzip comparison also reopened owner 0013: identical baseline JavaScript
+exceeded its existing budget with official Node 24 compression. Its current extraction shares
+internal value checks and browser-owned header policy. The compiled diagnostic is under budget;
+installed-package and full delivery evidence remain pending. Owners 0002, 0013, and 0052 must close
+before this audit can accept final prerequisite inventory.
+
+A comparison with the retained real package report found an adapter schema-name mismatch hidden by
+its small synthetic control. `selectPackage` and its control used `jqstar-package-report/1`; the
+actual producer and schema require `jqstar-package-quality/1`. Correct the adapter and bind the
+control identifier to the repository schema. The reproduced refusal is retained as
+`.git/jqstar/program-audit/package-adapter-schema-mismatch.json`. This is an audit-tool development
+correction; the historical report remains historical and is not final program evidence.
+
+Fast run `2026-09-06T05-58-16-310Z-69053` passed unit and every other enforced check except one
+spelling finding in the preceding development note. The wording was corrected without changing a
+rule or dictionary. Repeat fast verification before the next phase transition.

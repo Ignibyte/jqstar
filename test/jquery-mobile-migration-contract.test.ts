@@ -321,7 +321,6 @@ describe("jQuery Mobile migration authority", () => {
     const assetPaths = {
       application: sourcePaths.application,
       jquery: "node_modules/jquery/dist/jquery.js",
-      jqueryStar: "dist/jquery-star.umd.cjs",
       styles: sourcePaths.styles,
     };
     const lines = Object.fromEntries(
@@ -336,7 +335,9 @@ describe("jQuery Mobile migration authority", () => {
         statSync(resolve(repositoryRoot, path)).size,
       ]),
     );
-    expect(contract.referenceApp.measurements).toEqual({
+    const { jqueryStar, ...sourceAssetBytes } = contract.referenceApp.measurements.assetBytes;
+    expect(jqueryStar).toBeGreaterThan(0);
+    expect({ ...contract.referenceApp.measurements, assetBytes: sourceAssetBytes }).toEqual({
       assetBytes: bytes,
       browserCases: 16,
       historicalRuntimeDependencies: 0,

@@ -184,11 +184,12 @@ state as Datastar signals:
 }
 ```
 
-The server validates facets, sort entries, group key, mode, page, page size, window bounds, and
-request ID before querying. Sort SQL comes from a server-owned column map and all values use bound
-parameters. The store adds a stable tie-breaker. Page mode accepts 5, 10, 20, 50, 100, or 200 rows.
-Virtual mode clamps the window to 20–80 rows and returns top and bottom spacer metadata. Virtual
-mode uses fixed-height rows and disables grouping and row expansion so offsets remain deterministic.
+Each block cancels its previous query across controls; echoed request IDs do not suppress stale
+responses. The server validates facets, sorts, grouping, mode, page sizes, windows, and request IDs
+before querying. Sort SQL comes from a server-owned column map and all values use bound parameters.
+The store adds a stable tie-breaker. Page mode accepts 5, 10, 20, 50, 100, or 200 rows. Virtual mode
+clamps the window to 20–80 rows and returns top and bottom spacer metadata. Virtual mode uses
+fixed-height rows and disables grouping and row expansion so offsets remain deterministic.
 
 The query response emits:
 

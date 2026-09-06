@@ -1,3 +1,4 @@
+import { isPlainRecord, isThenable } from "./value-checks";
 import type { StarExpressionEngine } from "./expression";
 import type { StarContext, StarInstance } from "./types";
 
@@ -101,20 +102,6 @@ const reservedHelperRoots = new Set([
 ]);
 const reservedHelperSegments = new Set(["__proto__", "constructor", "prototype"]);
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
-}
-
 function assertDirectiveId(id: unknown, namespace: string): asserts id is string {
   if (typeof id !== "string" || !directiveIdPattern.test(id)) {
     throw new Error(
@@ -127,7 +114,7 @@ function assertDirectiveId(id: unknown, namespace: string): asserts id is string
 }
 
 function matcherValue(matcher: StarDirectiveMatcher): { kind: "name" | "prefix"; value: string } {
-  if (!isRecord(matcher)) throw new Error("A jQStar directive matcher must be an object.");
+  if (!isPlainRecord(matcher)) throw new Error("A jQStar directive matcher must be an object.");
   const keys = Object.keys(matcher);
   const hasName = Object.hasOwn(matcher, "name");
   const hasPrefix = Object.hasOwn(matcher, "prefix");

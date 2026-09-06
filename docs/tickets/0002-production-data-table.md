@@ -1,9 +1,9 @@
 ---
 id: 0002
 title: Complete the production Data Table
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-09-06
 ---
 
 # 0002: Complete the production Data Table
@@ -72,7 +72,7 @@ serving as the project's production Data Table reference.
       pointer and keyboard-operable controls.
 - [x] [AC-11] Column visibility, order, and pin state survive row patches and page reloads while
       required selection and Project columns remain available.
-- [x] [AC-12] Virtual mode scrolls through the complete filtered result set while rendering no more
+- [ ] [AC-12] Virtual mode scrolls through the complete filtered result set while rendering no more
       than 80 data rows at once and avoiding stale out-of-order window patches.
 - [x] [AC-13] Selection remains stable by project ID across page, virtual-window, sort, filter,
       group, expand, edit, and column changes.
@@ -139,8 +139,8 @@ record for a safe retry rather than overwriting it.
 - Request bodies retain the existing byte limit and reject invalid media types or malformed JSON.
 - Error responses do not expose SQL, paths, or stack traces.
 - Migration and seed operations are transactional and safe to run more than once.
-- Window requests carry a monotonically increasing request number so stale responses cannot replace
-  a newer view.
+- Window requests carry a monotonically increasing correlation number. The block cancels the
+  previous root query so stale responses cannot replace a newer view.
 - Local-storage parsing tolerates corruption and schema evolution.
 
 ### Performance budgets
@@ -185,6 +185,51 @@ record for a safe retry rather than overwriting it.
 - Store, server, block, controller, and browser tests
 - `README.md`, backend, self-hosting, component, testing, and project documentation
 
+### Reopening decision: stale virtual windows, 2026-09-06
+
+Ticket 0033 found that AC-12 is not satisfied by the current source. The earlier evidence covered
+window size and rendering, but did not exercise overlapping responses. An isolated fixture starts
+two Project Browser requests for virtual offsets 0 and 80, completes offset 80 first, then completes
+the older offset 0 response. The current block restores offset 0 and its older request number. The
+failing assertion and exact copied fixture are retained in
+`.git/jqstar/program-audit/project-browser-race.json` and `race.test.ts`.
+
+The root cause is visible in `registry/blocks/project-browser.ts`: the monotonic request number is
+sent and echoed, but never compared before patching. `src/fetch.ts` automatically cancels matching
+prepared URLs for the same action element. Datastar query serialization includes the changing
+payload, so these requests have different keys. Different controls also have different action
+elements. The block therefore needs explicit application-level cancellation for its shared table.
+
+Return this owner to Plan. The old completion audit below is historical and superseded. Final
+program acceptance remains stopped until this criterion is fixed and the owner closes again.
+
+Implement one current AbortController per Project Browser root. Starting any table query cancels
+that root's previous query regardless of URL, query values, or initiating control. Continue using
+the public backend action and its normal root-disposal tracking. Only the current request owns
+loading/error state and final component synchronization, so a superseded request cannot clear a
+newer request's pending indicator or overwrite its result. Preserve independent roots and existing
+error/focus/selection behavior. Keep generic fetch cancellation semantics unchanged.
+
+Planned correction files: `registry/blocks/project-browser.ts`, focused block/browser regression
+fixtures, `docs/BACKEND.md`, `docs/COMPONENT_ARCHITECTURE.md`, and this ticket. Add controlled
+out-of-order responses, different initiating controls, current loading/error ownership, and root
+cleanup checks. The browser case must exercise the real block and official SDK responses. Run
+focused checks, `quality:fast`, Code validation, complete `npm run check`, Test validation, current
+closure documentation, and fresh unchanged-source delivery before commit.
+
+The audit's own repository-inventory self-test also needs to require rejection while a prerequisite
+is reopened. That change belongs to 0033 and must not make the actual inventory command accept an
+unfinished prerequisite. No acceptance criterion, timeout, browser, assertion, or quality boundary
+is removed by this correction.
+
+The follow-up overlap check also reproduced a save continuation clearing a newer query's loading
+indicator after its own refresh was superseded. Preserve
+`.git/jqstar/program-audit/project-browser-edit-race.json` as the failing control. Extend the same
+correction with a current-result return from `load` and a per-root count of unfinished edits.
+Superseded save refreshes must not write old success/conflict messages or move focus, and a query
+finishing must not clear the busy indicator while an edit remains pending. Test simultaneous edits
+as well as a save-refresh/query overlap. No write is replayed or canceled by this UI ownership fix.
+
 ## Code
 
 ### Changed-file ledger
@@ -199,6 +244,30 @@ record for a safe retry rather than overwriting it.
 | `deploy/*`, `scripts/smoke-*`, `.gitignore`, package metadata                         | Set the Node 24 floor, configure durable service state, verify database health, and keep local database files untracked.                                       |
 | `test/project-store.test.ts`, server/block/controller tests, `e2e/components.spec.ts` | Prove storage, query, mutation, interaction, conflict, persistence, virtual bounds, accessibility, and mobile behavior.                                        |
 | `README.md`, `docs/*`, `registry.json`                                                | Publish the component, endpoint, storage, operating, testing, and registry contracts.                                                                          |
+
+Derived evidence maintenance is required by the same correction: regenerate the CSP location map for
+the added browser case and rerun both installed inspection investigations before recording their new
+fixture hashes. These refreshes preserve the CSP contract and the declined DevTools decision. The
+first correction coverage run exposed untested non-Error rejections, stale derived evidence, and the
+release-readiness unit test's assumption that development never reopens an owner. Two rejection
+cases and the evidence refresh corrected those failures; the readiness test now verifies refusal
+while an owner is unfinished. Coverage then passed. Fast run `2026-09-06T05-22-06-374Z-88875` passed
+every gate except three documentation spelling findings; those were corrected without changing a
+spelling rule.
+
+### Current correction ledger
+
+- `registry/blocks/project-browser.ts`: one current query controller per root, guarded
+  query/save-refresh finalization, and pending-edit counts for shared loading state.
+- `test/project-browser-block.test.ts`: nine added cases cover delayed stale responses, different
+  controls, disposal, independent roots, rejection normalization, superseded save outcomes, and
+  concurrent edits.
+- `e2e/components.spec.ts`: real SDK response held across a newer virtual window in all three
+  browser engines; `test/fixtures/csp/conformance-map.json` records current source locations.
+- `docs/BACKEND.md`, `docs/COMPONENT_ARCHITECTURE.md`: document cancellation and loading ownership.
+- `quality/inspection-decision.json`: refreshed installed-app investigations and fixture hashes; the
+  declined DevTools outcome remains supported. Agent-content regeneration produced no change.
+- This ticket: retain reproduced failures, implementation decisions, commands, and closure evidence.
 
 ### Design changes
 
@@ -218,6 +287,37 @@ the hierarchical and editing workflows. Stable row IDs keep selection independen
 
 ## Test
 
+Correction verification, 2026-09-06:
+
+| Command                                              | Result             | Evidence                                                                                                                                                                                                   |
+| ---------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Isolated pre-fix virtual-window regression           | Failed as expected | Older offset 0 replaced completed offset 80. The exact red fixture/report remains in `.git/jqstar/program-audit/`. Initial harness-loading failures are separate from this reproduced behavior.            |
+| Plan validation before correction                    | Pass               | Reopened owner design validated before behavior changed.                                                                                                                                                   |
+| Focused block and audit-inventory tests              | Pass, 20 tests     | Four new block cases cover stale body arrival despite abort, different controls, newer loading/error ownership, root disposal, and independent roots. Audit inventory still rejects this unfinished owner. |
+| Typecheck, focused ESLint, exact lint-boundary probe | Pass               | 283 TypeScript files and the same 306 file/rule counts; no new exception or increased allowance.                                                                                                           |
+| Focused browser regression                           | Pass, 3 tests      | Chromium, Firefox, and WebKit each observe cancellation of the held older real SDK response and retain virtual rows 191–230 after its release.                                                             |
+| `npm run test:coverage`                              | Pass               | Coverage is 94.50% lines and 84.90% branches; all changed production lines/functions are covered.                                                                                                          |
+| `npm run quality:fast`                               | Pass               | Run `2026-09-06T05-36-47-092Z-9882` passes all six gates and passed Code validation before this transition.                                                                                                |
+| Complete delivery                                    | Pass               | Run `2026-09-06T06-04-04-409Z-6542` passes all 13 gates; later core edits require a fresh current-tree report before phase validation.                                                                     |
+
+The latest focused block run passes 23 tests, including both superseded save outcomes (200 and 409)
+and concurrent pending edits. Typecheck, ESLint, and the unchanged 283-file/306-count lint-boundary
+probe pass after that extension. The final three-engine browser case, all six installed-app
+inspection investigations, coverage, and fast gates pass. Code validation against fast run
+`2026-09-06T05-36-47-092Z-9882` passed before this transition to testing. Current official Node 24
+verification also passes all 1,239 unit tests and the three-engine browser case from a clean
+checkout. The combined correction coverage passes at 94.48% lines and 84.88% branches. Complete
+delivery `2026-09-06T06-04-04-409Z-6542` passed all 13 gates and 484 browser cases. A subsequent
+Test validation correctly rejected that receipt after the additional 0013 disposal edits changed the
+gated tree. Use a fresh complete delivery for phase closure.
+
+Delivery attempt `2026-09-06T05-44-34-315Z-23954` was interrupted after the ticket and format gates
+rejected the newly edited evidence ledger. The validator requires the exact fast command in the
+current Test ledger; the combined coverage/fast row did not satisfy that requirement. Split the
+commands and format the ticket before repeating delivery. This interrupted run has no receipt.
+
+### Previous delivery evidence
+
 | Command                                                                                                                       | Result           | Evidence                                                                                                                                         |
 | ----------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `npx vitest run test/project-store.test.ts test/server.test.ts test/project-browser-block.test.ts test/ui-data-table.test.ts` | Passed, 40 tests | Store migrations/seeds/queries/conflicts/performance, API normalization/writes/policy, block state, and controller multi-sort pass.              |
@@ -234,12 +334,12 @@ never exceeds the 80-row limit while selection remains stable.
 
 ### Inspection ledger
 
-| Finding                                                                            | Resolution                                                                                                                |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Process-local arrays could not prove migration, persistence, or conflict behavior. | The injectable SQLite store has idempotent migrations, deterministic seeding, durable reopen tests, and versioned writes. |
-| Unvalidated query fragments could reach SQL.                                       | Server-owned maps supply identifiers and clauses. User values remain bound parameters.                                    |
-| Variable-height grouped/detail rows conflict with fixed-offset virtualization.     | Virtual mode uses fixed 52-pixel project rows and disables grouping and expansion.                                        |
-| Row patches could leave stale requests or focus on removed elements.               | Monotonic request IDs suppress stale windows, and browser/block tests cover cancellation and focus restoration.           |
+| Finding                                                                            | Resolution                                                                                                                                      |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Process-local arrays could not prove migration, persistence, or conflict behavior. | The injectable SQLite store has idempotent migrations, deterministic seeding, durable reopen tests, and versioned writes.                       |
+| Unvalidated query fragments could reach SQL.                                       | Server-owned maps supply identifiers and clauses. User values remain bound parameters.                                                          |
+| Variable-height grouped/detail rows conflict with fixed-offset virtualization.     | Virtual mode uses fixed 52-pixel project rows and disables grouping and expansion.                                                              |
+| Row patches could leave stale requests or focus on removed elements.               | Per-root cancellation suppresses stale windows; request IDs are correlation data. Browser/block tests cover cancellation and focus restoration. |
 
 ## Document
 
@@ -276,9 +376,9 @@ never exceeds the 80-row limit while selection remains stable.
 | AC-16 | Unit, store, server, block, browser, accessibility, performance, deployment, and package pass. | Pass   |
 | AC-17 | Public, backend, self-hosting, architecture, testing, and project documentation was updated.   | Pass   |
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-06)
 
-Status: Complete
+Historical status: Complete
 
 Every acceptance criterion is implemented and has test or operational evidence. The historical
 ticket 0001 exclusions—database persistence, multi-sort, grouping/aggregation, expansion, editing,
@@ -288,3 +388,8 @@ omissions.
 
 The final full gate and package gate passed after the last controller performance change. No code,
 test, documentation, deployment, or acceptance task remains open in this ticket.
+
+### Completion audit
+
+The reproduced AC-12 failures are corrected and focused coverage passes. Complete delivery and
+current acceptance evidence remain required. The previous completion record is superseded.

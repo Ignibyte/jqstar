@@ -443,3 +443,15 @@ weak registry keyed by the installed `$.star` shares one adapter and collector a
 The core does not import the adapter or collector. Each caller holds an independent lease; only the
 trace controller can change bounds and policy. Capture projects approved scalar fields before
 retention, and read/export makes immutable copies. See [INSPECTION.md](INSPECTION.md).
+
+## Shared value boundaries
+
+Internal `src/value-checks.ts` shares plain-record checks, thenable detection, and bounded
+diagnostic text across core consumers. Internal `src/request-headers.ts` shares the browser-owned
+header predicate between protocol preparation and middleware policy. These helpers retain the
+existing value-check, whitespace, control-character, and truncation behavior. Error-field extraction
+guards prototype traps and reads each accessor once. Disposal also contains failed string conversion
+while preserving its own empty-message and truncation policy. These internal helpers add no public
+export or optional runtime dependency. Installed core budgets use the unchanged consumer and gzip
+defaults; supported Node compressor versions can produce different sizes for the same JavaScript, so
+release evidence names its toolchain.

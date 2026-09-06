@@ -139,14 +139,12 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command:
-        "node scripts/prepare-resource-strategy.mjs && node e2e/fixtures/resource-strategy-server.mjs",
+      command: "node e2e/fixtures/resource-strategy-server.mjs",
       url: `http://127.0.0.1:${resourceStrategyPort}/health`,
       reuseExistingServer: !process.env.CI,
     },
     {
-      command:
-        "node scripts/prepare-navigation-decision.mjs && node e2e/fixtures/navigation-decision-server.mjs",
+      command: "node e2e/fixtures/navigation-decision-server.mjs",
       url: `http://127.0.0.1:${navigationDecisionPort}/health`,
       reuseExistingServer: !process.env.CI,
     },

@@ -1,3 +1,4 @@
+import { boundedText, diagnosticError } from "./value-checks";
 import type { BackendMethod, StarAction, StarContext, StarInstance } from "./types";
 
 export type StarOperationKind = "action" | "request" | "store";
@@ -227,45 +228,10 @@ const noopRequestOperation: RequestOperation = Object.freeze({
   failed: () => undefined,
 });
 
-function boundedText(value: string, maximum: number): string {
-  const normalized = Array.from(value, (character) => {
-    const code = character.charCodeAt(0);
-    return code <= 8 || (code >= 11 && code <= 12) || (code >= 14 && code <= 31) || code === 127
-      ? "�"
-      : character;
-  }).join("");
-  return normalized.length <= maximum ? normalized : `${normalized.slice(0, maximum - 1)}…`;
-}
-
 function errorText(error: unknown): StarOperationError {
-  if (error instanceof Error) {
-    let name = "Error";
-    let message = "An operation failed.";
-    try {
-      if (typeof error.name === "string" && error.name) name = error.name;
-    } catch {
-      // Hostile error accessors must not affect the operation being observed.
-    }
-    try {
-      if (typeof error.message === "string") message = error.message;
-    } catch {
-      // Hostile error accessors must not affect the operation being observed.
-    }
-    return Object.freeze({
-      name: boundedText(name, 120),
-      message: boundedText(message, 1_024),
-    });
-  }
-
-  const kind = error === null ? "null" : typeof error;
-  const article = /^[aeiou]/.test(kind) ? "an" : "a";
-  let message = `An operation failed with ${article} ${kind} value.`;
-  if (["string", "number", "boolean", "bigint", "undefined"].includes(kind)) {
-    message = String(error);
-  }
-  return Object.freeze({
-    name: "ThrownValue",
-    message: boundedText(message, 1_024),
+  return diagnosticError(error, "An operation failed.", (kind) => {
+    const article = /^[aeiou]/.test(kind) ? "an" : "a";
+    return `An operation failed with ${article} ${kind} value.`;
   });
 }
 

@@ -1,3 +1,4 @@
+import { isThenable } from "./value-checks";
 import type { StarContext } from "./types";
 import type {
   StarExpressionEngine,
@@ -102,14 +103,6 @@ function scopeFor(context: ExpressionContext): object {
       return Reflect.set(target, key, value, receiver);
     },
   });
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
 }
 
 function expressionError(

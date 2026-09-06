@@ -118,6 +118,14 @@ record(
   join(fixtureDirectory, "empty-selection", "playwright"),
 );
 
+const preparation = await run(process.execPath, ["scripts/prepare-browser-fixtures.mjs"]);
+process.stdout.write(preparation.stdout ?? "");
+process.stderr.write(preparation.stderr ?? "");
+if (preparation.status !== 0 || preparation.timedOut || preparation.error) {
+  await writeReport();
+  throw new Error("Browser detector preparation failed before execution.");
+}
+
 const retryDirectory = join(fixtureDirectory, "retry-pass");
 await mkdir(retryDirectory, { recursive: true });
 record(

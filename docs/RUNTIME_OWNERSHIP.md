@@ -184,6 +184,9 @@ and namespace claims, disposes the selected expression engine, releases the docu
 claim while retaining the terminal engine identity claim, and removes only the jQuery properties
 installed by that runtime. Success returns one frozen JSON-safe `StarDisposalReport`. Failure throws
 a `StarDisposalError` containing every original error and that same report after the complete sweep.
+Report formatting contains prototype traps, changing error accessors, and failed string conversion.
+Unreadable thrown values use `ThrownValue` / `Cleanup failed.` without interrupting later cleanup;
+the aggregate still retains the original values. Error fields are read once and bounded as strings.
 Repeated calls return the same report or throw the same error object. Application destruction first
 aborts its requests and releases its middleware/profile links and scoped operation subscriptions.
 Plugin middleware, profile, and observer cleanup are idempotent when their registries have already

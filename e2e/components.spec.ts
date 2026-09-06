@@ -1,6 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+function completionSignal(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void = () => undefined;
+  const promise = new Promise<void>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
+}
+
 async function installClipboardFixture(page: Page): Promise<void> {
   await page.evaluate(() => {
     let clipboardText = "";
@@ -1094,6 +1102,62 @@ test.describe("jQStar components", () => {
     expect(await projectRows.count()).toBeLessThanOrEqual(80);
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
     await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(/of 2500/);
+  });
+
+  test("project browser cancels an older virtual window before applying a newer SDK response", async ({
+    page,
+  }) => {
+    const root = page.locator('[data-block="project-browser"]');
+    await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    await expect(root.locator("#project-browser-rows tr[data-row-id]")).toHaveCount(40);
+    const captured = completionSignal();
+    const release = completionSignal();
+    const handled = completionSignal();
+    const failedUrls: string[] = [];
+    let olderUrl = "";
+    let requests = 0;
+    page.on("requestfailed", (request) => {
+      failedUrls.push(request.url());
+    });
+    await page.route("**/api/demo/projects?**", async (route) => {
+      requests += 1;
+      if (requests > 1) {
+        await route.continue();
+        return;
+      }
+      olderUrl = route.request().url();
+      const response = await route.fetch();
+      captured.resolve();
+      await release.promise;
+      try {
+        await route.fulfill({ response });
+      } finally {
+        handled.resolve();
+      }
+    });
+    const scroll = async (top: number) => {
+      await root.locator('[data-part="viewport"]').evaluate((viewport, position) => {
+        viewport.scrollTop = position;
+        viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
+      }, top);
+    };
+    try {
+      await scroll(52_000);
+      await captured.promise;
+      await expect(root.getByText("Updating results…", { exact: true })).toBeVisible();
+      await scroll(10_400);
+      const message = root.locator('[data-text="$projectBrowserMessage"]');
+      await expect(message).toContainText("Showing 191–230 of 2500");
+      await expect.poll(() => failedUrls.includes(olderUrl)).toBe(true);
+      await expect(root.getByText("Updating results…", { exact: true })).toBeHidden();
+      release.resolve();
+      await handled.promise;
+      await expect(message).toContainText("Showing 191–230 of 2500");
+      expect(requests).toBe(2);
+    } finally {
+      release.resolve();
+      await page.unrouteAll({ behavior: "wait" });
+    }
   });
 
   test("access manager moves, persists, and reloads permission assignments", async ({ page }) => {

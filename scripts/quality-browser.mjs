@@ -1,3 +1,4 @@
+import { prepareBrowserFixtures } from "./prepare-browser-fixtures.mjs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { runChild, terminateActiveChildren } from "./quality/lib/process.mjs";
@@ -201,6 +202,16 @@ try {
           : `${engine} browser preflight exited with ${String(preflight.exitCode)}`;
         break;
       }
+    }
+  }
+
+  if (!listOnly && !failed) {
+    try {
+      await prepareBrowserFixtures();
+    } catch (error) {
+      failed = true;
+      failureReason =
+        error instanceof Error ? error.message : "Browser fixture preparation failed.";
     }
   }
 

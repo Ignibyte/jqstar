@@ -1702,11 +1702,11 @@ reactive effect scheduling.
 
 An installation can be closed permanently with `$.star.dispose()`. Disposal rejects new work,
 attempts every application, request, task, observer, listener, effect, subscription, hook, plugin,
-and service cleanup, releases the document and expression-engine claims, and removes the installed
-jQuery properties. It returns one frozen, JSON-safe report with `attempted`, `released`, `failed`,
-and `remaining` resources by category and stable owner. Repeated calls return the same report. If a
-cleanup fails, `StarDisposalError` aggregates every failure and carries that same report after the
-entire sweep.
+and service cleanup, releases the document claim, and removes the installed jQuery properties. It
+returns one frozen, JSON-safe report with `attempted`, `released`, `failed`, and `remaining`
+resources by category and stable owner. Repeated calls return the same report. If a cleanup fails,
+`StarDisposalError` aggregates every failure and carries that same report after the entire sweep.
+Unreadable error fields or failed string conversion cannot interrupt cleanup.
 
 ## Signals and computed values
 

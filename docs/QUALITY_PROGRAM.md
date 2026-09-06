@@ -217,7 +217,7 @@ historical data fails instead of skipping the comparison.
 
 Seven formerly blanket-disabled typed rules are now default errors. The exact-file
 [lint boundary inventory](../quality/lint-boundaries.json) records 306 existing file/rule
-allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 283
+allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 286
 selected TypeScript source/test files and requires observed counts to match the inventory. Reducing
 a count requires reducing its allowance. After this initial baseline, the immutable-base comparison
 rejects new allowances and increased counts. These are remaining reviewed categories of debt, not
@@ -491,3 +491,17 @@ quality ticket and sabotage proof.
 - [GitHub CodeQL for JavaScript and TypeScript](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning)
 - [API Extractor reports](https://api-extractor.com/pages/overview/demo_api_report/)
 - [Are the Types Wrong CLI](https://github.com/arethetypeswrong/arethetypeswrong.github.io/tree/main/packages/cli)
+
+## Clean-checkout verification correction
+
+The September 6 hosted Node 24 audit exposed a unit test that required an unbuilt UMD artifact and
+browser startup commands that performed research builds and installation inside HTTP readiness.
+Source measurements remain unit checks; exact built UMD measurement now belongs to package contents
+verification. Browser execution prepares assets and research fixtures explicitly before the servers
+start, with named failures and a ten-minute bound per preparation step. Quality selection remains
+read-only, and server readiness remains 60 seconds. Local and hosted reruns are required before
+closing 0052.
+
+The core gzip ceiling remains 63,000 bytes. Identical baseline JavaScript measured 62,995 bytes with
+Homebrew zlib 1.2.12 and 63,113 with official Node 24.20.0. Ticket 0013 owns the internal sharing
+correction; neither the consumer nor the compression settings or budget changes to accommodate it.

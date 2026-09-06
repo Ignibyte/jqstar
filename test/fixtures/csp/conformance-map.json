@@ -2027,9 +2027,9 @@
       "id": "public-fabe9c5de033",
       "source": "$accessManagerMessage",
       "locations": [
-        { "path": "e2e/components.spec.ts", "line": 1116, "attribute": "data-text" },
-        { "path": "e2e/components.spec.ts", "line": 1121, "attribute": "data-text" },
-        { "path": "e2e/components.spec.ts", "line": 1141, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1180, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1185, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1205, "attribute": "data-text" },
         { "path": "registry/blocks/access-manager.html", "line": 85, "attribute": "data-text" }
       ],
       "disposition": "exact-parity",
@@ -2239,7 +2239,7 @@
       "id": "public-7bcc8db007fb",
       "source": "$componentVolume",
       "locations": [
-        { "path": "e2e/components.spec.ts", "line": 468, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 476, "attribute": "data-text" },
         { "path": "example/components/lab/index.html", "line": 158, "attribute": "data-text" }
       ],
       "disposition": "exact-parity",
@@ -2828,9 +2828,10 @@
       "id": "public-825071cc82e2",
       "source": "$projectBrowserMessage",
       "locations": [
-        { "path": "e2e/components.spec.ts", "line": 932, "attribute": "data-text" },
-        { "path": "e2e/components.spec.ts", "line": 1028, "attribute": "data-text" },
-        { "path": "e2e/components.spec.ts", "line": 1096, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 940, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1036, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1104, "attribute": "data-text" },
+        { "path": "e2e/components.spec.ts", "line": 1149, "attribute": "data-text" },
         { "path": "registry/blocks/project-browser.html", "line": 499, "attribute": "data-text" }
       ],
       "disposition": "exact-parity",

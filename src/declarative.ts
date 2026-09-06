@@ -1,3 +1,4 @@
+import { isPlainRecord, isThenable } from "./value-checks";
 import { cancelElementRequests, cancelRequests } from "./fetch";
 import { attempt, throwCollectedErrors } from "./errors";
 import { isElementNode, isInputElement, isSelectElement } from "./dom";
@@ -59,24 +60,10 @@ function cloneValue<T>(value: T): T {
   return value;
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
-}
-
 function mergeState(target: StateRecord, source: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(source)) {
     const existing = target[key];
-    if (isPlainObject(existing) && isPlainObject(value)) mergeState(existing, value);
+    if (isPlainRecord(existing) && isPlainRecord(value)) mergeState(existing, value);
     else target[key] = cloneValue(value);
   }
 }
@@ -99,7 +86,7 @@ function writePath(target: object, path: string, value: unknown): void {
 
   let parent = target as Record<string, unknown>;
   for (const key of keys) {
-    if (!isPlainObject(parent[key])) parent[key] = {};
+    if (!isPlainRecord(parent[key])) parent[key] = {};
     parent = parent[key] as Record<string, unknown>;
   }
   parent[finalKey] = value;
@@ -300,7 +287,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         const result = this.capabilities.expressions.compileValue(source, {
           attribute: "data-signals",
         })(this.context(element));
-        if (!isPlainObject(result)) throw new TypeError("data-signals must evaluate to an object.");
+        if (!isPlainRecord(result)) throw new TypeError("data-signals must evaluate to an object.");
         mergeState(this.state, result);
       } catch (error) {
         this.report(error, element, "data-signals", source);
@@ -390,7 +377,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       } else if (attributeName === "data-class") {
         let previous = new Set<string>();
         this.bindValue(element, attributeName, source, (value) => {
-          if (!isPlainObject(value)) return;
+          if (!isPlainRecord(value)) return;
           const current = new Set(Object.keys(value));
           for (const name of previous) {
             if (!current.has(name)) this.$(element).removeClass(name);

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "review", "requiredKinds", "evidence"],
+    "properties": {
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 65536
+      },
+      "review": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 5000
+      },
+      "requiredKinds": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "source",
+            "documentation",
+            "unit",
+            "property",
+            "browser",
+            "package",
+            "static",
+            "decision",
+            "manual"
+          ]
+        },
+        "minItems": 1,
+        "maxItems": 9,
+        "uniqueItems": true
+      },
+      "evidence": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "path", "selector"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9:._-]*$"
+            },
+            "kind": {
+              "enum": [
+                "source",
+                "documentation",
+                "unit",
+                "property",
+                "browser",
+                "package",
+                "static",
+                "decision",
+                "manual"
+              ]
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"
+            },
+            "selector": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536
+            }
+          }
+        },
+        "minItems": 1,
+        "maxItems": 100
+      }
+    }
+  },
+  "minItems": 1,
+  "maxItems": 20000
+}

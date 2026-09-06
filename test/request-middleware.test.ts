@@ -652,6 +652,29 @@ describe("request middleware composition", () => {
 });
 
 describe("request middleware policy", () => {
+  it("normalizes browser-owned header names without changing the authored-header policy", () => {
+    const current = harness();
+    for (const name of ["hOsT", "CoOkIe", "SeC-Fetch-Site", "pRoXy-Authorization"]) {
+      const candidate = normalizeRequestDescriptor({
+        ...current.descriptor,
+        headers: [...current.descriptor.headers, [name, "value"]],
+      });
+      expect(() =>
+        validateRequestDescriptorPolicy(current.descriptor, candidate, current.context.root),
+      ).toThrow(`browser-owned header ${name.toLowerCase()}`);
+      expect(() =>
+        validateRequestDescriptorPolicy(candidate, candidate, current.context.root),
+      ).not.toThrow();
+    }
+    const allowed = normalizeRequestDescriptor({
+      ...current.descriptor,
+      headers: [...current.descriptor.headers, ["X-Application", "value"]],
+    });
+    expect(() =>
+      validateRequestDescriptorPolicy(current.descriptor, allowed, current.context.root),
+    ).not.toThrow();
+  });
+
   it.each([
     ["origin", { url: "https://other.test/path" }, "origin"],
     ["fragment", { url: "https://example.test/original?keep=yes#changed" }, "fragment"],

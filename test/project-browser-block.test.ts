@@ -110,6 +110,57 @@ function responseFor(signals: RequestSignals): Response {
   });
 }
 
+interface DeferredQuery {
+  signals: RequestSignals;
+  signal: AbortSignal;
+  resolve: (response: Response) => void;
+  reject: (error: Error) => void;
+}
+
+function deferredQueries(respectAbort = false): DeferredQuery[] {
+  const pending: DeferredQuery[] = [];
+  vi.mocked(fetch).mockImplementation(async (url, init) => {
+    if (!init?.signal) throw new Error("Query has no cancellation signal");
+    const { signal, ...requestInit } = init;
+    const read = await ServerSentEventGenerator.readSignals(new Request(url, requestInit));
+    if (!read.success) throw new Error(read.error);
+    return new Promise<Response>((resolve, reject) => {
+      pending.push({ signals: read.signals as unknown as RequestSignals, signal, resolve, reject });
+      if (respectAbort)
+        signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), {
+          once: true,
+        });
+    });
+  });
+  return pending;
+}
+
+function nextQuery(pending: DeferredQuery[], index: number): Promise<DeferredQuery> {
+  return vi.waitFor(() => {
+    const query = pending[index];
+    if (!query) throw new Error("Expected query has not started");
+    return query;
+  });
+}
+
+function blockInstance(element = root()) {
+  const instance = $(element).star("instance");
+  if (!instance) throw new Error("Project Browser is not initialized");
+  return instance;
+}
+
+async function openEditor() {
+  const instance = blockInstance();
+  const expand = root().querySelector<HTMLButtonElement>(
+    '[data-project-browser-expand][data-project-id="jqstar"]',
+  );
+  if (!expand) throw new Error("Missing expand control");
+  await instance.run("projectBrowser.expand", { element: expand });
+  const form = root().querySelector<HTMLFormElement>('[data-project-browser-edit="jqstar"]');
+  if (!form) throw new Error("Missing editor");
+  return { instance, form };
+}
+
 describe("Project Browser source block", () => {
   let edits: EditRequest[];
   let requests: RequestSignals[];
@@ -148,6 +199,184 @@ describe("Project Browser source block", () => {
   afterEach(() => {
     $(root()).star("destroy");
     vi.unstubAllGlobals();
+  });
+
+  it("keeps the latest virtual window when an aborted older response arrives last", async () => {
+    const pending = deferredQueries();
+    const instance = blockInstance();
+    instance.state.projectBrowserMode = "virtual";
+    instance.state.projectBrowserWindowStart = 0;
+    const first = instance.run("projectBrowser.refresh");
+    const older = await nextQuery(pending, 0);
+    instance.state.projectBrowserWindowStart = 80;
+    const second = instance.run("projectBrowser.refresh");
+    const newer = await nextQuery(pending, 1);
+    expect(older.signal.aborted).toBe(true);
+    newer.resolve(responseFor(newer.signals));
+    await second;
+    expect(instance.state.projectBrowserWindowStart).toBe(80);
+    older.resolve(responseFor(older.signals));
+    await first;
+    expect(instance.state.projectBrowserWindowStart).toBe(80);
+    expect(instance.state.projectBrowserRequestId).toBe(2);
+    expect(instance.state.projectBrowserLoading).toBe(false);
+  });
+
+  it("shares query cancellation across controls without clearing newer loading or error state", async () => {
+    const pending = deferredQueries();
+    const instance = blockInstance();
+    const first = instance.run("projectBrowser.refresh", { element: controlFor("owner") });
+    const older = await nextQuery(pending, 0);
+    instance.state.projectBrowserOwner = "Runtime";
+    const second = instance.run("projectBrowser.refresh", { element: controlFor("status") });
+    const newer = await nextQuery(pending, 1);
+    expect(older.signal.aborted).toBe(true);
+    older.reject(new Error("Superseded service failure"));
+    await first;
+    expect(instance.state.projectBrowserLoading).toBe(true);
+    expect(instance.state.projectBrowserError).toBeNull();
+    const failed = expect(second).rejects.toThrow("Current service failure");
+    newer.reject(new Error("Current service failure"));
+    await failed;
+    expect(instance.state.projectBrowserLoading).toBe(false);
+    expect(instance.state.projectBrowserError).toBe("Current service failure");
+  });
+
+  it("cancels the current table query when its application is destroyed", async () => {
+    const pending = deferredQueries(true);
+    const instance = blockInstance();
+    const request = instance.run("projectBrowser.refresh");
+    const query = await nextQuery(pending, 0);
+    instance.destroy();
+    expect(query.signal.aborted).toBe(true);
+    await expect(request).resolves.toBeUndefined();
+  });
+
+  it.each([200, 409])(
+    "does not finalize a superseded save refresh after HTTP %i",
+    async (status) => {
+      const { instance, form } = await openEditor();
+      const pending = deferredQueries(true);
+      const deferred = vi.mocked(fetch).getMockImplementation();
+      if (!deferred) throw new Error("Missing fixture transport");
+      vi.mocked(fetch).mockImplementation((url, init) =>
+        init?.method === "PATCH"
+          ? Promise.resolve(
+              new Response(JSON.stringify({ message: "Old write saved", error: "Old conflict" }), {
+                status,
+                headers: { "Content-Type": "application/json" },
+              }),
+            )
+          : deferred(url, init),
+      );
+      const save = instance.run("projectBrowser.save", { element: form });
+      await nextQuery(pending, 0);
+      const request = instance.run("projectBrowser.refresh", { element: controlFor("owner") });
+      const newer = await nextQuery(pending, 1);
+      await save;
+      try {
+        expect(instance.state.projectBrowserLoading).toBe(true);
+        expect(instance.state.projectBrowserError).toBeNull();
+        expect(instance.state.projectBrowserMessage).not.toBe("Old write saved");
+      } finally {
+        newer.resolve(responseFor(newer.signals));
+        await request;
+      }
+      expect(instance.state.projectBrowserLoading).toBe(false);
+    },
+  );
+
+  it("keeps loading active until concurrent edits finish even when a query completes", async () => {
+    const { instance, form } = await openEditor();
+    const standard = vi.mocked(fetch).getMockImplementation();
+    if (!standard) throw new Error("Missing fixture transport");
+    const writes: Array<(response: Response) => void> = [];
+    vi.mocked(fetch).mockImplementation((url, init) =>
+      init?.method === "PATCH"
+        ? new Promise<Response>((resolve) => {
+            writes.push(resolve);
+          })
+        : standard(url, init),
+    );
+    const first = instance.run("projectBrowser.save", { element: form });
+    const second = instance.run("projectBrowser.save", { element: form });
+    await vi.waitFor(() => expect(writes).toHaveLength(2));
+    const [completeFirst, completeSecond] = writes;
+    if (!completeFirst || !completeSecond) throw new Error("Expected both writes");
+    await instance.run("projectBrowser.refresh");
+    expect(instance.state.projectBrowserLoading).toBe(true);
+    completeFirst(
+      new Response(JSON.stringify({ message: "First write saved" }), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    await first;
+    expect(instance.state.projectBrowserLoading).toBe(true);
+    completeSecond(
+      new Response(JSON.stringify({ error: "Newer version exists" }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    await second;
+    expect(instance.state.projectBrowserLoading).toBe(false);
+    expect(instance.state.projectBrowserError).toBe("Newer version exists");
+  });
+
+  it.each([
+    { failure: "Service returned text", message: "Service returned text" },
+    { failure: 42, message: "Project query failed." },
+  ])(
+    "reports non-Error query rejection $failure and clears loading",
+    async ({ failure, message }) => {
+      vi.mocked(fetch).mockRejectedValueOnce(failure);
+      const instance = blockInstance();
+      await expect(instance.run("projectBrowser.refresh")).rejects.toBeDefined();
+      expect(instance.state.projectBrowserError).toBe(message);
+      expect(instance.state.projectBrowserLoading).toBe(false);
+    },
+  );
+
+  it("keeps simultaneous table queries independent across application roots", async () => {
+    const pending = deferredQueries(true);
+    const secondRoot = root().cloneNode(true) as HTMLElement;
+    for (const element of [secondRoot, ...secondRoot.querySelectorAll<HTMLElement>("[id]")])
+      if (element.id) element.id = `second-${element.id}`;
+    for (const element of secondRoot.querySelectorAll<HTMLElement>(
+      "[for], [aria-controls], [aria-labelledby]",
+    ))
+      for (const name of ["for", "aria-controls", "aria-labelledby"]) {
+        const value = element.getAttribute(name);
+        if (value)
+          element.setAttribute(
+            name,
+            value
+              .split(" ")
+              .map((id) => `second-${id}`)
+              .join(" "),
+          );
+      }
+    document.body.append(secondRoot);
+    $.star.ui.enhance(secondRoot);
+    $(secondRoot).star();
+    const first = blockInstance();
+    const second = blockInstance(secondRoot);
+    try {
+      const a = first.run("projectBrowser.refresh");
+      const qa = await nextQuery(pending, 0);
+      const b = second.run("projectBrowser.refresh");
+      const qb = await nextQuery(pending, 1);
+      expect(qa.signal.aborted).toBe(false);
+      expect(qb.signal.aborted).toBe(false);
+      first.destroy();
+      await a;
+      expect(qb.signal.aborted).toBe(false);
+      second.destroy();
+      await b;
+    } finally {
+      second.destroy();
+      secondRoot.remove();
+    }
   });
 
   it("requests a page and applies official SDK row, signal, and Pagination patches", async () => {

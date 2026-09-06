@@ -1,3 +1,5 @@
+import { isBrowserOwnedHeader } from "./request-headers";
+import { isPlainRecord } from "./value-checks";
 import type { StarRequestBodyMetadata, StarRequestDescriptor } from "./request-middleware";
 import type {
   BackendMethod,
@@ -199,41 +201,11 @@ const compatibilityEvents = new Set<StarProtocolCompatibilityEvent>([
   "datastar-fetch",
   "jquery-star:fetch",
 ]);
-const forbiddenHeaderNames = new Set([
-  "accept-charset",
-  "accept-encoding",
-  "access-control-request-headers",
-  "access-control-request-method",
-  "connection",
-  "content-length",
-  "cookie",
-  "cookie2",
-  "date",
-  "dnt",
-  "expect",
-  "host",
-  "keep-alive",
-  "origin",
-  "permissions-policy",
-  "referer",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-  "user-agent",
-  "via",
-]);
 const applicationRegistries = new WeakMap<StarInstance, ProtocolProfileRegistry>();
 const ABORTED = Symbol("protocol-response-aborted");
 
 function validation(message: string): StarProtocolValidationError {
   return new StarProtocolValidationError(message);
-}
-
-function plainRecord(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
 }
 
 function exactKeys(
@@ -264,7 +236,7 @@ function normalizedMediaType(value: unknown, label: string): string {
 }
 
 function normalizedMatcher(value: unknown, label: string): StarProtocolMediaMatcher {
-  if (!plainRecord(value)) throw validation(`${label} needs an exact or suffix matcher.`);
+  if (!isPlainRecord(value)) throw validation(`${label} needs an exact or suffix matcher.`);
   exactKeys(value, new Set(["kind", "mediaType", "suffix"]), label);
   if (value.kind === "exact") {
     if (value.suffix !== undefined)
@@ -302,7 +274,8 @@ function normalizeProfile(
   namespace: string,
   official: boolean,
 ): NormalizedProtocolProfile {
-  if (!plainRecord(value)) throw validation(`Protocol profiles for ${namespace} must be objects.`);
+  if (!isPlainRecord(value))
+    throw validation(`Protocol profiles for ${namespace} must be objects.`);
   exactKeys(
     value,
     new Set(["id", "compatibilityEvents", "prepareRequest", "adapters", "empty"]),
@@ -352,7 +325,7 @@ function normalizeProfile(
   const adapters: StarProtocolResponseAdapter[] = [];
   const adapterIds = new Set<string>();
   for (const raw of value.adapters as readonly unknown[]) {
-    if (!plainRecord(raw))
+    if (!isPlainRecord(raw))
       throw validation(`Protocol profile ${value.id} adapters must be objects.`);
     exactKeys(raw, new Set(["id", "match", "handle"]), `Protocol profile ${value.id} adapter`);
     if (typeof raw.id !== "string" || !adapterIdPattern.test(raw.id)) {
@@ -405,11 +378,7 @@ function requestBodyMetadata(body: ProtocolRequestBody): StarRequestBodyMetadata
 function assertHeaderSafety(headers: Headers): void {
   for (const [name] of headers) {
     const normalized = name.toLowerCase();
-    if (
-      forbiddenHeaderNames.has(normalized) ||
-      normalized.startsWith("proxy-") ||
-      normalized.startsWith("sec-")
-    ) {
+    if (isBrowserOwnedHeader(normalized)) {
       throw validation(`Protocol profiles cannot send browser-owned header ${normalized}.`);
     }
   }

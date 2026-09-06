@@ -1,7 +1,7 @@
 ---
 id: 0052
 title: Audit and strengthen JavaScript quality standards
-status: done
+status: testing
 created: 2026-09-06
 updated: 2026-09-06
 ---
@@ -53,7 +53,7 @@ current scopes, rules, thresholds, and failure detectors are sufficient.
       records without unreported blanket debt.
 - [x] [AC-03] Complexity, duplication, coverage, and package ceilings cannot be weakened through
       environment or configuration drift. Executable negative controls prove enforcement.
-- [x] [AC-04] Existing and strengthened controls pass `npm run check`; public/brain quality guidance
+- [ ] [AC-04] Existing and strengthened controls pass `npm run check`; public/brain quality guidance
       and the final-audit evidence reference the actual configuration.
 - [x] [AC-05] Mutation remains absent from automatic commands, dependencies, and this execution.
       Ticket 0053 records the later authorized planning scope and the pending execution boundary.
@@ -145,6 +145,58 @@ correction. Do not invoke Stryker or any mutation runner.
 - Runtime/CLI/automation/test files requiring corrections under the reviewed rules.
 - `docs/QUALITY_PROGRAM.md`, `docs/TESTING.md`, quality-review evidence, roadmap, and this ticket.
 
+### Reopening decision: clean Node 24 hosted audit, 2026-09-06
+
+The local closure remains historical evidence for its exact environment. Hosted full-audit run
+`34012438886` of commit `6bdc789aef23ae161ede524947e622e46a25a01f` failed on Ubuntu with Node
+`v24.20.0`. Retained reports are under `.git/jqstar/hosted-audit-34012438886/`. Reopen this quality
+owner to Plan and treat AC-04 as pending across the supported hosted environment.
+
+The retained evidence identifies three issues to resolve:
+
+- Unit, repeated-unit, and coverage runs reached `test/jquery-mobile-migration-contract.test.ts`
+  before `dist/jquery-star.umd.cjs` existed. Make built-asset prerequisites explicit or move those
+  assertions into the enforced artifact phase without losing any assertions. A clean install must
+  have a supported route through the quality commands.
+- The installed core consumer gzip size was 63,113 bytes against the unchanged 63,000-byte ceiling.
+  Compare identical consumer bytes and compression/toolchain inputs across supported Node versions,
+  then correct the cause. Do not raise the budget, narrow the consumer, or change the measurement
+  merely to obtain a pass. Any required runtime change must use its owning ticket.
+- The browser audit could not start its first project because a configured web server failed the
+  existing 60-second readiness check. The nine browser detector controls later failed readiness as
+  well. Identify the server and its missing prerequisite or startup fault before changing code. Keep
+  the existing timeout, browsers, repetitions, assertions, and required failure detectors. The
+  package-budget control also detected the real core-budget failure alongside its seeded fault; it
+  must return to detecting only the intended failure after that real issue is fixed.
+
+Planned files depend on that diagnosis: quality gate setup/order, built-artifact contract fixtures,
+browser fixture startup, corresponding runner controls, and the quality documentation/evidence
+matrix. Preserve source fingerprints and receipt rules. Verify from a clean checkout with Node 24,
+then run the complete hosted audit on the corrected committed source. Keep the full local delivery
+check. No mutation tooling, hosted policy change, or weakened threshold is authorized by this
+reopening. Ticket 0033 stays incomplete while this prerequisite is open.
+
+The cold Node 24 diagnostic retained in `.git/jqstar/program-audit/node24-cold-browser-startup.log`
+identifies navigation preparation as the long startup path: 34.944 seconds before HTTP readiness,
+compared with 3.868 seconds for resource preparation and under two seconds for each other server.
+This local run did not reproduce the hosted timeout; the hosted report omitted the server name. The
+source confirms that both research servers perform build/install work inside the readiness window.
+Move that work into one explicit, bounded browser preparation command, called by the browser quality
+runner, direct npm browser command, and detector harness. Keep test selection free of builds and all
+seven servers unchanged. Retain the 60-second readiness bound; add named preparation failure
+reporting and controls that ensure a failed preparation cannot start tests.
+
+Move only the built UMD byte equality from the Mobile unit contract to the package artifact gate.
+Keep the source-file measurements and every runtime-exclusion assertion in unit coverage. The
+package gate must compare the actual extracted UMD against the same reviewed measurement, reject
+missing/mismatched bytes, and report the check before accepting package contents.
+
+The gzip comparison uses byte-identical JavaScript (SHA-256
+`ede1edf361c7dbc951d42ac3921ecccccd021fbc579201167cc3986e32dbc1cd`): Homebrew Node 26/zlib 1.2.12
+produces 62,995 bytes; official Node 24.20.0/zlib 1.3.2.1 produces 63,113. Ticket 0013 owns
+restoring the unchanged installed-core budget through shared implementation. No compressor or
+consumer configuration changes are part of this correction.
+
 ## Code
 
 ### Changed-file ledger
@@ -164,6 +216,21 @@ correction. Do not invoke Stryker or any mutation runner.
 | `scripts/quality/coverage-thresholds.mjs`, `scripts/quality/run-coverage.mjs`, `test/coverage-thresholds.test.mjs` | Enforce local HEAD/review-base coverage floors and fail closed on invalid historical evidence.                                                           |
 | `test/server-routes.test.ts`, `test/ui-floating.test.ts`, `test/ui-form.test.ts`, `test/ui-questionnaire.test.ts`  | Add direct error, response, popover, and named-action coverage without shared server state.                                                              |
 
+### Current correction ledger
+
+- `scripts/prepare-browser-fixtures.mjs`: bounded, ordered self-hosted/resource/navigation
+  preparation with failure and interruption cleanup before browser startup.
+- `scripts/quality-browser.mjs`, `scripts/quality-0044-self-test.mjs`, `package.json`: use the same
+  preparation for quality, detector, direct browser, and native WebMCP execution.
+- `playwright.config.ts`: research servers only start their HTTP services after preparation.
+- `test/jquery-mobile-migration-contract.test.ts`, `scripts/quality/mobile-reference.mjs`,
+  `scripts/quality-package.mjs`: retain source assertions in unit tests and enforce built UMD byte
+  equality against the extracted package.
+- `test/browser-preparation.test.mjs`: ordered setup, failed/timed-out/missing process refusal,
+  listener cleanup, and missing/mismatched/invalid artifact measurements.
+- `quality/gates.mjs`: preparation and Mobile artifact checker changes select detector verification.
+- `docs/QUALITY_PROGRAM.md`, `docs/TESTING.md`, and this ticket: setup and evidence boundaries.
+
 ### Design changes
 
 Plan activation passed before changes. The dispatcher dropped from cognitive complexity 145 to 30;
@@ -173,6 +240,18 @@ negative async contract fixtures use unknown input before a deliberate boundary 
 guard was removed merely because TypeScript considered it redundant.
 
 ## Test
+
+Current correction verification under official Node 24.20.0:
+
+| Command                                                                                              | Result  | Evidence                                                                                                                                                 |
+| ---------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                                               | Pass    | Run `2026-09-06T06-00-38-593Z-87431` passes all six gates and 1,239 unit tests. Code validation accepted this exact source before transition to testing. |
+| Clean-checkout `npm run test:unit` after documented research setup                                   | Pass    | All 1,239 tests pass with `dist/` absent at startup. Reports and setup preconditions are retained under `.git/jqstar/program-audit/node24-clean-unit*`.  |
+| Clean-checkout `npm run test:e2e -- e2e/components.spec.ts --grep "cancels an older virtual window"` | Pass    | Three engines pass; the prepared navigation server reaches HTTP readiness in 106 ms with the same 60-second timeout.                                     |
+| `npm run test:coverage`                                                                              | Pass    | Current coverage is 94.48% lines, 93.45% functions, and 84.88% branches; every changed executable line/function is covered.                              |
+| Complete `npm run check` and corrected hosted full audit                                             | Pending | Required before this owner closes.                                                                                                                       |
+
+Earlier evidence:
 
 | Command                                      | Result   | Evidence                                                                                                                                                                                                               |
 | -------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -230,6 +309,11 @@ property tests, 29 static checks, 481 browser cases, 13 package checks, seven re
 the detector self-tests. No browser case failed, skipped, or passed only on retry. The exact report
 was Test-phase validated before closure edits.
 
+Current correction verification: six preparation/artifact boundary tests and eleven Mobile contract
+tests pass in the focused 137-test run. Typecheck and ESLint pass. Full clean-checkout unit
+execution, prepared browser execution, package detector controls, delivery, and the corrected hosted
+full audit remain required. The compiled core correction is tracked under reopened owner 0013.
+
 ### Inspection ledger
 
 | Finding                                                          | Resolution                                                    |
@@ -255,7 +339,7 @@ the explicit deferred mutation boundary.
 | AC-04     | Pass   | Delivery `2026-09-06T04-09-28-284Z-93807` passes all 13 gates after HTTP/UI coverage corrections. All changed production lines/functions are covered, with 94.49% lines, 93.46% functions, and 84.89% branches. Public/brain guidance and the 0033 prerequisite inventory refer to current controls.                                         |
 | AC-05     | Pass   | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                       |
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-06)
 
 The measured JavaScript/CSS scope gaps and historical coverage gap are corrected. The HTTP
 dispatcher complexity fell from 145 to 30 and the tokenizer from 107 to 63; the shared ceiling
@@ -263,4 +347,17 @@ is 65. Stronger typed defaults retain only named or counted boundaries. All deli
 without weakened floors, removed browser cases, or mutation execution. The matrix states remaining
 type, manual-accessibility, and hosted-review limitations rather than claiming the tools prove them.
 
-Status: Complete
+Historical status: Complete
+
+### Completion audit
+
+Pending hosted-environment correction. The preceding local closure does not establish a passing
+clean Node 24 full audit. The retained hosted failures must be resolved and the required checks must
+pass before this ticket returns to done.
+
+The first standalone clean-unit diagnostic intentionally had no `dist/`, but also omitted the
+research preparation required by `docs/TESTING.md`. Its retained report has three temporary-parent
+failures and one missing research-dependency suite. These are diagnostic setup failures, not a
+passing clean-unit receipt. Repeat with the documented research preparation while asserting that
+`dist/` remains absent. Canonical quality commands already create their evidence directory and
+install the research dependency before unit execution.

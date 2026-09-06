@@ -1,3 +1,5 @@
+import { isBrowserOwnedHeader } from "./request-headers";
+import { isPlainRecord, diagnosticError } from "./value-checks";
 import type { StarOperationCancellationReason, StarOperationError } from "./observation";
 import type { BackendMethod, PatchMode, StarContext, StarInstance } from "./types";
 
@@ -172,41 +174,11 @@ const descriptorKeys = new Set([
   "mode",
   "profile",
 ]);
-const forbiddenHeaderNames = new Set([
-  "accept-charset",
-  "accept-encoding",
-  "access-control-request-headers",
-  "access-control-request-method",
-  "connection",
-  "content-length",
-  "cookie",
-  "cookie2",
-  "date",
-  "dnt",
-  "expect",
-  "host",
-  "keep-alive",
-  "origin",
-  "permissions-policy",
-  "referer",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-  "user-agent",
-  "via",
-]);
 const protectedHeaderNames = new Set(["accept", "content-type", "datastar-request"]);
 const ABORTED = Symbol("request-middleware-aborted");
 
 function validation(message: string): StarRequestMiddlewareValidationError {
   return new StarRequestMiddlewareValidationError(message);
-}
-
-function plainRecord(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
 }
 
 function exactKeys(
@@ -218,37 +190,12 @@ function exactKeys(
   if (extra) throw validation(`${label} contains unsupported property ${extra}.`);
 }
 
-function boundedText(value: string, maximum: number): string {
-  const normalized = Array.from(value, (character) => {
-    const code = character.charCodeAt(0);
-    return code <= 8 || (code >= 11 && code <= 12) || (code >= 14 && code <= 31) || code === 127
-      ? "�"
-      : character;
-  }).join("");
-  return normalized.length <= maximum ? normalized : `${normalized.slice(0, maximum - 1)}…`;
-}
-
 function normalizedError(error: unknown): StarOperationError {
-  if (error instanceof Error) {
-    let name = "Error";
-    let message = "Request middleware failed.";
-    try {
-      if (typeof error.name === "string" && error.name) name = error.name;
-    } catch {
-      // A hostile accessor cannot replace the original thrown value.
-    }
-    try {
-      if (typeof error.message === "string") message = error.message;
-    } catch {
-      // A hostile accessor cannot replace the original thrown value.
-    }
-    return Object.freeze({ name: boundedText(name, 120), message: boundedText(message, 1_024) });
-  }
-  const kind = error === null ? "null" : typeof error;
-  const message = ["string", "number", "boolean", "bigint", "undefined"].includes(kind)
-    ? String(error)
-    : `Request middleware failed with a ${kind} value.`;
-  return Object.freeze({ name: "ThrownValue", message: boundedText(message, 1_024) });
+  return diagnosticError(
+    error,
+    "Request middleware failed.",
+    (kind) => `Request middleware failed with a ${kind} value.`,
+  );
 }
 
 function assertIdList(value: readonly string[] | undefined, label: string): readonly string[] {
@@ -281,7 +228,7 @@ function stagedRecords(
       throw validation(`Plugin ${registration.namespace} request middleware must be an array.`);
     }
     for (const definition of registration.middleware as readonly unknown[]) {
-      if (!plainRecord(definition)) {
+      if (!isPlainRecord(definition)) {
         throw validation(`Plugin ${registration.namespace} request middleware must be objects.`);
       }
       exactKeys(
@@ -407,7 +354,7 @@ function normalizeHeaders(value: unknown): readonly (readonly [string, string])[
 }
 
 function normalizeBody(value: unknown): StarRequestBodyMetadata {
-  if (!plainRecord(value)) throw validation("A request descriptor needs body metadata.");
+  if (!isPlainRecord(value)) throw validation("A request descriptor needs body metadata.");
   exactKeys(value, new Set(["kind", "size"]), "Request descriptor body metadata");
   if (!bodyKinds.has(value.kind as StarRequestBodyKind)) {
     throw validation(`Unknown request body kind: ${String(value.kind)}.`);
@@ -428,7 +375,7 @@ function normalizeBody(value: unknown): StarRequestBodyMetadata {
 }
 
 export function normalizeRequestDescriptor(value: unknown): StarRequestDescriptor {
-  if (!plainRecord(value)) throw validation("Request middleware must pass a descriptor object.");
+  if (!isPlainRecord(value)) throw validation("Request middleware must pass a descriptor object.");
   exactKeys(value, descriptorKeys, "Request descriptor");
   if (value.schema !== "jquery-star-request/1") {
     throw validation("Request descriptor schema must be jquery-star-request/1.");
@@ -555,10 +502,7 @@ export function validateRequestDescriptorPolicy(
   }
   for (const [name, value] of nextHeaders) {
     const original = originalHeaders.get(name);
-    if (
-      original === undefined &&
-      (forbiddenHeaderNames.has(name) || name.startsWith("proxy-") || name.startsWith("sec-"))
-    ) {
+    if (original === undefined && isBrowserOwnedHeader(name)) {
       throw validation(`Request middleware cannot add browser-owned header ${name}.`);
     }
     if (protectedHeaderNames.has(name) && original !== value) {
