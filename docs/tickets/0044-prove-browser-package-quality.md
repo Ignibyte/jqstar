@@ -3,7 +3,7 @@ id: 0044
 title: Prove browser, accessibility, package, and release quality
 status: done
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-06
 ---
 
 # 0044: Prove browser, accessibility, package, and release quality
@@ -30,6 +30,29 @@ browser engines, generated output, clean installation, or release reproducibilit
 - PR 1 delivery run `33805631434` passed all 13 package-release hardening tests, but the integrated
   green-control detector compared their colorized Vitest output without removing terminal control
   codes and therefore reported a false failure.
+
+### Reopening decision: detector process failures (2026-09-06)
+
+Ticket 0033 reproduced a false green in the actual detector recorder. A real child printed the
+expected API diagnostic and then terminated itself with SIGTERM. `runChild` returned a null exit
+code and the signal, but `record()` accepted `status !== 0`, ignored process-error flags, and marked
+the red detector as passed. The retained probe and source digest are under
+`.git/jqstar/program-audit/detector-evidence-plan/process-failure-finding.json`.
+
+Return to Plan and reopen AC-11. Extract the existing check recorder into
+`scripts/quality/detector-check.mjs` so focused tests exercise the production result builder.
+Require an actual safe integer exit, positive for a red control and zero for a green control, with
+no signal, timeout or spawn error. Keep raw `runChild` result fields through the producer and apply
+the same process-failure refusal to fixture preparation. Preserve the sixteen control names,
+detector patterns, direct evidence checks and retained diagnostics.
+
+Tighten the existing report schema so a passing red check requires a positive integer exit and a
+passing green check requires zero. Add no report fields or schema-version change: real successful
+historical records remain valid, while contradictory success records become invalid. Add focused
+actual-process red/green, SIGTERM, timed-out-positive-exit and missing-executable proof, plus schema
+refusal checks. Run Plan validation before Code, then focused tests, fast, all sixteen real
+controls, complete delivery and phase validation. Update this ticket, 0033, ROADMAP, TESTING and
+QUALITY_PROGRAM. Mutation tooling remains deferred under 0053.
 
 ### Scope
 
@@ -130,7 +153,7 @@ browser engines, generated output, clean installation, or release reproducibilit
       timers, requests, roots, or focus side effects.
 - [x] [AC-06] Network and server fixtures cover abort, delay, disconnect, malformed data, retry,
       redirect, conflict, and partial streams where supported.
-- [ ] [AC-07] The exact tarball passes every format, TypeScript resolution, UMD/CDN, browser,
+- [x] [AC-07] The exact tarball passes every format, TypeScript resolution, UMD/CDN, browser,
       external plugin, QUnit, tree-shaking, export-map, declaration, `publint`, and Are the Types
       Wrong fixture promised by 1.0.
 - [x] [AC-08] API Extractor reports make public API changes explicit and reviewed.
@@ -139,7 +162,8 @@ browser engines, generated output, clean installation, or release reproducibilit
 - [x] [AC-10] A clean checkout produces a reproducible artifact manifest and checksum and records
       SBOM, provenance eligibility, license, Node/npm, and browser evidence.
 - [x] [AC-11] Every browser, accessibility, package, performance, and release selector has a
-      sabotage case proving the gate detects drift or vacuity.
+      sabotage case proving the gate detects drift or vacuity. Interrupted, timed-out, failed-start,
+      missing-exit and invalid-exit processes cannot count as successful detector controls.
 
 ### Design
 
@@ -162,6 +186,9 @@ but cannot satisfy installed-consumer or release claims.
   exact release candidate.
 
 ### Planned files
+
+- Corrective additions: `scripts/quality/detector-check.mjs`,
+  `test/detector-process-contract.test.mjs`, and the coordinator/roadmap evidence.
 
 - `playwright.config.ts`, `e2e/components.spec.ts`, `e2e/quality-contracts.spec.ts`,
   `e2e/fixtures/network-proof-server.mjs`
@@ -194,6 +221,14 @@ but cannot satisfy installed-consumer or release claims.
 ## Code
 
 ### Changed-file ledger
+
+| File                                                                        | Purpose                                                                                                            |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `scripts/quality/detector-check.mjs`                                        | Build actual detector records only from completed processes with the expected exit and direct diagnostic/evidence. |
+| `scripts/quality-0044-self-test.mjs`                                        | Preserve raw child outcomes and use strict result handling for all sixteen controls and preparation.               |
+| `schema/quality-0044-self-test-report.schema.json`                          | Reject passing red/green records with contradictory exits.                                                         |
+| `test/detector-process-contract.test.mjs`                                   | Exercise actual normal, killed, timed-out and missing-executable children plus report consistency.                 |
+| `docs/TESTING.md`, `docs/QUALITY_PROGRAM.md`, this ticket, 0033 and ROADMAP | Record the reproduced false green, correction, evidence limits and final verification.                             |
 
 | File                                                                                                          | Purpose                                                                                                           |
 | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -249,6 +284,10 @@ but cannot satisfy installed-consumer or release claims.
 
 ### Design changes
 
+The 2026-09-06 correction follows its validated reopening Plan. Raw child results now determine
+success before diagnostic matching. Rejected processes retain a bounded exit/signal/timeout/error
+summary without serializing the spawn error object. The report format and control roster stay fixed.
+
 - Repeated browser cases establish or derive mutable backend state instead of assuming a fresh
   process-wide revision for every repeat.
 - Data Table selection is seeded from authored checked rows once. Later DOM patches reconcile new
@@ -267,6 +306,18 @@ but cannot satisfy installed-consumer or release claims.
   browser matrix before full mutation.
 
 ## Test
+
+| Command                                                                  | Result | Evidence                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check` (process-result correction)      | Pass   | Run `2026-09-06T19-02-35-591Z-53871` executes all thirteen gates on one unchanged fingerprint: 1,355 unit tests, 487 browser passes without failed, flaky or skipped results, thirteen package checks, seven release checks and all sixteen corrected detector controls. The matching receipt and exact Test phase validator passed before documentation edits. |
+| `npm run quality:fast` (process-result correction)                       | Pass   | Run `2026-09-06T18-59-55-273Z-40747` passes all six gates and 1,355 unit tests. Exact Code phase validation passed before entering Test. The subsequent schema formatting cleanup was checked for identical parsed JSON; no rule changed.                                                                                                                       |
+| Focused ESLint, documentation spelling, ticket validation and whitespace | Pass   | The corrected test construction passes lint; eight affected documentation files have zero spelling issues. Current ticket records and diff whitespace pass. All sixteen real controls from the prior complete run remain valid under the tightened schema.                                                                                                      |
+
+| Command                                                       | Result | Evidence                                                                                                                                                                                                         |
+| ------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actual `runChild` SIGTERM probe against the original recorder | Fail   | `detector-evidence-plan/process-failure-finding.json` retains a real null-exit/signalled child that printed the expected diagnostic and was falsely recorded as passed.                                          |
+| Focused detector process and package/release hardening suites | Pass   | `detector-evidence-plan/maintained-focused.log` records 21 passing tests, including actual completed red/green, SIGTERM, timeout with expected nonzero exit, missing executable, and contradictory report exits. |
+| Focused ESLint (first correction run)                         | Fail   | The new test used a dynamically computed property deletion. Replaced it with an explicit filtered object construction; production behavior was unaffected.                                                       |
 
 | Command                                                                             | Result                | Evidence                                                                                                                                                                                           |
 | ----------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -353,21 +404,32 @@ The final documentation-aware package and release measurements passed on one unc
 
 ### Acceptance evidence
 
-| ID    | Outcome              | Evidence                                                                                                                                                                                                                                                                                                           |
-| ----- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| AC-01 | Pass                 | `browser-report.json` selects all eight named projects and records 239 selected, executed, and passing tests with zero failed, flaky, or skipped.                                                                                                                                                                  |
-| AC-02 | Pass                 | The `retry-pass-is-red` self-test plants a first-attempt failure, matches Playwright's flaky result, and retains its trace.                                                                                                                                                                                        |
-| AC-03 | Pass                 | The `browser-empty-selection` self-test requires the missing project and the wrapper's own failure message.                                                                                                                                                                                                        |
-| AC-04 | Pass                 | `e2e/components.spec.ts` and `e2e/quality-contracts.spec.ts` cover keyboard, focus, names, ARIA, updated/error/open/disabled states, axe, touch, motion, color, and zoom; `docs/accessibility/RELEASE_CHARTERS.md` records the manual release procedure.                                                           |
-| AC-05 | Pass                 | All three desktop projects complete two mount/disposal cycles at 2,263 baseline DOM nodes. Owned listeners, observers, timers, requests, roots, and DOM-node delta return to zero after each disposal.                                                                                                             |
-| AC-06 | Pass                 | The shared network test passes abort, delay, disconnect, malformed, retry, redirect, conflict, and partial-stream fixtures; its sabotage changes the named retry result.                                                                                                                                           |
-| AC-07 | Approved-Disposition | Ticket 0004 completes the current-root installed consumer harness, including peer refusals and three-browser boot/dispose. The not-yet-published `jquery-star/core`, external-plugin, and testing contracts remain explicitly owned by tickets 0013 and 0014. Ticket 0044 does not declare or test future exports. |
-| AC-08 | Pass                 | `etc/jquery-star.api.md` covers the reportable API and the generated jQuery global bridge. The drift test changes a jQuery overload and requires API Extractor's changed-signature detector.                                                                                                                       |
-| AC-09 | Pass                 | Schema-validated ceilings cover package bytes/files, exact public documents, bundles, consumer bundle, DOM, ownership, requests, queries, patches, and zero generated-output changes. Immutable-base and document-roster sabotage pass.                                                                            |
-| AC-10 | Pass                 | Run `2026-08-31T15-21-08-168Z-69566` performed two independent clean installs and reproduced the corrected 261-file public-document artifact with one SHA-256; SBOM, provenance eligibility, licenses, toolchain, browsers, and packed self-hosting passed.                                                        |
-| AC-11 | Pass                 | `self-test-report.json` records 16 detector/control checks. Focused hardening also removes and injects package-document evidence, and the report schema rejects both cases.                                                                                                                                        |
+| ID    | Outcome | Evidence                                                                                                                                                                                                                                                                                                                                                             |
+| ----- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01 | Pass    | Current complete delivery selects all eight browser projects and records 487 executed passes with zero failed, flaky or skipped results. The three desktop engines and all conditional profiles pass.                                                                                                                                                                |
+| AC-02 | Pass    | The `retry-pass-is-red` self-test plants a first-attempt failure, matches Playwright's flaky result, and retains its trace.                                                                                                                                                                                                                                          |
+| AC-03 | Pass    | The `browser-empty-selection` self-test requires the missing project and the wrapper's own failure message.                                                                                                                                                                                                                                                          |
+| AC-04 | Pass    | `e2e/components.spec.ts` and `e2e/quality-contracts.spec.ts` cover keyboard, focus, names, ARIA, updated/error/open/disabled states, axe, touch, motion, color, and zoom; `docs/accessibility/RELEASE_CHARTERS.md` records the manual release procedure.                                                                                                             |
+| AC-05 | Pass    | The named repeated enhancement/disposal browser control passes under each desktop engine, retaining the zero-growth owned-resource contract. Its lifecycle-leak sabotage remains red in the complete sixteen-control self-test.                                                                                                                                      |
+| AC-06 | Pass    | The shared network test passes abort, delay, disconnect, malformed, retry, redirect, conflict, and partial-stream fixtures; its sabotage changes the named retry result.                                                                                                                                                                                             |
+| AC-07 | Pass    | The historical future-export disposition is superseded by completed tickets 0013 and 0014. Current exact-tarball checks pass all 23 named ESM/CommonJS and public type/fixture consumers, five installed QUnit cases, module/UMD/testing/service consumers in three engines, export and declaration checks, tree-shaking sentinels, publint and Are the Types Wrong. |
+| AC-08 | Pass    | `etc/jquery-star.api.md` covers the reportable API and the generated jQuery global bridge. The drift test changes a jQuery overload and requires API Extractor's changed-signature detector.                                                                                                                                                                         |
+| AC-09 | Pass    | Schema-validated ceilings cover package bytes/files, exact public documents, bundles, consumer bundle, DOM, ownership, requests, queries, patches, and zero generated-output changes. Immutable-base and document-roster sabotage pass.                                                                                                                              |
+| AC-10 | Pass    | Current release run `2026-09-06T19-02-35-591Z-53871` passes two independent clean installs/builds and reproduces the 257-file artifact with SHA-256 `8ef13f0d0b2a7a1512c84bd2ad15f956cefbca73c87af2e14c96752b56ab8715`. SBOM, licenses, supported tools, provenance eligibility and packed self-hosting pass; this is not publication.                               |
+| AC-11 | Pass    | All sixteen actual red/green controls pass with strict process handling. Six focused actual-process/schema tests reject SIGTERM, timeouts, failed starts and invalid or contradictory exits while preserving ordinary red and green outcomes. The original false-green reproduction remains retained.                                                                |
 
 ### Completion audit
+
+The process-result correction passes focused, fast and complete delivery checks on the exact
+corrected tree. All original criteria have direct evidence, including the now-completed modular and
+testing package consumers previously deferred under AC-07. Exact Test validation passed before these
+documentation edits. AC-04 records the required charters; actual screen-reader execution remains
+open under tickets 0017, 0035, 0039 and the final program audit. The separate newly found coverage
+census issue belongs to ticket 0043 and is not hidden by this detector correction.
+
+Status: Complete
+
+### Historical completion audit
 
 The focused browser, package, release, and detector reports are green and schema-valid. Ticket 0004
 fulfills the current installed-consumer dependency. AC-07 has an approved disposition for future
@@ -378,4 +440,4 @@ Hosted delivery run `33818434101` passed the repaired package-hardening detector
 package, release, and self-test gate. Tickets 0041, 0042, and 0043 are complete. Every acceptance
 criterion has direct evidence or an approved disposition, and no dependency remains.
 
-Status: Complete
+Historical status: Complete

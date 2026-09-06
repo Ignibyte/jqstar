@@ -23,6 +23,8 @@
             "source",
             "documentation",
             "unit",
+            "coverage",
+            "detector",
             "property",
             "browser",
             "package",
@@ -34,7 +36,7 @@
           ]
         },
         "minItems": 1,
-        "maxItems": 11,
+        "maxItems": 13,
         "uniqueItems": true
       },
       "evidence": {
@@ -53,6 +55,8 @@
                 "source",
                 "documentation",
                 "unit",
+                "coverage",
+                "detector",
                 "property",
                 "browser",
                 "package",

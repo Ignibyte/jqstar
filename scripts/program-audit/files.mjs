@@ -18,7 +18,12 @@ async function containedPath(root, path, leafExists) {
   return current;
 }
 
-export async function readAuditFile(root, path, { digest, maximumBytes = 32 * 1024 * 1024 } = {}) {
+async function readAuditInput(
+  root,
+  path,
+  { digest, maximumBytes = 32 * 1024 * 1024 } = {},
+  binary = false,
+) {
   assert(
     Number.isSafeInteger(maximumBytes) && maximumBytes > 0 && maximumBytes <= 128 * 1024 * 1024,
     "Invalid audit file bound",
@@ -58,7 +63,9 @@ export async function readAuditFile(root, path, { digest, maximumBytes = 32 * 10
       path,
       sha256: actual,
       bytes: offset,
-      source: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes),
+      ...(binary
+        ? { signature: bytes.subarray(0, 4).toString("hex") }
+        : { source: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes) }),
     };
   } catch {
     // OS and parser errors may include private absolute paths or input text.
@@ -68,6 +75,16 @@ export async function readAuditFile(root, path, { digest, maximumBytes = 32 * 10
   } finally {
     await handle?.close();
   }
+}
+
+export function readAuditFile(root, path, options) {
+  return readAuditInput(root, path, options);
+}
+
+export async function readAuditBinary(root, path, options) {
+  const file = await readAuditInput(root, path, options, true);
+  assert(file.bytes > 0, "Audit binary artifact is empty");
+  return Object.freeze(file);
 }
 
 function canonical(value) {

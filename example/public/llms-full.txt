@@ -46,7 +46,7 @@ What jQStar is, what stays on the server, and the boundaries of the current fram
 Citation: https://ignibyte.github.io/jqstar/
 Source: example/index.html
 
-jQStar 1.0.0 release candidate
+jQStar 1.1.0 release candidate
 Polished UI behavior for
 Datastar applications.
 A jQuery-powered framework built for backend-first developers. Write HTML, add standard

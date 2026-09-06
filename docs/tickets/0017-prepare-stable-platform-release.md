@@ -1,9 +1,9 @@
 ---
 id: 0017
 title: Prepare the stable 1.0 platform release
-status: done
+status: planned
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-06
 ---
 
 # 0017: Prepare the stable 1.0 platform release
@@ -56,6 +56,26 @@ or publish it to npm.
   no existing tag. Those observations establish a usable starting point, not candidate evidence; the
   final preflight must recompute them from the committed closure tree.
 - No tag, npm publication, provenance attestation, or GitHub release is authorized by this ticket.
+
+### Reopening decision: private reporting route (2026-09-06)
+
+Ticket 0033 read GitHub's live repository setting and found private vulnerability reporting disabled
+for `Ignibyte/jqstar`, although SECURITY.md directs users to its private-report form. Two successful
+API reads returned `enabled: false`. The exact command, date, source hash and proposed bounded
+setting change are recorded under `.git/jqstar/program-audit/security-reporting-plan/finding.json`.
+
+Return to Plan and reopen AC-13. The proposed correction enables only private vulnerability
+reporting through `PUT repos/Ignibyte/jqstar/private-vulnerability-reporting`, then independently
+reads the setting back and checks the documented route. This creates no report, advisory or message.
+Ticket 0033 AC-14 reserves governance changes for separate authorization; that approval has been
+requested and remains pending. A timeout or unanswered question does not authorize it. Do not invent
+a replacement security contact or claim the disabled route works.
+
+Validate this Plan before any approved setting change. Preserve the read and write results with the
+repository identity and timestamp. Update this ticket, ticket 0033 and ROADMAP, then use the normal
+fast/delivery and phase gates before closure. Public reporting policy text remains accurate only
+once the actual configured route is verified. Manual accessibility and final clean-candidate proof
+remain independently required by the full program audit.
 
 ### Scope
 
@@ -166,7 +186,7 @@ or publish it to npm.
       package/API/type/size/tree-shaking, release reproducibility, temp-cleanup, and
       detector-liveness gates with no hidden baseline, required skip, timeout, weakened threshold,
       or mutation testing.
-- [x] [AC-13] Security release checks cover dependency advisories and lock integrity, secret and
+- [ ] [AC-13] Security release checks cover dependency advisories and lock integrity, secret and
       generated-artifact scans, package scripts/exports/files, licenses/notices, CSP claims, server
       demo boundaries, and documented vulnerability reporting. Findings are fixed, explicitly
       accepted through policy, or block the candidate; credentials and private paths are redacted.
@@ -521,26 +541,31 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                        |
-| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | `quality/release-contract.json`, its strict schema, the public policy documents, and installed package/site checks freeze one consistent stable surface; static documentation checks reject stale preview and planned claims.                                                                   |
-| AC-02     | Pass   | `MIGRATING_TO_1.md` and `CHANGELOG.md` map the 0.1 baseline through the previews to every stable entry, default, lifecycle rule, bridge, CSP difference, naming convention, and jQuery UI/Mobile path covered by tests.                                                                         |
-| AC-03     | Pass   | Package and lockfile are 1.0.0; runtime, CLI, registry, declarations, maps, browser, website, corpus, archive, and report checks derive that identity from `package.json`, while plugin API and CSP grammar retain their independent versions.                                                  |
-| AC-04     | Pass   | Release preflight tests reject dirty, untracked, ignored-production, shallow, wrong-branch, tagged, lock-drift, Node 23, and npm 10 inputs. The real dirty worktree refusal wrote only a redacted failure receipt and no artifact.                                                              |
-| AC-05     | Pass   | Release quality produces and compares two locked fresh-clone tarballs by SHA-256, SHA-512, npm integrity, shasum, metadata, path, mode, size, declarations, maps, notices, archive, and behavior; cleanup tests cover success, failure, timeout, and signals.                                   |
-| AC-06     | Pass   | Package quality's 13 checks install the exact tarball into root, modular, CSP, testing, TypeScript, QUnit, browser, UMD, CLI/registry, bridge, and self-host consumers and enforce exports, types, maps, licenses, `publint`, ATTW, and isolation.                                              |
-| AC-07     | Pass   | Installed module-graph, sentinel, export, composition, and immutable-size checks prove each entry contains only its requested capability and exclude every named post-1.0 feature plus fixtures, server, registry, and website code.                                                            |
-| AC-08     | Pass   | The 0.1 public baseline and 925 unit tests pass unchanged against 1.0, covering root behavior, exports, jQuery augmentation, effects, requests, events, errors, patching, UI identities, and disposal.                                                                                          |
-| AC-09     | Pass   | Installed conformance covers core, UI, Datastar, testing, external plugins, the reviewed CSP grammar/threat corpus, and exact Turbo/htmx lifecycles; browser quality passes Chromium, Firefox, and WebKit matrices.                                                                             |
-| AC-10     | Pass   | Package, dependency, source, archive, bundle, and browser checks exclude archived jQuery UI/Mobile runtimes. The public coexistence/migration guides and fixtures implement ticket 0038's independent-project stewardship decisions.                                                            |
-| AC-11     | Pass   | Site structure, self-host, package, deployment, server, browser, accessibility, and agent-corpus checks cover every current API/policy route, approved names, the reference layout, and the explicit not-yet-published state.                                                                   |
-| AC-12     | Pass   | `release:candidate` forces every configured gate, then binds the clean committed tree to matching full-audit and delivery reports, exact fingerprints, package/release/static/browser subordinate hashes, and the installed tarball; missing, skipped, reordered, or stale reports fail closed. |
-| AC-13     | Pass   | Static, package, release, and candidate checks cover audit freshness, lock integrity, secrets, generated artifacts, scripts, exports/files, licenses, CSP and server boundaries, redaction, and the documented private-reporting process.                                                       |
-| AC-14     | Pass   | The strict prerequisite audit reads all 33 tickets from 0001–0016 and 0034–0050, requires terminal status and one valid result per criterion, accepts only explicit dispositions, and verifies ticket 0048 supersedes mutation work.                                                            |
-| AC-15     | Pass   | The immutable candidate schema and handoff bind commit/tree, package filename and digests, subordinate receipts, notes, tag/dist-tag expectations, read-only checks, rollback response, and separately labeled approval-required commands; tests prove no write is executed.                    |
-| AC-16     | Pass   | The finalized committed ticket is the input to the all-gates `quality:full-audit`, `check`, Document validation, whitespace checks, and clean `release:candidate` run. Its out-of-tree receipt proves the final fingerprint and exact installed-candidate matrix without mutation testing.      |
+| Criterion | Result  | Evidence                                                                                                                                                                                                                                                                                        |
+| --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass    | `quality/release-contract.json`, its strict schema, the public policy documents, and installed package/site checks freeze one consistent stable surface; static documentation checks reject stale preview and planned claims.                                                                   |
+| AC-02     | Pass    | `MIGRATING_TO_1.md` and `CHANGELOG.md` map the 0.1 baseline through the previews to every stable entry, default, lifecycle rule, bridge, CSP difference, naming convention, and jQuery UI/Mobile path covered by tests.                                                                         |
+| AC-03     | Pass    | Package and lockfile are 1.0.0; runtime, CLI, registry, declarations, maps, browser, website, corpus, archive, and report checks derive that identity from `package.json`, while plugin API and CSP grammar retain their independent versions.                                                  |
+| AC-04     | Pass    | Release preflight tests reject dirty, untracked, ignored-production, shallow, wrong-branch, tagged, lock-drift, Node 23, and npm 10 inputs. The real dirty worktree refusal wrote only a redacted failure receipt and no artifact.                                                              |
+| AC-05     | Pass    | Release quality produces and compares two locked fresh-clone tarballs by SHA-256, SHA-512, npm integrity, shasum, metadata, path, mode, size, declarations, maps, notices, archive, and behavior; cleanup tests cover success, failure, timeout, and signals.                                   |
+| AC-06     | Pass    | Package quality's 13 checks install the exact tarball into root, modular, CSP, testing, TypeScript, QUnit, browser, UMD, CLI/registry, bridge, and self-host consumers and enforce exports, types, maps, licenses, `publint`, ATTW, and isolation.                                              |
+| AC-07     | Pass    | Installed module-graph, sentinel, export, composition, and immutable-size checks prove each entry contains only its requested capability and exclude every named post-1.0 feature plus fixtures, server, registry, and website code.                                                            |
+| AC-08     | Pass    | The 0.1 public baseline and 925 unit tests pass unchanged against 1.0, covering root behavior, exports, jQuery augmentation, effects, requests, events, errors, patching, UI identities, and disposal.                                                                                          |
+| AC-09     | Pass    | Installed conformance covers core, UI, Datastar, testing, external plugins, the reviewed CSP grammar/threat corpus, and exact Turbo/htmx lifecycles; browser quality passes Chromium, Firefox, and WebKit matrices.                                                                             |
+| AC-10     | Pass    | Package, dependency, source, archive, bundle, and browser checks exclude archived jQuery UI/Mobile runtimes. The public coexistence/migration guides and fixtures implement ticket 0038's independent-project stewardship decisions.                                                            |
+| AC-11     | Pass    | Site structure, self-host, package, deployment, server, browser, accessibility, and agent-corpus checks cover every current API/policy route, approved names, the reference layout, and the explicit not-yet-published state.                                                                   |
+| AC-12     | Pass    | `release:candidate` forces every configured gate, then binds the clean committed tree to matching full-audit and delivery reports, exact fingerprints, package/release/static/browser subordinate hashes, and the installed tarball; missing, skipped, reordered, or stale reports fail closed. |
+| AC-13     | Pending | The documented private-reporting route is disabled in live GitHub repository settings. Actual API reads are retained. Enabling that single setting and verifying the route await explicit governance authorization; existing static/package/security checks do not prove service availability.  |
+| AC-14     | Pass    | The strict prerequisite audit reads all 33 tickets from 0001–0016 and 0034–0050, requires terminal status and one valid result per criterion, accepts only explicit dispositions, and verifies ticket 0048 supersedes mutation work.                                                            |
+| AC-15     | Pass    | The immutable candidate schema and handoff bind commit/tree, package filename and digests, subordinate receipts, notes, tag/dist-tag expectations, read-only checks, rollback response, and separately labeled approval-required commands; tests prove no write is executed.                    |
+| AC-16     | Pass    | The finalized committed ticket is the input to the all-gates `quality:full-audit`, `check`, Document validation, whitespace checks, and clean `release:candidate` run. Its out-of-tree receipt proves the final fingerprint and exact installed-candidate matrix without mutation testing.      |
 
 ### Completion audit
+
+The 2026-09-06 reopening supersedes the historical closure. AC-13 has a verified reporting-route gap
+and remains open pending the separately authorized repository-setting correction.
+
+### Historical completion audit
 
 All 16 criteria have one current evidence row. The first clean candidate correctly failed closed on
 two skipped required gates; the release-only all-gates correction preserves ordinary selection while
@@ -555,4 +580,4 @@ or push a tag, publish to npm, create a GitHub release, sign, attest, or announc
 remain separately approval-gated after the candidate receipt has been inspected. No unresolved
 finding or unchecked criterion remains.
 
-Status: Complete
+Historical status: Complete

@@ -127,6 +127,11 @@ Each custom gate has a self-test or sabotage fixture that plants one violation, 
 removes the violation, and observes green. Path selectors and ignore rules receive both positive and
 negative fixtures.
 
+Expected failure text does not establish detector success. Controls require a completed process with
+the expected integer exit code. Signals, timeouts, spawn failures and missing exits remain failures
+even when their output matches the detector. Actual child-process tests and report-schema checks
+enforce this boundary.
+
 ### Tested state equals delivered state
 
 The delivery runner captures the gated file set and content hash at startup, derives affected work
@@ -337,7 +342,11 @@ it classifies:
 
 Declaration files and type-only modules are excluded by semantics, not filename accidents. Every
 other production artifact is instrumented or mapped to named integration, package, browser, or
-deployment evidence.
+deployment evidence. The census rejects both empty runtime emission in a covered TypeScript module
+and runtime emission in an explicit type-only exclusion. Comments do not count as runtime code;
+side-effect imports do. A source-census test independently compares the configured coverage globs
+with every assignment. Type-only exclusions keep their named type-check evidence without synthetic
+counters credited as covered.
 
 After the census is corrected, the first enforced floors equal the measured result rounded down no
 more than one percentage point. They never decrease. Changed production lines and functions require

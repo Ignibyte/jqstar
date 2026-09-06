@@ -3,7 +3,7 @@ id: 0051
 title: Align current release guidance and candidate evidence
 status: done
 created: 2026-09-05
-updated: 2026-09-05
+updated: 2026-09-06
 ---
 
 # 0051: Align current release guidance and candidate evidence
@@ -30,6 +30,32 @@ would therefore fail candidate proof, and the candidate inventory could omit shi
 - Public support/security and project-brain text contain stale candidate or 0.x descriptions.
   Historical migration and ticket evidence must keep their original version identities.
 
+### Reopening decision (2026-09-06)
+
+Ticket 0033's website copy audit found the homepage badge still says
+`jQStar 1.0.0 release candidate`, while `package.json`, the release contract, README, and download
+guide identify 1.1.0. The generated full-text corpus and both JSON indexes repeat the stale homepage
+statement inside otherwise current 1.1.0 metadata. Existing generation tests prove byte consistency,
+but did not compare that authored candidate statement with the release authority.
+
+Return to Plan for this bounded copy correction. Reopen AC-01 and AC-04. Update the homepage badge
+to the existing candidate version, verify that source statement against package/release identity,
+require the generated home record to contain the same current candidate statement, and assert the
+visible badge in the existing home browser test. Regenerate public agent content through its normal
+generator. Historical migration and plugin API version references retain their actual meanings.
+
+Additional planned paths are `example/index.html`, `test/site-structure.test.mjs`,
+`test/agent-content.test.mjs`, `e2e/site.spec.ts`, `example/public/llms-full.txt`,
+`example/public/jqstar-agent-index.json`, `example/agent-content.generated.json`, `docs/TESTING.md`,
+and ticket 0033. Record the correction in this ticket and the roadmap. No candidate version, package
+API, dependency, or publication policy changes.
+
+Validate Plan before Code. Demonstrate the stale statement with the focused source/corpus tests,
+then pass those tests, the release-candidate suite, current three-engine website/native WebMCP
+checks, fast and full delivery gates, and phase validation. Ticket 0039's running delivery was
+interrupted before final candidate proof so both website corrections can be verified together. The
+stopped report cannot authorize delivery.
+
 ### Scope
 
 - Align release command examples, source preconditions and artifact paths to the existing 1.1
@@ -51,7 +77,8 @@ would therefore fail candidate proof, and the candidate inventory could omit shi
 ### Acceptance criteria
 
 - [x] [AC-01] Current release instructions agree with the contract's package/version, source branch,
-      tag, output directory and handoff commands, and preserve publication controls.
+      tag, output directory and handoff commands, and preserve publication controls. The public
+      homepage and generated home record identify the same current candidate version.
 - [x] [AC-02] Current support/security/brain/compatibility guidance accurately describes 1.x and
       optional stores/persistence while historical version evidence remains intact.
 - [x] [AC-03] Candidate gates exactly match the canonical runner, and completed stores/persistence
@@ -101,6 +128,20 @@ schemas and fixtures must move together without relaxing evidence identity or co
 
 ## Code
 
+### Corrective Code ledger (2026-09-06)
+
+Plan validation passed before the following correction.
+
+| File                                                                                                             | Purpose                                                                                |
+| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `example/index.html`                                                                                             | Show the current 1.1.0 candidate in the homepage badge.                                |
+| `test/site-structure.test.mjs`                                                                                   | Compare authored home/download candidate wording with package and release identity.    |
+| `test/agent-content.test.mjs`                                                                                    | Reject a generated home statement that conflicts with current corpus package metadata. |
+| `e2e/site.spec.ts`                                                                                               | Observe the current candidate badge in the existing three-engine home proof.           |
+| `example/public/llms-full.txt`, `example/public/jqstar-agent-index.json`, `example/agent-content.generated.json` | Regenerate the homepage statement from its corrected public source.                    |
+| `docs/TESTING.md`                                                                                                | Document cross-source candidate wording checks.                                        |
+| This ticket, ticket 0033, and `docs/tickets/ROADMAP.md`                                                          | Preserve the finding, reopening scope, execution and closure evidence.                 |
+
 ### Changed-file ledger
 
 | File                                              | Purpose                                                                               |
@@ -119,6 +160,24 @@ No changes from the reviewed scope.
 
 ## Test
 
+| Command                                                      | Result | Evidence                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check` (`quality:delivery`) | Pass   | Run `2026-09-06T18-36-18-416Z-79694` executes all 13 gates: 1,349 unit tests, 487 browser passes with zero failed/flaky/skipped cases, 13 package and seven release checks, and all 16 detector controls. The exact current receipt and both corrective Test phase validations passed before these documentation edits. |
+
+| Command                                               | Result | Evidence                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` (combined website corrections) | Pass   | Run `2026-09-06T18-33-38-682Z-72779` passes all five selected gates and 1,349 unit tests. The unchanged runner self-test is explicitly skipped. Exact Code phase validation passes for both 0039 and 0051 before the combined Test run.                                                                                             |
+| Combined root and nested static builds and probes     | Pass   | `site-root-combined/probe.json` and `site-base-combined/probe.json` each record all 24 direct routes with and without JavaScript in three engines, all 22 shared-control routes, the current candidate badge, search navigation, dialog focus and toast behavior. No script errors, failed responses or external requests occurred. |
+
+| Command                                                                                          | Result | Evidence                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Plan validation for this reopening                                                               | Pass   | `site-base-plan/0051-plan-validation.log` records the accepted correction scope before Code.                                                                                                                                                                       |
+| `vitest run test/site-structure.test.mjs test/agent-content.test.mjs` before the fix             | Fail   | Both new cross-source checks detected the 1.0.0 statement under 1.1.0 authority; nine other cases passed. The source and generated-corpus failures remain in `site-base-plan/0051-before-fix.log`.                                                                 |
+| `npm run build:agent-content`                                                                    | Pass   | Regenerated the full-text corpus and both JSON indexes from the corrected home source. The generated agent guide and short index did not change.                                                                                                                   |
+| Focused source, agent-content, release-candidate, WebMCP, jQuery UI contract and property suites | Pass   | All 36 tests pass in `site-base-plan/0051-focused-unit.log`, including release identity and corpus consistency.                                                                                                                                                    |
+| Combined three-engine website and native WebMCP browser suites                                   | Pass   | All 31 tests pass in `site-base-plan/0051-focused-browser.log`; the actual homepage badge, all documentation controls, harness registration and zero-mock native execution pass.                                                                                   |
+| Focused ESLint and combined fast run `2026-09-06T18-31-45-796Z-68431`                            | Error  | ESLint rejected unqualified `DOMParser` and `window` globals in the new source test. The running fast command was deliberately interrupted before further checks; its report is not a pass. The test now uses the explicit jsdom constructor through `globalThis`. |
+
 | Command                                                                                                                                                                     | Result  | Evidence                                                                                                                                                                                                                                                         |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pre-checkpoint `npm run quality:receipt` and `git diff --check`                                                                                                             | Pass    | Ticket 0020's final verified tree matched before checkpoint `13ab50e`.                                                                                                                                                                                           |
@@ -134,6 +193,15 @@ No changes from the reviewed scope.
 | `npm run quality:receipt` and `git diff --check`                                                                                                                            | Pass    | Exact delivery receipt matched before Document; no whitespace errors.                                                                                                                                                                                            |
 | Document validation and final delivery startup                                                                                                                              | Fail    | Validator requires the literal `quality:delivery` command in the ledger; `npm run check` alone did not satisfy its matcher. Stopped run `2026-09-05T21-56-55-091Z-14202` immediately, recorded the actual command delegation, and revalidated before restarting. |
 | `npm run check` (final-tree audit)                                                                                                                                          | Stopped | Run `2026-09-05T21-57-23-962Z-24110` was stopped after the final documentation audit found `persist` missing from the project's public export list. Added the entry and selected-preference feature description before restarting.                               |
+
+### Corrective inspection ledger (2026-09-06)
+
+| Finding                                                                                               | Resolution                                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The homepage badge and three corpus copies named a different candidate than package/release metadata. | Corrected the authored badge, regenerated the corpus, and compared both authored and generated statements with the existing release identity. Both checks failed before the fix and pass afterward. |
+| Byte-identical corpus generation did not establish semantic agreement with package version metadata.  | Added the independent generated-home candidate assertion to the existing provenance test.                                                                                                           |
+| The source test used browser globals outside its lint scope.                                          | Use the explicit jsdom constructor through `globalThis`; focused ESLint and the full fast gate pass.                                                                                                |
+| Current visual evidence could be confused with a fresh reference comparison.                          | Inspect the new rendered badge and layout, retain image/probe identities, and explicitly leave original-reference comparison unclaimed.                                                             |
 
 ### Inspection ledger
 
@@ -155,18 +223,31 @@ No changes from the reviewed scope.
   selected browser-preference persistence. The roadmap records this cleanup before 0023/0030.
 - Candidate inventories now require the shipped 1.1 service tickets and public policies. Exact
   ordered quality gates agree with the runner, and closed schemas require the reviewed counts.
-- Agent-content regeneration passed with no generated corpus changes.
+- The original 2026-09-05 policy cleanup left the generated corpus unchanged. The 2026-09-06
+  correction updates the homepage badge and regenerates the full-text corpus and both JSON indexes.
+  Source, generated-content and visible browser assertions now require the current 1.1.0 statement.
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                                                                      |
-| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | `RELEASING.md` command/path/branch audit agrees with `quality/release-contract.json` and the current 1.1.0 package. The full release gate passes; publication controls remain intact.                                                                                         |
-| AC-02     | Pass   | `SUPPORT.md`, `SECURITY.md`, `docs/{README,PROJECT,COMPATIBILITY}.md` describe current 1.x and optional stores/persistence. Historical migration/plugin-version evidence is unchanged; docs/static and corpus checks pass.                                                    |
-| AC-03     | Pass   | The contract and schemas require 36 prerequisite tickets and 17 policy files. Independent runner comparison and explicit 0018/0019 service-policy assertions pass in `test/release-candidate-contract.test.mjs`; the full release/package gates pass.                         |
-| AC-04     | Pass   | Focused six-test release suite, schema validation, fast gate, complete 13-gate delivery, Code/Test closure, matching receipt and diff checks pass. The changed-file audit contains only release guidance, candidate inventories/schemas, regression tests and ticket records. |
+| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                                                                                           |
+| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-01     | Pass   | Release command, branch, tag and output examples agree with the 1.1.0 contract. The authored homepage, generated home record and visible badge agree with package/release identity. Both new consistency checks failed before correction and pass afterward; publication controls remain intact.                                                                   |
+| AC-02     | Pass   | `SUPPORT.md`, `SECURITY.md`, `docs/{README,PROJECT,COMPATIBILITY}.md` describe current 1.x and optional stores/persistence. Historical migration/plugin-version evidence is unchanged; docs/static and corpus checks pass.                                                                                                                                         |
+| AC-03     | Pass   | The contract and schemas require 36 prerequisite tickets and 17 policy files. Independent runner comparison and explicit 0018/0019 service-policy assertions pass in `test/release-candidate-contract.test.mjs`; the full release/package gates pass.                                                                                                              |
+| AC-04     | Pass   | The 36 focused tests, 31 website/native WebMCP cases, root/nested three-engine probes, 1,349-unit fast run and all 13 delivery gates pass. Exact Code and Test phase validations passed before documentation edits. The correction changes current copy, generated content, regression checks and evidence records; no runtime API or external publication change. |
 
 ### Completion audit
+
+All four criteria have direct current evidence. The candidate remains 1.1.0. The homepage and
+generated copies now agree with the existing release authority, and the new assertions detect the
+original contradiction. Complete delivery `2026-09-06T18-36-18-416Z-79694` and exact Test phase
+validation passed before this closure record. The final documentation state requires a fresh
+delivery receipt before commit. The separate private-reporting setting finding belongs to 0017;
+actual manual accessibility and full program acceptance remain owned by their open tickets.
+
+Status: Complete
+
+### Historical completion audit (2026-09-05)
 
 All four criteria have direct current-source and executable evidence. The candidate contract matches
 both the canonical runner and the shipped 1.1 services. Historical version records, runtime APIs,
@@ -174,4 +255,4 @@ dependencies and support durations are unchanged. No publishing, tagging, pushin
 write occurred. The first delivery failure remains documented with its table correction and green
 rerun. Navigation decision and inspection work remain in their separate tickets.
 
-Status: Complete
+Historical status: Complete

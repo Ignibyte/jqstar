@@ -1,9 +1,9 @@
 ---
 id: 0039
 title: Publish the jQuery UI coexistence and migration path
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-06
 ---
 
 # 0039: Publish the jQuery UI coexistence and migration path
@@ -39,6 +39,38 @@ jQStar's native component system and the package never forks or embeds jQuery UI
   conformance. Tickets 0005/0006 define exact ownership and disposal.
 - No installed same-page coexistence matrix, complete machine feature map, representative migration
   measurement, or adapter decision evidence currently exists.
+
+### Reopening decision (2026-09-06)
+
+Ticket 0033's current-source website audit reproduced a missing entry script on the public jQuery UI
+guide. The built page has zero script tags, so theme switching, search, and mobile navigation are
+inactive in Chromium, Firefox, and WebKit. The source route test omitted shared stores, persistence,
+and this guide. The browser route test also omitted the jQuery Mobile guide.
+
+The immutable reproduction is `.git/jqstar/program-audit/site-base-plan/missing-guide-script.json`
+at commit `5ecba25bcc9cdff73c6ab938f44c1ab477d415ec`, with source fingerprint
+`ae690fe890468c56ee59b42a38c8f740b41bfd984c5b3b20fb06104996ebbe9c`. Three unchanged-page cases fail
+the controls and three in-memory corrections using the actual built modules restore them. This is
+planning evidence, not a maintained fix or final audit pass. The earlier complete nested-base probe
+stopped at this guide; its failure log is retained in the same directory.
+
+Return this ticket to Plan for the public-guide correction. Preserve the original migration matrix,
+fixture versions, adapter decision, and acceptance evidence. AC-09 and AC-13 reopen for current
+website behavior and full verification. No new compatibility promise or migration runtime is added.
+
+The correction will load `/site.ts` from the guide, restore all omitted source/browser route rows,
+and compare both test rosters and Vite entries against an independently enumerated HTML file census.
+The browser route proof will operate theme, search, and mobile navigation on every documentation
+page. Verify actual builds at the root and a nested base, including direct loads, native no-script
+content, search navigation, component interactions, and asset responses in all three engines.
+Missing original design-reference images remain a separate ticket-0033 evidence gap; these checks
+must not be described as a fresh visual-reference comparison.
+
+Additional planned files are `test/site-structure.test.mjs`, `e2e/site.spec.ts`, `docs/TESTING.md`,
+`docs/tickets/ROADMAP.md`, and ticket 0033. Update generated agent assets only through the existing
+generator if the public source changes their bytes. Validate Plan before Code, then run focused
+source/browser tests, `quality:fast`, full `npm run check`, all remaining phase validation, and
+`git diff --check`. Close again only after inspecting the original and corrective criteria together.
 
 ### Activation gate
 
@@ -217,7 +249,7 @@ opens a new bounded ticket and names the exact facade. Ticket 0039 ships no adap
 - [x] [AC-05] Repeated jQStar enhancement/disposal and server DOM patches do not duplicate jQStar
       behavior, mutate surviving UI instances, adopt UI data, patch Widget Factory, auto-initialize
       legacy markup, or skip the application's explicit destroy path for removed UI regions.
-- [x] [AC-06] The representative legacy slice and each incremental migration step preserve native
+- [ ] [AC-06] The representative legacy slice and each incremental migration step preserve native
       content/forms, validation/submitter/values, server interaction, keyboard/screen-reader/focus,
       responsive/touch, reduced-motion/forced-color, direct-load/history, and JavaScript-disabled
       behavior, with unsupported differences explicit.
@@ -229,7 +261,9 @@ opens a new bounded ticket and names the exact facade. Ticket 0039 ships no adap
       coexistence is a temporary feature-by-feature migration tool rather than architecture.
 - [x] [AC-09] The incremental guide covers inventory, supported jQuery/UI/Migrate upgrade, CSS/data/
       event ownership, parallel install, one-region migration, test/release/rollback, explicit
-      legacy destruction/removal, and application-specific third-party plugin handling.
+      legacy destruction/removal, and application-specific third-party plugin handling. Its public
+      route loads directly with working shared theme, search, and mobile navigation at root and
+      nested deployment bases.
 - [x] [AC-10] The adapter decision applies frozen thresholds and records demand, two application
       slices, code/bundle/accessibility/ownership/maintenance/deprecation costs, and go/no-go. Go
       creates a separate bounded ticket with exact widgets/methods/options/events; no adapter code
@@ -239,7 +273,7 @@ opens a new bounded ticket and names the exact facade. Ticket 0039 ships no adap
       receives a separate decision ticket rather than copying jQuery UI API by default.
 - [x] [AC-12] Website/README/package/migration wording makes no official-successor/drop-in claim,
       attributes jQuery UI appropriately, and uses the independent jQStar naming record.
-- [x] [AC-13] Exact-tarball package/API/type/graph/size, unit/property, three-browser,
+- [ ] [AC-13] Exact-tarball package/API/type/graph/size, unit/property, three-browser,
       accessibility/ no-JavaScript, coexistence/migration, forbidden-runtime, npm run check, ticket
       phase validation, and git diff --check pass without mutation testing.
 
@@ -337,6 +371,21 @@ expand jQStar's stable API.
 
 ## Code
 
+### Corrective Code ledger (2026-09-06)
+
+Plan validation passed before the following correction. The existing fixture and migration contracts
+remain covered by the original ledger below.
+
+| File                                               | Purpose                                                                         |
+| -------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `example/docs/ecosystem/jquery-ui/index.html`      | Load the shared website module on direct guide visits.                          |
+| `test/site-structure.test.mjs`                     | Restore omitted routes and compare build/test rosters with actual HTML pages.   |
+| `e2e/site.spec.ts`                                 | Restore omitted routes and operate shared controls on every documentation page. |
+| `docs/TESTING.md`                                  | Describe complete route census and behavioral coverage.                         |
+| `docs/tickets/0039-publish-jquery-ui-migration.md` | Preserve the failure, reopening decision, correction, and evidence.             |
+| `docs/tickets/0033-audit-full-library-program.md`  | Record the discovered website gap and dependent closure.                        |
+| `docs/tickets/ROADMAP.md`                          | Identify both reopened prerequisites of the final audit.                        |
+
 ### Changed-file ledger
 
 | File                                                 | Purpose                                                                |
@@ -385,6 +434,51 @@ expand jQStar's stable API.
 
 ## Test
 
+| Command                                                      | Result | Evidence                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check` (`quality:delivery`) | Pass   | Run `2026-09-06T18-36-18-416Z-79694` executes all 13 gates, with 1,349 unit and 487 browser passes, 13 package checks, seven release checks and sixteen detector controls. The matching receipt and exact Test phase validation passed before this documentation update. Actual screen-reader evidence remains required. |
+
+| Command                                               | Result | Evidence                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` (combined website corrections) | Pass   | Run `2026-09-06T18-33-38-682Z-72779` passes all five selected gates and 1,349 unit tests. The unchanged runner self-test is explicitly skipped. Exact Code phase validation passes for both 0039 and 0051 before the combined Test run.                                                                                             |
+| Combined root and nested static builds and probes     | Pass   | `site-root-combined/probe.json` and `site-base-combined/probe.json` each record all 24 direct routes with and without JavaScript in three engines, all 22 shared-control routes, the current candidate badge, search navigation, dialog focus and toast behavior. No script errors, failed responses or external requests occurred. |
+
+| Command                | Result | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run quality:fast` | Pass   | Run `2026-09-06T18-23-07-917Z-34208` passes five selected gates and 1,348 unit tests; the unchanged runner self-test is explicitly skipped. Code validation passed against its exact report before the Test transition.                                                                                                                                                                                                                                |
+| `npm run check`        | Error  | Run `2026-09-06T18-25-17-167Z-42076` failed ticket validation because the fast-result table was below a subheading. Unit, coverage, property, static, self-hosted and package gates passed. The audit then found the stale homepage candidate badge; SIGINT stopped release verification and left browser/detector gates unexecuted. No receipt was issued. The fast row is now directly in this Test ledger; ticket 0051 owns the version correction. |
+
+### Corrective verification (2026-09-06)
+
+The source and browser rosters now cover the independently enumerated 24 HTML entries, including 22
+documentation pages and the separate Component Lab. The shared-script fix is one HTML line.
+Regenerating the public agent corpus produced no byte changes.
+
+| Command or evidence                                                                                                                                                | Result | Observation                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan validator for this ticket                                                                                                                                     | Pass   | Reopening scope passed before Code; `site-base-plan/plan-validation.log`.                                                                                                                                                                                                                                                                                                   |
+| Focused source test before the script fix                                                                                                                          | Fail   | The first run also exposed a URL-sort mistake in the new census assertion. After sorting converted URLs, only the missing guide script failed. Both logs remain under `site-base-plan/`.                                                                                                                                                                                    |
+| `vitest run test/site-structure.test.mjs test/jquery-ui-migration-contract.test.ts test/property/jquery-ui-migration.property.test.ts test/agent-content.test.mjs` | Pass   | All 22 tests pass; `site-base-plan/focused-unit.log`.                                                                                                                                                                                                                                                                                                                       |
+| `playwright test e2e/site.spec.ts --project desktop-chromium --project desktop-firefox --project desktop-webkit`                                                   | Pass   | All 30 tests pass. Each engine operates theme, keyboard search, and mobile navigation on every one of the 22 documentation routes, and registers the draft WebMCP catalog on every public route.                                                                                                                                                                            |
+| Vite static builds with `JQS_SITE_BASE=/` and `/audit/nested/`                                                                                                     | Pass   | Both built all 24 HTML entries; separate assets and logs remain in `site-root-correction/` and `site-base-correction/`.                                                                                                                                                                                                                                                     |
+| Built-site probe, first attempt                                                                                                                                    | Fail   | The probe incorrectly required zero script requests with JavaScript disabled. The Component Lab declares a module preload, which may fetch without executing. The original probe and both failure logs are preserved.                                                                                                                                                       |
+| Built-site probe with declared-preload accounting                                                                                                                  | Pass   | Each base passed all 24 direct routes with and without JavaScript in all three engines, all 22 shared-control routes, search navigation, dialog keyboard/focus return, and toast behavior. No script errors, failed asset responses, or external requests occurred. Disabled pages showed no applied site theme; every observed script fetch was a declared module preload. |
+| `npm run quality:fast`, run `2026-09-06T18-20-02-938Z-27256`                                                                                                       | Fail   | Unit and source checks passed. Formatting, one extra blank line, and one unknown documentation word failed; formatting and wording were corrected. The unchanged runner self-test was explicitly skipped.                                                                                                                                                                   |
+| Focused ESLint and `git diff --check`                                                                                                                              | Pass   | Both edited test files and the patch passed before the full gate.                                                                                                                                                                                                                                                                                                           |
+
+The probe reports identify source fingerprints and every built asset's byte count and digest. Root
+and nested screenshots were captured; the root home and mobile dialog images were inspected for
+readable content and layout. Original reference images remain unavailable, so no new direct
+reference comparison is claimed. These probes supplement, but do not replace, full delivery and
+exact-package verification. Their root is `.git/jqstar/program-audit/`.
+
+The corrected `npm run quality:fast` run `2026-09-06T18-23-07-917Z-34208` passed all five selected
+gates, including 1,348 unit tests and the complete fast static roster. The unchanged runner
+self-test was explicitly skipped. Code phase validation passed against this exact report before the
+transition to Test. Full delivery remains required.
+
+### Historical verification
+
 | Command                                                                                                                                                                                                                                  | Result | Evidence                                                                                                                                                                                      |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run ticket:validate -- --phase plan --ticket docs/tickets/0039-publish-jquery-ui-migration.md`                                                                                                                                      | Pass   | Frozen activation, inventory, scorecard, scope, and planned files passed before implementation.                                                                                               |
@@ -402,6 +496,19 @@ expand jQStar's stable API.
 | `npm run check` (`quality:delivery`)                                                                                                                                                                                                     | Pass   | Run `2026-09-04T15-29-06-628Z-20442` passed all 12 enforced lanes, including package consumers, release proof, the full browser matrix, and detector self-tests.                              |
 | `npm run check` (first completed-ticket run)                                                                                                                                                                                             | Fail   | Run `2026-09-04T15-42-09-018Z-62496` found ticket formatting and one unknown spelling term; the other ten lanes, including package, release, browser, and detector proof, passed.             |
 | `npm run format:check` and `npx --no-install cspell docs/tickets/0039-publish-jquery-ui-migration.md` (corrected)                                                                                                                        | Pass   | Prettier accepted the full repository, and the focused ticket spelling check reported zero issues after the failure evidence was formatted and clarified.                                     |
+
+### Corrective inspection ledger (2026-09-06)
+
+The final current-state review found missing real screen-reader records for AC-06. The criterion is
+unchecked and Pending, and the ticket remains in Test after the automated correction passes.
+
+| Finding                                                                                        | Resolution                                                                                                                              |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| The public migration guide built without any script, leaving visible shared controls inactive. | Added the source module entry; actual root and nested builds now operate all controls in each engine.                                   |
+| Build and test rosters diverged as guides were added.                                          | Compare both test rosters and build entries with the independent HTML file census; source and browser checks cover every current guide. |
+| Source-census URL conversion changed lexical order.                                            | Sort after conversion; the corrected test then failed only on the actual missing script before its fix.                                 |
+| A no-script probe treated every fetched module as executed JavaScript.                         | Account only for declared module preloads, retain their observed requests, and verify the site never applies its scripted theme.        |
+| Formatting and spelling failed on the new ticket prose.                                        | Format the changed documentation, remove the extra blank line, and use accepted wording; the corrected fast gate passes.                |
 
 ### Inspection ledger
 
@@ -431,26 +538,35 @@ expand jQStar's stable API.
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                                                             |
-| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| AC-01     | Pass   | The ticket records refreshed official release, API, status, upgrade, support, and Migrate sources; exact jQuery 4.0.0 and jQuery UI 1.14.2 checksums; ticket-0038 naming policy; the frozen 72-entry inventory; and the nine-dimension adapter scorecard. Plan validation passed before implementation.                              |
-| AC-02     | Pass   | `quality/jquery-ui-migration.json` validates against its closed schema. Contract and property tests prove 72 unique official URLs, exact one-row assignment, all four migration classes, required row fields, and the named third-party-extension boundary.                                                                          |
-| AC-03     | Pass   | The installed-package fixture loads exact jQuery, jQuery UI runtime/base-theme assets, and packed jQStar. Sixteen targeted cases passed across Chromium, Firefox, WebKit, mobile touch, reduced motion, forced colors, and JavaScript-disabled modes.                                                                                |
-| AC-04     | Pass   | The exact-tarball package gate passes 13 checks: runtime classifications, packed paths and strings, clean consumer install, production source, licenses, site assets, and root/core/testing/Turbo/htmx/Datastar graphs contain no jQuery UI runtime, theme, icons, or source.                                                        |
-| AC-05     | Pass   | Browser counters, data/focus fingerprints, repeated enhancement, independent island replacement, and explicit legacy destroy spies prove that each owner cleans up only its own roots without Widget Factory patching, UI-data adoption, or duplicate jQStar behavior.                                                               |
-| AC-06     | Pass   | The project-editor flow exercises dialog, tabs, autocomplete, date input, sortable work, native validation/submission, server replacement, direct links, responsive navigation, focus/keyboard behavior, preserved values, accessibility media modes, and no-JavaScript form fallback. Unsupported legacy debt is explicit.          |
-| AC-07     | Pass   | The migration authority records exact package and asset bytes, one fixture dependency, physical authored line deltas excluding blank lines, initialization/destruction changes, accessibility findings, server/test changes, unsupported behavior, and the limits of line counts for both project-editor and command-toolbar slices. |
-| AC-08     | Pass   | The repository and public guides recommend semantic jQStar components for new work, define coexistence as temporary application-owned migration infrastructure, and explicitly reject Widget Factory, imperative API, theme, effects, Position, and extension compatibility claims.                                                  |
-| AC-09     | Pass   | The practical guide covers inventory, official jQuery/UI/Migrate upgrade order, CSS/data/event isolation, parallel installation, one-region migration, verification and release, rollback, explicit UI destruction/removal, and application-owned third-party extensions.                                                            |
-| AC-10     | Pass   | The machine scorecard applies all nine frozen thresholds to two independent slices: seven dimensions fail and two pass, so the all-pass rule records no-go. No adapter code or follow-up facade ticket was created.                                                                                                                  |
-| AC-11     | Pass   | Every interaction disposition in the authority names required native consumers or records that fewer than two exist, specifies independent semantic/input/accessibility/ownership requirements, and routes any future primitive through a separate decision ticket.                                                                  |
-| AC-12     | Pass   | README, website, package, matrix, generated corpus, and guide checks preserve the independent jQStar naming record, factual jQuery UI attribution, and explicit no-successor/no-drop-in claims.                                                                                                                                      |
-| AC-13     | Pass   | Schema, unit/property, static, exact-package, consumer, release, three-browser, accessibility, no-JavaScript, ticket phase, and whitespace gates pass. Delivery run `2026-09-04T15-29-06-628Z-20442` passed all 12 enforced lanes without mutation testing.                                                                          |
+| Criterion | Result  | Evidence                                                                                                                                                                                                                                                                                                                             |
+| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-01     | Pass    | The ticket records refreshed official release, API, status, upgrade, support, and Migrate sources; exact jQuery 4.0.0 and jQuery UI 1.14.2 checksums; ticket-0038 naming policy; the frozen 72-entry inventory; and the nine-dimension adapter scorecard. Plan validation passed before implementation.                              |
+| AC-02     | Pass    | `quality/jquery-ui-migration.json` validates against its closed schema. Contract and property tests prove 72 unique official URLs, exact one-row assignment, all four migration classes, required row fields, and the named third-party-extension boundary.                                                                          |
+| AC-03     | Pass    | The installed-package fixture loads exact jQuery, jQuery UI runtime/base-theme assets, and packed jQStar. Sixteen targeted cases passed across Chromium, Firefox, WebKit, mobile touch, reduced motion, forced colors, and JavaScript-disabled modes.                                                                                |
+| AC-04     | Pass    | The exact-tarball package gate passes 13 checks: runtime classifications, packed paths and strings, clean consumer install, production source, licenses, site assets, and root/core/testing/Turbo/htmx/Datastar graphs contain no jQuery UI runtime, theme, icons, or source.                                                        |
+| AC-05     | Pass    | Browser counters, data/focus fingerprints, repeated enhancement, independent island replacement, and explicit legacy destroy spies prove that each owner cleans up only its own roots without Widget Factory patching, UI-data adoption, or duplicate jQStar behavior.                                                               |
+| AC-06     | Pending | Automated project-editor migration, focus/keyboard, media and native-form cases pass. Actual screen-reader observations of the legacy slice and incremental migration steps are missing. RELEASE_CHARTERS.md explicitly requires real observations; axe/ARIA assertions do not replace them.                                         |
+| AC-07     | Pass    | The migration authority records exact package and asset bytes, one fixture dependency, physical authored line deltas excluding blank lines, initialization/destruction changes, accessibility findings, server/test changes, unsupported behavior, and the limits of line counts for both project-editor and command-toolbar slices. |
+| AC-08     | Pass    | The repository and public guides recommend semantic jQStar components for new work, define coexistence as temporary application-owned migration infrastructure, and explicitly reject Widget Factory, imperative API, theme, effects, Position, and extension compatibility claims.                                                  |
+| AC-09     | Pass    | The authored incremental guide retains inventory, upgrade, ownership, migration, test/release/rollback and legacy cleanup guidance. Its corrected script and complete route census pass focused/full three-engine controls, plus root and nested static-build probes on all 24 routes.                                               |
+| AC-10     | Pass    | The machine scorecard applies all nine frozen thresholds to two independent slices: seven dimensions fail and two pass, so the all-pass rule records no-go. No adapter code or follow-up facade ticket was created.                                                                                                                  |
+| AC-11     | Pass    | Every interaction disposition in the authority names required native consumers or records that fewer than two exist, specifies independent semantic/input/accessibility/ownership requirements, and routes any future primitive through a separate decision ticket.                                                                  |
+| AC-12     | Pass    | README, website, package, matrix, generated corpus, and guide checks preserve the independent jQStar naming record, factual jQuery UI attribution, and explicit no-successor/no-drop-in claims.                                                                                                                                      |
+| AC-13     | Pending | All 13 gates pass in delivery 2026-09-06T18-36-18-416Z-79694, including 487 browser, 13 package and seven release checks; current receipt and exact Test phase validation pass. Final Document closure remains withheld while AC-06 requires actual screen-reader observations.                                                      |
 
 ### Completion audit
+
+The 2026-09-06 reopening supersedes the closure below. The shared-script correction passes current
+source, browser, root/nested deployment, package and release checks. Delivery
+`2026-09-06T18-36-18-416Z-79694` and exact Test phase validation pass. The closure audit found that
+original AC-06 promises screen-reader behavior without actual observations. AC-06 and final AC-13
+remain open, so this ticket stays in Test. Historical automated results remain valid within their
+recorded scope; they do not establish a manual pass.
+
+### Historical completion audit (2026-09-04)
 
 All 13 criteria have current evidence. The matrix, schema, exact fixture, measured slices, browser
 proof, package isolation, public guide, generated corpus, and no-adapter decision agree. No
 unresolved finding or compatibility claim remains.
 
-Status: Complete
+Historical status: Complete

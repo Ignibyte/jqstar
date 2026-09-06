@@ -41,6 +41,9 @@ describe("agent content", () => {
     expect(corpus.schema).toBe("jqstar-agent-index/1");
     expect(corpus.package).toMatchObject({ name: "jquery-star", version: "1.1.0" });
     expect(corpus.siteVersion).toBe(corpus.package.version);
+    expect(corpus.guides.find(({ id }) => id === "framework-home")?.content).toContain(
+      `jQStar ${corpus.package.version} release candidate`,
+    );
     expect(corpus.components).toHaveLength(registry.items.length);
     expect(corpus.components.find(({ name }) => name === "dialog")).toMatchObject({
       roots: expect.arrayContaining(["dialog"]),

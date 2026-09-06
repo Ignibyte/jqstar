@@ -47,14 +47,34 @@
     ],
     "rootSuffixes": [".config.js", ".config.mjs", ".config.ts"]
   },
-  "coverageExcludeGlobs": ["**/*.d.ts", "src/types.ts", "server/index.ts"],
+  "coverageExcludeGlobs": [
+    "**/*.d.ts",
+    "src/csp/ast.ts",
+    "src/expression-types.ts",
+    "src/inspect/types.ts",
+    "src/metadata-types.ts",
+    "src/persist/types.ts",
+    "src/stores/types.ts",
+    "src/testing/types.ts",
+    "src/types.ts",
+    "server/index.ts"
+  ],
   "rules": [
     {
       "id": "runtime-coverage",
       "kind": "coverage",
       "prefixes": ["src/"],
       "suffixes": [".ts"],
-      "excludePaths": ["src/types.ts"],
+      "excludePaths": [
+        "src/csp/ast.ts",
+        "src/expression-types.ts",
+        "src/inspect/types.ts",
+        "src/metadata-types.ts",
+        "src/persist/types.ts",
+        "src/stores/types.ts",
+        "src/testing/types.ts",
+        "src/types.ts"
+      ],
       "excludeSuffixes": [".d.ts"],
       "coverageGlobs": ["src/**/*.ts"]
     },
@@ -82,7 +102,16 @@
     {
       "id": "type-only-source",
       "kind": "semantic-exclusion",
-      "paths": ["src/types.ts"],
+      "paths": [
+        "src/csp/ast.ts",
+        "src/expression-types.ts",
+        "src/inspect/types.ts",
+        "src/metadata-types.ts",
+        "src/persist/types.ts",
+        "src/stores/types.ts",
+        "src/testing/types.ts",
+        "src/types.ts"
+      ],
       "evidence": ["npm run typecheck"]
     },
     {

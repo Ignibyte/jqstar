@@ -17,6 +17,7 @@ import {
 } from "../scripts/program-audit/evidence.mjs";
 import {
   deterministicJson,
+  readAuditBinary,
   readAuditFile,
   writeAuditSnapshot,
 } from "../scripts/program-audit/files.mjs";
@@ -454,6 +455,47 @@ function contextWithoutTimes() {
 }
 
 describe("program audit file boundaries", () => {
+  it("shares file safety checks with binary reads while preserving strict text decoding", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jqstar-audit-binary-"));
+    try {
+      const bytes = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0xff]);
+      await writeFile(join(root, "trace.zip"), bytes);
+      const file = await readAuditBinary(root, "trace.zip");
+      assert.deepEqual(file, {
+        path: "trace.zip",
+        sha256: sha256(bytes),
+        bytes: bytes.length,
+        signature: "504b0304",
+      });
+      assert(Object.isFrozen(file));
+      await assert.rejects(readAuditFile(root, "trace.zip"));
+      await mkdir(join(root, "directory"));
+      await symlink(join(root, "trace.zip"), join(root, "alias.zip"));
+      await symlink(join(root, "directory"), join(root, "linked-directory"));
+      await writeFile(join(root, "empty.zip"), Buffer.alloc(0));
+      assert.equal((await readAuditFile(root, "empty.zip")).source, "");
+      for (const path of [
+        "alias.zip",
+        "linked-directory/trace.zip",
+        "../private-canary",
+        "directory",
+        "missing.zip",
+        "empty.zip",
+      ]) {
+        await assert.rejects(
+          readAuditBinary(root, path),
+          (error) => !String(error).includes(root) && !String(error).includes("private-canary"),
+        );
+      }
+      await assert.rejects(readAuditBinary(root, "trace.zip", { maximumBytes: 4 }));
+      await assert.rejects(readAuditBinary(root, "trace.zip", { digest: "0".repeat(64) }));
+      await writeFile(join(root, "trace.zip"), Buffer.from([0x50, 0x4b, 0x03, 0x04, 0xfe]));
+      await assert.rejects(readAuditBinary(root, "trace.zip", { digest: file.sha256 }));
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("rejects symlink escape, oversized and invalid UTF-8 input and digest replacement", async () => {
     const root = await mkdtemp(join(tmpdir(), "jqstar-audit-files-"));
     try {

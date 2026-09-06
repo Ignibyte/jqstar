@@ -8,7 +8,11 @@ import { runChild } from "../scripts/quality/lib/process.mjs";
 import { selectNodeTest } from "../scripts/program-audit/node-evidence.mjs";
 import { sha256 } from "../scripts/program-audit/contracts.mjs";
 import { selectVitest } from "../scripts/program-audit/evidence.mjs";
-import { createReportLoader, reportSchemas } from "../scripts/program-audit/reports.mjs";
+import {
+  createReportLoader,
+  loadBinaryArtifact,
+  reportSchemas,
+} from "../scripts/program-audit/reports.mjs";
 import { readNavigationMeasurement } from "../scripts/quality/navigation-evidence.mjs";
 const start = Date.parse("2026-09-06T00:00:00.000Z");
 function unit() {
@@ -87,6 +91,55 @@ it("loads raw navigation executions and refuses the decision document as executi
       /fails its frozen schema/u,
     );
   }));
+it("loads bounded raw coverage artifacts only with their frozen bytes and schemas", async () =>
+  fixture(async ({ root, schemas, load, put }) => {
+    const metric = { total: 1, covered: 1, skipped: 0, pct: 100 };
+    const measured = { lines: metric, statements: metric, functions: metric, branches: metric };
+    const path = "/audit/src/example.ts";
+    const location = { start: { line: 1, column: 0 }, end: { line: 1, column: 1 } };
+    const summary = { total: measured, [path]: measured };
+    const hits = {
+      [path]: {
+        path,
+        all: false,
+        statementMap: { 0: location },
+        s: { 0: 1 },
+        fnMap: { 0: { name: "example", decl: location, loc: location, line: 1 } },
+        f: { 0: 1 },
+        branchMap: { 0: { type: "branch", line: 1, loc: location, locations: [location] } },
+        b: { 0: [1] },
+      },
+    };
+    for (const [kind, raw] of [
+      ["coverageSummary", summary],
+      ["coverageHits", hits],
+    ]) {
+      const expected = await put(`evidence/${kind}.json`, JSON.stringify(raw));
+      const report = await load(kind, expected);
+      assert.deepEqual(report.data, raw);
+      assert(Object.isFrozen(report.data[path]));
+      await assert.rejects(load(kind, { ...expected, sha256: "0".repeat(64) }));
+      const missing = structuredClone(schemas);
+      Reflect.deleteProperty(missing, kind);
+      await assert.rejects(createReportLoader(root, missing));
+      const altered = structuredClone(schemas);
+      altered[kind].sha256 = "0".repeat(64);
+      await assert.rejects(createReportLoader(root, altered));
+    }
+    for (const [kind, raw] of [
+      ["coverageSummary", { total: measured }],
+      ["coverageSummary", { ...summary, total: { ...measured, branchesTrue: metric } }],
+      ["coverageHits", { [path]: { ...hits[path], s: { 0: -1 } } }],
+      ["coverageHits", { [path]: { ...hits[path], b: { 0: [] } } }],
+      ["coverageHits", { [path]: { ...hits[path], f: { 0: Number.MAX_SAFE_INTEGER + 1 } } }],
+      ["coverageHits", { [path]: { ...hits[path], unexpected: true } }],
+    ]) {
+      await assert.rejects(
+        load(kind, await put("evidence/invalid-coverage.json", JSON.stringify(raw))),
+        /fails its frozen schema/u,
+      );
+    }
+  }));
 it("rejects missing, altered, miscounted, symbolic-link and unknown report references", async () =>
   fixture(async ({ root, load, put }) => {
     const expected = await put("evidence/unit.json", JSON.stringify(unit()));
@@ -99,6 +152,52 @@ it("rejects missing, altered, miscounted, symbolic-link and unknown report refer
     await assert.rejects(load("vitest", { ...expected, path: "alias.json" }));
     await writeFile(join(root, expected.path), JSON.stringify({ ...unit(), numPassedTests: 0 }));
     await assert.rejects(load("vitest", expected));
+  }));
+it("loads indexed binary artifacts without treating their bytes as UTF-8", async () =>
+  fixture(async ({ root, put }) => {
+    const bytes = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0xff, 0]);
+    const reference = await put("evidence/trace.zip", bytes);
+    const file = await loadBinaryArtifact(root, reference);
+    assert.deepEqual(file, { ...reference, signature: "504b0304" });
+    assert(Object.isFrozen(file));
+    for (const invalid of [
+      { ...reference, sha256: "0".repeat(64) },
+      { ...reference, bytes: reference.bytes + 1 },
+      { ...reference, bytes: reference.bytes - 1 },
+      { ...reference, bytes: 0 },
+      { ...reference, unexpected: true },
+    ])
+      await assert.rejects(loadBinaryArtifact(root, invalid));
+    await put("evidence/trace.zip", Buffer.from([0x50, 0x4b, 0x03, 0x04, 0xfe, 0]));
+    await assert.rejects(loadBinaryArtifact(root, reference));
+  }));
+it("loads deliberate empty selections through their separate schema and preserves execution refusal", async () =>
+  fixture(async ({ root, schemas, load, put }) => {
+    const listing = {
+      config: {
+        version: "1.62.1",
+        rootDir: "/audit/e2e",
+        projects: [{ name: "desktop-chromium" }],
+      },
+      stats: {
+        startTime: new Date(start).toISOString(),
+        duration: 10,
+        expected: 0,
+        unexpected: 0,
+        skipped: 0,
+        flaky: 0,
+      },
+      errors: [{ message: "Error: No tests found" }],
+      suites: [],
+    };
+    const expected = await put("evidence/empty-list.json", JSON.stringify(listing));
+    assert.deepEqual((await load("playwrightSelection", expected)).data, listing);
+    await assert.rejects(load("playwright", expected), /fails its frozen schema/u);
+    const changed = structuredClone(schemas);
+    changed.playwrightSelection.sha256 = "0".repeat(64);
+    await assert.rejects(createReportLoader(root, changed));
+    delete changed.playwrightSelection;
+    await assert.rejects(createReportLoader(root, changed));
   }));
 it("binds schema paths and bytes to the frozen input inventory", async () =>
   fixture(async ({ root, schemas }) => {

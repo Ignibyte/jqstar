@@ -12,8 +12,12 @@ const documentationRoutes = [
   ["/docs/datastar/", "Datastar Integration"],
   ["/docs/api/", "Core API"],
   ["/docs/csp/", "CSP expressions"],
+  ["/docs/stores/", "Shared stores"],
+  ["/docs/persistence/", "Persisted preferences"],
   ["/docs/interoperability/", "Turbo and htmx interoperability"],
   ["/docs/ecosystem/", "jQuery ecosystem"],
+  ["/docs/ecosystem/jquery-ui/", "jQuery UI coexistence and migration"],
+  ["/docs/ecosystem/jquery-mobile/", "jQuery Mobile migration"],
   ["/docs/plugins/", "Plugins"],
   ["/docs/testing/", "Testing"],
   ["/docs/components/", "Components"],
@@ -27,6 +31,7 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await expect(page).toHaveTitle(/jQStar · modern server-rendered applications/);
+  await expect(page.locator(".release-pill")).toHaveText("jQStar 1.1.0 release candidate");
   await expect(
     page.getByRole("heading", { name: "Polished UI behavior for Datastar applications." }),
   ).toBeVisible();
@@ -97,14 +102,40 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   await expect(page.locator("html")).toHaveAttribute("data-theme", changedTheme ?? "light");
 });
 
-test("every documentation route loads directly with shared navigation", async ({ page }) => {
+test("every documentation route loads directly with working shared controls", async ({ page }) => {
   for (const [path, heading] of documentationRoutes) {
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(path);
     await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
     await expect(
       page.getByRole("navigation", { name: "Documentation", exact: true }),
     ).toBeVisible();
     await expect(page.locator('[data-doc-link][aria-current="page"]')).toHaveCount(1);
+
+    const initialTheme = await page.locator("html").getAttribute("data-theme");
+    await page.getByRole("button", { name: "Toggle color theme" }).click();
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme", initialTheme ?? "dark");
+
+    const searchTrigger = page.getByRole("button", { name: /Search documentation/ });
+    await searchTrigger.focus();
+    await page.keyboard.press("Enter");
+    const search = page.getByRole("dialog", { name: "Search documentation" });
+    await expect(search).toBeVisible();
+    await search.getByRole("searchbox", { name: "Search documentation" }).fill("toast");
+    await expect(search.getByRole("link", { name: "Toast", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(search).toBeHidden();
+    await expect(searchTrigger).toBeFocused();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const menuTrigger = page.getByRole("button", { name: "Menu", exact: true });
+    await menuTrigger.click();
+    const menu = page.getByRole("dialog", { name: "Documentation", exact: true });
+    await expect(menu).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Core API", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(menuTrigger).toBeFocused();
   }
 });
 

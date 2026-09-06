@@ -3,7 +3,7 @@ id: 0043
 title: Enforce production coverage and property testing
 status: done
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-06
 ---
 
 # 0043: Enforce production coverage and property testing
@@ -32,6 +32,41 @@ state transitions also lack systematic generated-input proof.
 - PR 1 delivery run `33805631434` passed its normal 870-test unit lane, but the separate coverage
   config omitted the public Datastar source alias. Coverage therefore passed 854 assertions while
   correctly rejecting the failed `external-render-contract.test.ts` module collection.
+
+### Reopening decision: semantic coverage census (2026-09-06)
+
+The final program audit reproduced seven type-only source modules classified as runtime coverage:
+`src/csp/ast.ts`, `src/expression-types.ts`, `src/inspect/types.ts`, `src/metadata-types.ts`,
+`src/persist/types.ts`, `src/stores/types.ts`, and `src/testing/types.ts`. The maintained compiler
+helper proves all seven emit no runtime JavaScript. V8 nevertheless assigns each a synthetic covered
+function and branch; their synthetic columns are not valid source locations. The current
+classification gate accepts them. The semantic-census and location probes are retained under
+`.git/jqstar/program-audit/coverage-evidence-plan/`.
+
+Return to Plan and reopen AC-01 and AC-03. Add those exact paths to the existing type-only
+classification and matching runtime exclusions. They retain `npm run typecheck` evidence. Keep all
+coverage floors, source/type contracts and runtime behavior unchanged. The expected correction
+removes only synthetic counters; an actual fresh coverage run must verify the resulting denominator.
+
+Strengthen the production census in both directions: runtime coverage cannot include TypeScript that
+emits no runtime JavaScript, and an explicit type-only exclusion cannot acquire runtime code. Use
+the same validator from the command and focused tests, and reject missing source content. Ignore
+emitted comments for this semantic decision while retaining side-effect imports and actual
+statements. Declaration files remain excluded without attempting to transpile declaration input. The
+read-only design probe reproduces the current comment-only misclassification and verifies that
+side-effect imports remain executable under comment removal.
+
+Test the actual source census, a new type-only file incorrectly enrolled for coverage, a semantic
+exclusion that gains an export or side-effect import, ordinary runtime code, and missing source
+content. Verify the exact coverage include/exclude configuration and unchanged type-check evidence.
+Run focused census tests, `quality:census`, `quality:fast`, and complete delivery with raw coverage
+comparison; record Code, Test and Document evidence before closing. Planned changes are
+`quality/production-census.json`, `scripts/quality/verify-production-census.mjs`,
+`test/quality/quality-gates.test.mjs`, the quality/testing brain documents, this ticket, ticket
+0033, and the roadmap. `vitest.coverage.config.ts` already consumes the census exclusions directly.
+
+The mutation sections below remain historical and superseded by 0048. This correction does not
+install, configure or run mutation tooling. Ticket 0053 remains planned for later authorization.
 
 ### Scope
 
@@ -192,26 +227,36 @@ uses incremental results.
 
 ### Changed-file ledger
 
-| File                                                                                                                                          | Purpose                                                                                      |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `quality/production-census.json`                                                                                                              | Classify every operated artifact and assign its required evidence.                           |
-| `quality/coverage-thresholds.json`, `quality/mutation-policy.json`, `quality/test-evidence.json`                                              | Commit coverage ratchets, mutation status policy, and requirement-to-test mappings.          |
-| `scripts/quality/coverage-report.mjs`, `scripts/quality/run-coverage.mjs`                                                                     | Evaluate the corrected denominator, subsystem floors, and changed line/function coverage.    |
-| `scripts/quality/mutation-report.mjs`, `scripts/quality/mutation-scope.mjs`, `scripts/quality/run-mutation.mjs`                               | Select changed runtime lines, evaluate Stryker output, enforce per-file floors, and report.  |
-| `scripts/quality/run-properties.mjs`, `scripts/quality/verify-production-census.mjs`, `scripts/quality/lib.mjs`                               | Run replayable properties, reject census omissions, and bind gates to runner-owned evidence. |
-| `schema/coverage-report.schema.json`, `schema/mutation-report.schema.json`, `schema/property-report.schema.json`                              | Validate stable green, red, and error evidence shapes.                                       |
-| `vitest.coverage.config.ts`, `vitest.property.config.ts`, `vitest.stryker.config.ts`, `vitest.config.ts`                                      | Define coverage, property, mutation, clean public imports, and sandbox-safe test discovery.  |
-| `stryker.config.mjs`                                                                                                                          | Define bounded changed-scope and acknowledged full-audit Stryker defaults.                   |
-| `test/property/`                                                                                                                              | Add seeded properties and permanent minimized-counterexample replays.                        |
-| `test/quality/quality-gates.test.mjs`, `test/quality-runner.test.mjs`                                                                         | Prove custom detectors, scope rules, report schemas, and sandbox discovery fail closed.      |
-| `server/api.ts`, `server/project-store.ts`, `src/fetch.ts`, `src/reactivity.ts`                                                               | Remove weakly specified branches found by mutation and generated-input testing.              |
-| `src/ui/calendar.ts`, `src/ui/chart.ts`, `src/ui/data-table.ts`, `src/ui/menubar.ts`, `src/ui/transfer-list.ts`                               | Make changed UI behavior mutation-observable without changing its public contract.           |
-| `test/server.test.ts`, `test/project-store.test.ts`                                                                                           | Prove routing, persistence, pagination, rendering, validation, and ownership boundaries.     |
-| `test/ui-calendar.test.ts`, `test/ui-chart.test.ts`, `test/ui-data-table.test.ts`, `test/ui-menubar.test.ts`, `test/ui-transfer-list.test.ts` | Kill changed UI mutants with exact state, event, and action assertions.                      |
-| `package.json`, `package-lock.json`                                                                                                           | Add stable quality commands and pin Vitest coverage, Stryker, and fast-check tooling.        |
-| `docs/DEVELOPMENT.md`, `docs/TESTING.md`, `docs/QUALITY_PROGRAM.md`, this ticket                                                              | Document commands, evidence, thresholds, recovery, policy, and implementation results.       |
+| File                                                                                                                                          | Purpose                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `quality/production-census.json` (2026-09-06 correction)                                                                                      | Move seven verified type-only modules from runtime coverage to the existing semantic exclusion and matching Vitest exclusions; retain type-check evidence and every threshold. |
+| `scripts/quality/verify-production-census.mjs` (2026-09-06 correction)                                                                        | Validate runtime emission for all covered and type-only TypeScript assignments, reject missing source, and ignore comments while retaining side-effect imports.                |
+| `test/quality/quality-gates.test.mjs` (2026-09-06 correction)                                                                                 | Verify the actual type-only corpus and configured denominator; reject empty-emission coverage, runtime-emitting exclusions and missing sources.                                |
+| `docs/PROGRAM_AUDIT.md`, `docs/tickets/0033-audit-full-library-program.md`, `docs/tickets/ROADMAP.md`                                         | Record the newly found census defect, its owner and the independent detector correction; preserve pending final audit work.                                                    |
+| `quality/production-census.json`                                                                                                              | Classify every operated artifact and assign its required evidence.                                                                                                             |
+| `quality/coverage-thresholds.json`, `quality/mutation-policy.json`, `quality/test-evidence.json`                                              | Commit coverage ratchets, mutation status policy, and requirement-to-test mappings.                                                                                            |
+| `scripts/quality/coverage-report.mjs`, `scripts/quality/run-coverage.mjs`                                                                     | Evaluate the corrected denominator, subsystem floors, and changed line/function coverage.                                                                                      |
+| `scripts/quality/mutation-report.mjs`, `scripts/quality/mutation-scope.mjs`, `scripts/quality/run-mutation.mjs`                               | Select changed runtime lines, evaluate Stryker output, enforce per-file floors, and report.                                                                                    |
+| `scripts/quality/run-properties.mjs`, `scripts/quality/verify-production-census.mjs`, `scripts/quality/lib.mjs`                               | Run replayable properties, reject census omissions, and bind gates to runner-owned evidence.                                                                                   |
+| `schema/coverage-report.schema.json`, `schema/mutation-report.schema.json`, `schema/property-report.schema.json`                              | Validate stable green, red, and error evidence shapes.                                                                                                                         |
+| `vitest.coverage.config.ts`, `vitest.property.config.ts`, `vitest.stryker.config.ts`, `vitest.config.ts`                                      | Define coverage, property, mutation, clean public imports, and sandbox-safe test discovery.                                                                                    |
+| `stryker.config.mjs`                                                                                                                          | Define bounded changed-scope and acknowledged full-audit Stryker defaults.                                                                                                     |
+| `test/property/`                                                                                                                              | Add seeded properties and permanent minimized-counterexample replays.                                                                                                          |
+| `test/quality/quality-gates.test.mjs`, `test/quality-runner.test.mjs`                                                                         | Prove custom detectors, scope rules, report schemas, and sandbox discovery fail closed.                                                                                        |
+| `server/api.ts`, `server/project-store.ts`, `src/fetch.ts`, `src/reactivity.ts`                                                               | Remove weakly specified branches found by mutation and generated-input testing.                                                                                                |
+| `src/ui/calendar.ts`, `src/ui/chart.ts`, `src/ui/data-table.ts`, `src/ui/menubar.ts`, `src/ui/transfer-list.ts`                               | Make changed UI behavior mutation-observable without changing its public contract.                                                                                             |
+| `test/server.test.ts`, `test/project-store.test.ts`                                                                                           | Prove routing, persistence, pagination, rendering, validation, and ownership boundaries.                                                                                       |
+| `test/ui-calendar.test.ts`, `test/ui-chart.test.ts`, `test/ui-data-table.test.ts`, `test/ui-menubar.test.ts`, `test/ui-transfer-list.test.ts` | Kill changed UI mutants with exact state, event, and action assertions.                                                                                                        |
+| `package.json`, `package-lock.json`                                                                                                           | Add stable quality commands and pin Vitest coverage, Stryker, and fast-check tooling.                                                                                          |
+| `docs/DEVELOPMENT.md`, `docs/TESTING.md`, `docs/QUALITY_PROGRAM.md`, this ticket                                                              | Document commands, evidence, thresholds, recovery, policy, and implementation results.                                                                                         |
 
 ### Design changes
+
+The 2026-09-06 correction follows its validated reopening Plan. The same pure semantic validator
+runs from the census command and focused tests. It reads every covered or explicitly type-only
+TypeScript assignment, refuses missing content, removes emitted comments, and preserves actual
+statements and side-effect imports. The eight exact type-only source paths, including the original
+`src/types.ts`, retain `npm run typecheck`. All coverage thresholds remain unchanged.
 
 - The production census is now the denominator authority. Every artifact maps to coverage or one
   named semantic, browser, package, deployment, schema, script, or self-test evidence class.
@@ -235,6 +280,15 @@ uses incremental results.
   actual key begins with `_`, matching the public contract.
 
 ## Test
+
+| Command                                                                         | Result | Evidence                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check` (semantic census correction)            | Pass   | Run `2026-09-06T19-26-03-660Z-27019` passes all thirteen gates, 1,359 unit tests, 487 browser passes, thirteen package checks, seven release checks and sixteen detector controls on one unchanged fingerprint. The matching receipt and exact Test phase validator passed before documentation edits.                                                                                                      |
+| Independent corrected raw maps and immutable-source comparison                  | Pass   | All 116 runtime files match the census and commit source bytes. Raw hit maps recompute the summary exactly. Statement/function maps and covered states, plus uncovered branch locations, match the prior run. Seven synthetic records each had one covered function and branch, correcting the earlier zero-hit description. Already-covered V8 ranges differ in three files; raw reports remain unchanged. |
+| `npm run quality:fast` (semantic census correction)                             | Pass   | Run `2026-09-06T19-24-03-304Z-14028` passes all six gates and 1,359 unit tests on one unchanged fingerprint. Exact Code phase validation passed before entering Test.                                                                                                                                                                                                                                       |
+| `npm run quality:census`, focused ESLint, documentation spelling and whitespace | Pass   | All 443 artifacts have one classification, including 116 runtime coverage files and ten semantic exclusions. The fifteen focused gate tests, changed script/test lint, affected documentation spelling and diff whitespace pass. Actual raw coverage measurement remains required.                                                                                                                          |
+| Focused actual-census regression before the correction                          | Fail   | `coverage-evidence-plan/maintained-before-fix.log` identifies `src/csp/ast.ts` as incorrectly classified runtime coverage; eleven unrelated tests were intentionally unselected.                                                                                                                                                                                                                            |
+| Focused quality gate suite after the correction                                 | Pass   | `coverage-evidence-plan/maintained-focused.log` records all fifteen tests passing, including four new corpus and semantic refusal cases.                                                                                                                                                                                                                                                                    |
 
 | Command                                                                                                               | Result                 | Evidence                                                                                                                                                                                                          |
 | --------------------------------------------------------------------------------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -300,22 +354,40 @@ uses incremental results.
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                                                                                  | Result               |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| AC-01 | `quality:census` classifies 275 artifacts; the detector rejects missing, duplicate, and unknown evidence assignments.                                                                     | Pass                 |
-| AC-02 | `quality/gates.mjs` enrolls schema-validated coverage as an enforced delivery and full-audit gate; coverage sabotage makes its detector red below a floor.                                | Pass                 |
-| AC-03 | `coverage-gate.json` reports the full 20,583-line denominator, including unexecuted files, while census rules classify declarations semantically.                                         | Pass                 |
-| AC-04 | The changed-scope report contains no uncovered executable line and no uncovered changed function.                                                                                         | Pass                 |
-| AC-05 | Global and committed subsystem thresholds pass; `src/expression.ts` branches measure 86.66% against its 82% current ratchet, and stricter stabilization targets remain separate.          | Pass                 |
-| AC-06 | Ticket 0048 removed Stryker and the changed-scope mutation gate. Its historical 99.82% result remains above, but it is not a current delivery requirement.                                | Approved-Disposition |
-| AC-07 | Ticket 0048 removed mutation-score requirements for new critical and isolated modules. Coverage and focused behavioral tests remain required.                                             | Approved-Disposition |
-| AC-08 | Ticket 0048 removed mutation reports and their refusal policy. The remaining coverage, property, static, browser, package, and release gates still fail closed.                           | Approved-Disposition |
-| AC-09 | Ticket 0048 removed the full mutation audit from `quality:full-audit`. Reintroduction requires a new, explicitly requested ticket.                                                        | Approved-Disposition |
-| AC-10 | Ten property tests cover expression names, request encoding, SSE chunking, patch idempotence, and scheduler ownership; both discovered seed/path pairs and minimized inputs are retained. | Pass                 |
-| AC-11 | `quality/test-evidence.json` maps abort, retry, timeout, overlap, partial failure, repeated enhancement, and exactly-once disposal to 14 machine-recorded passing tests.                  | Pass                 |
-| AC-12 | Coverage-deletion and generated-counterexample controls remain enforced. Ticket 0048 removed the mutant-survival and zero-mutant controls with the rest of mutation testing.              | Approved-Disposition |
+| ID    | Evidence                                                                                                                                                                                                                                                                                                    | Result               |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| AC-01 | The actual census classifies 443 artifacts exactly once, including 116 runtime files and ten semantic exclusions. The command and fifteen focused tests reject empty runtime emission, executable type exclusions, missing source and incorrect configured coverage membership.                             | Pass                 |
+| AC-02 | `quality/gates.mjs` enrolls schema-validated coverage as an enforced delivery and full-audit gate; coverage sabotage makes its detector red below a floor.                                                                                                                                                  | Pass                 |
+| AC-03 | The current raw report measures 33,566 lines/statements (31,724 covered), 2,806 functions (2,622 covered) and 13,011 branches (11,058 covered). The seven type-only files and their artificial covered counters are absent. Independent source/location/arithmetic checks pass without changing thresholds. | Pass                 |
+| AC-04 | The current scope records no changed instrumented production file as not-measured, with no invented 100% result. Executed quality-gate tests reject uncovered changed lines/functions and missing runtime mappings; the canonical evaluator enforces the unchanged 100% changed-source policy.              | Pass                 |
+| AC-05 | Current global and ratified subsystem floors pass. Twelve metrics remain below the stricter stabilization targets; those targets remain unchanged and no stabilization-mode pass is claimed.                                                                                                                | Pass                 |
+| AC-06 | Ticket 0048 removed Stryker and the changed-scope mutation gate. Its historical 99.82% result remains above, but it is not a current delivery requirement.                                                                                                                                                  | Approved-Disposition |
+| AC-07 | Ticket 0048 removed mutation-score requirements for new critical and isolated modules. Coverage and focused behavioral tests remain required.                                                                                                                                                               | Approved-Disposition |
+| AC-08 | Ticket 0048 removed mutation reports and their refusal policy. The remaining coverage, property, static, browser, package, and release gates still fail closed.                                                                                                                                             | Approved-Disposition |
+| AC-09 | Ticket 0048 removed the full mutation audit from `quality:full-audit`. Reintroduction requires a new, explicitly requested ticket.                                                                                                                                                                          | Approved-Disposition |
+| AC-10 | The current property gate passes the named expression, request/SSE, patch, scheduler and later extension properties with replayable evidence. Historical discovered seed/path pairs and minimized regression inputs remain retained and enforced.                                                           | Pass                 |
+| AC-11 | The current coverage run matches all 28 requirements in quality/test-evidence.json to actual passing assertions, covering asynchronous ownership and disposal. A separate complete-roster probe matches all 1,359 assertions across 158 source files.                                                       | Pass                 |
+| AC-12 | Coverage-deletion and generated-counterexample controls remain enforced. Ticket 0048 removed the mutant-survival and zero-mutant controls with the rest of mutation testing.                                                                                                                                | Approved-Disposition |
 
 ### Completion audit
+
+The corrected semantic census passes focused, fast and complete delivery verification on the exact
+tested tree. Both reopened criteria now have direct source, classification, location and raw-count
+evidence. Exact Test validation passed before these documentation edits. The seven removed records
+were artificially credited as covered; the earlier zero-hit wording is corrected from the preserved
+raw reports. Retained runtime statement/function coverage and uncovered branch locations are
+unchanged. Covered V8 ranges vary between runs, so the measured branch denominator is reported
+exactly rather than asserted to be deterministic.
+
+Current coverage floors and asynchronous/property contracts pass. Stricter stabilization targets
+remain explicit unmet targets, and an empty changed-production scope remains not-measured. Mutation
+criteria retain their approved 0048 dispositions; no mutation tool was installed, configured or run.
+The separate final program audit still requires maintained coverage evidence integration, final
+execution and its outstanding external observations.
+
+Status: Complete
+
+### Historical completion audit
 
 The current coverage, production-census, property, and asynchronous-ownership requirements are
 implemented. Mutation criteria have approved dispositions through ticket 0048 rather than dormant

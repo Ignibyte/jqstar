@@ -5,8 +5,14 @@ verdict exists yet. The declarative computed correction (0034) and quality revie
 complete. Ticket 0045 now closes the restored README priorities and direct narrow-home browser
 observations. Ticket 0035 passes the expanded installed CSP accessibility/native proof, canonical
 HTML and detector checks, and the actual manual-server command smoke. Real screen-reader records
-remain required. Ticket 0053 remains a deferred mutation audit that requires later execution
-authorization.
+remain required. The 0039 public-guide correction passes automated verification, but its actual
+screen-reader observations are still missing. Ticket 0051's candidate-copy correction is complete.
+Ticket 0044 completed the correction that prevents killed or timed-out detector processes from
+counting as success. Ticket 0043 completed the semantic census correction: full delivery passes with
+116 runtime coverage files, unchanged thresholds and no artificial coverage credit for type-only
+modules. Ticket 0017 is reopened because its documented GitHub private-reporting route is disabled;
+the repository-setting change awaits separate authorization. Ticket 0053 remains a deferred mutation
+audit that requires later execution authorization.
 
 Run `node scripts/program-audit/inventory.mjs` to create a review inventory under
 `.git/jqstar/program-audit/inventories/<digest>/`. The command records all 53 tickets, requires all
@@ -42,11 +48,11 @@ final audit's required gate roster.
 
 `createReportLoader()` verifies report byte counts and SHA-256 digests against explicit references,
 then validates the JSON against schema bytes identified by the frozen input inventory. It returns
-immutable data. Nine report kinds use existing producer schemas; internal Node, Vitest and
-Playwright schemas validate the upstream fields consumed by the adapters. A valid schema does not
-mean tests passed: named execution checks still reject unsuccessful or incomplete runs. Connecting
-the loader to the final immutable manifest, execution index, and reviewed mappings remains
-unfinished.
+immutable data. Nine report kinds use existing producer schemas; internal Node, Vitest, Playwright
+execution and selection schemas and two raw coverage schemas validate the upstream fields consumed
+by the adapters. A valid schema does not mean tests passed: named execution checks still reject
+unsuccessful or incomplete runs. Connecting the loader to the final immutable manifest, execution
+index, and reviewed mappings remains unfinished.
 
 Node workflow evidence uses `node-reporter.mjs` and `selectNodeTest()`. The reporter preserves flat
 Node test outcomes, source paths, file summaries, counts and execution identity. The selector
@@ -55,6 +61,41 @@ parent execution interval, nonempty matching counts and no failed, cancelled, sk
 Nested tests and sources outside the declared root are rejected. Final orchestration must freeze the
 source-derived roster before invocation and verify the supervised process exit independently; the
 report cannot supply its own expected identity or interval.
+
+Coverage evidence uses `selectCoverage()` with summary and hit-map artifacts loaded against their
+frozen internal schemas. It recomputes all file and aggregate metrics, checks exact production and
+source-digest rosters, validates counter/map identities and source locations, and bounds statement
+expansion before evaluating changed lines. Coverage execution must match the entire independently
+collected test roster, including the multiplicity of parameterized cases with equal display names.
+Every assertion must pass inside the supervised coverage interval. Individual named-test citations
+still require a unique match.
+
+The selector binds the parent command, npm version, time limit, source scope, policy and immutable
+threshold baseline to independent expectations. It compares the producer report with a fresh
+evaluation of the raw evidence. Literal selectors are `denominator`, `delivery-floors`,
+`stabilization-floors`, `threshold-ratchet`, `changed-production` and `executed-requirements`.
+Delivery evidence cannot satisfy stabilization floors; an empty changed-production scope returns
+`not-measured`. Source, unit and static citations cannot replace measured coverage evidence. Final
+orchestration must freeze all schemas, inputs and collected tests before execution and bind the
+validated parent quality envelope and execution index. Retained-report compatibility tests do not
+establish that final acceptance.
+
+Detector evidence uses `selectDetector()`. Every exact control-name selection validates all sixteen
+controls together, including nine raw browser failures and their indexed traces, eight deliberate
+empty selections, eight complete green listings, and the intended package, release and API failures.
+The deliberate retry must fail once, pass once and remain flaky. Its trace must belong to the failed
+attempt. The adapter checks the frozen source, tools, invocation, project policy and parent
+interval, and reconciles summary counts and diagnostics with the raw child reports.
+
+The separate internal Playwright selection schema permits empty listings. Green listings must match
+the entire independently frozen test roster. Listing records have zero attempts and are never
+counted as passing executions. `loadBinaryArtifact()` applies the existing bounded file protections
+to trace bytes and returns immutable digest, size and signature metadata. Traces must be nonempty
+ZIP artifacts; the adapter does not unpack or execute them. API comparison permits only CRLF-to-LF
+normalization and preserves both original byte identities. A `detector` requirement cannot be
+satisfied by source, unit, browser or coverage citations. Final orchestration must collect expected
+cases before invocation and bind every child artifact to the validated parent execution.
+Retained-report checks are compatibility evidence, not final acceptance.
 
 Navigation evidence uses the frozen decision schema's raw measurement definition. A decision
 document or the ordinary nine-scenario browser subset cannot satisfy that contract. The adapter
@@ -71,12 +112,12 @@ followed by the spec title. The latter distinguishes equal titles in separate gr
 duplicate matches fail. All selectors are literal strings, including embedded asterisks; they never
 expand patterns. Empty selectors and a bare wildcard are rejected.
 
-Evidence files must be bounded regular UTF-8 files beneath the selected root. The reader refuses
-symbolic links, traversal, changed files, and digest mismatches. Snapshots use exclusive creation,
-deterministic JSON, and read-only file permissions. Their digests detect later changes. File modes
-are protection against accidental editing, not a guarantee against a user who controls the
-filesystem. The reader is not a sandbox against another privileged process changing ancestor
-directories concurrently.
+Text evidence must be bounded regular UTF-8 files beneath the selected root. Binary trace metadata
+uses the same file boundary without decoding the bytes as text. The reader refuses symbolic links,
+traversal, changed files, and digest mismatches. Snapshots use exclusive creation, deterministic
+JSON, and read-only file permissions. Their digests detect later changes. File modes are protection
+against accidental editing, not a guarantee against a user who controls the filesystem. The reader
+is not a sandbox against another privileged process changing ancestor directories concurrently.
 
 Both real [assistive-technology charters](accessibility/RELEASE_CHARTERS.md) remain required for the
 final candidate. Records must identify the exact tarball, commit, quality receipt, supported tool

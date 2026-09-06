@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, matchesGlob } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 
 import fc from "fast-check";
@@ -14,8 +14,10 @@ import {
 import { existedAtRevision, repoPath } from "../../scripts/quality/lib.mjs";
 import { validatePropertyUsage } from "../../scripts/quality/run-properties.mjs";
 import {
+  collectCensusFiles,
   emittedRuntimeJavaScript,
   validateClassifications,
+  validateRuntimeClassifications,
 } from "../../scripts/quality/verify-production-census.mjs";
 
 function metrics(covered = 1, total = 1) {
@@ -239,6 +241,104 @@ describe("quality detector liveness", () => {
     ]);
     expect(emittedRuntimeJavaScript("export interface Value { id: string }", "types.ts")).toBe("");
     expect(emittedRuntimeJavaScript("export const value = 1", "types.ts")).toContain("value = 1");
+  });
+
+  it("excludes the actual type-only corpus from coverage and keeps the configured denominator exact", async () => {
+    const census = JSON.parse(await readFile(repoPath("quality/production-census.json"), "utf8"));
+    const packageJson = JSON.parse(await readFile(repoPath("package.json"), "utf8"));
+    const files = await collectCensusFiles(census);
+    const result = validateClassifications(census, files, packageJson.scripts);
+    expect(result.failures).toEqual([]);
+    for (const path of [
+      "src/types.ts",
+      "src/csp/ast.ts",
+      "src/expression-types.ts",
+      "src/inspect/types.ts",
+      "src/metadata-types.ts",
+      "src/persist/types.ts",
+      "src/stores/types.ts",
+      "src/testing/types.ts",
+    ]) {
+      expect(result.assignments.find((assignment) => assignment.path === path)).toEqual({
+        path,
+        kind: "semantic-exclusion",
+        rule: "type-only-source",
+      });
+    }
+    expect(census.rules.find((rule) => rule.id === "type-only-source").evidence).toEqual([
+      "npm run typecheck",
+    ]);
+    const include = census.rules.flatMap((rule) =>
+      rule.kind === "coverage" ? (rule.coverageGlobs ?? []) : [],
+    );
+    const configured = files.filter(
+      (path) =>
+        include.some((pattern) => matchesGlob(path, pattern)) &&
+        !census.coverageExcludeGlobs.some((pattern) => matchesGlob(path, pattern)),
+    );
+    expect(configured).toEqual(
+      result.assignments
+        .filter((assignment) => assignment.kind === "coverage")
+        .map(({ path }) => path),
+    );
+    const sources = Object.fromEntries(
+      await Promise.all(
+        files
+          .filter((path) => path.endsWith(".ts") && !path.endsWith(".d.ts"))
+          .map(async (path) => [path, await readFile(repoPath(path), "utf8")]),
+      ),
+    );
+    expect(validateRuntimeClassifications(result.assignments, sources)).toEqual([]);
+  });
+
+  it("rejects runtime coverage for erased declarations, comments, and type imports", () => {
+    const path = "src/new.ts";
+    for (const source of [
+      "export interface Value { id: string }",
+      "// There are no executable statements.\n",
+      'import type { Value } from "./value.js"; export type Alias = Value;',
+      "declare const external: string;",
+    ]) {
+      expect(
+        validateRuntimeClassifications([{ path, kind: "coverage" }], { [path]: source }),
+      ).toEqual([`${path}: runtime coverage contains no runtime JavaScript.`]);
+      expect(
+        validateRuntimeClassifications([{ path, kind: "semantic-exclusion" }], {
+          [path]: source,
+        }),
+      ).toEqual([]);
+    }
+  });
+
+  it("rejects a type exclusion that gains an export or side-effect import", () => {
+    const path = "src/types.ts";
+    for (const source of ['import "./effects.js";', "export const value = 1;"]) {
+      expect(
+        validateRuntimeClassifications([{ path, kind: "semantic-exclusion" }], {
+          [path]: source,
+        }),
+      ).toEqual([`${path}: semantic exclusion emits runtime JavaScript.`]);
+      expect(
+        validateRuntimeClassifications([{ path, kind: "coverage" }], { [path]: source }),
+      ).toEqual([]);
+    }
+  });
+
+  it("requires actual sources without compiling declaration inputs", () => {
+    expect(
+      validateRuntimeClassifications(
+        [
+          { path: "src/runtime.ts", kind: "coverage" },
+          { path: "src/types.ts", kind: "semantic-exclusion" },
+          { path: "src/vendor.d.ts", kind: "semantic-exclusion" },
+          { path: "scripts/types.d.mts", kind: "semantic-exclusion" },
+        ],
+        {},
+      ),
+    ).toEqual([
+      "src/runtime.ts: source is missing for runtime classification.",
+      "src/types.ts: source is missing for runtime classification.",
+    ]);
   });
 
   it("maps every required behavior to exactly one machine-recorded passing test", async () => {

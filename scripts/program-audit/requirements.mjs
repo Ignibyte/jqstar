@@ -142,6 +142,8 @@ const strengths = {
   source: new Set(["source"]),
   documentation: new Set(["documentation"]),
   unit: new Set(["unit"]),
+  coverage: new Set(["coverage"]),
+  detector: new Set(["detector"]),
   property: new Set(["property"]),
   browser: new Set(["browser"]),
   package: new Set(["package"]),

@@ -60,11 +60,38 @@ export function emittedRuntimeJavaScript(source, path) {
         module: ts.ModuleKind.ESNext,
         target: ts.ScriptTarget.ES2022,
         verbatimModuleSyntax: true,
+        removeComments: true,
       },
       fileName: path,
     })
     .outputText.replace(/\s*export\s*\{\s*\};?\s*/gu, "")
     .trim();
+}
+
+function needsRuntimeClassification({ path, kind }) {
+  return (
+    (kind === "coverage" || kind === "semantic-exclusion") &&
+    path.endsWith(".ts") &&
+    !path.endsWith(".d.ts")
+  );
+}
+
+export function validateRuntimeClassifications(assignments, sourcesByPath) {
+  const failures = [];
+  for (const assignment of assignments.filter(needsRuntimeClassification)) {
+    const { path, kind } = assignment;
+    const source = sourcesByPath[path];
+    if (typeof source !== "string") {
+      failures.push(`${path}: source is missing for runtime classification.`);
+      continue;
+    }
+    const emitted = emittedRuntimeJavaScript(source, path);
+    if (kind === "coverage" && !emitted)
+      failures.push(`${path}: runtime coverage contains no runtime JavaScript.`);
+    if (kind === "semantic-exclusion" && emitted)
+      failures.push(`${path}: semantic exclusion emits runtime JavaScript.`);
+  }
+  return failures;
 }
 
 async function main() {
@@ -75,12 +102,14 @@ async function main() {
   const packageJson = await readJson(repoPath("package.json"));
   const files = await collectCensusFiles(census);
   const result = validateClassifications(census, files, packageJson.scripts ?? {});
-  for (const rule of census.rules.filter((candidate) => candidate.kind === "semantic-exclusion")) {
-    for (const path of rule.paths ?? []) {
-      const emitted = emittedRuntimeJavaScript(await readFile(repoPath(path), "utf8"), path);
-      if (emitted) result.failures.push(`${path}: semantic exclusion emits runtime JavaScript.`);
-    }
-  }
+  const sourcesByPath = Object.fromEntries(
+    await Promise.all(
+      result.assignments
+        .filter(needsRuntimeClassification)
+        .map(async ({ path }) => [path, await readFile(repoPath(path), "utf8")]),
+    ),
+  );
+  result.failures.push(...validateRuntimeClassifications(result.assignments, sourcesByPath));
   if (result.failures.length > 0) {
     throw new Error(
       `Production census failed:\n${result.failures.map((failure) => `- ${failure}`).join("\n")}`,

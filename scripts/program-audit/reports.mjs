@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { createSchemaValidator } from "../quality/validate-json.mjs";
 import { closedObject, sameKeys } from "./contracts.mjs";
-import { readAuditFile } from "./files.mjs";
+import { readAuditBinary, readAuditFile } from "./files.mjs";
 
 export const reportSchemas = Object.freeze({
   quality: "schema/quality-report.schema.json",
   coverage: "schema/coverage-report.schema.json",
+  coverageSummary: "quality/program-audit/coverage-summary.schema.json",
+  coverageHits: "quality/program-audit/coverage-hits.schema.json",
   property: "schema/property-report.schema.json",
   static: "schema/static-report.schema.json",
   package: "schema/package-report.schema.json",
@@ -16,6 +18,7 @@ export const reportSchemas = Object.freeze({
   node: "quality/program-audit/node-test-report.schema.json",
   vitest: "quality/program-audit/vitest-report.schema.json",
   playwright: "quality/program-audit/playwright-report.schema.json",
+  playwrightSelection: "quality/program-audit/playwright-selection-report.schema.json",
 });
 
 function reference(value) {
@@ -37,6 +40,16 @@ async function readReferenced(root, expected) {
     maximumBytes: expected.bytes,
   });
   assert(file.bytes === expected.bytes, "Evidence byte count differs from its frozen reference");
+  return file;
+}
+
+export async function loadBinaryArtifact(root, expected) {
+  reference(expected);
+  const file = await readAuditBinary(root, expected.path, {
+    digest: expected.sha256,
+    maximumBytes: expected.bytes,
+  });
+  assert(file.bytes === expected.bytes, "Artifact byte count differs from its frozen reference");
   return file;
 }
 
