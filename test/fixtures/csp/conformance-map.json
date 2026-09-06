@@ -357,6 +357,14 @@
       "reason": "The source is a bounded state object literal."
     },
     {
+      "id": "public-d8e6d5bb3e01",
+      "source": "{ count: 2 }",
+      "locations": [{ "path": "e2e/csp-engine.spec.ts", "line": 29, "attribute": "data-signals" }],
+      "disposition": "exact-parity",
+      "caseId": "csp-state-literal",
+      "reason": "The source is a bounded state object literal."
+    },
+    {
       "id": "public-1a9cabc8f02a",
       "source": "{ count: 7 }",
       "locations": [
@@ -2312,6 +2320,7 @@
       "source": "$count * 2",
       "locations": [
         { "path": "README.md", "line": 1716, "attribute": "data-computed:double" },
+        { "path": "e2e/csp-engine.spec.ts", "line": 29, "attribute": "data-computed:double" },
         {
           "path": "e2e/fixtures/csp-proof/index.html",
           "line": 25,
@@ -2335,7 +2344,10 @@
     {
       "id": "public-679280f4e3b5",
       "source": "$count++",
-      "locations": [{ "path": "README.md", "line": 1789, "attribute": "data-on:click" }],
+      "locations": [
+        { "path": "README.md", "line": 1789, "attribute": "data-on:click" },
+        { "path": "e2e/csp-engine.spec.ts", "line": 30, "attribute": "data-on:click" }
+      ],
       "disposition": "exact-parity",
       "caseId": "csp-signal-write",
       "reason": "The source writes only approved signal l-values."
@@ -2377,6 +2389,7 @@
       "source": "$double",
       "locations": [
         { "path": "README.md", "line": 1718, "attribute": "data-text" },
+        { "path": "e2e/csp-engine.spec.ts", "line": 31, "attribute": "data-text" },
         { "path": "e2e/fixtures/csp-proof/index.html", "line": 40, "attribute": "data-text" }
       ],
       "disposition": "exact-parity",

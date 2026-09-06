@@ -152,16 +152,35 @@ function literalString(node: CSPExpressionNode | undefined): string | undefined 
   return node?.kind === "literal" && typeof node.value === "string" ? node.value : undefined;
 }
 
+interface EvaluationBudget {
+  steps: number;
+  asyncTransitions: number;
+  getters: Set<object>;
+  failure?: CSPDiagnosticCode;
+}
+
+interface ComputedEvaluation {
+  readonly instance: StarContext["instance"];
+  readonly budget: EvaluationBudget;
+}
+
+// Borrow only while calling an owned synchronous getter; finally restores the prior record.
+let activeComputedFrame: ComputedEvaluation | undefined;
+
 class EvaluationFrame {
-  private steps = 0;
-  private asyncTransitions = 0;
+  private readonly budget: EvaluationBudget;
 
   constructor(
     private readonly source: string,
     private readonly location: StarExpressionLocation | undefined,
     private readonly context: StarContext,
     private readonly active: () => boolean,
-  ) {}
+  ) {
+    this.budget =
+      activeComputedFrame && activeComputedFrame.instance === context.instance
+        ? activeComputedFrame.budget
+        : { steps: 0, asyncTransitions: 0, getters: new Set() };
+  }
 
   evaluate(root: CSPExpressionNode | CSPProgramNode): unknown {
     const result = root.kind === "program" ? this.evaluateProgram(root) : this.evaluateNode(root);
@@ -441,15 +460,38 @@ class EvaluationFrame {
     node: CSPNode,
     writableState: boolean,
   ): TrackedValue {
-    const member = this.readDescriptor(value, key, node.span);
+    const member = this.readDescriptor(value, key, node.span, true);
     if (!member.found) return tracked("primitive", undefined);
     let resolved: unknown;
     try {
-      resolved = value[key];
+      resolved = member.computed ? this.readComputed(value, key, member.computed) : value[key];
     } catch {
-      this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
+      this.fail(
+        member.computed
+          ? (this.budget.failure ?? "CSP_CAPABILITY_ACCESSOR")
+          : "CSP_CAPABILITY_ACCESSOR",
+        this.fullSpan(),
+      );
     }
-    return this.dataValue(resolved, parent, writableState);
+    return this.dataValue(resolved, parent, writableState && !member.computed);
+  }
+
+  private readComputed(value: Record<string, unknown>, key: string, getter: object): unknown {
+    if (this.budget.getters.has(getter)) {
+      this.budget.failure ??= "CSP_EVALUATE_CYCLE";
+      this.fail(this.budget.failure, this.fullSpan());
+    }
+    const previous = activeComputedFrame;
+    activeComputedFrame = { instance: this.context.instance, budget: this.budget };
+    this.budget.getters.add(getter);
+    try {
+      const result = value[key];
+      if (this.budget.failure) this.fail(this.budget.failure, this.fullSpan());
+      return result;
+    } finally {
+      activeComputedFrame = previous;
+      this.budget.getters.delete(getter);
+    }
   }
 
   private readOwnData(object: TrackedValue, key: string, node: CSPNode): TrackedValue {
@@ -463,16 +505,25 @@ class EvaluationFrame {
     value: object,
     key: string,
     _span: CSPSourceSpan,
-  ): { readonly found: boolean; readonly value?: unknown } {
-    let descriptor: PropertyDescriptor | undefined;
+    allowComputed = false,
+  ): { readonly found: boolean; readonly value?: unknown; readonly computed?: object } {
+    let descriptor: { readonly value?: unknown; readonly get?: object } | undefined;
     try {
       descriptor = Object.getOwnPropertyDescriptor(value, key);
     } catch {
       this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
     }
     if (!descriptor) return { found: false };
-    if (!("value" in descriptor)) this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
-    return { found: true, value: descriptor.value };
+    if ("value" in descriptor) return { found: true, value: descriptor.value };
+    const getter = descriptor.get;
+    if (
+      !allowComputed ||
+      !getter ||
+      value !== this.context.instance.state ||
+      starExpressionRuntimeFor(this.context)?.ownsGetter?.(key, getter) !== true
+    )
+      this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
+    return { found: true, computed: getter };
   }
 
   private dataValue(
@@ -732,8 +783,8 @@ class EvaluationFrame {
 
     const adopted = this.adoptNativePromise(result.value);
     if (adopted) {
-      this.asyncTransitions += 1;
-      if (this.asyncTransitions > CSP_LIMITS.asyncChain) {
+      this.budget.asyncTransitions += 1;
+      if (this.budget.asyncTransitions > CSP_LIMITS.asyncChain) {
         const error = this.error("CSP_LIMIT_ASYNC_CHAIN", this.fullSpan());
         result.failed(error);
         throw error;
@@ -1178,9 +1229,10 @@ class EvaluationFrame {
 
   private step(_node: CSPNode): void {
     if (!this.active()) this.fail("CSP_ENGINE_DISPOSED", this.fullSpan());
-    this.steps += 1;
-    if (this.steps > CSP_LIMITS.evaluationSteps) {
-      this.fail("CSP_LIMIT_EVALUATION_STEPS", this.fullSpan());
+    this.budget.steps += 1;
+    if (this.budget.steps > CSP_LIMITS.evaluationSteps) {
+      this.budget.failure ??= "CSP_LIMIT_EVALUATION_STEPS";
+      this.fail(this.budget.failure, this.fullSpan());
     }
   }
 

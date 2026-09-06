@@ -426,11 +426,6 @@
     },
     {
       "path": "src/runtime.ts",
-      "rule": "@typescript-eslint/no-base-to-string",
-      "count": 2
-    },
-    {
-      "path": "src/runtime.ts",
       "rule": "@typescript-eslint/no-non-null-assertion",
       "count": 2
     },

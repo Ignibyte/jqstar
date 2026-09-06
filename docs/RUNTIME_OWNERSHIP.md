@@ -93,11 +93,16 @@ registered through a jQStar or harness capability.
   each created engine; one root-export compatibility engine.
 - `src/csp/`: immutable contract tables and AST records; each CSP engine retains a successful-only
   128-entry/262,144-byte LRU, disposed state, and no live contexts. Evaluation frames own bounded
-  step/async counters and capability tags only for one invocation.
+  step/async counters and capability tags only for one invocation. Synchronous declarative computed
+  reads in the same application share those counters and an active-getter set. A temporary module
+  record carries only the application identity and budget during a getter call and restores the
+  previous record in `finally`; it does not retain a context between evaluations.
 - `src/expression-runtime.ts`: a `WeakMap` associates live application identities with exact action/
-  helper resolvers and raw action startup. A branded weak set recognizes internal call results. An
-  action result exposes only a read-only view of its existing operation liveness; request/action
-  cancellation ownership remains in `src/observation.ts`.
+  helper resolvers, raw action startup, and the declarative getter-ownership predicate. The CSP
+  evaluator checks the exact application state before consulting the predicate for its key/getter
+  pair. A branded weak set recognizes internal call results. An action result exposes only a
+  read-only view of its existing operation liveness; request/action cancellation ownership remains
+  in `src/observation.ts`.
 
 ### Applications and scheduling
 
@@ -107,7 +112,12 @@ registered through a jQStar or harness capability.
 - `src/declarative.ts`: attribute-application state, computed proxy, effects, registered
   element/attribute directive records and reverse cleanup stacks, per-attribute legacy cleanup maps,
   mutation observer, event debounce/throttle closures, expression-runtime release, and destroyed
-  flag.
+  flag. A private map binds live declarative computed getters to their authored keys. Declaration
+  cleanup deletes the ownership record before restoring the previous descriptor. Removing a nested
+  declaration can restore an earlier, still-owned getter; removed getters cannot regain access by
+  being copied back into state. Its shared native form-value helpers retain no application, element,
+  callback, or jQuery selection between calls; the unchecked-radio sentinel is an immutable module
+  constant.
 - `src/reactivity.ts`: dependency/proxy/raw indexes, current effect, owned pending effects, pending
   unowned failures, and flush flag.
 - `src/fetch.ts`: active requests by element and root; selected profile, request abort controller,

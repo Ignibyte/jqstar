@@ -2274,7 +2274,7 @@ QUnit.start();
       await readFile(join(installedPackage, "package.json"), "utf8"),
     );
     return serveBrowserProof(installedPackage, consumer, {
-      corpusDigest: "2726c0377afac773700d0ec2334a0cb88bc246e67ad80b63b583ff5a5e5d349f",
+      corpusDigest: "b8838c9ca712890c296a97679f49fd7d33c39e53a362ac59952d38e556ed1ce6",
       grammarVersion: "jqstar-csp-expression/1",
       graph,
       packageVersion: installedManifest.version,

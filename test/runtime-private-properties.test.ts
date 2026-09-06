@@ -3,7 +3,7 @@ import { expect, it } from "vitest";
 import ts from "typescript";
 import { runtimePrivateProperties } from "../config/runtime-private-properties";
 
-it("restricts property minification to private members of the shared runtime", () => {
+it("restricts property minification to private runtime and evaluator members", () => {
   const names = new Set<string>(runtimePrivateProperties);
   const declared = new Set<string>();
   const owners = new Set([
@@ -11,6 +11,7 @@ it("restricts property minification to private members of the shared runtime", (
     "src/observation.ts",
     "src/runtime.ts",
     "src/declarative.ts",
+    "src/csp/evaluator.ts",
   ]);
   const violations: string[] = [];
   const paths = readdirSync("src", { recursive: true, encoding: "utf8" })

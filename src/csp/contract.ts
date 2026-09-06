@@ -1,6 +1,6 @@
 export const CSP_GRAMMAR_VERSION = "jqstar-csp-expression/1" as const;
 export const CSP_CONTRACT_DIGEST =
-  "2726c0377afac773700d0ec2334a0cb88bc246e67ad80b63b583ff5a5e5d349f" as const;
+  "b8838c9ca712890c296a97679f49fd7d33c39e53a362ac59952d38e556ed1ce6" as const;
 
 export const CSP_ENTRY_KINDS = Object.freeze(["value", "statement"] as const);
 export type CSPEntryKind = (typeof CSP_ENTRY_KINDS)[number];

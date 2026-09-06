@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import $ from "jquery";
 import { describe, expect, it, vi } from "vitest";
+import { CSP_CONTRACT_DIGEST } from "../src/csp/contract";
 import { createTrustedExpressionEngine } from "../src/expression";
 import type { StarContext } from "../src/types";
 import { validateCspContract } from "../scripts/validate-csp-contract.mjs";
@@ -87,7 +88,7 @@ describe("frozen CSP expression contract", () => {
       adversarial: 46,
       contexts: 33,
     });
-    expect(result.digest).toMatch(/^[a-f\d]{64}$/);
+    expect(result.digest).toBe(CSP_CONTRACT_DIGEST);
     expect(result.publicSources).toBeGreaterThan(200);
     expect(result.publicOccurrences).toBeGreaterThan(300);
   });

@@ -256,6 +256,13 @@ results receive the same finite-scalar and inert-plain-data classification. Bigi
 non-finite, promise, DOM/jQuery, date, and other custom live-object values fail closed. A path
 through `undefined` fails with `CSP_PROPERTY_ABSENT`.
 
+Declarative `data-computed:name` values are readable through `$name`, `state.name`, and
+`signals.name`. The runtime recognizes only the getter owned by that live declaration on its
+original application state and key. Copying a getter to another key, object, or application does not
+grant access. Removing or replacing the declaration, or destroying the application, revokes that
+getter. Computed values and their nested results remain read-only. Arbitrary state/data getters are
+refused before invocation.
+
 Operators do not use JavaScript coercion:
 
 - `!` uses CSP truthiness. `null`, `undefined`, `false`, `0`, and `""` are false. Other allowed
@@ -415,6 +422,11 @@ call, or DOM method occurs after a failing precondition.
 Plain-data path traversal tracks object identity for that path. Re-entering an identity before the
 path finishes fails with `CSP_EVALUATE_CYCLE`. The evaluator never recursively clones or sanitizes a
 graph. This keeps cycle handling bounded by the eight-segment path limit.
+
+Dependent declarative computed reads share the caller's 128-step evaluation budget. Calling an
+already active computed getter fails with `CSP_EVALUATE_CYCLE`; exceeding the shared budget fails
+with `CSP_LIMIT_EVALUATION_STEPS`. These failures cannot be concealed by a helper that catches an
+inner evaluation error. A later independent evaluation starts with a fresh budget.
 
 ## Diagnostics and locations
 

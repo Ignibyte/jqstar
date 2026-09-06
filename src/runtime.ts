@@ -1,6 +1,11 @@
+import {
+  DeclarativeApplication,
+  readModelValue,
+  writeModelValue,
+  SKIP_MODEL_WRITE,
+} from "./declarative";
 import { effect, nextUpdate, reactive, stop, type ReactiveEffect } from "./reactivity";
-import { DeclarativeApplication } from "./declarative";
-import { isElementNode, isInputElement, isSelectElement } from "./dom";
+import { isElementNode } from "./dom";
 import { attempt, throwCollectedErrors } from "./errors";
 import type { StarExpressionEngine } from "./expression-types";
 import {
@@ -102,10 +107,10 @@ class Application<
   readonly computed: Readonly<Computed>;
 
   private readonly $: JQueryStatic;
-  private readonly capabilities: ApplicationCapabilities;
+  private readonly runtimeCapabilities: ApplicationCapabilities;
   private readonly definition: StarDefinition<State, Computed>;
   private readonly namespace: string;
-  private readonly effects = new Set<ReactiveEffect>();
+  private readonly ownedEffects = new Set<ReactiveEffect>();
   private readonly mounted = new Map<
     Element,
     Map<UIRule<State, Computed>, (() => void) | undefined>
@@ -128,7 +133,7 @@ class Application<
     capabilities: ApplicationCapabilities,
   ) {
     this.$ = $;
-    this.capabilities = capabilities;
+    this.runtimeCapabilities = capabilities;
     this.root = root;
     this.$root = $(root);
     this.definition = definition;
@@ -141,10 +146,10 @@ class Application<
       this.releaseExpressionRuntime = bindStarExpressionRuntime(this, {
         resolveAction: (name) =>
           (this.definition.actions?.[name] as StarAction | undefined) ??
-          this.capabilities.resolveAction(name),
-        resolveHelper: (name) => this.capabilities.resolveHelper(name),
+          this.runtimeCapabilities.resolveAction(name),
+        resolveHelper: (name) => this.runtimeCapabilities.resolveHelper(name),
         startAction: (label, action, context) =>
-          this.capabilities.startAction(this, label, action, context),
+          this.runtimeCapabilities.startAction(this, label, action, context),
       });
       this.installRules();
       this.mountTree(root);
@@ -176,13 +181,18 @@ class Application<
 
     const resolved =
       typeof action === "string"
-        ? (this.definition.actions?.[action] ?? this.capabilities.resolveAction(action))
+        ? (this.definition.actions?.[action] ?? this.runtimeCapabilities.resolveAction(action))
         : action;
 
     if (!resolved) throw new Error(`Unknown jQuery Star action: ${String(action)}`);
     const context = { ...this.context(), ...overrides };
     const label = typeof action === "string" ? action : resolved.name || "anonymous";
-    return this.capabilities.runAction(this, label, resolved as unknown as StarAction, context);
+    return this.runtimeCapabilities.runAction(
+      this,
+      label,
+      resolved as unknown as StarAction,
+      context,
+    );
   }
 
   observeOperations(
@@ -190,13 +200,13 @@ class Application<
     options?: StarOperationSubscriptionOptions,
   ): StarOperationUnsubscribe {
     if (this.isDestroyed) throw new Error("This jQuery Star application has been destroyed.");
-    return this.capabilities.observeOperations(this, observer, options);
+    return this.runtimeCapabilities.observeOperations(this, observer, options);
   }
 
   refresh(): void {
     if (this.isDestroyed) return;
     const errors: unknown[] = [];
-    for (const runner of this.effects) attempt(errors, runner);
+    for (const runner of this.ownedEffects) attempt(errors, runner);
     throwCollectedErrors(errors, "jQuery Star application refresh failed.");
   }
 
@@ -263,8 +273,8 @@ class Application<
       $: this.$,
       state: this.state,
       computed,
-      helpers: this.capabilities.helpers,
-      stores: this.capabilities.stores,
+      helpers: this.runtimeCapabilities.helpers,
+      stores: this.runtimeCapabilities.stores,
       root: this.root,
       $root: this.$root,
       instance: this,
@@ -326,7 +336,7 @@ class Application<
         onError: (error) => this.$root.trigger("jquery-star:error", [error]),
       },
     );
-    this.effects.add(runner);
+    this.ownedEffects.add(runner);
   }
 
   private applyBindings(element: Element, rule: UIRule<State, Computed>): void {
@@ -370,7 +380,7 @@ class Application<
 
     if (rule.model !== undefined) {
       const path = typeof rule.model === "string" ? rule.model : rule.model.path;
-      this.writeModel(element, readPath(this.state, path));
+      writeModelValue(this.$, element, readPath(this.state, path));
     }
   }
 
@@ -388,7 +398,7 @@ class Application<
 
     const application = this;
     const handler = function (this: Element, _event: JQuery.Event): void {
-      const result = application.readModel(this, readPath(application.state, path));
+      const result = readModelValue(application.$, this, readPath(application.state, path));
       if (result !== SKIP_MODEL_WRITE) writePath(application.state, path, result);
     };
 
@@ -397,55 +407,6 @@ class Application<
     } else {
       this.$root.on(namespacedEvents, selector, handler);
     }
-  }
-
-  private writeModel(element: Element, value: unknown): void {
-    if (isInputElement(element)) {
-      if (element.type === "checkbox") {
-        element.checked = Array.isArray(value)
-          ? value.map(String).includes(element.value)
-          : Boolean(value);
-        return;
-      }
-      if (element.type === "radio") {
-        element.checked = String(value ?? "") === element.value;
-        return;
-      }
-    }
-
-    if (isSelectElement(element) && element.multiple) {
-      const selected = new Set(Array.isArray(value) ? value.map(String) : []);
-      for (const option of Array.from(element.options)) {
-        option.selected = selected.has(option.value);
-      }
-      return;
-    }
-
-    const next = String(value ?? "");
-    if (this.$(element).val() !== next) this.$(element).val(next);
-  }
-
-  private readModel(element: Element, current: unknown): unknown {
-    if (isInputElement(element)) {
-      if (element.type === "checkbox") {
-        if (Array.isArray(current)) {
-          const values = current.map(String);
-          return element.checked
-            ? Array.from(new Set([...values, element.value]))
-            : values.filter((value) => value !== element.value);
-        }
-        return element.checked;
-      }
-      if (element.type === "radio") {
-        return element.checked ? element.value : SKIP_MODEL_WRITE;
-      }
-    }
-
-    if (isSelectElement(element) && element.multiple) {
-      return Array.from(element.selectedOptions, (option) => option.value);
-    }
-
-    return this.$(element).val();
   }
 
   private installEvents(selector: string, rule: UIRule<State, Computed>): void {
@@ -554,14 +515,16 @@ class Application<
       for (const node of Array.from(mutation.removedNodes)) {
         if (isElementNode(node)) {
           attempt(errors, () =>
-            this.releaseTree(node, this.capabilities.preservedRootsWithin(node)),
+            this.releaseTree(node, this.runtimeCapabilities.preservedRootsWithin(node)),
           );
         }
       }
 
       for (const node of Array.from(mutation.addedNodes)) {
         if (isElementNode(node)) {
-          attempt(errors, () => this.mountTree(node, this.capabilities.preservedRootsWithin(node)));
+          attempt(errors, () =>
+            this.mountTree(node, this.runtimeCapabilities.preservedRootsWithin(node)),
+          );
           refresh = true;
         }
       }
@@ -585,16 +548,14 @@ class Application<
     const timers = [...this.timers];
     this.timers.clear();
     for (const timer of timers) attempt(errors, () => clearTimeout(timer));
-    const effects = [...this.effects];
-    this.effects.clear();
+    const effects = [...this.ownedEffects];
+    this.ownedEffects.clear();
     for (const runner of effects) attempt(errors, () => stop(runner));
     attempt(errors, () => this.releaseTree(this.root));
     attempt(errors, () => this.$.removeData(this.root, INSTANCE_KEY));
-    attempt(errors, () => this.capabilities.applicationDestroyed(this));
+    attempt(errors, () => this.runtimeCapabilities.applicationDestroyed(this));
   }
 }
-
-const SKIP_MODEL_WRITE = Symbol("skip-model-write");
 
 export interface StarRuntimeInstallOptions {
   readonly document?: Document;

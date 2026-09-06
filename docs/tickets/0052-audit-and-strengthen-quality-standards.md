@@ -374,8 +374,12 @@ guard was removed merely because TypeScript considered it redundant.
 Delivery `2026-09-06T14-07-22-596Z-50023` passes all thirteen gates, 1,313 unit tests and 484
 browser cases, including detector controls, package and release proof. Test validation and receipt
 verification passed before commit `09d6109`, now pushed. Hosted full audit `34039155609` verifies
-that exact corrected source. Preceding run `34035393474` passed its randomized properties but failed
-the repeated-browser gate; retain that failed evidence. The final hosted pass remains required.
+that exact corrected source and is now complete: report `2026-09-06T14-29-23-999Z-17511` passes all
+fifteen full-audit gates with matching start/end fingerprints. Its repeated-browser lane executes
+all 484 selected cases twice: 968 pass, with zero failures, skips or flaky results. Downloaded
+reports and verified hashes are retained in `.git/jqstar/hosted-audit-34039155609/`. Preceding run
+`34035393474` passed its randomized properties but failed the repeated-browser gate; retain that
+failed evidence. Current local delivery and phase closure must also pass after the CSP corrections.
 Program audit separately reopened 0034 and 0035 for CSP computed integration and incomplete
 installed accessibility/native coverage; these require owning-ticket corrections, not weaker quality
 checks.
@@ -521,13 +525,13 @@ the explicit deferred mutation boundary.
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                                                                     |
-| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | `docs/QUALITY_PROGRAM.md` records each category, effective scope/rules/commands, detector and limitation, including PHPStan (TypeScript/typed ESLint), PHPMD (SonarJS/jscpd), and PHPCS (Prettier/style rules). Hosted protection was read separately and its review limitations are explicit.                                               |
-| AC-02     | Pass   | Effective-config tests prove five SonarJS rules in JavaScript and TypeScript, actual root configuration/CSS selectors, and stronger typed defaults. The probe covers 283 TypeScript files and exactly 306 counted allowances; new files cannot inherit blanket exclusions. JavaScript process code remains explicitly outside type analysis. |
-| AC-03     | Pass   | Historical metric, coverage, and package ratchets reject weaker ceilings/floors, removed targets, and environment bypasses. Three isolated-Git coverage tests prove explicit-base/local-HEAD behavior and invalid-history refusal. Static/package detector controls pass without mutation tooling.                                           |
-| AC-04     | Pass   | Delivery `2026-09-06T04-09-28-284Z-93807` passes all 13 gates after HTTP/UI coverage corrections. All changed production lines/functions are covered, with 94.49% lines, 93.46% functions, and 84.89% branches. Public/brain guidance and the 0033 prerequisite inventory refer to current controls.                                         |
-| AC-05     | Pass   | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                       |
+| Criterion | Result  | Evidence                                                                                                                                                                                                                                                                                                                                     |
+| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass    | `docs/QUALITY_PROGRAM.md` records each category, effective scope/rules/commands, detector and limitation, including PHPStan (TypeScript/typed ESLint), PHPMD (SonarJS/jscpd), and PHPCS (Prettier/style rules). Hosted protection was read separately and its review limitations are explicit.                                               |
+| AC-02     | Pass    | Effective-config tests prove five SonarJS rules in JavaScript and TypeScript, actual root configuration/CSS selectors, and stronger typed defaults. The probe covers 283 TypeScript files and exactly 306 counted allowances; new files cannot inherit blanket exclusions. JavaScript process code remains explicitly outside type analysis. |
+| AC-03     | Pass    | Historical metric, coverage, and package ratchets reject weaker ceilings/floors, removed targets, and environment bypasses. Three isolated-Git coverage tests prove explicit-base/local-HEAD behavior and invalid-history refusal. Static/package detector controls pass without mutation tooling.                                           |
+| AC-04     | Pending | Hosted full audit `34039155609` passes all fifteen gates for `09d6109`. Current-tree delivery and phase closure remain pending the CSP corrections recorded under 0034/0035; historical passes do not close the reopened criterion.                                                                                                          |
+| AC-05     | Pass    | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                       |
 
 ### Previous completion audit (superseded 2026-09-06)
 

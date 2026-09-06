@@ -530,15 +530,15 @@ describe("declarative jQuery Star", () => {
     const second = new Error("second refresh failed");
     const firstRunner = effect(() => undefined);
     const secondRunner = effect(() => undefined);
-    const internals = instance as unknown as { effects: Set<typeof firstRunner> };
+    const internals = instance as unknown as { ownedEffects: Set<typeof firstRunner> };
     Object.assign(firstRunner, { active: true });
     Object.assign(secondRunner, { active: true });
-    internals.effects.add(
+    internals.ownedEffects.add(
       Object.assign(() => {
         throw first;
       }, firstRunner),
     );
-    internals.effects.add(
+    internals.ownedEffects.add(
       Object.assign(() => {
         throw second;
       }, secondRunner),
@@ -749,15 +749,15 @@ describe("declarative jQuery Star", () => {
     const state = reactive({ count: 0 });
     const runs = vi.fn(() => void state.count);
     const runner = effect(runs);
-    const internals = instance as unknown as { effects: Set<typeof runner> };
-    internals.effects.add(runner);
+    const internals = instance as unknown as { ownedEffects: Set<typeof runner> };
+    internals.ownedEffects.add(runner);
 
     instance.destroy();
     state.count = 1;
     await $.star.nextUpdate();
 
     expect(runs).toHaveBeenCalledOnce();
-    expect(internals.effects.size).toBe(0);
+    expect(internals.ownedEffects.size).toBe(0);
   });
 
   it("handles ignore and signal attribute changes and reports asynchronous cleanup failures", async () => {

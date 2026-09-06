@@ -871,14 +871,14 @@ describe("jQuery Star", () => {
       },
     });
     const instance = $("#app").star("instance")!;
-    const internals = instance as unknown as { effects: Set<unknown> };
-    expect(internals.effects.size).toBe(1);
+    const internals = instance as unknown as { ownedEffects: Set<unknown> };
+    expect(internals.ownedEffects.size).toBe(1);
 
     instance.destroy();
     $("button").trigger("click");
     await $.star.nextUpdate();
 
-    expect(internals.effects.size).toBe(0);
+    expect(internals.ownedEffects.size).toBe(0);
     expect(action).not.toHaveBeenCalled();
     expect(errors).toEqual([]);
   });

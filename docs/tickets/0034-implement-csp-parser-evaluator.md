@@ -1,7 +1,7 @@
 ---
 id: 0034
 title: Implement the CSP parser and evaluator
-status: planned
+status: testing
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -305,8 +305,9 @@ and reactive through the documented syntax. Preserve refusal of arbitrary user a
 foreign/copied getters, writes to computed state, and stale/disposed ownership. Do not broadly allow
 accessor reads or change the frozen grammar. Before Code, verify a bounded ownership design using
 the existing application expression-runtime binding, including replacement/restoration cleanup and
-separate applications; measure its effect on unchanged core/CSP size budgets. This design review is
-still required. If the frozen contract requires a semantic change, return that decision to 0015.
+separate applications; measure its effect on unchanged core/CSP size budgets. The completed design
+review is recorded below. If the frozen contract requires a semantic change, return that decision
+to 0015.
 
 Planned files are `src/csp/evaluator.ts`, the necessary internal expression-runtime/declarative
 ownership seam, focused CSP and declarative integration tests, affected internal/public contract
@@ -315,6 +316,113 @@ capture. Require failing-before/passing-after regression proof, hostile getter s
 reactive updates and complete cleanup, then focused conformance/corpus checks, coverage, package
 budgets, all three strict-policy browsers, `quality:fast`, `npm run check`, and phase validation.
 Mutation testing remains excluded.
+
+### Getter ownership and evaluation bounds, 2026-09-06
+
+The source-level regression confirms the installed finding: the trusted engine renders the initial
+computed value and its update, while CSP returns an empty output with `CSP_CAPABILITY_ACCESSOR`. The
+corrective design is now exercised in an isolated source prototype. A per-application map binds each
+declarative getter to its original key. The existing expression-runtime binding exposes an internal
+`ownsGetter` predicate for the original key and getter. Before using it, the CSP evaluator requires
+the exact state object of that bound application. Arbitrary, copied, foreign, removed and destroyed
+getters remain refused; nested computed results are read-only. Registration and revocation use the
+existing declaration cleanup callback, including restoration of an older still-owned declaration.
+The map retains only getters already owned by live declarations.
+
+Dependent computed expressions share the existing 128-step budget within one application. A
+synchronous borrowed record carries the application identity and budget across getter calls and is
+restored in `finally`. Its active-getter set detects cycles. Nested failures use the recorded
+internal failure code, without reading a thrown value's properties. Cycles report
+`CSP_EVALUATE_CYCLE`; one step beyond the limit reports `CSP_LIMIT_EVALUATION_STEPS`. A helper
+cannot conceal either failure, and reentrant work in a different application receives its own
+budget. No new grammar or larger bound is introduced.
+
+Prototype controls cover initial rendering and updates, all state-root spellings, zero arbitrary
+getter calls, copied/foreign ownership, rejected writes, replacement/removal/restoration,
+application destruction, cycles, repeated dependencies, exact 128/129-step boundaries, failure
+containment and separate application budgets. The first ownership prototype failed the three
+bounded-work controls; those retained failures led to shared accounting before integration.
+
+Keep the unchanged 63,000-byte installed core gzip ceiling. Share the duplicated native form-model
+read/write logic at module scope in `src/declarative.ts` and call it directly from both application
+classes. Preserve checkbox arrays, boolean checkboxes, unchecked-radio handling, multi-select
+values, and the existing declarative `jquery-star:model-write` event only when a normal value
+changes. Reuse the same jQuery selection for that read/write pair. The unchecked-radio sentinel is
+module-private.
+
+Name the two private application fields `ownedEffects` and `runtimeCapabilities` before adding them,
+with `computedGetters`, to the existing private property minification list. Remove the deleted
+`readModel` and `writeModel` methods from that list. The AST control must still reject any public,
+serialized, or foreign receiver with one of these names. Keep all public names and the existing
+destroyed-application guard unchanged. The isolated prototype passes 101 tests and strict types; its
+core consumer measures 192,409 raw bytes and 62,990 gzip bytes with the official Node 24 build. The
+identical source/build setup reproduced the unmodified 193,511/62,994-byte baseline. These are
+diagnostic measurements; installed-package size and graph checks still decide acceptance.
+
+Implementation files are `src/csp/evaluator.ts`, `src/expression-runtime.ts`, `src/declarative.ts`,
+`src/runtime.ts`, `config/runtime-private-properties.ts`, `quality/lint-boundaries.json`, new
+`test/csp-computed.test.ts` and `test/model-bindings.test.ts`, the two existing application tests
+whose private effect-field fixtures change, `docs/CSP_EXPRESSIONS.md`, `docs/RUNTIME_OWNERSHIP.md`,
+`e2e/csp-engine.spec.ts`, and the 0033/0034 ledgers. Preserve all existing corpus, type, package and
+browser checks. Owner 0035 remains responsible for the expanded strict-policy installed fixture and
+manual accessibility evidence after this owner closes.
+
+The new internal browser markup also enters the generated public-expression inventory. Regenerate
+`test/fixtures/csp/conformance-map.json`, review its added locations and source assignments, and pin
+the resulting aggregate digest in `src/csp/contract.ts`, `test/csp-entrypoint.test.ts`, and the
+installed-package proof identity in `scripts/quality-package.mjs`. Preserve the accepted, denied,
+adversarial, context, grammar and capability inputs byte-for-byte. This inventory refresh adds no
+language feature. The initial focused run passed 104 cases and types; contract freshness then
+correctly failed until the new browser occurrences were inventoried.
+
+Digest review also found a pre-existing identity gap: the six manifests at `05d9110` hash to
+`772ec58569443e7e186468bf3b46aee62d8449982f226f412aa1d1a2c5a53cd7`, while the exported constant and
+package expectation still advertise `2726c037…349f`. The contract test currently checks only the
+shape of the computed digest. Make `test/csp-contract.test.ts` require equality with the exported
+constant, retain its failing-before result, and update the reviewed CSP API report's digest literal
+alongside the source and installed-package expectation. The new browser fixture adds one existing
+language form (`{ count: 2 }`) and four occurrences; no previous example assignment changes.
+
+Preserve the first recorded computed failure if an application helper catches it and then attempts
+more work. Add a control that catches a cycle, exceeds the same step budget, and still receives the
+original cycle diagnostic. Budget failures must use first-error assignment rather than overwrite an
+earlier failure. The new browser test uses optional final cleanup after disposal, since disposal
+removes `$.star` from the jQuery object.
+
+The first fast gate passes all 1,334 unit cases but refuses new typed-lint findings. Keep the
+existing immutable per-file lint ratchet. The shared model helpers will stay at module scope in
+`src/declarative.ts`, which already owns the two intentional generic value conversions; the behavior
+runtime already depends on that module. This avoids a new dependency cycle and preserves the
+existing conversion boundary without adding an allowance. Remove the temporary `src/model.ts` module
+and reduce the two retired runtime conversion allowances. New tests and browser fixtures must assert
+that required objects exist instead of adding non-null assertions. Represent the borrowed
+computation as an application-identity/budget record, and type getter metadata as inert object
+identity, so the evaluator needs neither a `this` alias nor an extracted callable method.
+
+### Installed size correction, 2026-09-06
+
+Delivery `2026-09-06T15-31-50-138Z-96120` confirms the computed correction passes the browser,
+coverage, property, static and release gates. Package acceptance refuses two measured differences:
+the Mobile reference records the old 463,278-byte UMD artifact instead of the rebuilt 463,011-byte
+artifact, and the installed CSP consumer uses 39,106 Brotli bytes against the unchanged 39,000-byte
+ceiling. Return to Code to correct both. The package detector also refuses the extra unexpected
+failures; preserve that failure without changing its expected-failure controls.
+
+Extend the existing explicit private-property minification list to 33 private evaluator methods in
+`src/csp/evaluator.ts`. Extend `test/runtime-private-properties.test.ts` to inspect that owner while
+retaining its complete-source checks for private declarations, self receivers, and absence from
+public interfaces and data objects. The `ownsGetter` integration property stays outside the list.
+Keep the existing two compression passes and all size limits. The isolated consumer reproduces the
+39,106-byte failure before this change and measures 149,733 raw / 44,350 gzip / 38,940 Brotli bytes
+after it; its AST guard passes. Installed package behavior and graphs must still pass independently.
+
+Refresh only `referenceApp.measurements.assetBytes.jqueryStar` in
+`quality/jquery-mobile-migration.json` from the rebuilt UMD file. This records an actual
+measurement, not a budget increase. Compare the 31 non-CSP JavaScript files before and after
+rebuilding to verify the private CSP method names do not change other entries. These two
+configuration files and the existing private-property test join the planned-file manifest. Preserve
+the previous prototype and delivery failures under `.git/jqstar/program-audit/csp-size-refinement/`
+and the immutable run folder.
 
 ### Planned files
 
@@ -334,6 +442,22 @@ Mutation testing remains excluded.
 ## Code
 
 ### Changed-file ledger
+
+The 2026-09-06 correction adds owned declarative getters and shared bounded evaluation in
+`src/declarative.ts`, `src/expression-runtime.ts`, and `src/csp/evaluator.ts`. Shared model helpers
+in `src/declarative.ts` replace duplicated handling in both application classes.
+`config/runtime-private-properties.ts` tracks the renamed private capability/effect fields, removes
+the deleted model methods, and includes 33 private CSP evaluator methods. The existing
+private-property AST test now checks the CSP owner too. `quality/jquery-mobile-migration.json`
+records the rebuilt 463,011-byte UMD artifact. `quality/lint-boundaries.json` retires the two
+eliminated runtime conversion allowances. The existing application tests retain their assertions
+with the new private effect-field name. `test/csp-computed.test.ts` and
+`test/model-bindings.test.ts` add ownership, lifecycle, budget, native-model and notification
+controls. `e2e/csp-engine.spec.ts` adds the three-browser source proof. The contract inventory,
+exported digest, entry test, `test/csp-contract.test.ts`, reviewed CSP API report and
+installed-package expectation now bind the actual corpus identity. `docs/CSP_EXPRESSIONS.md` and
+`docs/RUNTIME_OWNERSHIP.md` describe the corrected behavior. Current verification is recorded below;
+the historical ledger remains as the original implementation record.
 
 | File                                                                                               | Purpose                                                                                                          |
 | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -387,6 +511,73 @@ Mutation testing remains excluded.
   second cancellation controller.
 
 ## Test
+
+Fast run `2026-09-06T15-53-09-159Z-56655` passes all six gates after the size correction, and the
+Code phase validator accepts that report. The ticket returns to `testing`. `npm run test:package`
+then passes the rebuilt ESM/UMD, backend, component, CSS and 257-file package contents proofs
+(`csp-size-refinement/integrated-package-smoke.log`). Complete delivery remains required against
+this corrected tree before closing any criterion.
+
+The installed-size correction passes 61 focused tests across nine files, including the private
+member guard, CSP corpus/engine/computed controls, native model profiles and Mobile contract. Strict
+types, focused ESLint and every JavaScript/API build pass. The maintained-source consumer measures
+149,733 raw / 44,350 gzip / 38,940 Brotli bytes. All 31 non-CSP JavaScript files retain their exact
+pre-correction hashes, and the rebuilt UMD measures 463,011 bytes. Evidence is retained under
+`.git/jqstar/program-audit/csp-size-refinement/integrated-*`. These focused results require a fresh
+fast report and installed-package delivery before acceptance.
+
+Fast report `2026-09-06T15-29-58-195Z-83390` passes all six gates, including the runner self-test,
+and the Code phase validator accepts that exact report. The subsequent delivery
+`2026-09-06T15-31-50-138Z-96120` ends with eleven passing gates and two failures: package quality
+and its detector control, both explained by the two package findings in the correction plan above.
+All 1,334 unit cases and 487 browser cases pass, with no browser skips, failures or flaky results.
+Start and end fingerprints match. The ticket returns to `coding` for the size correction; a fresh
+fast report and complete delivery remain required before closure or commit.
+
+Final focused verification passes: `npm run test:coverage` meets every enforced global/subsystem
+threshold and covers all changed executable lines and functions, with no missing coverage maps. Its
+report and executed-test evidence are archived in `csp-computed-integration/coverage-after/`. The
+final `e2e/csp-engine.spec.ts` run executes six cases across Chromium, Firefox and WebKit with zero
+skips, retries, flaky or unexpected results (`browser-final/results.json`). These prove actual
+computed rendering and native-click updates, zero arbitrary getter calls, copied/destroyed getter
+refusal and complete disposal. Fast phase validation and the full installed delivery gate remain
+required before closure.
+
+The first coverage run executed all cases and covered every changed function and mapped executable
+line. It refused one continuation line in the inline type of the borrowed budget record: the
+emission map attributed syntax to that line while V8 coverage mapped the declaration's first line.
+Name the record's interface separately so its erased type and executable declaration have distinct
+locations. Preserve the failed reports and exact source in
+`csp-computed-integration/coverage-before/` and rerun the unchanged coverage gate. No coverage
+exception or threshold change is used.
+
+The final lint correction passes strict types, focused ESLint, the unchanged immutable lint ratchet,
+and 109 focused cases. No new lint allowance was added. The maintained-source core consumer now
+measures 192,409 raw bytes and 62,969 gzip bytes under the unchanged 63,000-byte ceiling; exact
+installed-package acceptance is still pending. The final browser fixture locations produce corpus
+digest `b8838c9ca712890c296a97679f49fd7d33c39e53a362ac59952d38e556ed1ce6`, with the same 240
+sources/421 occurrences and unchanged grammar/capability corpora. API extraction passes for every
+entry. The earlier six-case browser rerun passed without retries, skips, or unexpected results;
+repeat it after the final narrowing changes before delivery.
+
+Integration first-pass failures are retained. `build:js` reached the CSP API report and refused the
+changed digest literal until the generated report was reviewed. The internal browser run passed the
+three pre-existing realm cases; all three new cases failed in final cleanup because the preceding
+successful disposal had removed `$.star`. Cleanup now checks whether installation remains. A 15-case
+computed run also exposed one diagnostic-order defect: a caught cycle could be overwritten by a
+later step-limit failure. Both budget guards now retain the first recorded code. Rerun these focused
+checks before recording broader evidence.
+
+Current correction evidence (2026-09-06): strict types and 104 focused cases pass, including the
+three native-model profiles. The initial contract run failed on the newly added browser inventory
+locations. After regeneration, the stronger digest-equality control executed four cases and failed
+only on the stale exported digest, as expected. The corrected six-manifest identity is
+`0446a69eb9f8350cfdf6a0d9b4802515589bb569afe67c1fcaebe79925d73c63` with 34 accepted, 57 denied, 46
+adversarial, 33 contexts, 240 public sources and 421 occurrences. The four new occurrences and one
+literal initializer are reviewed; prior assignments and the five other manifests are unchanged. Logs
+and machine-readable results are retained under
+`.git/jqstar/program-audit/csp-computed-integration/`. Current browser and delivery proof remain
+pending; historical results below do not close the reopened criteria.
 
 | Command                                                                                                                                                                                                                                                                 | Result         | Evidence                                                                                                                                                                                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

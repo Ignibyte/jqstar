@@ -522,6 +522,20 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 
 ## Test
 
+Owner 0034 now contains the maintained computed-ownership correction, bounded dependent evaluation,
+first-failure retention, and shared native model handling. Focused proof passes 109 cases, strict
+types, ESLint and the unchanged lint ratchet. The source core consumer is 62,969 gzip bytes, below
+the 63,000-byte ceiling. The audit also found the old CSP digest was not bound to the actual six
+manifests; the contract test now checks that equality. Full delivery and owner closure remain
+pending. Owner 0035 still owns expanded installed strict-policy, native and accessibility evidence.
+
+Installed-browser identity delivery `2026-09-06T14-32-53-767Z-25056` passes all eleven selected
+gates, 1,316 unit tests and 484 browser cases. The unchanged runner and 0044 detector checks were
+explicitly skipped. Receipt verification passed before commit `05d9110`, now pushed. Owner 0034 has
+an isolated computed-ownership prototype and bounded-work controls; integration and final installed
+proof remain required. Hosted full audit `34039155609` still tracks the preceding quality correction
+`09d6109`.
+
 Fast run `2026-09-06T14-29-51-928Z-12176` passed unit and all other selected checks but failed on
 one unrecognized word in the new 0035 prose. Reworded that sentence without a dictionary or rule
 change; repeat fast verification before Code validation and delivery.
