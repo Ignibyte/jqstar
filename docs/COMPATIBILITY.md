@@ -99,11 +99,13 @@ preferences use the separate [persistence contract](PERSISTENCE.md).
 
 ## Verification
 
-The release candidate must pass both commands against one unchanged committed tree:
+The release candidate must pass both commands against one unchanged committed tree. Force every
+configured gate to execute, including gates that ordinary delivery can skip when their inputs are
+unchanged:
 
 ```sh
-npm run quality:full-audit
-npm run check
+JQS_QUALITY_FORCE_ALL=1 npm run quality:full-audit
+JQS_QUALITY_FORCE_ALL=1 npm run check
 ```
 
 The package and release gates install the generated tarball into ESM, CommonJS, TypeScript, QUnit,

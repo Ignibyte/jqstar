@@ -1193,6 +1193,24 @@ probe will verify the finalized five-file batch. The final whole-program manifes
 remaining requirement mappings, public-claim review, real accessibility records, original references
 and prerequisite closure remain unfinished. Mutation testing remains deferred.
 
+### Navigation index verification and public-guide correction (2026-09-06)
+
+Delivery `2026-09-06T21-37-11-727Z-26802` passes all thirteen gates, including 1,567 unit and 487
+browser tests, thirteen package checks, seven release checks and sixteen detector controls. Actual
+Test validation and matching receipt checks pass before and after staging. The five files were
+committed and pushed as `5d74334`; the receipt retains its original pre-commit identity. The current
+development navigation run also passes through the maintained index reader: 840 flows, 498
+configured passes, six declared exclusions and 72 retained host-default failures. Five actual
+refusal controls reject changed inputs, artifact, interval or index, and attempted final use of the
+mutable development run. This component proof does not complete the final program audit.
+
+Draft semantic review now covers twelve of 74 public-source files and 344 authored units. The 605 of
+613 requirement mappings remain planning candidates. Reviewing the release and migration guides
+found two documentation errors: manual delivery can skip release-required gates, and modular core
+already defaults to generic requests. Owner 0017's validated Plan now covers both corrections in the
+three public guides. Its prerequisite and final-candidate criteria remain pending alongside the
+private-reporting approval. Original references and real accessibility records remain required.
+
 The corrected fast run `2026-09-06T21-07-41-367Z-50541` passes 1,504 unit tests and all five
 selected gates. The unchanged workflow self-test is recorded as a conditional skip, not a pass.
 Exact Code validation passes before this ledger update. A direct wrong-artifact invocation is also

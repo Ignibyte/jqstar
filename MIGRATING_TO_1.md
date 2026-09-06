@@ -69,8 +69,11 @@ package.
 
 The root still selects `core.datastar` by default. It sends the documented Datastar headers and
 signal encoding, then accepts JSON signal patches, HTML patches, Datastar event streams, and empty
-responses. A modular core installation that does not install the Datastar plugin must select the
-generic JSON/HTML profile explicitly.
+responses.
+
+Modular core defaults to `core.generic` for JSON/HTML requests. Installing `datastarPlugin` makes
+the Datastar profile available without changing that default. To use Datastar in a modular
+application, install the plugin and pass `{ profile: "core.datastar" }` to the backend action.
 
 Datastar streams must be produced by `@starfederation/datastar-sdk`. Applications should not copy
 handwritten SSE strings from old examples. Existing HTTP authentication, authorization, CSRF,

@@ -1,7 +1,7 @@
 ---
 id: 0017
 title: Prepare the stable 1.0 platform release
-status: planned
+status: testing
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -77,6 +77,37 @@ fast/delivery and phase gates before closure. Public reporting policy text remai
 once the actual configured route is verified. Manual accessibility and final clean-candidate proof
 remain independently required by the full program audit.
 
+### Reopening extension: release and migration guidance (2026-09-06)
+
+The current program audit found two public documentation errors. The manual sequence in
+`RELEASING.md` runs ordinary delivery on a clean checkout, which skips `quality-runner-self-test`
+and `ticket-0044-detector-self-test`. The actual release validator requires both gates to pass.
+`scripts/release/candidate.mjs` already forces every gate in both quality modes. The same incomplete
+manual example appears in `docs/COMPATIBILITY.md`. Retained controls in
+`release-guide-plan/finding.json` use the actual selection and validation functions: the all-green
+report is accepted, and an explicitly synthetic copy with the two skips is rejected.
+
+`MIGRATING_TO_1.md` also says modular core must explicitly select generic JSON/HTML requests.
+`src/protocol.ts` already defaults to `core.generic`; root composition selects `core.datastar`.
+Installing the Datastar plugin alone does not change the core default. The current installed
+`core-only-esm` consumer passes its generic request without a profile option. Source hashes and that
+package result are retained in `release-guide-plan/migration-default-finding.json`.
+
+Reopen AC-01 and AC-02 before correcting these guides. Document forced quality commands in both
+manual examples, explain the existing combined candidate behavior, and state the root and modular
+defaults with the explicit Datastar selection option. Runtime behavior and release validation stay
+as implemented. Preserve the historical 1.0 evidence below. AC-14 is pending because prerequisites
+0035 and 0039 are in Test; AC-16 requires fresh final closure evidence after all corrections. AC-13
+continues to await the separately authorized private-reporting correction.
+
+Planned files are `RELEASING.md`, `MIGRATING_TO_1.md`, `docs/COMPATIBILITY.md`, this ticket,
+`docs/tickets/0033-audit-full-library-program.md`, and `docs/tickets/ROADMAP.md`. Validate this Plan
+first. Review the edited instructions against the actual candidate, selection, profile and
+installed-consumer code, then run the existing release-candidate and modular-entrypoint tests, fast
+checks, complete delivery and exact phase validation. Refresh the affected public-claim review with
+new source hashes while retaining its previous observations. The final candidate and actual manual
+accessibility evidence remain separate required work. Mutation testing stays deferred.
+
 ### Scope
 
 - Freeze the 1.0 public surface and publish compatibility, browser, Node, jQuery, document topology,
@@ -135,11 +166,11 @@ remain independently required by the full program audit.
 
 ### Acceptance criteria
 
-- [x] [AC-01] Compatibility, environment/document, plugin, expression/CSP, testing,
+- [ ] [AC-01] Compatibility, environment/document, plugin, expression/CSP, testing,
       interoperability, deprecation, migration, security, support, and release policies are public,
       mutually consistent, versioned where required, and linked to executable 1.0 evidence. No
       preview, roadmap, or planned wording remains on a stable exported surface.
-- [x] [AC-02] The 0.1-to-1.0 upgrade guide covers every public addition, behavior/default change,
+- [ ] [AC-02] The 0.1-to-1.0 upgrade guide covers every public addition, behavior/default change,
       deprecation/removal, package subpath, naming convention, CSP incompatibility/migration,
       bridge, and jQuery UI/Mobile path. Each breaking or intentionally unchanged baseline item maps
       to a test and changelog entry.
@@ -190,7 +221,7 @@ remain independently required by the full program audit.
       generated-artifact scans, package scripts/exports/files, licenses/notices, CSP claims, server
       demo boundaries, and documented vulnerability reporting. Findings are fixed, explicitly
       accepted through policy, or block the candidate; credentials and private paths are redacted.
-- [x] [AC-14] Every criterion in tickets 0001–0016 and 0034–0050 has current Pass or valid terminal
+- [ ] [AC-14] Every criterion in tickets 0001–0016 and 0034–0050 has current Pass or valid terminal
       Approved-Disposition evidence, and every prerequisite ticket is `done` or `declined`. Ticket
       0048's removal decision supersedes mutation work; no blocked, planned, active, stale,
       duplicate, or unmapped 1.0 requirement remains.
@@ -199,7 +230,7 @@ remain independently required by the full program audit.
       npm dist-tag, read-only verification commands, rollback/deprecation response, and separately
       approval-gated write commands. Preparing or completing this ticket does not tag, publish,
       push, announce, or sign.
-- [x] [AC-16] Final `npm run quality:full-audit`, `npm run check`, clean installed-candidate matrix,
+- [ ] [AC-16] Final `npm run quality:full-audit`, `npm run check`, clean installed-candidate matrix,
       ticket Test/Document validation, and `git diff --check` pass against the unchanged closure
       tree without mutation testing. No documentation, test, generated, or package change follows
       the final candidate fingerprint.
@@ -435,6 +466,11 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 
 ### Design changes
 
+- The 2026-09-06 correction adds forced quality commands to the manual release and compatibility
+  examples, matching the existing combined candidate command. The migration guide now states the
+  generic modular default and explicit Datastar selection. The accompanying 0033 and ROADMAP updates
+  record the current audit and unresolved closure work. No runtime file changes.
+
 - The prerequisite and acceptance audit extends through ticket 0050 because its public agent corpus
   and optional WebMCP surface shipped after this ticket was drafted. Omitting a current public
   surface from the 1.0 audit would make the candidate incomplete. The prepare, prove, and handoff
@@ -454,6 +490,17 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
   gates; ordinary developer and CI runs keep their existing changed-path selection.
 
 ## Test
+
+The 2026-09-06 guide correction passes Plan validation after restoring the required `Scope` heading.
+The existing release-candidate and modular-entrypoint suites pass all thirteen tests
+(`release-guide-plan/focused.log`). Fast run `2026-09-06T21-58-11-294Z-89666` passes its five
+selected gates and all 1,567 unit tests. The unchanged workflow self-test is explicitly skipped.
+Actual Code validation passes against that exact report before this ledger update. Complete delivery
+and Test validation follow the finalized six-file documentation batch.
+
+The three changed public-source reviews have fresh hashes and six explicit revised interpretations.
+Their previous records remain in `claim-review/before-guide-correction-5d74334/`. Neither the
+semantic review nor the earlier development navigation result is final candidate acceptance.
 
 | Command                                                                                                 | Result | Evidence                                                                                                                                                         |
 | ------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -504,6 +551,14 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 
 ### Inspection ledger
 
+The 2026-09-06 Plan check initially failed because the required `Scope` heading had been renamed.
+Restoring the exact heading made Plan validation pass before the public guide edits.
+
+The release selection and modular-default findings are recorded in the reopening extension above.
+Their guide corrections now match the existing implementation and pass thirteen focused tests and
+the fast gate. Complete delivery follows this ledger update. Historical execution records below keep
+their original scope and source.
+
 | Finding                                                                                                   | Resolution                                                                                                                  |
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | The tool-range comparison parsed `>=24` as no version and could fail open.                                | Parse range prefixes and inject Node 23/npm 10 in sabotage tests; both now stop preflight.                                  |
@@ -543,8 +598,8 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 
 | Criterion | Result  | Evidence                                                                                                                                                                                                                                                                                        |
 | --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass    | `quality/release-contract.json`, its strict schema, the public policy documents, and installed package/site checks freeze one consistent stable surface; static documentation checks reject stale preview and planned claims.                                                                   |
-| AC-02     | Pass    | `MIGRATING_TO_1.md` and `CHANGELOG.md` map the 0.1 baseline through the previews to every stable entry, default, lifecycle rule, bridge, CSP difference, naming convention, and jQuery UI/Mobile path covered by tests.                                                                         |
+| AC-01     | Pending | Both manual release guides now force every gate, matching the candidate implementation. Focused and fast checks pass. Complete delivery and current policy proof, including the private-reporting route under AC-13, remain required.                                                           |
+| AC-02     | Pending | The guide now states the generic modular default and explicit Datastar selection. Current source, retained installed-consumer evidence and thirteen focused tests support the correction. Complete delivery and final migration evidence, including prerequisite 0039, remain required.         |
 | AC-03     | Pass    | Package and lockfile are 1.0.0; runtime, CLI, registry, declarations, maps, browser, website, corpus, archive, and report checks derive that identity from `package.json`, while plugin API and CSP grammar retain their independent versions.                                                  |
 | AC-04     | Pass    | Release preflight tests reject dirty, untracked, ignored-production, shallow, wrong-branch, tagged, lock-drift, Node 23, and npm 10 inputs. The real dirty worktree refusal wrote only a redacted failure receipt and no artifact.                                                              |
 | AC-05     | Pass    | Release quality produces and compares two locked fresh-clone tarballs by SHA-256, SHA-512, npm integrity, shasum, metadata, path, mode, size, declarations, maps, notices, archive, and behavior; cleanup tests cover success, failure, timeout, and signals.                                   |
@@ -556,14 +611,17 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 | AC-11     | Pass    | Site structure, self-host, package, deployment, server, browser, accessibility, and agent-corpus checks cover every current API/policy route, approved names, the reference layout, and the explicit not-yet-published state.                                                                   |
 | AC-12     | Pass    | `release:candidate` forces every configured gate, then binds the clean committed tree to matching full-audit and delivery reports, exact fingerprints, package/release/static/browser subordinate hashes, and the installed tarball; missing, skipped, reordered, or stale reports fail closed. |
 | AC-13     | Pending | The documented private-reporting route is disabled in live GitHub repository settings. Actual API reads are retained. Enabling that single setting and verifying the route await explicit governance authorization; existing static/package/security checks do not prove service availability.  |
-| AC-14     | Pass    | The strict prerequisite audit reads all 33 tickets from 0001–0016 and 0034–0050, requires terminal status and one valid result per criterion, accepts only explicit dispositions, and verifies ticket 0048 supersedes mutation work.                                                            |
+| AC-14     | Pending | Prerequisites 0035 and 0039 are in Test and still require actual screen-reader observations. The prerequisite validator remains strict; its implementation alone does not prove current terminal closure.                                                                                       |
 | AC-15     | Pass    | The immutable candidate schema and handoff bind commit/tree, package filename and digests, subordinate receipts, notes, tag/dist-tag expectations, read-only checks, rollback response, and separately labeled approval-required commands; tests prove no write is executed.                    |
-| AC-16     | Pass    | The finalized committed ticket is the input to the all-gates `quality:full-audit`, `check`, Document validation, whitespace checks, and clean `release:candidate` run. Its out-of-tree receipt proves the final fingerprint and exact installed-candidate matrix without mutation testing.      |
+| AC-16     | Pending | Fresh final full-audit, delivery, installed candidate and Test/Document evidence remain required after the reopened corrections and prerequisite closure. Historical receipts retain their original source identity.                                                                            |
 
 ### Completion audit
 
-The 2026-09-06 reopening supersedes the historical closure. AC-13 has a verified reporting-route gap
-and remains open pending the separately authorized repository-setting correction.
+The 2026-09-06 reopening supersedes the historical closure. The release-command and modular-default
+corrections pass focused and fast checks. Complete delivery and final policy/migration evidence
+remain pending under AC-01 and AC-02. AC-13 has a verified reporting-route gap and awaits the
+separately authorized repository-setting correction. AC-14 awaits prerequisite closure, and AC-16
+awaits the complete final candidate and phase evidence after those corrections.
 
 ### Historical completion audit
 

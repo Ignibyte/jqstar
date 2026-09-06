@@ -43,14 +43,16 @@ The final sequence is:
 
 ```sh
 npm run release:prepare
-npm run quality:full-audit
-npm run check
+JQS_QUALITY_FORCE_ALL=1 npm run quality:full-audit
+JQS_QUALITY_FORCE_ALL=1 npm run check
 npm run release:prove -- --full-audit <full-report> --delivery <delivery-report>
 npm run release:handoff
 ```
 
-`npm run release:candidate` performs the same stages in order after the ticket and release documents
-have been finalized and committed.
+Set `JQS_QUALITY_FORCE_ALL=1` for both quality commands so every configured gate executes on the
+clean candidate. Ordinary delivery can skip unchanged gates; `release:prove` requires every gate to
+pass. `npm run release:candidate` already sets this variable and performs the same stages in order
+after the ticket and release documents have been finalized and committed.
 
 ## Read-only verification
 
