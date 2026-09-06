@@ -1,7 +1,7 @@
 ---
 id: 0035
 title: Publish and prove the CSP runtime
-status: planned
+status: testing
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -310,6 +310,77 @@ automated keyboard/axe results cannot satisfy them. Record the focused before/af
 proof, fast/full quality reports and all phase validators. No publication or mutation execution is
 included.
 
+### Installed proof design refinement, 2026-09-06
+
+Ticket 0034 is done at commit `5ee0ada`. A new isolated diagnostic pins the current installed
+package `c309e20b418b89417d9bfbea598ada1709bdc083e063a3408d50dea761e9f5a3` before copying its
+JavaScript assets. The proposed fixture observes computed output `2 → 4 → 16`, creates an explicit
+behavior root with trusted module callbacks, enhances twice, and proves one keyboard activation,
+independent state during SDK patches, survival after the declarative root is destroyed, and final
+kernel cleanup. A bounded jQuery error counter attaches before installation. Each browser also runs
+a controlled pre-install event and proves the listener and refusal check detect it.
+
+The three accessibility profiles run the same application sequence in Chromium, Firefox, and WebKit.
+Native GET destinations return 200 with the original policy and an escaped, bounded form receipt.
+The fixture supplies named outputs and a native Run server update and cleanup button so manual
+testers can exercise the same behavior without console commands. Four CSP steps are added to each
+assistive-technology charter; validator and omission controls require every step. No manual result
+is claimed by the automated diagnostic.
+
+Planned concrete paths additionally include `scripts/quality/csp-accessibility.mjs`,
+`e2e/fixtures/csp-proof/index.html`, `test/package-release-hardening.test.mjs`,
+`scripts/program-audit/manual-evidence.mjs`, `test/program-audit.test.mjs`, and
+`docs/accessibility/RELEASE_CHARTERS.md`. Shared package-report validation requires the exact three
+profiles, computed/behavior observations, native response statuses and receipt, and the pre-install
+error detector. Semantic checks reject contradictory layout or disposal observations. Preserve the
+existing 90-second per-browser bound and all package ceilings. Refresh CSP expression locations and
+the four digest pins only if the maintained inventory generator reports a location change.
+
+The retained diagnostic includes all nine profile passes, all three native link/form pairs, five
+real-browser failure controls, and thirty schema/semantic report refusal controls. They guide Code;
+the maintained implementation must pass its own focused, fast and complete delivery checks.
+
+Current activation revalidates `jquery-star@1.1.0` at commit `5ee0ada`, the corpus digest
+`64ad4716f84e6180d7873c3f658f8d42eed32c6fbc6b8524823e2e850f573345`, and the unchanged installed CSP
+graph and 156,000/45,000/39,000 raw/gzip/Brotli ceilings. Delivery `2026-09-06T16-35-46-844Z-42041`
+proves the same `c309e20b…` artifact as the diagnostic snapshot, with all selected gates passing.
+Exact browser versions are Chromium 151.0.7922.34, Firefox 153.0 and WebKit 26.5. The implementation
+owner is terminal; the proposed changes strengthen installed proof and native fixture behavior
+without changing the finite engine.
+
+If expression locations move, regenerate `test/fixtures/csp/conformance-map.json` and update
+`src/csp/contract.ts`, `test/csp-entrypoint.test.ts`, `scripts/quality-package.mjs`, and
+`etc/jquery-star-csp.api.md` together after reviewing the inventory difference. Preserve the API
+report's existing line endings. Record the actual final digest before fast verification.
+
+### Manual proof hosting design, 2026-09-06
+
+The maintained installed proof passes all thirteen package checks and fast run
+`2026-09-06T16-58-29-500Z-94819` passes all six gates. Before complete delivery, provide a runnable
+manual fixture instead of requiring testers to recreate the package gate's temporary server.
+
+Extract the existing strict-policy routes and snapshot asset loading into
+`scripts/quality/csp-proof-server.mjs`, shared by package quality and a new
+`scripts/serve-csp-proof.mjs` command. Preserve the official SDK, native receipts, report bounds,
+redirect/error semantics and response policy. Snapshot every served asset before listening so a
+manual session retains one artifact and fixture identity.
+
+`npm run proof:csp` must first validate the current exact-tree delivery receipt and its complete
+passing package report. Repack the already built candidate without build/install scripts, compare
+its byte length and SHA-256 to that installed browser proof, and extract only that verified tarball
+inside an owned temporary directory. Revalidate the receipt after preparation. Bind to loopback by
+default; an explicit IP/port option supports a tester's chosen local setup. Retain the tarball,
+receipt, package report and asset-hash session manifest under the ignored Git evidence directory.
+Keep the server open until the tester stops it, then close connections and clean its temporary
+workspace. The session records no manual pass automatically.
+
+Add focused HTTP tests for immutable assets, real native endpoints and receipts, SDK/error/redirect
+and bounded report handling, plus artifact-mismatch and missing-receipt startup controls in
+`test/csp-proof-server.test.mjs`. Update `package.json`, `docs/DEVELOPMENT.md`, `docs/TESTING.md`,
+and `docs/accessibility/RELEASE_CHARTERS.md` with the command and actual manual boundary. Re-run
+installed package proof after the shared-handler extraction, followed by fast and complete delivery.
+This design adds no publication, mutation tooling, external service or quality bypass.
+
 ### Planned files
 
 - CSP public entrypoint, explicit installer/factory, types, export maps, build entries, API
@@ -321,9 +392,66 @@ included.
 - Public CSP expressions/install/migration/security/troubleshooting docs, website pages, project
   architecture/testing/security docs, and this ticket.
 
+### Canonical validation correction, 2026-09-06
+
+Delivery `2026-09-06T17-09-48-357Z-25355` passed twelve gates, including all 1,341 unit tests, 487
+browser cases, thirteen package checks and seven release checks. Its final detector gate correctly
+refused the stale fourteen-test expectation after the CSP profile hardening added a fifteenth
+passing test. Preserve the failing report and update only that exact expected count.
+
+The HTML census also classifies the CSP proof fixture for HTML validation, but the canonical
+validator and `lint:html` command select only website and registry files. The fixture itself passes
+direct validation. Add `e2e/**/*.html` to both invocations and prove the actual configured validator
+rejects malformed void-element markup and accepts its correction at the CSP fixture path. Verify
+that every current census HTML path is selected so this omission cannot silently recur.
+
+Additional planned files: `scripts/quality-0044-self-test.mjs`, `scripts/quality/run-static.mjs`,
+`package.json`, `test/quality-standards.test.mjs`, `docs/QUALITY_PROGRAM.md`, and this ticket. Run
+focused quality controls and HTML validation, then fast and complete delivery before testing the
+receipt-dependent manual command. No assertion, timeout, browser roster or budget is reduced.
+
 ## Code
 
 ### Changed-file ledger
+
+The canonical validation correction passes Plan validation before Code:
+
+| File                                                | Purpose                                                                                                               |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `scripts/quality-0044-self-test.mjs`                | Require the exact fifteen-test hardening roster after adding CSP profile controls.                                    |
+| `scripts/quality/run-static.mjs` and `package.json` | Include browser-fixture HTML in canonical and standalone HTML validation.                                             |
+| `test/quality-standards.test.mjs`                   | Check every current HTML path is selected and prove malformed/corrected CSP markup with the filesystem configuration. |
+| `docs/QUALITY_PROGRAM.md`                           | State the expanded authored HTML scope.                                                                               |
+
+The manual-hosting refinement passes Plan validation before these additional Code changes:
+
+| File                                     | Purpose                                                                                        |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `scripts/quality/csp-proof-server.mjs`   | Share strict-policy routes and immutable served assets between automated and manual consumers. |
+| `scripts/serve-csp-proof.mjs`            | Require a current receipt and exact package bytes before starting a retained manual session.   |
+| `test/csp-proof-server.test.mjs`         | Verify HTTP semantics, snapshot behavior, artifact mismatch and missing-receipt refusal.       |
+| `package.json`                           | Expose the explicit manual proof command.                                                      |
+| `docs/DEVELOPMENT.md`                    | Document the command and verified-checkout prerequisite.                                       |
+| `docs/TESTING.md`                        | Explain the exact-artifact session and required real tester records.                           |
+| `docs/accessibility/RELEASE_CHARTERS.md` | Give both testers a concrete startup and evidence path.                                        |
+
+The 2026-09-06 activation Plan passes before Code. The installed proof correction changes the
+following files; the original implementation ledger below remains historical context.
+
+| File                                        | Purpose                                                                                                                          |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/fixtures/csp-proof/app.js`             | Capture early runtime errors and directly observe computed values, independent behavior ownership and cleanup.                   |
+| `e2e/fixtures/csp-proof/index.html`         | Provide a separate behavior root, named outputs and a native manual proof control.                                               |
+| `e2e/fixtures/csp-proof/style.css`          | Keep native controls and text within their container at enlarged text and zoom.                                                  |
+| `scripts/quality/csp-accessibility.mjs`     | Execute every accessibility profile and native navigation, validate observations, and prove the early listener detects an error. |
+| `scripts/quality-package.mjs`               | Integrate the profile proof, actual native endpoints and complete observations into installed package evidence.                  |
+| `schema/package-report.schema.json`         | Require a bounded, closed profile/native/ownership report with the pre-install error detector.                                   |
+| `test/package-release-hardening.test.mjs`   | Exercise current positive report shapes and thirty negative controls.                                                            |
+| `scripts/program-audit/manual-evidence.mjs` | Require four CSP steps in each real assistive-technology record.                                                                 |
+| `test/program-audit.test.mjs`               | Reject omission of any CSP manual step for either supported pair.                                                                |
+| `docs/accessibility/RELEASE_CHARTERS.md`    | Describe the exact native-control screen-reader sequence.                                                                        |
+| `docs/TESTING.md`                           | Record automated coverage and the separate manual evidence requirement.                                                          |
+| `docs/CSP_EXPRESSIONS.md`                   | Explain installed strict-policy and accessibility verification.                                                                  |
 
 | File                                                                                          | Purpose                                                                                                  |
 | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -372,6 +500,52 @@ included.
   `CSP_CONTRACT_DIGEST` and exact-package browser identity use the new aggregate.
 
 ## Test
+
+The canonical validation correction passes 32 focused quality-standard and package-hardening tests.
+Fast run `2026-09-06T17-30-31-504Z-89086` passes all six gates and all 1,343 unit tests. The Code
+validator passes against that exact report before this transition to testing. The actual HTML
+command now includes the CSP fixture and passes; focused ESLint and whitespace checks pass. The new
+controls require every current HTML file to match both command rosters and exercise
+malformed/corrected markup through the same filesystem configuration as the CLI. The first isolated
+API probe used the library's default loader rather than the filesystem loader and rejected the
+existing fixture; the corrected probe and maintained tests use the actual project configuration.
+
+Delivery `2026-09-06T17-09-48-357Z-25355` fails only `package-release-contract-hardening` in the
+detector self-test: all fifteen cases pass, while its expected output still requires fourteen. The
+other twelve gates pass on the same 831-file fingerprint. No delivery receipt is issued, and the
+actual manual command startup remains unverified until the corrected complete gate passes. The
+failing report and detector output remain under that immutable run directory.
+
+The shared manual/automated server refinement passes 28 focused cases covering HTTP snapshot and
+native semantics, artifact identity and missing-receipt startup refusal, package report hardening
+and manual charter validation. Focused ESLint and whitespace checks pass. The CSP inventory digest
+remains unchanged by the server extraction. The shared implementation passes all thirteen canonical
+installed-package checks in `0035-manual-server-plan/package/package-report.json` (run
+`0035-shared-csp-server`). All six fast gates pass in `2026-09-06T17-07-18-583Z-12368`; the Code
+validator passed against that exact report before this transition to testing. Full delivery
+verification and real screen-reader records remain required.
+
+The maintained 2026-09-06 correction passes 31 focused cases across package-report hardening,
+manual-audit validation, the CSP contract and the CSP entrypoint. The report rejects thirty missing
+or contradictory CSP observations, and both manual rosters reject omission of any of the four new
+CSP steps. No real assistive-technology result is claimed.
+
+The inventory retains 34 accepted, 57 denied, 46 adversarial and 33 context cases, with 240 public
+sources across 421 occurrences. Relative to commit `5ee0ada`, only fifty location line values
+change: forty-six restored README locations and four fixture locations. All other fields and the
+five other manifests are unchanged. The aggregate digest is
+`40d98004552885f9008f8a8c25435271a5779f30f006f5f8f5e598051d81c855`; all four pins are updated.
+Strict types, focused ESLint, CSS validation and HTML validation pass. The first HTML command used
+an obsolete executable path and failed before analysis. The corrected binary found that the native
+input lacked an explicit type; it now states `type="text"`, preserving the existing browser default.
+All logs are retained. The maintained installed-package proof passes all thirteen checks under
+`0035-installed-proof-plan/maintained-package/`. Its exact tarball passes ESM/CommonJS corpus and
+type consumers, all three browser engines, all nine accessibility profiles, three native navigation
+and submitted-receipt pairs, and three pre-install error-listener controls. Each application reports
+computed `2 → 4 → 16`, zero runtime errors and 57 resources released with none remaining. Package,
+module graph and compression budgets pass without changes. The later shared-server package and fast
+reports above supersede this implementation proof. Complete delivery verification and real manual
+evidence remain required before this ticket can close.
 
 | Command                                                                                                                                                                                   | Result | Evidence                                                                                                                                                                                                                                                               |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

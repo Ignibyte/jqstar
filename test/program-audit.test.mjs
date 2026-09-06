@@ -180,6 +180,20 @@ function manual(pair = "nvda-windows") {
 }
 
 describe("manual evidence validation", () => {
+  it("requires all four CSP charter steps for each real assistive-technology pair", () => {
+    for (const pair of Object.keys(manualPairs)) {
+      assert.deepEqual(
+        manualPairs[pair].steps.filter((step) => step.startsWith("csp-")),
+        ["csp-1", "csp-2", "csp-3", "csp-4"],
+      );
+      for (const id of ["csp-1", "csp-2", "csp-3", "csp-4"]) {
+        const record = manual(pair);
+        record.steps = record.steps.filter((step) => step.id !== id);
+        assert.throws(() => validateManualRecord(record, identity), /charter is incomplete/u);
+      }
+    }
+  });
+
   it("requires both defined charter shapes with every step and exact candidate identity", () => {
     for (const pair of Object.keys(manualPairs)) {
       const record = manual(pair);

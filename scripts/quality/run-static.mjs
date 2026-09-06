@@ -60,7 +60,13 @@ const gates = [
     "test/**/*.css",
     "e2e/**/*.css",
   ]),
-  gate("html", npx, ["--no-install", "html-validate", "example/**/*.html", "registry/**/*.html"]),
+  gate("html", npx, [
+    "--no-install",
+    "html-validate",
+    "example/**/*.html",
+    "registry/**/*.html",
+    "e2e/**/*.html",
+  ]),
   gate("dependency-architecture", npx, [
     "--no-install",
     "depcruise",

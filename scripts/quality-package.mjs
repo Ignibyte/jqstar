@@ -1,3 +1,10 @@
+import {
+  assertCSPApplicationResult,
+  proveCSPAccessibility,
+  proveCSPInitialKeyboard,
+  proveCSPNative,
+  proveCSPRuntimeErrorDetection,
+} from "./quality/csp-accessibility.mjs";
 import { verifyMobileReferenceUMD } from "./quality/mobile-reference.mjs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -17,7 +24,7 @@ import { pathToFileURL } from "node:url";
 import { basename, dirname, join, resolve } from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import { chromium, firefox, webkit } from "@playwright/test";
-import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/web";
+import { cspPolicy, createCSPProofHandler } from "./quality/csp-proof-server.mjs";
 import {
   assertExactPackageDocumentationPaths,
   assertExactCheckSet,
@@ -93,17 +100,10 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const cspPolicy =
-  "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; report-uri /csp-report";
-
 async function serveBrowserProof(installedPackage, consumer, identity) {
   const files = new Map([
     ["/axe.js", resolve("node_modules/axe-core/axe.min.js")],
     ["/inspection-conformance.mjs", resolve("test/fixtures/inspection-conformance.mjs")],
-    ["/csp", resolve("e2e/fixtures/csp-proof/index.html")],
-    ["/csp-app.js", resolve("e2e/fixtures/csp-proof/app.js")],
-    ["/csp-bootstrap.js", resolve("e2e/fixtures/csp-proof/bootstrap.js")],
-    ["/csp-proof.css", resolve("e2e/fixtures/csp-proof/style.css")],
     ["/jquery.js", join(consumer, "node_modules/jquery/dist/jquery.js")],
     ["/jquery-module.js", join(consumer, "node_modules/jquery/dist-module/jquery.module.js")],
     ["/jquery-star.js", join(installedPackage, "dist/jquery-star.js")],
@@ -118,7 +118,12 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
       files.set(`/${filename}`, join(installedPackage, "dist", filename));
     }
   }
-  const cspReports = [];
+  const cspProof = await createCSPProofHandler({
+    root,
+    installedPackage,
+    jqueryModule: join(consumer, "node_modules/jquery/dist-module/jquery.module.js"),
+  });
+  const cspReports = cspProof.reports;
   const html = `<!doctype html><section id="app" data-signals="{ count: 1 }"><output id="count" data-text="$count"></output><output id="extension" data-proof.umd:label="proof.umd.upper('ready')" data-proof.module:label="proof.module.upper('ready')"></output></section><button id="proof">Count</button><output id="result"></output>`;
   const server = createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
@@ -128,74 +133,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
       url.pathname === "/jquery-module.js" ||
       files.has(url.pathname);
     if (cspResponse) response.setHeader("Content-Security-Policy", cspPolicy);
-    if (url.pathname === "/csp-report" && request.method === "POST") {
-      const chunks = [];
-      let bytes = 0;
-      for await (const chunk of request) {
-        bytes += chunk.length;
-        if (bytes > 4_096) {
-          response.writeHead(413).end();
-          return;
-        }
-        chunks.push(chunk);
-      }
-      try {
-        const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-        const item = body?.["csp-report"] ?? body;
-        if (cspReports.length < 32 && item && typeof item === "object") {
-          cspReports.push({
-            blockedURI: item["blocked-uri"] === "eval" ? "eval" : "redacted",
-            disposition: item.disposition === "enforce" ? "enforce" : "unknown",
-            effectiveDirective: String(item["effective-directive"] ?? "unknown").slice(0, 80),
-          });
-        }
-      } catch {
-        // Browser report bodies are supplemental and vary by engine.
-      }
-      response.writeHead(204).end();
-      return;
-    }
-    if (url.pathname === "/csp-json") {
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify({ count: 4, serverMessage: "generic" }));
-      return;
-    }
-    if (url.pathname === "/csp-html") {
-      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      response.end('<section id="replace" data-text="$count + \':\' + $serverMessage"></section>');
-      return;
-    }
-    if (url.pathname === "/csp-datastar") {
-      const sdkResponse = ServerSentEventGenerator.stream((stream) => {
-        stream.patchSignals(JSON.stringify({ count: 8, serverMessage: "sdk" }));
-        stream.patchElements("<li data-text=\"'SDK patch'\"></li>", {
-          selector: "#stream",
-          mode: "append",
-        });
-      });
-      for (const [name, value] of sdkResponse.headers) response.setHeader(name, value);
-      response.setHeader("Content-Security-Policy", cspPolicy);
-      response.writeHead(sdkResponse.status);
-      response.end(Buffer.from(await sdkResponse.arrayBuffer()));
-      return;
-    }
-    if (url.pathname === "/csp-redirect") {
-      response.writeHead(302, { Location: "/csp-json" }).end();
-      return;
-    }
-    if (url.pathname === "/csp-error") {
-      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("not found");
-      return;
-    }
-    if (url.pathname === "/csp-slow") {
-      const timer = setTimeout(() => {
-        if (!response.writableEnded) {
-          response.writeHead(204).end();
-        }
-      }, 5_000);
-      request.once("close", () => clearTimeout(timer));
-      return;
-    }
+    if (await cspProof.handle(request, response)) return;
     if (url.pathname === "/generic-profile" || url.pathname === "/datastar-profile") {
       const accept = request.headers.accept ?? "";
       const datastar = request.headers["datastar-request"];
@@ -510,18 +448,9 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
           (await page.locator("html").getAttribute("data-jqstar-csp-ready")) === "true",
           `${name} CSP application did not finish booting.`,
         );
-        await page.locator("#increment").focus();
-        await page.keyboard.press("Enter");
-        await page.waitForFunction(() => document.querySelector("#count")?.textContent === "2");
-        assert(
-          (await page.locator("#increment").getAttribute("data-fired")) === "yes",
-          `${name} CSP jQuery method did not run from keyboard activation.`,
-        );
-        assert(
-          (await page.evaluate(() => document.activeElement?.id)) === "increment",
-          `${name} CSP interaction lost focus.`,
-        );
+        await proveCSPInitialKeyboard(page, name);
         const cspResult = await page.evaluate(() => window.__finishJQStarCSPProof());
+        assertCSPApplicationResult(cspResult);
         assert(cspResult.grammarVersion === identity.grammarVersion, `${name} grammar changed.`);
         assert(cspResult.corpusDigest === identity.corpusDigest, `${name} corpus digest changed.`);
         assert(
@@ -609,42 +538,37 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
           )}.`,
         );
 
-        const noJavaScript = await browser.newContext({ javaScriptEnabled: false });
-        try {
-          const nativePage = await noJavaScript.newPage();
-          const nativeResponse = await nativePage.goto(`${origin}/csp`);
-          assert(
-            nativeResponse?.headers()["content-security-policy"] === cspPolicy,
-            `${name} no-JavaScript document policy differs.`,
-          );
-          assert(
-            (await nativePage.locator("#native-link").getAttribute("href")) === "/csp-destination",
-            `${name} no-JavaScript link is unavailable.`,
-          );
-          assert(
-            await nativePage.locator("#native-name").isEditable(),
-            `${name} native form failed.`,
-          );
-          assert(
-            (await nativePage.locator("#result").textContent()) === "Running",
-            `${name} ran JS.`,
-          );
-        } finally {
-          await noJavaScript.close();
-        }
+        const basePolicyReports = cspReports.length;
+        const noJavaScript = await proveCSPNative(browser, origin, cspPolicy);
+        const accessibilityProfiles = await proveCSPAccessibility(
+          browser,
+          origin,
+          cspPolicy,
+          cspReports,
+        );
+        const runtimeErrorDetector = await proveCSPRuntimeErrorDetection(
+          browser,
+          origin,
+          cspPolicy,
+        );
         cspEngines.push({
           name,
           version: browser.version(),
           status: "pass",
           headerResponses: cspResponses.length,
           policyEvents: cspResult.events.length,
-          policyReports: cspReports.length,
+          policyReports: basePolicyReports,
           expectedCanaryConsoleMessages: cspConsoleMessages.length,
           unexpectedPolicyEvents: unexpectedEvents.length,
           unexpectedPolicyReports: unexpectedReports.length,
           operationCount: cspResult.operations.length,
           disposal: cspResult.disposal,
-          noJavaScript: "native-link-and-form",
+          noJavaScript,
+          runtimeErrors: cspResult.runtimeErrors,
+          computed: cspResult.computed,
+          behavior: cspResult.behavior,
+          accessibilityProfiles,
+          runtimeErrorDetector,
         });
         engines.push({ name, status: "pass", version: browser.version() });
       } catch (error) {
@@ -2274,7 +2198,7 @@ QUnit.start();
       await readFile(join(installedPackage, "package.json"), "utf8"),
     );
     return serveBrowserProof(installedPackage, consumer, {
-      corpusDigest: "b8838c9ca712890c296a97679f49fd7d33c39e53a362ac59952d38e556ed1ce6",
+      corpusDigest: "40d98004552885f9008f8a8c25435271a5779f30f006f5f8f5e598051d81c855",
       grammarVersion: "jqstar-csp-expression/1",
       graph,
       packageVersion: installedManifest.version,

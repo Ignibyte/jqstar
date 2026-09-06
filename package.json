@@ -221,6 +221,7 @@
     "docs/UPGRADES.md"
   ],
   "scripts": {
+    "proof:csp": "node scripts/serve-csp-proof.mjs",
     "build": "npm run clean && npm run build:js && npm run build:css",
     "build:agent-content": "node scripts/build-agent-content.mjs",
     "build:css": "tailwindcss -i ./src/ui/theme.css -o ./dist/jquery-star-ui.css --minify",
@@ -245,7 +246,7 @@
     "quality:receipt": "node scripts/quality/verify-receipt.mjs",
     "quality:runner:self-test": "node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs",
     "lint:css": "stylelint \"src/**/*.css\" \"example/**/*.css\" \"test/**/*.css\" \"e2e/**/*.css\"",
-    "lint:html": "html-validate example/**/*.html registry/**/*.html",
+    "lint:html": "html-validate example/**/*.html registry/**/*.html e2e/**/*.html",
     "lint:markdown": "markdownlint-cli2 **/*.md",
     "lint:spelling": "cspell README.md SECURITY.md AGENTS.md docs/**/*.md",
     "prepack": "npm run build:self-hosted",

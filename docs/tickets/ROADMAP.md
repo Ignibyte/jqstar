@@ -23,10 +23,10 @@ delivery order and when parallel work can start.
 | [0007](0007-inject-expression-engines.md)           | Per-kernel expression-engine contract with unchanged trusted JavaScript behavior.                            | 0005, 0006      |
 | [0038](0038-define-jquery-ecosystem-stewardship.md) | Integrate Core/QUnit/Migrate, migrate from UI/Mobile, ignore standalone Sizzle, and keep jQStar independent. | None            |
 
-Current closure state: the quality, ownership, website, agent, extension, modular, CSP, bridge, and
-jQuery migration prerequisites through ticket 0050 are complete. Ticket 0048 removed mutation
-testing from ticket 0043's active contract. Ticket 0017 now owns the clean 1.0 candidate audit and
-non-publishing handoff.
+Current audit follow-up: the CSP implementation correction (0034) and quality review (0052) are
+complete, as is the README positioning correction (0045). The installed CSP proof (0035) remains
+open before the final program audit. Ticket 0048 removed mutation testing from ticket 0043's active
+contract. Ticket 0017 owns the clean 1.0 candidate audit and non-publishing handoff.
 
 Release gate: Plan → Code → Test → Document is evidence-gated. Delivery is bound to the exact tested
 worktree. Static analysis, coverage, security, browser, accessibility, installed-package, and
@@ -150,7 +150,8 @@ The unpublished candidate remains 1.1.0; the release headings describe the origi
 0030 adds explicit inspection to that candidate. Ticket 0031 is declined after two installed
 application investigations; public inspection and browser tools remain the supported workflow.
 Package diagnostics (0032) and the quality review (0052) are complete. The full program audit (0033)
-remains the final prerequisite before the separately deferred mutation audit.
+waits for the remaining 0035 correction and its complete evidence review before the separately
+deferred mutation audit.
 
 ## Final quality review and deferred mutation audit
 

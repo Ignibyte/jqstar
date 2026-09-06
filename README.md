@@ -9,11 +9,23 @@ With jQStar, you can:
 - Keep routes, validation, permissions, and data on the server.
 - Keep HTML readable and useful before JavaScript runs.
 - Add reactivity and rich components where they are needed.
-- Update parts of the page through HTML, JSON, or Datastar streams.
-- Choose ordinary JSON/HTML requests or Datastar compatibility per backend action.
+- Update parts of the page through HTML, JSON, or Datastar streams, choosing ordinary requests or
+  Datastar compatibility per backend action.
 - Avoid JSX, hydration, virtual DOM ownership, and client-side route duplication.
 - Continue using existing backend templates and jQuery plugins.
 - Adopt the framework incrementally instead of rewriting the application.
+
+## What we are building for
+
+1. An excellent server-rendered development experience.
+2. Predictable enhancement and cleanup after HTML replacement.
+3. Backend-agnostic examples for PHP, Rails, Django, Node, and similar stacks.
+4. Strong no-build and modular-package support.
+5. Accessible components that solve real application workflows.
+6. Optional navigation and shared state without making them mandatory.
+7. Clear migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.
+
+These priorities guide development. Shipped capabilities are documented below.
 
 ## Reactive HTML. Actual jQuery
 

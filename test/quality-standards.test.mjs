@@ -1,9 +1,12 @@
 // @vitest-environment node
 import { readFile } from "node:fs/promises";
+import { matchesGlob } from "node:path";
 import { ESLint } from "eslint";
+import { FileSystemConfigLoader, HtmlValidate } from "html-validate";
 import stylelint from "stylelint";
 import { describe, expect, it } from "vitest";
 import { configuredStaticGates } from "../scripts/quality/run-static.mjs";
+import { qualityPaths } from "../scripts/quality/static-lib.mjs";
 import {
   countedRules,
   compareBoundaryCounts,
@@ -15,6 +18,42 @@ const lint = new ESLint();
 const enabled = (rule) => (Array.isArray(rule) ? rule[0] === 2 : rule === 2);
 
 describe("effective quality controls", () => {
+  it("selects every authored HTML file in canonical and standalone validation", async () => {
+    const paths = (await qualityPaths()).filter((path) => path.endsWith(".html"));
+    expect(paths).toContain("e2e/fixtures/csp-proof/index.html");
+    const gate = configuredStaticGates().find(({ id }) => id === "html");
+    expect(gate.enforced).toBe(true);
+    expect(gate.modes).toEqual(["fast", "delivery", "full-audit"]);
+    const manifest = JSON.parse(await readFile("package.json", "utf8"));
+    const standalone = manifest.scripts["lint:html"].split(" ").slice(1);
+    for (const patterns of [gate.args.slice(2), standalone])
+      for (const path of paths)
+        expect(
+          patterns.some((pattern) => matchesGlob(path, pattern)),
+          path,
+        ).toBe(true);
+  });
+
+  it("rejects malformed CSP fixture HTML and accepts its correction with the actual configuration", async () => {
+    const path = "e2e/fixtures/csp-proof/index.html";
+    const validator = new HtmlValidate(new FileSystemConfigLoader());
+    const prefix =
+      '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Probe</title></head><body>';
+    const bad = await validator.validateString(
+      `${prefix}<input type="text"></input></body></html>`,
+      path,
+    );
+    expect(bad.valid).toBe(false);
+    expect(
+      bad.results
+        .flatMap(({ messages }) => messages)
+        .some(({ ruleId }) => ruleId === "void-content"),
+    ).toBe(true);
+    const good = await validator.validateString(`${prefix}<input type="text"></body></html>`, path);
+    expect(good.valid).toBe(true);
+    expect((await validator.validateString(await readFile(path, "utf8"), path)).valid).toBe(true);
+  });
+
   it("enforces counted typed rules by default and rejects growing or stale allowances", async () => {
     const config = await lint.calculateConfigForFile("src/quality-contract-new-file.ts");
     for (const rule of countedRules) expect(enabled(config.rules[rule]), rule).toBe(true);

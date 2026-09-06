@@ -1,15 +1,18 @@
 # Program audit evidence
 
 Ticket [0033](tickets/0033-audit-full-library-program.md) is in progress. No complete program-audit
-verdict exists yet. Tickets 0034 and 0035 are reopened for a reproduced declarative computed failure
-and gaps in the installed CSP accessibility/native proof. Ticket 0053 remains a separately
-authorized future mutation audit.
+verdict exists yet. The declarative computed correction (0034) and quality review (0052) are
+complete. Ticket 0045 now closes the restored README priorities and direct narrow-home browser
+observations. Ticket 0035 is verifying the expanded installed CSP accessibility/native proof and its
+canonical HTML and detector checks. Ticket 0053 remains a deferred mutation audit that requires
+later execution authorization.
 
 Run `node scripts/program-audit/inventory.mjs` to create a review inventory under
-`.git/jqstar/program-audit/inventories/<digest>/`. The command records all 53 tickets, validates the
-51 terminal prerequisites, and derives their criteria plus the expansion plan's criteria. It also
-captures authored Markdown and HTML units from the exact public, project-brain, website, and API
-source list in `quality/program-audit/inputs.json`. New or missing input files require explicit
+`.git/jqstar/program-audit/inventories/<digest>/`. The command records all 53 tickets, requires all
+51 prerequisite tickets to be terminal, and derives their criteria plus the expansion plan's
+criteria. It refuses unfinished prerequisites rather than producing a new acceptance inventory. It
+also captures authored Markdown and HTML units from the exact public, project-brain, website, and
+API source list in `quality/program-audit/inputs.json`. New or missing input files require explicit
 review of that list.
 
 The inventory is a planning artifact. Every extracted claim candidate starts unreviewed. Prose,

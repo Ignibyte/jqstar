@@ -217,6 +217,26 @@ UI, generic JSON/HTML, official-SDK Datastar patches, cancellation, errors, repl
 no-JavaScript controls, early policy events and reports, and exact disposal. Its bounded report
 binds package, grammar, corpus, source, tarball, bundle, browser, and header identity.
 
+Each engine also executes reduced-motion, forced-colors, and zoom/reflow profiles against that same
+installed proof. The profiles require direct computed output `2 → 4 → 16`, keyboard activation,
+focus and pressed-state behavior, two independently owned applications, repeated enhancement,
+unchanged headers, zero handled runtime errors, and complete cleanup. The jQuery error listener
+attaches before installation; a separate browser control emits an error at that point and proves
+that the listener and refusal check detect it. The closed report requires every profile and rejects
+missing observations, duplicate profiles, wrong computed values, layout overflow, and retained
+resources.
+
+The no-JavaScript proof follows the native link and submits the GET form to real 200 responses. It
+checks the escaped submitted value, response policy, and absence of script requests. Named outputs
+and the Run server update and cleanup button support the separate CSP steps in both
+[assistive-technology charters](accessibility/RELEASE_CHARTERS.md). These automated results do not
+establish screen-reader behavior; the exact candidate still needs both real manual records.
+
+After a current passing delivery, `npm run proof:csp` starts the same strict-policy routes and
+snapshotted assets for manual testing. It requires the exact tested tarball checksum and retains the
+artifact, receipt, package report and asset-hash session record under `.git/jqstar/manual-csp/`.
+This command neither substitutes source imports for the tarball nor creates passing manual records.
+
 Focused kernel and installer tests prove that an engine object belongs to only one kernel, public
 cache clearing does not touch the compatibility engine, and disposal runs once and invalidates both
 new compilation and retained evaluators. API Extractor and the public-baseline suite review the

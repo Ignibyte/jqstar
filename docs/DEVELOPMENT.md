@@ -196,3 +196,15 @@ builds the comparison bundles. Use it before direct focused research tests. Cano
 verify this dependency automatically with `--install-only` before tests and static analysis. It is
 absent from root dependencies, public entries and tarballs. See the
 [comparison contract](decisions/RESOURCE_STRATEGY.md) before changing or remeasuring a prototype.
+
+## Manual CSP proof
+
+After `npm run check` passes for the current checkout, run `npm run proof:csp`. It verifies the
+current delivery receipt, repacks the built package without running scripts, and refuses a checksum
+or size mismatch with the tested tarball. The command prints a loopback URL and retains a session
+manifest, tarball, receipt and package report under `.git/jqstar/manual-csp/`.
+
+Use the [assistive-technology charters](accessibility/RELEASE_CHARTERS.md) on that page. Stop the
+server with Ctrl+C. `-- --port 0` selects an available port; `-- --host <IP> --port <number>` uses
+an explicit address for the tester's setup. The server records the artifact and fixture identity;
+actual screen-reader observations must be recorded separately by the tester.

@@ -14,7 +14,7 @@ export const CSP_CACHE_LIMITS: Readonly<{
 }>;
 
 // @public (undocumented)
-export const CSP_CONTRACT_DIGEST: "b8838c9ca712890c296a97679f49fd7d33c39e53a362ac59952d38e556ed1ce6";
+export const CSP_CONTRACT_DIGEST: "40d98004552885f9008f8a8c25435271a5779f30f006f5f8f5e598051d81c855";
 
 // @public (undocumented)
 export const CSP_DIAGNOSTICS: Readonly<{

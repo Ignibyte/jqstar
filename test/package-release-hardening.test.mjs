@@ -1,3 +1,7 @@
+import {
+  assertCSPApplicationResult,
+  assertCSPProfileEvidence,
+} from "../scripts/quality/csp-accessibility.mjs";
 import { spawn } from "node:child_process";
 import { access, cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -30,6 +34,49 @@ async function compileSchema(path) {
 
 function passingChecks(names) {
   return names.map((name) => ({ name, status: "pass", detail: `${name} passed` }));
+}
+
+function cspApplicationObservations() {
+  return {
+    runtimeErrors: 0,
+    computed: { initial: "2", afterIncrement: "4", final: "16" },
+    behavior: {
+      initial: { count: "1", double: "2" },
+      afterKeyboard: { count: "2", double: "4", activations: 1 },
+      afterPatches: { count: "2", double: "4" },
+      afterRootDestroy: { count: "3", double: "6", activations: 2, mainCount: 8, survived: true },
+      destroyedOnDispose: true,
+    },
+  };
+}
+
+function cspProfileObservation(profile) {
+  return {
+    profile,
+    status: "pass",
+    viewportWidth: profile === "zoom-reflow" ? 640 : 900,
+    documentWidth: profile === "zoom-reflow" ? 640 : 900,
+    reducedMotion: profile === "reduced-motion",
+    forcedColors: profile === "forced-colors",
+    rootFontPixels: profile === "zoom-reflow" ? 32 : 16,
+    zoom: profile === "zoom-reflow" ? 2 : 1,
+    inputWidth: 180,
+    bodyWidth: 500,
+    scrollBehavior: "auto",
+    supportsForcedColorAdjust: true,
+    forcedColorAdjust: "auto",
+    borderStyle: "outset",
+    outlineStyle: "auto",
+    headerResponses: 18,
+    unexpectedErrors: 0,
+    unexpectedPolicyEvents: 0,
+    unexpectedPolicyReports: 0,
+    ...cspApplicationObservations(),
+    axeViolations: 0,
+    keyboard: "behavior-increment-save-toggle",
+    tabKey: "Tab",
+    disposal: { attempted: 1, failed: 0, released: 1, remaining: 0 },
+  };
 }
 
 function packageReport() {
@@ -134,7 +181,20 @@ function packageReport() {
         unexpectedPolicyReports: 0,
         operationCount: 1,
         disposal: { attempted: 1, failed: 0, released: 1, remaining: 0 },
-        noJavaScript: "native-link-and-form",
+        noJavaScript: {
+          link: "navigated",
+          form: "submitted",
+          scriptRequests: 0,
+          policy: "unchanged",
+          linkStatus: 200,
+          formStatus: 200,
+          receivedName: "CSP <native> & proof",
+        },
+        ...cspApplicationObservations(),
+        accessibilityProfiles: ["reduced-motion", "forced-colors", "zoom-reflow"].map(
+          cspProfileObservation,
+        ),
+        runtimeErrorDetector: { stage: "before-install", events: 1, rejected: true },
       })),
     },
   };
@@ -547,6 +607,59 @@ describe("package and release quality contracts", () => {
       const sabotaged = structuredClone(valid);
       mutate(sabotaged);
       expect(validate(sabotaged), JSON.stringify(sabotaged)).toBe(false);
+    }
+  });
+
+  it("rejects incomplete CSP profiles, handled errors, broken isolation and native fallbacks", async () => {
+    const validate = await compileSchema("schema/package-report.schema.json");
+    const valid = packageReport();
+    const accept = (report) => {
+      if (!validate(report)) throw new Error("Invalid CSP report schema");
+      for (const engine of report.checks[10].detail.csp.engines) {
+        assertCSPApplicationResult(engine);
+        assertCSPProfileEvidence(engine.accessibilityProfiles);
+      }
+    };
+    expect(() => accept(valid)).not.toThrow();
+    const controls = [
+      ["absent runtime detector", (v) => delete v.runtimeErrorDetector],
+      ["missed pre-install error", (v) => (v.runtimeErrorDetector.events = 0)],
+      ["missing profile", (v) => v.accessibilityProfiles.pop()],
+      [
+        "duplicate profile",
+        (v) => (v.accessibilityProfiles[1] = structuredClone(v.accessibilityProfiles[0])),
+      ],
+      ["unknown profile", (v) => (v.accessibilityProfiles[1].profile = "ordinary")],
+      ["inactive motion", (v) => (v.accessibilityProfiles[0].reducedMotion = false)],
+      ["inactive colors", (v) => (v.accessibilityProfiles[1].forcedColors = false)],
+      ["inactive zoom", (v) => (v.accessibilityProfiles[2].zoom = 1)],
+      ["overflow", (v) => (v.accessibilityProfiles[2].documentWidth = 900)],
+      ["input overflow", (v) => (v.accessibilityProfiles[2].inputWidth = 900)],
+      ["missing computed", (v) => delete v.computed],
+      ["blank computed", (v) => (v.accessibilityProfiles[0].computed.initial = "")],
+      ["wrong SDK computed", (v) => (v.computed.final = "4")],
+      ["handled error", (v) => (v.runtimeErrors = 1)],
+      ["profile handled error", (v) => (v.accessibilityProfiles[1].runtimeErrors = 1)],
+      ["duplicate handler", (v) => (v.behavior.afterKeyboard.activations = 2)],
+      ["cross root state", (v) => (v.behavior.afterPatches.count = "8")],
+      ["destroyed opposite root", (v) => (v.behavior.afterRootDestroy.survived = false)],
+      ["live behavior after disposal", (v) => (v.behavior.destroyedOnDispose = false)],
+      ["retained resources", (v) => (v.accessibilityProfiles[1].disposal.remaining = 1)],
+      ["unreleased resources", (v) => (v.accessibilityProfiles[1].disposal.released -= 1)],
+      ["native 404", (v) => (v.noJavaScript.linkStatus = 404)],
+      ["form 404", (v) => (v.noJavaScript.formStatus = 404)],
+      ["missing receipt", (v) => delete v.noJavaScript.receivedName],
+      ["wrong receipt", (v) => (v.noJavaScript.receivedName = "wrong")],
+      ["native scripts", (v) => (v.noJavaScript.scriptRequests = 1)],
+      ["missing headers", (v) => (v.accessibilityProfiles[0].headerResponses = 0)],
+      ["changed native policy", (v) => (v.noJavaScript.policy = "changed")],
+      ["unexpected report", (v) => (v.accessibilityProfiles[0].unexpectedPolicyReports = 1)],
+      ["extra observation", (v) => (v.accessibilityProfiles[0].inferredPass = true)],
+    ];
+    for (const [name, alter] of controls) {
+      const report = structuredClone(valid);
+      alter(report.checks[10].detail.csp.engines[0]);
+      expect(() => accept(report), name).toThrow();
     }
   });
 

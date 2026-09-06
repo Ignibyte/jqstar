@@ -522,6 +522,50 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 
 ## Test
 
+The workflow and static-quality review adds 23 planning rows and 195 citations, bringing the
+candidate inventory to 497 of 613 requirements with 4,480 citations. The remaining 116 requirements,
+semantic claim review and final immutable execution are unfinished. The new workflow rows use an
+isolated Node reporter/selector prototype: all 34 literal source-declared tests execute, 25 altered
+records are rejected, and a real failing/skipped/todo fixture remains red. Maintained schema and
+execution-index integration remain required. Eight existing manual references still await the two
+real records; the draft CSP mapping adds further manual requirements and is not yet counted.
+
+Delivery `2026-09-06T17-09-48-357Z-25355` passes twelve gates, including all 1,341 unit tests and
+487 browser cases, but its final detector rejects a stale fourteen-test expectation after fifteen
+hardening cases pass. Owner 0035 records and corrects that expectation. Direct audit also found its
+HTML fixture outside the canonical HTML command; 0035 now enrolls it and verifies all current HTML
+paths plus invalid/corrected markup. The changed static-source citations need refresh against the
+corrected complete run. No program acceptance verdict or mutation result is claimed.
+
+Delivery `2026-09-06T15-57-46-593Z-71119` passes all thirteen gates, 1,334 unit tests, 487 browser
+cases and sixteen detector controls, with matching start/end fingerprints. The CSP correction is
+committed and pushed as `5ee0ada`; Test and Document validation close owners 0034 and 0052.
+Installed CSP proof under 0035 remains open. Source review reopens 0045 because the README lost its
+seven priorities, and the existing canonical homepage test lacks direct narrow-home layout
+assertions.
+
+Delivery `2026-09-06T16-35-46-844Z-42041` passes all twelve selected gates, 1,334 unit tests, 487
+browser cases, thirteen package checks, seven release checks and sixteen detector controls. The
+unchanged runner self-test is explicitly skipped. Receipt and Test validation pass before Document
+closes 0045. The current package artifact is
+`c309e20b418b89417d9bfbea598ada1709bdc083e063a3408d50dea761e9f5a3`.
+
+Current planning mappings contain 469 requirements and 4,161 exact citations. All nine 0045 rows now
+have 32 valid selectors, including the restored README lists and the three-engine narrow-home case.
+The 0035 Plan now activates the expanded installed proof after nine isolated profile cases, three
+native pairs and three early-listener controls pass. Five real browser faults and thirty report
+refusal controls are rejected as expected. These diagnostics guide implementation; complete
+maintained verification and both real assistive-technology records remain required.
+
+Earlier planning mappings contained 468 requirements and 4,159 exact citations. The new 0045
+candidates have 30 valid selectors, but AC-02 remains absent and AC-03 awaits the maintained
+narrow-home assertions. Updated 0034 mappings add computed ownership, shared budgets, native-model
+parity and both internal CSP cases in every desktop engine: all 251 citations resolve against the
+completed delivery. Refreshing the inherited grammar excerpt to include the documented owned-getter
+boundary also passes all 108 ticket-0015 citations. These are planning checks, not the final frozen
+verdict; 145 requirements, semantic claim review, immutable execution and the two real manual
+records remain.
+
 Owner 0034 now contains the maintained computed-ownership correction, bounded dependent evaluation,
 first-failure retention, and shared native model handling. Focused proof passes 109 cases, strict
 types, ESLint and the unchanged lint ratchet. The source core consumer is 62,969 gzip bytes, below

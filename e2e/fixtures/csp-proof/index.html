@@ -15,7 +15,7 @@
       <h1>jQStar CSP package proof</h1>
       <form id="native-form" action="/csp-form" method="get">
         <label for="native-name">Name</label>
-        <input id="native-name" name="name" required />
+        <input id="native-name" type="text" name="name" required />
         <button type="submit">Submit</button>
       </form>
       <section
@@ -36,14 +36,25 @@
         <button id="toggle" data-jqs="toggle" type="button" aria-label="Toggle package proof">
           Toggle
         </button>
-        <output id="count" data-text="$count"></output>
-        <output id="double" data-text="$double"></output>
-        <output id="saved" data-text="$saved ? 'saved' : 'pending'"></output>
+        <output id="count" aria-label="Count" data-text="$count"></output>
+        <output id="double" aria-label="Double" data-text="$double"></output>
+        <output
+          id="saved"
+          aria-label="Save status"
+          data-text="$saved ? 'saved' : 'pending'"
+        ></output>
         <output id="helper" data-text="proof.csp.upper($serverMessage)"></output>
         <output id="async" data-text="$asyncMessage"></output>
         <section id="replace" data-text="$serverMessage"></section>
         <ul id="stream"></ul>
       </section>
+      <section id="behavior" data-jqs aria-labelledby="behavior-title">
+        <h2 id="behavior-title">Behavior application</h2>
+        <button id="behavior-increment" type="button">Increment behavior</button>
+        <output id="behavior-count" aria-label="Behavior count"></output>
+        <output id="behavior-double" aria-label="Behavior double"></output>
+      </section>
+      <button id="finish-proof" type="button">Run server update and cleanup</button>
       <output id="result" aria-live="polite">Running</output>
     </main>
   </body>

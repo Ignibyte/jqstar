@@ -207,7 +207,7 @@ historical data fails instead of skipping the comparison.
 | Typed correctness                  | `strictTypeChecked`, floating/misused promise checks, unnecessary assertions/type arguments, and reviewed void/async rules.                                              | Effective-rule tests and zero-warning ESLint; the counted legacy inventory below remains explicit.                                                            |
 | JavaScript CLI/automation          | Recommended ESLint, all five SonarJS rules, architecture checks, process/effect canaries, and installed CLI consumers.                                                   | JavaScript `.mjs` files are not type-checked. Process conformance and syntax lint do not substitute for type analysis.                                        |
 | Maintainability / PHPMD equivalent | SonarJS cognitive complexity, identical conditions/branches, inverted booleans and nested switches; jscpd duplication.                                                   | Current ceiling 65, immutable-base metric/detector ratchets, positive/negative controls. A green ceiling is not proof that each function is easy to maintain. |
-| Formatting / PHPCS equivalent      | Prettier checks the repository; Stylelint covers authored runtime/site/fixture CSS; HTML validation covers site and registry.                                            | Exact selectors and invalid/corrected CSS controls. Two frozen research styles retain cosmetic notation exceptions described below.                           |
+| Formatting / PHPCS equivalent      | Prettier checks the repository; Stylelint covers authored runtime/site/fixture CSS; HTML validation covers site, registry and browser fixtures.                          | Exact selectors and invalid/corrected CSS controls. Two frozen research styles retain cosmetic notation exceptions described below.                           |
 | Architecture and unused code       | dependency-cruiser checks production layering/cycles/resolution/dev imports; Knip checks configured entries, dependencies, files and exports.                            | Executable rule sabotage and package graphs. Dynamic imports and generated outputs have named entry/fixture contracts.                                        |
 | Security and dependencies          | Semgrep, gitleaks history/worktree, npm audit, OSV, lock integrity, licenses; hosted CodeQL and dependency review.                                                       | Local delivery logs plus hosted statuses. Tool success does not prove absence of vulnerabilities.                                                             |
 | Behavior and coverage              | Non-empty Vitest suites, source census, V8 coverage floors, seeded fast-check properties.                                                                                | Runner/schema/fingerprint controls and immutable-base coverage ratchets; `.mjs` process code is classified as process-contract evidence.                      |
@@ -216,8 +216,8 @@ historical data fails instead of skipping the comparison.
 | Documentation and automation       | Markdownlint, cspell, local links, generated-content/schema checks, ShellCheck, actionlint, runner self-tests.                                                           | Current tree-bound logs. Link checking validates repository targets, not the future availability of every external page.                                      |
 
 Seven formerly blanket-disabled typed rules are now default errors. The exact-file
-[lint boundary inventory](../quality/lint-boundaries.json) records 306 existing file/rule
-allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 286
+[lint boundary inventory](../quality/lint-boundaries.json) records 305 existing file/rule
+allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 288
 selected TypeScript source/test files and requires observed counts to match the inventory. Reducing
 a count requires reducing its allowance. After this initial baseline, the immutable-base comparison
 rejects new allowances and increased counts. These are remaining reviewed categories of debt, not
@@ -227,7 +227,7 @@ assertions that every occurrence is ideal or that unchanged counts prove an edit
 | -------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `no-non-null-assertion`          | 1,068                | Indexed access, lifecycle/DOM preconditions, and fixtures; the assertions still need their stated preconditions. |
 | `no-unnecessary-condition`       | 132                  | Runtime checks for JavaScript callers and closure state beyond TypeScript's narrowing.                           |
-| `no-base-to-string`              | 84                   | Existing coercion and formatting contracts, including untyped values.                                            |
+| `no-base-to-string`              | 82                   | Existing coercion and formatting contracts, including untyped values.                                            |
 | `no-unnecessary-type-conversion` | 22                   | Runtime coercion of signals and JavaScript inputs.                                                               |
 | `no-unnecessary-type-parameters` | 25                   | Existing public generic inference and caller-selected types.                                                     |
 | `no-dynamic-delete`              | 4                    | Owned mutable dictionaries; changes must preserve proxy/strict-mode semantics.                                   |
@@ -412,15 +412,16 @@ delivery and repeated-audit artifacts.
 
 ### Initial structural and package budgets
 
-The current public-document packlist contains 262 files and fits ceilings of 1,859,584 packed bytes,
+The initial public-document packlist contained 262 files and fit ceilings of 1,859,584 packed bytes,
 6,082,560 unpacked bytes, and 265 files. The ticket-0003 delivery measurement was 1,855,069 packed
 and 6,078,819 unpacked bytes. The installed peer-contract measurement after the kernel ownership
-foundation is 1,868,748 packed and 6,151,259 unpacked bytes. It contains only the four user guides
-linked from the package README beneath `docs/` plus the published schemas. An exact detector rejects
-missing or extra packaged documentation. The prior 261-file public-document baseline measured
-1,852,528 packed and 6,069,206 unpacked bytes; the earlier broad-document artifact measured 316
-files, 1,969,066 packed and 6,483,449 unpacked bytes. The ESM, CommonJS/UMD, and compiled CSS files
-are 491,435, 387,855, and 169,239 bytes. The installed root-import consumer bundle is 467,249 bytes.
+foundation is 1,868,748 packed and 6,151,259 unpacked bytes. That historical packlist contained only
+the four user guides linked from its package README beneath `docs/` plus the published schemas. An
+exact detector rejects missing or extra packaged documentation. The prior 261-file public-document
+baseline measured 1,852,528 packed and 6,069,206 unpacked bytes; the earlier broad-document artifact
+measured 316 files, 1,969,066 packed and 6,483,449 unpacked bytes. The ESM, CommonJS/UMD, and
+compiled CSS files are 491,435, 387,855, and 169,239 bytes. The installed root-import consumer
+bundle is 467,249 bytes.
 
 The installed-consumer report is fail-closed. It records the positive ESM, CommonJS, private-path,
 NodeNext, and Bundler fixtures plus the expected missing and incompatible jQuery peer failures. The

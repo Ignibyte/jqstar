@@ -17,6 +17,10 @@ export const manualPairs = Object.freeze({
       "interaction-4",
       "updates-1",
       "updates-2",
+      "csp-1",
+      "csp-2",
+      "csp-3",
+      "csp-4",
     ]),
   }),
   "voiceover-safari": Object.freeze({
@@ -33,6 +37,10 @@ export const manualPairs = Object.freeze({
       "interaction-4",
       "updates-1",
       "updates-2",
+      "csp-1",
+      "csp-2",
+      "csp-3",
+      "csp-4",
     ]),
   }),
 });

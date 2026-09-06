@@ -68,6 +68,26 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   const axe = await new AxeBuilder({ page }).include("main").analyze();
   expect(axe.violations).toEqual([]);
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".promise-card")).toHaveCount(2);
+  const narrowPromise = await page.locator(".promise-grid").evaluate((grid) => {
+    const first = grid.children.item(0);
+    const second = grid.children.item(1);
+    if (!first || !second) throw new Error("Missing framework promise cards.");
+    const firstBox = first.getBoundingClientRect();
+    const secondBox = second.getBoundingClientRect();
+    return {
+      overflow: document.documentElement.scrollWidth - innerWidth,
+      firstBottom: firstBox.bottom,
+      secondTop: secondBox.top,
+      leftDifference: Math.abs(firstBox.left - secondBox.left),
+    };
+  });
+  expect(narrowPromise.overflow).toBeLessThanOrEqual(1);
+  expect(narrowPromise.secondTop).toBeGreaterThanOrEqual(narrowPromise.firstBottom);
+  expect(narrowPromise.leftDifference).toBeLessThanOrEqual(1);
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/docs/");
   const initialTheme = await page.locator("html").getAttribute("data-theme");
   await page.getByRole("button", { name: "Toggle color theme" }).click();

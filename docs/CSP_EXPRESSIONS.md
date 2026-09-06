@@ -471,3 +471,17 @@ registered integration action. The trusted JavaScript engine keeps all existing 
 Run `npm run csp:inventory` after editing README, registry, website, example, or browser-fixture
 expression markup. Review the generated dispositions, then run `npm run test:csp-contract`. A new or
 changed occurrence without a deterministic mapping fails the repository gate.
+
+## Installed browser verification
+
+The package proof exercises the installed CSP entry under the response policy above in Chromium,
+Firefox, and WebKit. It observes computed values through initial state, keyboard interaction, and
+SDK patches, with separate declarative and behavior applications, repeated enhancement, independent
+destruction, and complete kernel cleanup. A listener installed before application setup rejects
+handled runtime errors as well as unexpected page and policy errors.
+
+Every engine also runs reduced-motion, forced-colors, and zoom/reflow profiles. Native links and GET
+forms navigate successfully with JavaScript disabled and preserve the submitted value and response
+policy. The proof's named controls support the separate manual accessibility charters; automated
+keyboard and axe results do not replace real screen-reader testing. See the
+[testing contract](TESTING.md) for the required evidence.

@@ -1,7 +1,7 @@
 ---
 id: 0052
 title: Audit and strengthen JavaScript quality standards
-status: testing
+status: done
 created: 2026-09-06
 updated: 2026-09-06
 ---
@@ -53,7 +53,7 @@ current scopes, rules, thresholds, and failure detectors are sufficient.
       records without unreported blanket debt.
 - [x] [AC-03] Complexity, duplication, coverage, and package ceilings cannot be weakened through
       environment or configuration drift. Executable negative controls prove enforcement.
-- [ ] [AC-04] Existing and strengthened controls pass `npm run check`; public/brain quality guidance
+- [x] [AC-04] Existing and strengthened controls pass `npm run check`; public/brain quality guidance
       and the final-audit evidence reference the actual configuration.
 - [x] [AC-05] Mutation remains absent from automatic commands, dependencies, and this execution.
       Ticket 0053 records the later authorized planning scope and the pending execution boundary.
@@ -371,6 +371,14 @@ guard was removed merely because TypeScript considered it redundant.
 
 ## Test
 
+Current delivery `2026-09-06T15-57-46-593Z-71119` passes all thirteen gates, 1,334 unit tests, 487
+browser cases and sixteen detector controls, with unchanged start/end fingerprints. Test phase
+validation and receipt verification passed before commit `5ee0ada`. The lint inventory now checks
+288 TypeScript files and 305 exact file/rule counts; the computed/model correction retired two
+allowances without adding one. Together with the exact `09d6109` hosted full-audit pass recorded
+below, this resolves the hosted-environment reopening. Final program and manual accessibility
+acceptance remain separate requirements of 0033 and its product owners.
+
 Delivery `2026-09-06T14-07-22-596Z-50023` passes all thirteen gates, 1,313 unit tests and 484
 browser cases, including detector controls, package and release proof. Test validation and receipt
 verification passed before commit `09d6109`, now pushed. Hosted full audit `34039155609` verifies
@@ -518,6 +526,11 @@ before this additional test correction; a fresh receipt is required for the chan
 
 ### Documentation changed
 
+The final documentation cross-check corrects two stale numbers in the existing scope matrix: 288
+selected TypeScript files and 82 `no-base-to-string` occurrences. The measured inventory remains 305
+exact file/rule allowances. These values come from the current lint-boundary report and
+`quality/lint-boundaries.json`; no analyzer scope, rule or allowance changes.
+
 `docs/QUALITY_PROGRAM.md` documents actual scopes, lowered complexity, exact counted debt, coverage
 history, detector checks, and hosted/manual limitations. This ticket records measurements, failed
 runs, corrections, and current proof. The roadmap and 0033 include this review, while 0053 retains
@@ -525,13 +538,13 @@ the explicit deferred mutation boundary.
 
 ### Acceptance evidence
 
-| Criterion | Result  | Evidence                                                                                                                                                                                                                                                                                                                                     |
-| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass    | `docs/QUALITY_PROGRAM.md` records each category, effective scope/rules/commands, detector and limitation, including PHPStan (TypeScript/typed ESLint), PHPMD (SonarJS/jscpd), and PHPCS (Prettier/style rules). Hosted protection was read separately and its review limitations are explicit.                                               |
-| AC-02     | Pass    | Effective-config tests prove five SonarJS rules in JavaScript and TypeScript, actual root configuration/CSS selectors, and stronger typed defaults. The probe covers 283 TypeScript files and exactly 306 counted allowances; new files cannot inherit blanket exclusions. JavaScript process code remains explicitly outside type analysis. |
-| AC-03     | Pass    | Historical metric, coverage, and package ratchets reject weaker ceilings/floors, removed targets, and environment bypasses. Three isolated-Git coverage tests prove explicit-base/local-HEAD behavior and invalid-history refusal. Static/package detector controls pass without mutation tooling.                                           |
-| AC-04     | Pending | Hosted full audit `34039155609` passes all fifteen gates for `09d6109`. Current-tree delivery and phase closure remain pending the CSP corrections recorded under 0034/0035; historical passes do not close the reopened criterion.                                                                                                          |
-| AC-05     | Pass    | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                       |
+| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                                                                          |
+| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass   | `docs/QUALITY_PROGRAM.md` records each category, effective scope/rules/commands, detector and limitation, including PHPStan (TypeScript/typed ESLint), PHPMD (SonarJS/jscpd), and PHPCS (Prettier/style rules). Hosted protection was read separately and its review limitations are explicit.                                                    |
+| AC-02     | Pass   | Effective-config tests prove five SonarJS rules in JavaScript and TypeScript, actual root configuration/CSS selectors, and stronger typed defaults. The current gate covers 288 TypeScript files and exactly 305 file/rule counts; new files cannot inherit blanket exclusions. JavaScript process code remains explicitly outside type analysis. |
+| AC-03     | Pass   | Historical metric, coverage, and package ratchets reject weaker ceilings/floors, removed targets, and environment bypasses. Three isolated-Git coverage tests prove explicit-base/local-HEAD behavior and invalid-history refusal. Static/package detector controls pass without mutation tooling.                                                |
+| AC-04     | Pass   | Current delivery `2026-09-06T15-57-46-593Z-71119` passes all thirteen gates and Test validation. Hosted full audit `34039155609` passes all fifteen gates for `09d6109`, including 968 browser executions with no failures, skips or flaky results. Public guidance and the current inventory describe the actual controls and their limits.      |
+| AC-05     | Pass   | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                            |
 
 ### Previous completion audit (superseded 2026-09-06)
 
@@ -545,13 +558,22 @@ Historical status: Complete
 
 ### Completion audit
 
-Pending hosted-environment correction. The preceding local closure does not establish a passing
-clean Node 24 full audit. The retained hosted failures must be resolved and the required checks must
-pass before this ticket returns to done.
+The effective analyzer scopes, counted typed boundaries, maintainability limits and failure
+detectors satisfy AC-01 through AC-05. The current delivery passes every required gate, and the
+corrected Node 24 hosted full audit passes all fifteen gates with 968 successful browser executions.
+The current inventory records 288 TypeScript files and 305 exact file/rule counts. Historical
+coverage and package controls refuse weaker limits; the complete failure-detector suite passes.
 
-The first standalone clean-unit diagnostic intentionally had no `dist/`, but also omitted the
-research preparation required by `docs/TESTING.md`. Its retained report has three temporary-parent
-failures and one missing research-dependency suite. These are diagnostic setup failures, not a
-passing clean-unit receipt. Repeat with the documented research preparation while asserting that
-`dist/` remains absent. Canonical quality commands already create their evidence directory and
-install the research dependency before unit execution.
+The public matrix distinguishes TypeScript/typed ESLint, SonarJS/duplication, formatting, security,
+coverage, properties and browser/package/release evidence. JavaScript type-analysis and actual
+manual-assistive-technology limits remain explicit. No mutation tooling was installed, configured or
+run; 0053 remains planned for later authorization.
+
+Status: Complete
+
+Historical setup failure: the first standalone clean-unit diagnostic intentionally had no `dist/`,
+but also omitted the research preparation required by `docs/TESTING.md`. Its retained report has
+three temporary-parent failures and one missing research-dependency suite. These are diagnostic
+setup failures, not a passing clean-unit receipt. The corrected verification uses the documented
+research preparation while asserting that `dist/` remains absent. Canonical quality commands already
+create their evidence directory and install the research dependency before unit execution.
