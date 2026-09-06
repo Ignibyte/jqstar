@@ -459,31 +459,62 @@ candidate evidence.
 - `test/program-audit*.test.mjs` and generated property cases for malformed or stale evidence.
 - Internal audit usage guidance and the project-brain index, without changing public behavior.
 
+### Named Node-test evidence integration, 2026-09-06
+
+The quality-runner and ticket-workflow gate executes Node built-in tests, while the audit currently
+selects only Vitest unit records. Add a bounded structured Node reporter and named selector; a
+passing aggregate or a source excerpt cannot replace a named executed test. Isolated probes executed
+all 34 current Node cases and proved 25 semantic refusal controls, 12 closed-schema controls and
+five actual producer/loader scenarios. Three further process probes reject nested tests, missing run
+identities and tests outside the declared source directory before any valid report is emitted. These
+are implementation evidence, not final program acceptance.
+
+Keep the report schema under `quality/program-audit/` so audit-only metadata does not change
+published package bytes. Register it with the existing hash-bound report loader. Require an
+independently frozen exact source/name roster, supported Node and run identities, the parent
+execution interval, nonempty matching global/file counts and zero failed, cancelled, skipped or todo
+cases. Nested suites are outside the current flat source contract and must fail instead of being
+silently flattened. The final executor must separately require a successful supervised process exit
+and freeze the source-derived roster before invocation; report fields cannot supply their own
+expected identity.
+
+Planned files: `scripts/program-audit/node-reporter.mjs`, `scripts/program-audit/node-evidence.mjs`,
+`quality/program-audit/node-test-report.schema.json`, `scripts/program-audit/reports.mjs`,
+meaningful producer/loader and selector tests, `docs/PROGRAM_AUDIT.md`, and this ticket. Canonical
+quality modes and mutation policy stay unchanged.
+
+Manual evidence assembly must preserve the actual tested source and receipt. If closing prerequisite
+0035 changes Git identity before the final audit freeze, the final manifest must independently prove
+exact artifact and fixture equivalence or require fresh manual observations. Never rewrite a
+tester's record to an identity that was not tested.
+
 ## Code
 
 ### Changed-file ledger
 
-| File                                                           | Purpose                                                                                                                                                           |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scripts/program-audit/requirements.mjs`                       | Derive every declared ticket/program criterion, enforce the expected roster, and validate exact evidence mappings.                                                |
-| `scripts/program-audit/contracts.mjs`                          | Shared bounded fields, closed objects, safe relative paths, timestamps, and digest validation.                                                                    |
-| `scripts/program-audit/manual-evidence.mjs`                    | Check exact candidate/receipt and frozen environment identities, complete charter steps, and per-step Quick Nav settings with fixed diagnostics.                  |
-| `scripts/program-audit/evidence.mjs`                           | Resolve named unit/browser/property/static/package/source proof; reject wrong identities, missing/duplicate results, skips, retries, and insufficient executions. |
-| `scripts/program-audit/files.mjs`                              | Bounded regular UTF-8 reads, digest checks, symbolic-link refusal, deterministic exclusive snapshots, and bounded output cleanup.                                 |
-| `scripts/program-audit/claims.mjs`                             | Extract authored Markdown and HTML claim candidates before evidence selection; preserve code examples and duplicate occurrences.                                  |
-| `scripts/program-audit/inventory.mjs`                          | Produce a schema-valid review inventory outside the artifact, with complete source inputs and an explicit unresolved-work list.                                   |
-| `scripts/program-audit/reports.mjs`                            | Validate frozen report/schema identities and bounded JSON, then return immutable data for named execution checks.                                                 |
-| `scripts/program-audit/release.mjs`                            | Require complete release checks for the frozen artifact, independent builds, historical comparison, toolchain and supporting evidence.                            |
-| `scripts/program-audit/navigation.mjs`                         | Validate the full raw navigation matrix, exact configured assertions and identity, explicit exclusions, and terminal cleanup.                                     |
-| `test/program-audit-navigation.test.mjs`                       | Keep historical full-report compatibility and negative controls for identity, completeness, assertions, cleanup and stronger evidence requirements.               |
-| `test/program-audit-release.test.mjs`                          | Reject incomplete, stale, inconsistent or weaker release evidence; bind synthetic report and mapping controls to the maintained schemas.                          |
-| `quality/program-audit/{vitest,playwright}-report.schema.json` | Validate the upstream report fields consumed by the adapters without treating a valid schema as a passing test run.                                               |
-| `test/program-audit-reports.test.mjs`                          | Exercise digest/size/schema mismatch, unsafe files, private error handling, structural limits, immutable results, and unsuccessful executions.                    |
-| `quality/program-audit/inputs.json` and internal schemas       | Fix the 53-ticket roster, 613 requirement count, 74 claim source files, 22 baseline inputs, and closed inventory/mapping structures.                              |
-| `test/program-audit*.test.mjs`                                 | Exercise incomplete/ambiguous/stale/weaker evidence, identity mismatch, file boundaries, immutable output, and actual repository inventory.                       |
-| `test/property/program-audit.property.test.mjs`                | Generated roster/order/wrapping and duplicate claim occurrence controls using the existing property runner.                                                       |
-| `docs/PROGRAM_AUDIT.md` and `docs/README.md`                   | Explain the internal commands, evidence boundaries, and remaining integration/manual review work.                                                                 |
-| This ticket                                                    | Keep the baseline, design, changed files, verification results, and unresolved acceptance work current.                                                           |
+| File                                                                                     | Purpose                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/program-audit/requirements.mjs`                                                 | Derive every declared ticket/program criterion, enforce the expected roster, and validate exact evidence mappings.                                                |
+| `scripts/program-audit/contracts.mjs`                                                    | Shared bounded fields, closed objects, safe relative paths, timestamps, and digest validation.                                                                    |
+| `scripts/program-audit/manual-evidence.mjs`                                              | Check exact candidate/receipt and frozen environment identities, complete charter steps, and per-step Quick Nav settings with fixed diagnostics.                  |
+| `scripts/program-audit/evidence.mjs`                                                     | Resolve named unit/browser/property/static/package/source proof; reject wrong identities, missing/duplicate results, skips, retries, and insufficient executions. |
+| `scripts/program-audit/files.mjs`                                                        | Bounded regular UTF-8 reads, digest checks, symbolic-link refusal, deterministic exclusive snapshots, and bounded output cleanup.                                 |
+| `scripts/program-audit/claims.mjs`                                                       | Extract authored Markdown and HTML claim candidates before evidence selection; preserve code examples and duplicate occurrences.                                  |
+| `scripts/program-audit/inventory.mjs`                                                    | Produce a schema-valid review inventory outside the artifact, with complete source inputs and an explicit unresolved-work list.                                   |
+| `scripts/program-audit/node-reporter.mjs`, `scripts/program-audit/node-evidence.mjs`     | Record bounded flat Node outcomes and select named passing tests against an independent roster and execution identity.                                            |
+| `quality/program-audit/node-test-report.schema.json`, `test/program-audit-node.test.mjs` | Close the Node report shape and reject missing, duplicate, stale or incomplete test and file records.                                                             |
+| `scripts/program-audit/reports.mjs`                                                      | Validate frozen report/schema identities and bounded JSON, then return immutable data for named execution checks.                                                 |
+| `scripts/program-audit/release.mjs`                                                      | Require complete release checks for the frozen artifact, independent builds, historical comparison, toolchain and supporting evidence.                            |
+| `scripts/program-audit/navigation.mjs`                                                   | Validate the full raw navigation matrix, exact configured assertions and identity, explicit exclusions, and terminal cleanup.                                     |
+| `test/program-audit-navigation.test.mjs`                                                 | Keep historical full-report compatibility and negative controls for identity, completeness, assertions, cleanup and stronger evidence requirements.               |
+| `test/program-audit-release.test.mjs`                                                    | Reject incomplete, stale, inconsistent or weaker release evidence; bind synthetic report and mapping controls to the maintained schemas.                          |
+| `quality/program-audit/{vitest,playwright}-report.schema.json`                           | Validate the upstream report fields consumed by the adapters without treating a valid schema as a passing test run.                                               |
+| `test/program-audit-reports.test.mjs`                                                    | Exercise digest/size/schema mismatch, unsafe files, private error handling, structural limits, immutable results, and unsuccessful executions.                    |
+| `quality/program-audit/inputs.json` and internal schemas                                 | Fix the 53-ticket roster, 613 requirement count, 74 claim source files, 22 baseline inputs, and closed inventory/mapping structures.                              |
+| `test/program-audit*.test.mjs`                                                           | Exercise incomplete/ambiguous/stale/weaker evidence, identity mismatch, file boundaries, immutable output, and actual repository inventory.                       |
+| `test/property/program-audit.property.test.mjs`                                          | Generated roster/order/wrapping and duplicate claim occurrence controls using the existing property runner.                                                       |
+| `docs/PROGRAM_AUDIT.md` and `docs/README.md`                                             | Explain the internal commands, evidence boundaries, and remaining integration/manual review work.                                                                 |
+| This ticket                                                                              | Keep the baseline, design, changed files, verification results, and unresolved acceptance work current.                                                           |
 
 The mapping validator and `quality/program-audit/mappings.schema.json` now distinguish release
 evidence from installed-package evidence. `docs/PROGRAM_AUDIT.md` records that distinction and the
@@ -522,20 +553,42 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 
 ## Test
 
-The workflow and static-quality review adds 23 planning rows and 195 citations, bringing the
-candidate inventory to 497 of 613 requirements with 4,480 citations. The remaining 116 requirements,
-semantic claim review and final immutable execution are unfinished. The new workflow rows use an
-isolated Node reporter/selector prototype: all 34 literal source-declared tests execute, 25 altered
-records are rejected, and a real failing/skipped/todo fixture remains red. Maintained schema and
-execution-index integration remain required. Eight existing manual references still await the two
-real records; the draft CSP mapping adds further manual requirements and is not yet counted.
+The current planning inventory covers 517 of 613 requirements with 4,692 citations. The remaining 96
+requirements, semantic claim review and final immutable execution are unfinished. Refreshed CSP and
+static-quality mappings pass their selectors against delivery `2026-09-06T17-32-22-094Z-2586`;
+twelve manual references still await two real records. Eight new mutation-removal rows have 53
+validated citations. A separate read-only inspection finds no former Stryker paths, dependency, npm
+command or active implementation reference and no retained package or release workspace. Historical
+reclaimed-byte measurements remain historical.
+
+The maintained Node reporter, selector, closed schema and loader integration pass ten focused tests.
+These include five actual producer/loader scenarios, three actual reporter refusal scenarios and
+independent roster/identity/count/interval controls. Focused ESLint passes. Final source-roster
+freezing and execution-index integration remain required; these tests do not establish program
+acceptance. The actual maintained reporter also executes all 34 current workflow tests. Its
+source/name roster, schema digests and command are recorded before invocation; the loader and
+selector accept every named result against the independently recorded process interval and zero exit
+status. The report and execution record remain under `node-evidence-plan/`.
+
+Fast `2026-09-06T17-54-28-563Z-63873` passes all six gates and 1,347 unit tests. Code validation
+passes against that exact report before this evidence update. Ticket 0033 remains coding because the
+final orchestration, mappings and manual evidence are still incomplete. The following delivery run
+verifies this implementation batch and documentation; it is not the final program audit.
+
+Delivery `2026-09-06T17-32-22-094Z-2586` passes all thirteen gates, including 1,343 unit tests, 487
+browser cases, thirteen package checks and seven release checks. Its 831-file start/end fingerprint
+is `f49200c41d318019ee032ce5551c5f2ec7d3276ca2d7bf15ba84557d22d71876`. Test validation and receipt
+verification pass before the actual manual-server command and commit. The automated three-engine
+command smoke passes against the exact package after replacing premature main-world readiness
+evaluation with DOM observation in the ignored smoke script. No screen-reader pass is claimed. The
+verified correction is pushed as `ac9f9bd`; later auditor edits require fresh delivery.
 
 Delivery `2026-09-06T17-09-48-357Z-25355` passes twelve gates, including all 1,341 unit tests and
 487 browser cases, but its final detector rejects a stale fourteen-test expectation after fifteen
 hardening cases pass. Owner 0035 records and corrects that expectation. Direct audit also found its
 HTML fixture outside the canonical HTML command; 0035 now enrolls it and verifies all current HTML
-paths plus invalid/corrected markup. The changed static-source citations need refresh against the
-corrected complete run. No program acceptance verdict or mutation result is claimed.
+paths plus invalid/corrected markup. The static-source citations are now refreshed against the
+corrected complete run above. No program acceptance verdict or mutation result is claimed.
 
 Delivery `2026-09-06T15-57-46-593Z-71119` passes all thirteen gates, 1,334 unit tests, 487 browser
 cases and sixteen detector controls, with matching start/end fingerprints. The CSP correction is

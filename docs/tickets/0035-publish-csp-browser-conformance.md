@@ -501,6 +501,23 @@ following files; the original implementation ledger below remains historical con
 
 ## Test
 
+Delivery `2026-09-06T17-32-22-094Z-2586` passes all thirteen gates with matching 831-file
+fingerprints, 1,343 unit tests, 487 browser cases, thirteen package checks and seven release checks.
+Test validation and current receipt verification pass before the actual
+`npm run proof:csp -- --port 0` startup. The command serves the exact 257-file package
+`e6d87887c1dfe85b56ea63cb334ae7985789e81350a1c3cc532fc400d59c439a` (3,169,639 packed bytes). The
+retained session is `.git/jqstar/manual-csp/2026-09-06T17-51-24-188Z/session.json`.
+
+The command smoke verifies all 22 served asset hashes, native finish-button keyboard activation,
+computed/isolation observations, successful native link/form navigation and exact disposal in
+Chromium, Firefox and WebKit. Its first ignored harness attempt invoked `waitForFunction` while the
+boot canary was armed and was rejected as dynamic evaluation. Using DOM locators for readiness and
+completion preserves the canary and passes the complete smoke. The original failure and corrected
+script remain under `0035-manual-server-plan/`; maintained product files were unchanged during the
+smoke. After Ctrl+C, the server's owned temporary directory is absent. Receipt verification passes
+again before commit `ac9f9bd` is pushed. This is automated command evidence, not either required
+screen-reader record. The ticket remains testing.
+
 The canonical validation correction passes 32 focused quality-standard and package-hardening tests.
 Fast run `2026-09-06T17-30-31-504Z-89086` passes all six gates and all 1,343 unit tests. The Code
 validator passes against that exact report before this transition to testing. The actual HTML

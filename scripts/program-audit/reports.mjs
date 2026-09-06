@@ -13,6 +13,7 @@ export const reportSchemas = Object.freeze({
   browser: "schema/browser-report.schema.json",
   navigation: "schema/navigation-decision.schema.json",
   detector: "schema/quality-0044-self-test-report.schema.json",
+  node: "quality/program-audit/node-test-report.schema.json",
   vitest: "quality/program-audit/vitest-report.schema.json",
   playwright: "quality/program-audit/playwright-report.schema.json",
 });

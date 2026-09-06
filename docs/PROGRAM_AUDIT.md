@@ -3,9 +3,10 @@
 Ticket [0033](tickets/0033-audit-full-library-program.md) is in progress. No complete program-audit
 verdict exists yet. The declarative computed correction (0034) and quality review (0052) are
 complete. Ticket 0045 now closes the restored README priorities and direct narrow-home browser
-observations. Ticket 0035 is verifying the expanded installed CSP accessibility/native proof and its
-canonical HTML and detector checks. Ticket 0053 remains a deferred mutation audit that requires
-later execution authorization.
+observations. Ticket 0035 passes the expanded installed CSP accessibility/native proof, canonical
+HTML and detector checks, and the actual manual-server command smoke. Real screen-reader records
+remain required. Ticket 0053 remains a deferred mutation audit that requires later execution
+authorization.
 
 Run `node scripts/program-audit/inventory.mjs` to create a review inventory under
 `.git/jqstar/program-audit/inventories/<digest>/`. The command records all 53 tickets, requires all
@@ -41,10 +42,19 @@ final audit's required gate roster.
 
 `createReportLoader()` verifies report byte counts and SHA-256 digests against explicit references,
 then validates the JSON against schema bytes identified by the frozen input inventory. It returns
-immutable data. Nine report kinds use existing producer schemas; internal Vitest and Playwright
-schemas validate the upstream fields consumed by the adapters. A valid schema does not mean tests
-passed: named execution checks still reject unsuccessful or incomplete runs. Connecting the loader
-to the final immutable manifest, execution index, and reviewed mappings remains unfinished.
+immutable data. Nine report kinds use existing producer schemas; internal Node, Vitest and
+Playwright schemas validate the upstream fields consumed by the adapters. A valid schema does not
+mean tests passed: named execution checks still reject unsuccessful or incomplete runs. Connecting
+the loader to the final immutable manifest, execution index, and reviewed mappings remains
+unfinished.
+
+Node workflow evidence uses `node-reporter.mjs` and `selectNodeTest()`. The reporter preserves flat
+Node test outcomes, source paths, file summaries, counts and execution identity. The selector
+requires an independently frozen exact source/name roster, matching Node and run identities, the
+parent execution interval, nonempty matching counts and no failed, cancelled, skipped or todo tests.
+Nested tests and sources outside the declared root are rejected. Final orchestration must freeze the
+source-derived roster before invocation and verify the supervised process exit independently; the
+report cannot supply its own expected identity or interval.
 
 Navigation evidence uses the frozen decision schema's raw measurement definition. A decision
 document or the ordinary nine-scenario browser subset cannot satisfy that contract. The adapter

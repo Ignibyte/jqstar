@@ -2,8 +2,10 @@
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readFile, writeFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { it } from "vitest";
+import { runChild } from "../scripts/quality/lib/process.mjs";
+import { selectNodeTest } from "../scripts/program-audit/node-evidence.mjs";
 import { sha256 } from "../scripts/program-audit/contracts.mjs";
 import { selectVitest } from "../scripts/program-audit/evidence.mjs";
 import { createReportLoader, reportSchemas } from "../scripts/program-audit/reports.mjs";
@@ -144,4 +146,98 @@ it("keeps execution acceptance separate from successful schema validation", asyn
         ),
       /incomplete or unsuccessful/,
     );
+  }));
+
+it("loads actual Node execution records and rejects failed, skipped, todo and undeclared suites", async () =>
+  fixture(async ({ root, load, put }) => {
+    const reporter = resolve("scripts/program-audit/node-reporter.mjs");
+    const preamble = "import test from 'node:test'; import assert from 'node:assert/strict';\n";
+    const scenarios = [
+      {
+        name: "green",
+        code: "test('first',()=>assert.equal(1,1)); test('second',()=>assert.equal(2,2));",
+        exit: 0,
+        accepted: true,
+      },
+      {
+        name: "red",
+        code: "test('first',()=>assert.equal(1,2)); test('second',()=>assert.equal(2,2));",
+        exit: 1,
+        accepted: false,
+      },
+      {
+        name: "skipped",
+        code: "test('first',{skip:true},()=>{}); test('second',()=>assert.equal(2,2));",
+        exit: 0,
+        accepted: false,
+      },
+      {
+        name: "todo",
+        code: "test('first',{todo:true},()=>{}); test('second',()=>assert.equal(2,2));",
+        exit: 0,
+        accepted: false,
+      },
+      { name: "undeclared", code: "", exit: 0, accepted: false },
+    ];
+    for (const scenario of scenarios) {
+      await put("checks.mjs", preamble + scenario.code);
+      const tests =
+        scenario.name === "undeclared"
+          ? []
+          : [
+              { path: "checks.mjs", name: "first" },
+              { path: "checks.mjs", name: "second" },
+            ];
+      const runId = `node-audit-${scenario.name}`;
+      const started = Date.now();
+      const processResult = await runChild({
+        command: process.execPath,
+        args: ["--test", "--test-reporter", reporter, "checks.mjs"],
+        cwd: root,
+        env: { ...process.env, JQS_PROGRAM_AUDIT_RUN_ID: runId },
+        timeoutMs: 10_000,
+      });
+      const ended = Date.now();
+      assert.equal(processResult.exitCode, scenario.exit);
+      assert.equal(processResult.timedOut, false);
+      assert.equal(processResult.signal, null);
+      assert(!processResult.spawnError);
+      const report = await load(
+        "node",
+        await put(`evidence/${scenario.name}.json`, processResult.stdout),
+      );
+      const context = { tests, node: process.version, runId, start: started, end: ended };
+      const citation = { path: "checks.mjs", selector: "first" };
+      const select = () => selectNodeTest(report.data, citation, context);
+      if (scenario.accepted) assert.equal(select().status, "pass");
+      else assert.throws(select);
+    }
+  }));
+
+it("rejects Node producer inputs outside its flat source and run-identity contract", async () =>
+  fixture(async ({ root, put }) => {
+    const reporter = resolve("scripts/program-audit/node-reporter.mjs");
+    await mkdir(join(root, "source"));
+    for (const scenario of [
+      { name: "nested", code: "test('parent',async t=>{await t.test('nested',()=>{});});" },
+      { name: "missing-run-identity", code: "test('flat',()=>{});" },
+      { name: "outside-source", code: "test('outside',()=>{});" },
+    ]) {
+      const path = scenario.name === "outside-source" ? "outside.mjs" : "source/checks.mjs";
+      await put(path, "import test from 'node:test';\n" + scenario.code);
+      const env = { ...process.env, JQS_PROGRAM_AUDIT_RUN_ID: `node-refusal-${scenario.name}` };
+      if (scenario.name === "missing-run-identity") delete env.JQS_PROGRAM_AUDIT_RUN_ID;
+      const result = await runChild({
+        command: process.execPath,
+        args: ["--test", "--test-reporter", reporter, join(root, path)],
+        cwd: join(root, "source"),
+        env,
+        timeoutMs: 10_000,
+      });
+      assert.notEqual(result.exitCode, 0);
+      assert.equal(result.timedOut, false);
+      assert.equal(result.signal, null);
+      assert(!result.spawnError);
+      assert.throws(() => JSON.parse(result.stdout));
+    }
   }));
