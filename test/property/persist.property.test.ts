@@ -6,15 +6,59 @@ import { compareRevision } from "../../src/persist/envelope";
 import { defineStore, storesPlugin } from "../../src/stores";
 import { TrustedKernel as Kernel } from "../helpers/trusted-kernel";
 import { assertProperty } from "./helpers";
+import regressions from "./regressions.json";
+
+const prototypeKeys = ["__proto__", "prototype", "constructor"] as const;
+
+it("rejects the nested prototype key found by the hosted random audit", () => {
+  // JSON imports can compile __proto__ to object-literal syntax, losing the own key.
+  const text = regressions["persist-nested-prototype-key"].counterexampleJson;
+  const value: unknown = JSON.parse(text);
+  expect(() => serialize(value)).toThrow("encode");
+  expect(() => parse(text, 65536)).toThrow("corrupt");
+});
+
+function containsPrototypeKey(value: unknown): boolean {
+  if (value === null || typeof value !== "object") return false;
+  return Object.entries(value).some(
+    ([key, nested]) =>
+      prototypeKeys.some((reserved) => key === reserved) || containsPrototypeKey(nested),
+  );
+}
 
 it("round-trips generated JSON preferences without depending on record insertion order", () => {
   assertProperty(
     "persist-canonical-json",
     fc.property(fc.dictionary(fc.stringMatching(/^[a-z]{1,8}$/), fc.jsonValue()), (value) => {
       const reversed = Object.fromEntries(Object.entries(value).reverse());
+      if (containsPrototypeKey(value)) {
+        expect(() => serialize(value)).toThrow("encode");
+        expect(() => serialize(reversed)).toThrow("encode");
+        expect(() => parse(JSON.stringify(value), 65536)).toThrow("corrupt");
+        return;
+      }
       expect(serialize(value)).toBe(serialize(reversed));
       expect(parse(serialize(value), 65536)).toEqual(value);
     }),
+  );
+});
+
+it("rejects prototype keys through generated object and array nesting", () => {
+  assertProperty(
+    "persist-nested-prototype-rejection",
+    fc.property(
+      fc.constantFrom(...prototypeKeys),
+      fc.jsonValue(),
+      fc.array(fc.boolean(), { maxLength: 8 }),
+      (key, payload, wrappers) => {
+        const value = wrappers.reduce<unknown>(
+          (nested, array) => (array ? [nested] : { preference: nested }),
+          Object.fromEntries([[key, payload]]),
+        );
+        expect(() => serialize(value)).toThrow("encode");
+        expect(() => parse(JSON.stringify(value), 65536)).toThrow("corrupt");
+      },
+    ),
   );
 });
 

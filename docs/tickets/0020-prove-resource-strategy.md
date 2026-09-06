@@ -1,9 +1,9 @@
 ---
 id: 0020
 title: Prove the asynchronous resource strategy
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-09-05
+updated: 2026-09-06
 ---
 
 # 0020: Prove the asynchronous resource strategy
@@ -120,7 +120,7 @@ itself evidence that jQStar should own another server-state system.
       bytes, direct/transitive dependencies/licenses/advisories, production/test/docs/type source
       footprint, public concepts, setup/upgrade work, debugging/inspection needs, browser support,
       and an explicit annual maintenance estimate with measurement method and uncertainty.
-- [x] [AC-05] All strategies preserve useful server-rendered initial/no-JavaScript HTML, server
+- [ ] [AC-05] All strategies preserve useful server-rendered initial/no-JavaScript HTML, server
       validation/authorization/version authority, native forms, stable focus, accessible loading/
       error/empty/live updates, cancellation, render preservation, and correct behavior after one or
       every root is removed. A cache never becomes the write authority.
@@ -151,7 +151,7 @@ itself evidence that jQStar should own another server-state system.
       leases, request/cancellation ownership, stale/GC clocks, invalidation, initial HTML/data,
       reactive/render integration, observation/redaction, disposal, package graph, and frozen
       reference metrics. It does not activate mutations.
-- [x] [AC-12] The decision, evidence dataset, schemas, fixture/prototype exclusions, public/project-
+- [ ] [AC-12] The decision, evidence dataset, schemas, fixture/prototype exclusions, public/project-
       brain docs, roadmap dispositions, focused/browser/package checks, `npm run check`, and
       `git diff --check` pass without mutation testing or unselected production code.
 
@@ -281,7 +281,35 @@ burden under the sensitivity analysis. Otherwise choose server/no package or ext
 - `docs/tickets/0020-prove-resource-strategy.md`: Phase, ledger, commands, findings, rubric results,
   criterion evidence, and completion audit.
 
+### Reopening decision: zoom reflow across fonts, 2026-09-06
+
+Hosted full audit `34017660083` fails the existing Project Inspector S15 zoom assertion on Linux.
+All three strategies share the same stylesheet. The page heading lacks a wrapping fallback when a
+word exceeds the available width after text enlargement. A local diagnostic with the existing 640px
+viewport, 200% root font size, 2x body zoom, and a wide monospace fallback reproduces a 755px
+document. Applying inherited `overflow-wrap: anywhere` restores 640px without clipping content.
+
+Reopen AC-05 and AC-12. Amend only shared typography in `test/fixtures/resource-strategy/style.css`,
+and extend the existing S15 driver in `e2e/resource-strategy.spec.ts` to verify the normal system
+font and a wider fallback. Preserve native table scrolling, full text, forms, focus, all strategies,
+existing zoom/axe assertions, and all frozen strategy semantics. Keep the original research
+measurements and rubric as historical decision evidence. This shared accessibility correction does
+not change executable bundles, request semantics, or the server-patch decision.
+
+Validate Plan, retain the failing font probe, run focused browser reflow/axe checks for all three
+strategies, then fast and full delivery checks. The first fast run rejects the recorded stylesheet
+digest, so rerun the complete 87-execution browser comparison and 45-sample measurement command,
+record the current fixture inventory in `quality/resource-strategy.json`, and recompute scores with
+the existing rubric. Preserve prior raw measurements in their immutable directories and Git history.
+Record the current correction in the decision appendix and this ticket. Hosted full-audit
+verification remains tracked by 0052. Fresh source and browser evidence supersedes only the failed
+current accessibility claim, not the original raw data.
+
 ## Code
+
+Current correction: `test/fixtures/resource-strategy/style.css` permits long text to wrap, and
+`e2e/resource-strategy.spec.ts` keeps S15 reflow checks under system and wider fallback fonts.
+`docs/decisions/RESOURCE_STRATEGY.md` records the shared correction without rewriting raw research.
 
 ### Changed-file ledger
 
@@ -322,6 +350,25 @@ gate preparation verifies this private dependency before unit/static checks; dir
 require preparation. No production API or behavior changed.
 
 ## Test
+
+Current reflow correction:
+
+| Command                                                                                   | Result | Evidence                                                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                                    | Pass   | Run `2026-09-06T12-28-37-589Z-76827` passes all six gates and 1,254 unit tests after the resource evidence refresh; Code-phase validation accepted the exact report.                                  |
+| Local wide-font diagnostic before correction                                              | Fail   | Existing zoom settings yield 755px document width in a 640px viewport; retained `resource-zoom-wrap-probe.json` records the shared wrapping correction restoring 640px.                               |
+| `npm run quality:fast`                                                                    | Fail   | Run `2026-09-06T12-23-35-042Z-69377` passes 1,253 of 1,254 unit tests; the resource-contract test correctly rejects the old stylesheet digest. Full browser/measurement refresh is required.          |
+| `npx playwright test e2e/resource-strategy.spec.ts --project=zoom-reflow --repeat-each=2` | Pass   | Six executions cover all three strategies with system and wider fallback fonts, no retries or skips, and zero axe violations. Reports are under `.git/jqstar/program-audit/resource-reflow-browser/`. |
+
+The complete comparison now passes 87 browser executions with no failures, retries or skips. The 20
+focused strategy/server/contract tests pass. Current measurements contain all 45 samples in
+`.git/jqstar/resource-strategy/measurements/2026-09-06T12-27-37.698Z/raw.json`, digest
+`03b11a71ea16bce61e4aaef77555a7cd2cd0056630c1b52c4c5fe0b39f3906bf`. Recomputed scores remain server
+91, external 92, native 90; the complete sensitivity result is unchanged. The public decision tables
+now use the new latency and official Node 24 gzip measurements. Required fast and delivery checks
+must still pass after this evidence refresh.
+
+Historical implementation evidence:
 
 | Command                                                                                                                                 | Result                                 | Evidence                                                                                                                                                                                                                                                  |
 | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -409,7 +456,7 @@ tickets record the declined native track. Generated agent content follows public
 | AC-11     | Approved-Disposition | Native was not selected and fails the three additional approval findings. The frozen decision and activation rules reject this conditional branch; neither native resources nor mutations are activated.        |
 | AC-12     | Pass                 | Closed schema/contract, focused tests, 448 delivery browser executions, package/release checks, public/brain/generated docs, roadmap dispositions, `npm run check` and `git diff --check`; no mutation testing. |
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-06)
 
 The audit maps all 12 criteria to current files and executed checks. Eleven criteria pass; AC-11 is
 the explicitly rejected native-only branch. Server patches are selected under the frozen rule, and
@@ -424,4 +471,8 @@ gate after this documentation audit so the worktree receipt also covers the term
 runtime implementation or public export was added by this decision, and no mutation testing was
 used.
 
-Status: Complete
+Historical status: Complete
+
+### Completion audit
+
+Pending the shared reflow correction, current browser evidence, and required quality validation.

@@ -299,6 +299,16 @@ for (const strategy of strategies) {
           await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
         ).toBe(true);
         expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+        if (mode === "zoom") {
+          // Wider fallback fonts must reflow as well as the host's system font.
+          await page.evaluate(() => {
+            document.body.style.fontFamily = "monospace";
+          });
+          expect(
+            await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+          ).toBe(true);
+          expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+        }
       });
     }
 

@@ -520,11 +520,14 @@ Data Table and its server-driven blocks require evidence for:
 `test/persist*.test.ts` uses one adapter conformance suite for memory, local, session, and custom
 adapters, plus canonical data, codec, envelope, migration, recovery, scheduling, and disposal tests.
 Property tests generate JSON ordering, revision permutations, and edit/corruption/recovery
-sequences. `e2e/persist.spec.ts` exercises three engines with actual same-origin pages: hydration
-before UI, reload, local sharing, session partitioning, clock-controlled expiry, failures, and
-disposal flush. Package consumers exercise ESM, CommonJS, NodeNext, Bundler, QUnit, and the
-installed browser entry. Optional graph checks reject persistence code from consumers that do not
-import it.
+sequences. Generated prototype keys at any depth must fail encoding and stored-data parsing;
+accepted preferences must preserve canonical ordering and round-trip values. A separate generated
+object/array nesting property and the retained hosted counterexample enforce this distinction
+without discarding generated inputs. `e2e/persist.spec.ts` exercises three engines with actual
+same-origin pages: hydration before UI, reload, local sharing, session partitioning,
+clock-controlled expiry, failures, and disposal flush. Package consumers exercise ESM, CommonJS,
+NodeNext, Bundler, QUnit, and the installed browser entry. Optional graph checks reject persistence
+code from consumers that do not import it.
 
 ## Resource strategy comparison
 

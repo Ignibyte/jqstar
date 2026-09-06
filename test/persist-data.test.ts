@@ -56,6 +56,17 @@ describe("canonical persistence data", () => {
     expect(() => serialize(value)).toThrow();
   });
 
+  it.each(["__proto__", "prototype", "constructor"])(
+    "rejects nested %s keys in both encoded preferences and stored JSON",
+    (key) => {
+      const record = { a: { "": Object.fromEntries([[key, 0]]) } };
+      for (const value of [record, [record], { preferences: [record] }]) {
+        expect(() => serialize(value)).toThrow("encode");
+        expect(() => parse(JSON.stringify(value), 65536)).toThrow("corrupt");
+      }
+    },
+  );
+
   it("never invokes accessors, then getters, or toJSON and bounds cyclic/deep/wide input", () => {
     const getter = vi.fn(() => 1);
     expect(() =>

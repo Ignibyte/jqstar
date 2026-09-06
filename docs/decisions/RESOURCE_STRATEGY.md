@@ -152,13 +152,15 @@ implementation ticket required before an official adapter could ship.
 The repository [evidence dataset](../../quality/resource-strategy.json) contains all 45 samples,
 complete disposal reports, module graphs, source fingerprints, package provenance and scoring
 inputs. Each cell below is median / p95 milliseconds over five fresh contexts, with an 80 ms origin
-read delay. The browser versions and exact environment accompany the raw samples.
+read delay. The browser versions and exact environment accompany the raw samples. Current
+measurements were repeated on official Node 24.20.0 at `2026-09-06T12:27:37.698Z` after the shared
+reflow correction.
 
 | Browser  | Server cold | External cold | Native cold | Server warm | External warm | Native warm |
 | -------- | ----------: | ------------: | ----------: | ----------: | ------------: | ----------: |
-| Chromium | 89.8 / 90.4 |   85.8 / 86.3 | 85.3 / 85.8 |   3.2 / 3.6 |     0.6 / 0.7 |   0.6 / 0.6 |
-| Firefox  |     90 / 91 |       87 / 89 |     87 / 89 |       4 / 5 |         1 / 2 |       1 / 1 |
-| WebKit   |     90 / 91 |       86 / 86 |     85 / 86 |     90 / 91 |         0 / 1 |       0 / 1 |
+| Chromium |   89 / 90.8 |     85.8 / 86 | 85.1 / 85.4 |   2.3 / 2.5 |     0.6 / 0.7 |   0.6 / 0.6 |
+| Firefox  |     90 / 96 |       88 / 88 |     88 / 90 |       4 / 5 |         2 / 2 |       1 / 1 |
+| WebKit   |     90 / 91 |       86 / 86 |     86 / 86 |     90 / 91 |         1 / 1 |       1 / 1 |
 
 Every cold concurrent selection makes one origin read. Server warm revisits make zero origin reads
 in Chromium and Firefox and one in WebKit. Client-cache warm revisits make zero in all three
@@ -181,7 +183,7 @@ package/release checks and every other required gate.
 
 | Measurement                       | Server | External | Native |
 | --------------------------------- | -----: | -------: | -----: |
-| Incremental minified gzip bytes   |  10301 |     9085 |    471 |
+| Incremental minified gzip bytes   |  10414 |     9098 |    468 |
 | Owned strategy runtime/type lines |     82 |       67 |    115 |
 | Strategy integration concepts     |      5 |       11 |      7 |
 | Owned async transitions           |      6 |        5 |     10 |
@@ -325,3 +327,16 @@ raw output below `.git/jqstar/resource-strategy/measurements/` and records it in
 dataset only with `--record`. Scoring recomputes arithmetic and sensitivity from explicit inspection
 inputs; it does not choose or change the decision. Review changed measurements and source
 fingerprints before updating a completed decision ticket.
+
+### Shared reflow correction, 2026-09-06
+
+The Linux hosted audit exposed a shared heading overflow at the existing enlarged-text and zoom
+settings. Wider font metrics could push an unbroken word beyond the page. Ticket 0020 adds inherited
+text wrapping and checks both system and wider fallback fonts in S15 for every strategy, retaining
+the original zoom, full-content, native-table-scroll, and accessibility requirements. The shared
+stylesheet correction does not change request behavior or the server-patch decision. The repeated
+87-case browser matrix passes without failures, retries or skips; the fresh 45-sample dataset
+records the current source and official Node 24 compression output. Incremental gzip sizes are
+10,414 / 9,098 / 468 bytes for server / external / native. Scores remain 91 / 92 / 90 and the entire
+177,147-case sensitivity result is unchanged. Original raw research remains in its dated directories
+and Git history. Ticket 0052 still requires a passing hosted full audit.

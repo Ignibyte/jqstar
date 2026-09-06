@@ -142,11 +142,11 @@
   "measurements": [
     {
       "schema": "resource-strategy-measurement/1",
-      "createdAt": "2026-09-05T20:29:23.535Z",
+      "createdAt": "2026-09-06T12:27:37.698Z",
       "contractDigest": "675b80c435cada1be60cea10fe1562d7bbf8cc64a5e2b118435e5aeee921b0d4",
-      "sourceDigest": "e2b8e8acc58c9c06e011c87dc74835a95dc3f249fb82a85ff9ce5658baad6816",
+      "sourceDigest": "84bd9b80469c95cdf75bd060bb9e0809f98f0b6d228c2e53bcc6af9b87d60563",
       "environment": {
-        "node": "v26.8.1",
+        "node": "v24.20.0",
         "os": "darwin",
         "release": "25.6.0",
         "arch": "arm64",
@@ -261,10 +261,10 @@
         },
         {
           "path": "test/fixtures/resource-strategy/style.css",
-          "bytes": 957,
-          "sha256": "8bf8e44e78cf9ca4623d5e0f3f579f207831ac9f3cb1e48343b7b0ee7c09a02d",
-          "lines": 75,
-          "nonblankNoncommentLines": 63
+          "bytes": 984,
+          "sha256": "39db87199de85a6e53a28bcd5117695adeb850a5e3f16abafd509797edb335e5",
+          "lines": 76,
+          "nonblankNoncommentLines": 64
         },
         {
           "path": "test/fixtures/resource-strategy/types.ts",
@@ -299,9 +299,9 @@
         {
           "category": "tests",
           "path": "e2e/resource-strategy.spec.ts",
-          "bytes": 14164,
-          "lines": 323,
-          "sha256": "a07ae69e0b35e2950ac4b785326857d8302ff17c64385fc89ec7581fd312ba75"
+          "bytes": 14621,
+          "lines": 333,
+          "sha256": "8d97f254d5b02b69718e5c0a6e6fc62d98ae08c771edb6216746e55fdd155020"
         },
         {
           "category": "tooling",
@@ -348,51 +348,51 @@
         {
           "category": "documentation",
           "path": "docs/decisions/RESOURCE_STRATEGY.md",
-          "bytes": 26377,
-          "lines": 326,
-          "sha256": "55a2faab5bce91fad052e4713b0c4cde21376915554f195f27cd37114d9584dc"
+          "bytes": 27175,
+          "lines": 337,
+          "sha256": "d4a27272ae4d66ae4f72d744dc64bf7745820517c618059b8e3caa40efba48e5"
         },
         {
           "category": "documentation",
           "path": "docs/tickets/0020-prove-resource-strategy.md",
-          "bytes": 41129,
-          "lines": 385,
-          "sha256": "c4cb723d5ffb8498c84a9f33242f81d84863c3128bb1e27528cb20cf1c5a985d"
+          "bytes": 56626,
+          "lines": 469,
+          "sha256": "f72f6859b63f6baf715c23e2368624f6d30bf924bd6bf4cacdd42da0c6588359"
         },
         {
           "category": "documentation",
           "path": "README.md",
-          "bytes": 91212,
-          "lines": 1881,
-          "sha256": "b6db6c5471a9ba6b3893fb14299a671b2baf2cb7e8a9767882323ff0abd92357"
+          "bytes": 92723,
+          "lines": 1899,
+          "sha256": "ac477a147e5b1e74ec0b781f74cb25045ebb59855f36c26b832a9b03cbb3bb46"
         },
         {
           "category": "documentation",
           "path": "docs/ARCHITECTURE.md",
-          "bytes": 28745,
-          "lines": 426,
-          "sha256": "8da0e058d040f54d87cadb4b60a4629190ffd9898d39b2110072fbc9d9fe988d"
+          "bytes": 30965,
+          "lines": 457,
+          "sha256": "ab95d5d7ec3b85228375d492442b1f95ffa19dbdae4299ced9d7dfb55b06507e"
         },
         {
           "category": "documentation",
           "path": "docs/PROJECT.md",
-          "bytes": 13828,
-          "lines": 226,
-          "sha256": "d5867584c4aa0db41005c4bd12beeb6d29fdc91b96fccae39f3f089cedaa2c2e"
+          "bytes": 14448,
+          "lines": 234,
+          "sha256": "e824d6c7060463f39865b3b4c2c347cd89720021cf3dd2e3cc65610c05abe48c"
         },
         {
           "category": "documentation",
           "path": "docs/RUNTIME_OWNERSHIP.md",
-          "bytes": 25144,
-          "lines": 226,
-          "sha256": "33895038ad73e9b0c3f9f7c286cbefc6bd521b661a4c8b789c8f1daa62c1ce85"
+          "bytes": 26381,
+          "lines": 243,
+          "sha256": "9ae1929a6cf562c307049970ffcfeb7a43dd09a60e8fe7f70bde1414cd28cb15"
         },
         {
           "category": "documentation",
           "path": "docs/TESTING.md",
-          "bytes": 34948,
-          "lines": 518,
-          "sha256": "4a31f7352938f159e30ec7068d52491aa592b3bdc2b43f1196ba556892b25a1c"
+          "bytes": 40945,
+          "lines": 597,
+          "sha256": "017a3691dca15f05bf467b5e15ebb0f3e550a29d87205cf7cb04e56dff684ea4"
         },
         {
           "category": "documentation",
@@ -411,9 +411,9 @@
       ],
       "graphs": {
         "baseline": {
-          "raw": 214929,
-          "gzip": 65414,
-          "sha256": "89f873927c99547d82dcefabd992053ab678e2a4540833aaf3368279477f9e04",
+          "raw": 215259,
+          "gzip": 65757,
+          "sha256": "634a64cbcc8d0946388e9a9709453b582c5d40b8b566ea0afbb39af9ae8b575e",
           "modules": [
             "node_modules/idiomorph/dist/idiomorph.esm.js",
             "node_modules/jquery/dist-module/jquery.module.js",
@@ -436,10 +436,13 @@
             "src/realm-state.ts",
             "src/registry.ts",
             "src/render-adapter.ts",
+            "src/request-headers.ts",
             "src/request-middleware.ts",
             "src/runtime.ts",
+            "src/service-metadata.ts",
             "src/stores.ts",
             "src/trusted-runtime.ts",
+            "src/value-checks.ts",
             "src/version.ts",
             "test/fixtures/resource-strategy/baseline-entry.ts",
             "test/fixtures/resource-strategy/common.ts",
@@ -447,9 +450,9 @@
           ]
         },
         "server": {
-          "raw": 247714,
-          "gzip": 75715,
-          "sha256": "bb51eec49685b6c5f9dc42c3e4158be48cfa930c4fe47f0d7a866684e5920fef",
+          "raw": 248056,
+          "gzip": 76171,
+          "sha256": "72a5e26ca0632488a181eb24ce34415bd99b40ac33d688f3e5851ec36f27dacf",
           "modules": [
             "node_modules/idiomorph/dist/idiomorph.esm.js",
             "node_modules/jquery/dist-module/jquery.module.js",
@@ -475,11 +478,14 @@
             "src/realm-state.ts",
             "src/registry.ts",
             "src/render-adapter.ts",
+            "src/request-headers.ts",
             "src/request-middleware.ts",
             "src/runtime.ts",
+            "src/service-metadata.ts",
             "src/sse.ts",
             "src/stores.ts",
             "src/trusted-runtime.ts",
+            "src/value-checks.ts",
             "src/version.ts",
             "test/fixtures/resource-strategy/common.ts",
             "test/fixtures/resource-strategy/html.mjs",
@@ -488,9 +494,9 @@
           ]
         },
         "external": {
-          "raw": 247158,
-          "gzip": 74499,
-          "sha256": "f5e741d796fce5dc3675f4fc0fe3f9e021063a4541f9e91b19ba415db123a317",
+          "raw": 247488,
+          "gzip": 74855,
+          "sha256": "4216e914f2cc89356225411f735dc7a661da4bebe7bd18cd510aa9bfb65c8f87",
           "modules": [
             "node_modules/idiomorph/dist/idiomorph.esm.js",
             "node_modules/jquery/dist-module/jquery.module.js",
@@ -513,10 +519,13 @@
             "src/realm-state.ts",
             "src/registry.ts",
             "src/render-adapter.ts",
+            "src/request-headers.ts",
             "src/request-middleware.ts",
             "src/runtime.ts",
+            "src/service-metadata.ts",
             "src/stores.ts",
             "src/trusted-runtime.ts",
+            "src/value-checks.ts",
             "src/version.ts",
             "test/fixtures/resource-strategy/common.ts",
             "test/fixtures/resource-strategy/external/adapter.ts",
@@ -542,9 +551,9 @@
           ]
         },
         "native": {
-          "raw": 216487,
-          "gzip": 65885,
-          "sha256": "ecc4772adc8068c44341fa5714482edd7d9fe0652b35cc5c7a91abb12124b291",
+          "raw": 216817,
+          "gzip": 66225,
+          "sha256": "2ee48d368e4998eff8e30e1694f82688d5d195936da9d7992044668c29f86c82",
           "modules": [
             "node_modules/idiomorph/dist/idiomorph.esm.js",
             "node_modules/jquery/dist-module/jquery.module.js",
@@ -567,10 +576,13 @@
             "src/realm-state.ts",
             "src/registry.ts",
             "src/render-adapter.ts",
+            "src/request-headers.ts",
             "src/request-middleware.ts",
             "src/runtime.ts",
+            "src/service-metadata.ts",
             "src/stores.ts",
             "src/trusted-runtime.ts",
+            "src/value-checks.ts",
             "src/version.ts",
             "test/fixtures/resource-strategy/common.ts",
             "test/fixtures/resource-strategy/html.mjs",
@@ -586,8 +598,8 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "server",
           "iteration": 0,
-          "coldMs": 90.40000000037253,
-          "awayMs": 85.19999999925494,
+          "coldMs": 90.79999999701977,
+          "awayMs": 85.29999999701977,
           "warmMs": 2,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
@@ -943,9 +955,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "server",
           "iteration": 1,
-          "coldMs": 89.09999999962747,
-          "awayMs": 86.30000000074506,
-          "warmMs": 2.699999999254942,
+          "coldMs": 89,
+          "awayMs": 86.20000000298023,
+          "warmMs": 2.5,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -1300,9 +1312,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "server",
           "iteration": 2,
-          "coldMs": 89.5,
-          "awayMs": 86.20000000111759,
-          "warmMs": 3.200000001117587,
+          "coldMs": 88.59999999403954,
+          "awayMs": 86.19999998807907,
+          "warmMs": 2.199999988079071,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -1657,9 +1669,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "server",
           "iteration": 3,
-          "coldMs": 89.80000000074506,
-          "awayMs": 86,
-          "warmMs": 3.599999999627471,
+          "coldMs": 89.09999999403954,
+          "awayMs": 85.90000000596046,
+          "warmMs": 2.2999999970197678,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -2014,9 +2026,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "server",
           "iteration": 4,
-          "coldMs": 89.79999999888241,
-          "awayMs": 86.29999999888241,
-          "warmMs": 3.5,
+          "coldMs": 88.79999999701977,
+          "awayMs": 86.09999999403954,
+          "warmMs": 2.2999999970197678,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -2371,9 +2383,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "external",
           "iteration": 0,
-          "coldMs": 86.30000000074506,
-          "awayMs": 0.7999999988824129,
-          "warmMs": 0.6999999992549419,
+          "coldMs": 86,
+          "awayMs": 0.7999999970197678,
+          "warmMs": 0.5999999940395355,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -2702,9 +2714,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "external",
           "iteration": 1,
-          "coldMs": 85.40000000037253,
-          "awayMs": 0.6999999992549419,
-          "warmMs": 0.5,
+          "coldMs": 85.79999999701977,
+          "awayMs": 0.7000000029802322,
+          "warmMs": 0.699999988079071,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -3033,8 +3045,8 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "external",
           "iteration": 2,
-          "coldMs": 86.09999999962747,
-          "awayMs": 0.6999999992549419,
+          "coldMs": 85.40000000596046,
+          "awayMs": 0.7000000029802322,
           "warmMs": 0.5,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -3364,9 +3376,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "external",
           "iteration": 3,
-          "coldMs": 85.80000000074506,
-          "awayMs": 0.599999999627471,
-          "warmMs": 0.599999999627471,
+          "coldMs": 85.79999999701977,
+          "awayMs": 0.5999999940395355,
+          "warmMs": 0.5,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -3695,1333 +3707,1333 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "external",
           "iteration": 4,
-          "coldMs": 85.30000000074506,
-          "awayMs": 0.8000000007450581,
-          "warmMs": 0.599999999627471,
-          "coldOriginReads": 1,
-          "awayOriginReads": 0,
-          "warmOriginReads": 0,
-          "counters": {
-            "reads": 1,
-            "aborted": 0,
-            "completed": 1,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 2,
-            "observers": 2,
-            "tasks": 0,
-            "timers": null,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": null,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "chromium",
-          "browserVersion": "151.0.7922.34",
-          "strategy": "native",
-          "iteration": 0,
-          "coldMs": 85.30000000074506,
-          "awayMs": 0.599999999627471,
-          "warmMs": 0.5,
-          "coldOriginReads": 1,
-          "awayOriginReads": 0,
-          "warmOriginReads": 0,
-          "counters": {
-            "reads": 1,
-            "aborted": 0,
-            "completed": 1,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 2,
-            "observers": 2,
-            "tasks": 0,
-            "timers": 1,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "chromium",
-          "browserVersion": "151.0.7922.34",
-          "strategy": "native",
-          "iteration": 1,
-          "coldMs": 85.19999999925494,
-          "awayMs": 0.599999999627471,
-          "warmMs": 0.5,
-          "coldOriginReads": 1,
-          "awayOriginReads": 0,
-          "warmOriginReads": 0,
-          "counters": {
-            "reads": 1,
-            "aborted": 0,
-            "completed": 1,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 2,
-            "observers": 2,
-            "tasks": 0,
-            "timers": 1,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "chromium",
-          "browserVersion": "151.0.7922.34",
-          "strategy": "native",
-          "iteration": 2,
-          "coldMs": 85.80000000074506,
-          "awayMs": 0.599999999627471,
-          "warmMs": 0.599999999627471,
-          "coldOriginReads": 1,
-          "awayOriginReads": 0,
-          "warmOriginReads": 0,
-          "counters": {
-            "reads": 1,
-            "aborted": 0,
-            "completed": 1,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 2,
-            "observers": 2,
-            "tasks": 0,
-            "timers": 1,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "chromium",
-          "browserVersion": "151.0.7922.34",
-          "strategy": "native",
-          "iteration": 3,
           "coldMs": 85.5,
-          "awayMs": 0.599999999627471,
-          "warmMs": 0.6000000014901161,
+          "awayMs": 0.7000000029802322,
+          "warmMs": 0.699999988079071,
+          "coldOriginReads": 1,
+          "awayOriginReads": 0,
+          "warmOriginReads": 0,
+          "counters": {
+            "reads": 1,
+            "aborted": 0,
+            "completed": 1,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 2,
+            "observers": 2,
+            "tasks": 0,
+            "timers": null,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": null,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "chromium",
+          "browserVersion": "151.0.7922.34",
+          "strategy": "native",
+          "iteration": 0,
+          "coldMs": 85,
+          "awayMs": 0.5999999940395355,
+          "warmMs": 0.5,
+          "coldOriginReads": 1,
+          "awayOriginReads": 0,
+          "warmOriginReads": 0,
+          "counters": {
+            "reads": 1,
+            "aborted": 0,
+            "completed": 1,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 2,
+            "observers": 2,
+            "tasks": 0,
+            "timers": 1,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "chromium",
+          "browserVersion": "151.0.7922.34",
+          "strategy": "native",
+          "iteration": 1,
+          "coldMs": 85.40000000596046,
+          "awayMs": 0.5999999940395355,
+          "warmMs": 0.6000000089406967,
+          "coldOriginReads": 1,
+          "awayOriginReads": 0,
+          "warmOriginReads": 0,
+          "counters": {
+            "reads": 1,
+            "aborted": 0,
+            "completed": 1,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 2,
+            "observers": 2,
+            "tasks": 0,
+            "timers": 1,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "chromium",
+          "browserVersion": "151.0.7922.34",
+          "strategy": "native",
+          "iteration": 2,
+          "coldMs": 84.5,
+          "awayMs": 0.7000000029802322,
+          "warmMs": 0.5999999940395355,
+          "coldOriginReads": 1,
+          "awayOriginReads": 0,
+          "warmOriginReads": 0,
+          "counters": {
+            "reads": 1,
+            "aborted": 0,
+            "completed": 1,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 2,
+            "observers": 2,
+            "tasks": 0,
+            "timers": 1,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "chromium",
+          "browserVersion": "151.0.7922.34",
+          "strategy": "native",
+          "iteration": 3,
+          "coldMs": 85.09999999403954,
+          "awayMs": 0.5999999940395355,
+          "warmMs": 0.5999999940395355,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -5350,9 +5362,9 @@
           "browserVersion": "151.0.7922.34",
           "strategy": "native",
           "iteration": 4,
-          "coldMs": 85.09999999962747,
-          "awayMs": 0.5,
-          "warmMs": 0.599999999627471,
+          "coldMs": 85.20000000298023,
+          "awayMs": 0.5999999940395355,
+          "warmMs": 0.5999999940395355,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -5681,7 +5693,7 @@
           "browserVersion": "153.0",
           "strategy": "server",
           "iteration": 0,
-          "coldMs": 91,
+          "coldMs": 96,
           "awayMs": 86,
           "warmMs": 3,
           "coldOriginReads": 1,
@@ -6039,8 +6051,8 @@
           "strategy": "server",
           "iteration": 1,
           "coldMs": 90,
-          "awayMs": 89,
-          "warmMs": 4,
+          "awayMs": 87,
+          "warmMs": 5,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -6397,7 +6409,7 @@
           "iteration": 2,
           "coldMs": 90,
           "awayMs": 88,
-          "warmMs": 5,
+          "warmMs": 4,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -6752,9 +6764,9 @@
           "browserVersion": "153.0",
           "strategy": "server",
           "iteration": 3,
-          "coldMs": 89,
-          "awayMs": 89,
-          "warmMs": 5,
+          "coldMs": 88,
+          "awayMs": 86,
+          "warmMs": 4,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
           "warmOriginReads": 0,
@@ -7109,7 +7121,7 @@
           "browserVersion": "153.0",
           "strategy": "server",
           "iteration": 4,
-          "coldMs": 88,
+          "coldMs": 89,
           "awayMs": 88,
           "warmMs": 4,
           "coldOriginReads": 1,
@@ -7466,8 +7478,8 @@
           "browserVersion": "153.0",
           "strategy": "external",
           "iteration": 0,
-          "coldMs": 88,
-          "awayMs": 2,
+          "coldMs": 87,
+          "awayMs": 1,
           "warmMs": 2,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -7797,7 +7809,338 @@
           "browserVersion": "153.0",
           "strategy": "external",
           "iteration": 1,
-          "coldMs": 87,
+          "coldMs": 88,
+          "awayMs": 0,
+          "warmMs": 1,
+          "coldOriginReads": 1,
+          "awayOriginReads": 0,
+          "warmOriginReads": 0,
+          "counters": {
+            "reads": 1,
+            "aborted": 0,
+            "completed": 1,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 2,
+            "observers": 2,
+            "tasks": 0,
+            "timers": null,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": null,
+            "fetches": 1,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "firefox",
+          "browserVersion": "153.0",
+          "strategy": "external",
+          "iteration": 2,
+          "coldMs": 88,
           "awayMs": 1,
           "warmMs": 2,
           "coldOriginReads": 1,
@@ -8127,341 +8470,10 @@
           "engine": "firefox",
           "browserVersion": "153.0",
           "strategy": "external",
-          "iteration": 2,
-          "coldMs": 87,
-          "awayMs": 1,
-          "warmMs": 1,
-          "coldOriginReads": 1,
-          "awayOriginReads": 0,
-          "warmOriginReads": 0,
-          "counters": {
-            "reads": 1,
-            "aborted": 0,
-            "completed": 1,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 2,
-            "observers": 2,
-            "tasks": 0,
-            "timers": null,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": null,
-            "fetches": 1,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "firefox",
-          "browserVersion": "153.0",
-          "strategy": "external",
           "iteration": 3,
-          "coldMs": 89,
-          "awayMs": 2,
-          "warmMs": 1,
+          "coldMs": 88,
+          "awayMs": 1,
+          "warmMs": 2,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -8791,7 +8803,7 @@
           "strategy": "external",
           "iteration": 4,
           "coldMs": 87,
-          "awayMs": 2,
+          "awayMs": 1,
           "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -9121,8 +9133,8 @@
           "browserVersion": "153.0",
           "strategy": "native",
           "iteration": 0,
-          "coldMs": 87,
-          "awayMs": 2,
+          "coldMs": 86,
+          "awayMs": 1,
           "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -9452,7 +9464,7 @@
           "browserVersion": "153.0",
           "strategy": "native",
           "iteration": 1,
-          "coldMs": 89,
+          "coldMs": 88,
           "awayMs": 2,
           "warmMs": 1,
           "coldOriginReads": 1,
@@ -9783,9 +9795,9 @@
           "browserVersion": "153.0",
           "strategy": "native",
           "iteration": 2,
-          "coldMs": 88,
-          "awayMs": 0,
-          "warmMs": 0,
+          "coldMs": 90,
+          "awayMs": 1,
+          "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -10115,7 +10127,7 @@
           "strategy": "native",
           "iteration": 3,
           "coldMs": 87,
-          "awayMs": 2,
+          "awayMs": 1,
           "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -10445,9 +10457,9 @@
           "browserVersion": "153.0",
           "strategy": "native",
           "iteration": 4,
-          "coldMs": 87,
+          "coldMs": 88,
           "awayMs": 1,
-          "warmMs": 1,
+          "warmMs": 0,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -10776,8 +10788,8 @@
           "browserVersion": "26.5",
           "strategy": "server",
           "iteration": 0,
-          "coldMs": 90,
-          "awayMs": 86,
+          "coldMs": 91,
+          "awayMs": 87,
           "warmMs": 91,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
@@ -11133,722 +11145,722 @@
           "browserVersion": "26.5",
           "strategy": "server",
           "iteration": 1,
+          "coldMs": 90,
+          "awayMs": 86,
+          "warmMs": 90,
+          "coldOriginReads": 1,
+          "awayOriginReads": 1,
+          "warmOriginReads": 1,
+          "counters": {
+            "reads": 3,
+            "aborted": 0,
+            "completed": 3,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 0,
+            "observers": 2,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 3,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:loading",
+              "activity:loading",
+              "activity:loading",
+              "summary:loading",
+              "activity:ready",
+              "summary:ready",
+              "announced",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 3,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:loading",
+              "activity:loading",
+              "activity:loading",
+              "summary:loading",
+              "activity:ready",
+              "summary:ready",
+              "announced",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.datastar"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.datastar"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "webkit",
+          "browserVersion": "26.5",
+          "strategy": "server",
+          "iteration": 2,
+          "coldMs": 90,
+          "awayMs": 86,
+          "warmMs": 90,
+          "coldOriginReads": 1,
+          "awayOriginReads": 1,
+          "warmOriginReads": 1,
+          "counters": {
+            "reads": 3,
+            "aborted": 0,
+            "completed": 3,
+            "conditional": 0,
+            "active": 0,
+            "writes": 0,
+            "conflicts": 0,
+            "invalid": 0,
+            "forbidden": 0
+          },
+          "client": {
+            "records": 0,
+            "observers": 2,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 3,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:loading",
+              "activity:loading",
+              "activity:loading",
+              "summary:loading",
+              "activity:ready",
+              "summary:ready",
+              "announced",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ]
+          },
+          "terminal": {
+            "records": 0,
+            "observers": 0,
+            "tasks": 0,
+            "timers": 0,
+            "fetches": 3,
+            "pending": 0,
+            "states": [
+              "summary:ready",
+              "announced",
+              "activity:ready",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced",
+              "summary:loading",
+              "activity:loading",
+              "activity:loading",
+              "summary:loading",
+              "activity:ready",
+              "summary:ready",
+              "announced",
+              "activity:loading",
+              "summary:loading",
+              "summary:loading",
+              "activity:loading",
+              "summary:ready",
+              "activity:ready",
+              "announced"
+            ],
+            "browserTimers": 0
+          },
+          "disposal": {
+            "schema": "jquery-star-disposal/1",
+            "attempted": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.datastar"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "released": [
+              {
+                "category": "application",
+                "owner": "application:1"
+              },
+              {
+                "category": "request",
+                "owner": "application:1:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:1:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:1:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:1:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:1:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:1:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:2"
+              },
+              {
+                "category": "request",
+                "owner": "application:2:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:2:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:2:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:2:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:2:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:2:plugins"
+              },
+              {
+                "category": "application",
+                "owner": "application:3"
+              },
+              {
+                "category": "request",
+                "owner": "application:3:requests"
+              },
+              {
+                "category": "listener",
+                "owner": "application:3:events"
+              },
+              {
+                "category": "observer",
+                "owner": "application:3:mutation"
+              },
+              {
+                "category": "effect",
+                "owner": "application:3:reactivity"
+              },
+              {
+                "category": "service",
+                "owner": "application:3:mounted-tree"
+              },
+              {
+                "category": "hook",
+                "owner": "application:3:plugins"
+              },
+              {
+                "category": "service",
+                "owner": "research.inspector.strategy"
+              },
+              {
+                "category": "service",
+                "owner": "store-1:lifetime"
+              },
+              {
+                "category": "subscription",
+                "owner": "kernel:operations"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.datastar"
+              },
+              {
+                "category": "plugin",
+                "owner": "core.stores"
+              },
+              {
+                "category": "plugin",
+                "owner": "research.inspector"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:request-middleware"
+              },
+              {
+                "category": "request",
+                "owner": "kernel:protocols"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:actions"
+              },
+              {
+                "category": "effect",
+                "owner": "kernel:expressions"
+              },
+              {
+                "category": "service",
+                "owner": "kernel:installation"
+              }
+            ],
+            "failed": [],
+            "remaining": []
+          }
+        },
+        {
+          "engine": "webkit",
+          "browserVersion": "26.5",
+          "strategy": "server",
+          "iteration": 3,
           "coldMs": 91,
           "awayMs": 86,
-          "warmMs": 89,
-          "coldOriginReads": 1,
-          "awayOriginReads": 1,
-          "warmOriginReads": 1,
-          "counters": {
-            "reads": 3,
-            "aborted": 0,
-            "completed": 3,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 0,
-            "observers": 2,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 3,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:loading",
-              "activity:loading",
-              "activity:loading",
-              "summary:loading",
-              "activity:ready",
-              "summary:ready",
-              "announced",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 3,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:loading",
-              "activity:loading",
-              "activity:loading",
-              "summary:loading",
-              "activity:ready",
-              "summary:ready",
-              "announced",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.datastar"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.datastar"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "webkit",
-          "browserVersion": "26.5",
-          "strategy": "server",
-          "iteration": 2,
-          "coldMs": 90,
-          "awayMs": 86,
-          "warmMs": 91,
-          "coldOriginReads": 1,
-          "awayOriginReads": 1,
-          "warmOriginReads": 1,
-          "counters": {
-            "reads": 3,
-            "aborted": 0,
-            "completed": 3,
-            "conditional": 0,
-            "active": 0,
-            "writes": 0,
-            "conflicts": 0,
-            "invalid": 0,
-            "forbidden": 0
-          },
-          "client": {
-            "records": 0,
-            "observers": 2,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 3,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:loading",
-              "activity:loading",
-              "activity:loading",
-              "summary:loading",
-              "activity:ready",
-              "summary:ready",
-              "announced",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ]
-          },
-          "terminal": {
-            "records": 0,
-            "observers": 0,
-            "tasks": 0,
-            "timers": 0,
-            "fetches": 3,
-            "pending": 0,
-            "states": [
-              "summary:ready",
-              "announced",
-              "activity:ready",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced",
-              "summary:loading",
-              "activity:loading",
-              "activity:loading",
-              "summary:loading",
-              "activity:ready",
-              "summary:ready",
-              "announced",
-              "activity:loading",
-              "summary:loading",
-              "summary:loading",
-              "activity:loading",
-              "summary:ready",
-              "activity:ready",
-              "announced"
-            ],
-            "browserTimers": 0
-          },
-          "disposal": {
-            "schema": "jquery-star-disposal/1",
-            "attempted": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.datastar"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "released": [
-              {
-                "category": "application",
-                "owner": "application:1"
-              },
-              {
-                "category": "request",
-                "owner": "application:1:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:1:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:1:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:1:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:1:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:1:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:2"
-              },
-              {
-                "category": "request",
-                "owner": "application:2:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:2:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:2:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:2:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:2:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:2:plugins"
-              },
-              {
-                "category": "application",
-                "owner": "application:3"
-              },
-              {
-                "category": "request",
-                "owner": "application:3:requests"
-              },
-              {
-                "category": "listener",
-                "owner": "application:3:events"
-              },
-              {
-                "category": "observer",
-                "owner": "application:3:mutation"
-              },
-              {
-                "category": "effect",
-                "owner": "application:3:reactivity"
-              },
-              {
-                "category": "service",
-                "owner": "application:3:mounted-tree"
-              },
-              {
-                "category": "hook",
-                "owner": "application:3:plugins"
-              },
-              {
-                "category": "service",
-                "owner": "research.inspector.strategy"
-              },
-              {
-                "category": "service",
-                "owner": "store-1:lifetime"
-              },
-              {
-                "category": "subscription",
-                "owner": "kernel:operations"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.datastar"
-              },
-              {
-                "category": "plugin",
-                "owner": "core.stores"
-              },
-              {
-                "category": "plugin",
-                "owner": "research.inspector"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:request-middleware"
-              },
-              {
-                "category": "request",
-                "owner": "kernel:protocols"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:actions"
-              },
-              {
-                "category": "effect",
-                "owner": "kernel:expressions"
-              },
-              {
-                "category": "service",
-                "owner": "kernel:installation"
-              }
-            ],
-            "failed": [],
-            "remaining": []
-          }
-        },
-        {
-          "engine": "webkit",
-          "browserVersion": "26.5",
-          "strategy": "server",
-          "iteration": 3,
-          "coldMs": 90,
-          "awayMs": 86,
           "warmMs": 90,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
@@ -12205,7 +12217,7 @@
           "strategy": "server",
           "iteration": 4,
           "coldMs": 90,
-          "awayMs": 86,
+          "awayMs": 87,
           "warmMs": 90,
           "coldOriginReads": 1,
           "awayOriginReads": 1,
@@ -12562,7 +12574,7 @@
           "strategy": "external",
           "iteration": 0,
           "coldMs": 86,
-          "awayMs": 0,
+          "awayMs": 1,
           "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -12894,7 +12906,7 @@
           "iteration": 1,
           "coldMs": 86,
           "awayMs": 1,
-          "warmMs": 0,
+          "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -13554,8 +13566,8 @@
           "browserVersion": "26.5",
           "strategy": "external",
           "iteration": 3,
-          "coldMs": 86,
-          "awayMs": 0,
+          "coldMs": 85,
+          "awayMs": 1,
           "warmMs": 0,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -13886,8 +13898,8 @@
           "strategy": "external",
           "iteration": 4,
           "coldMs": 86,
-          "awayMs": 0,
-          "warmMs": 0,
+          "awayMs": 1,
+          "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -14216,9 +14228,9 @@
           "browserVersion": "26.5",
           "strategy": "native",
           "iteration": 0,
-          "coldMs": 85,
+          "coldMs": 86,
           "awayMs": 1,
-          "warmMs": 0,
+          "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -14547,9 +14559,9 @@
           "browserVersion": "26.5",
           "strategy": "native",
           "iteration": 1,
-          "coldMs": 85,
+          "coldMs": 86,
           "awayMs": 1,
-          "warmMs": 0,
+          "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -14880,7 +14892,7 @@
           "iteration": 2,
           "coldMs": 85,
           "awayMs": 1,
-          "warmMs": 1,
+          "warmMs": 0,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
           "warmOriginReads": 0,
@@ -15209,8 +15221,8 @@
           "browserVersion": "26.5",
           "strategy": "native",
           "iteration": 3,
-          "coldMs": 86,
-          "awayMs": 0,
+          "coldMs": 85,
+          "awayMs": 1,
           "warmMs": 1,
           "coldOriginReads": 1,
           "awayOriginReads": 0,
@@ -15540,7 +15552,7 @@
           "browserVersion": "26.5",
           "strategy": "native",
           "iteration": 4,
-          "coldMs": 85,
+          "coldMs": 86,
           "awayMs": 1,
           "warmMs": 0,
           "coldOriginReads": 1,
@@ -15872,30 +15884,30 @@
           "engine": "chromium",
           "strategy": "server",
           "repetitions": 5,
-          "coldMedianMs": 89.79999999888241,
-          "coldP95Ms": 90.40000000037253,
-          "warmMedianMs": 3.200000001117587,
-          "warmP95Ms": 3.599999999627471,
+          "coldMedianMs": 89,
+          "coldP95Ms": 90.79999999701977,
+          "warmMedianMs": 2.2999999970197678,
+          "warmP95Ms": 2.5,
           "warmOriginReads": [0, 0, 0, 0, 0]
         },
         {
           "engine": "chromium",
           "strategy": "external",
           "repetitions": 5,
-          "coldMedianMs": 85.80000000074506,
-          "coldP95Ms": 86.30000000074506,
-          "warmMedianMs": 0.599999999627471,
-          "warmP95Ms": 0.6999999992549419,
+          "coldMedianMs": 85.79999999701977,
+          "coldP95Ms": 86,
+          "warmMedianMs": 0.5999999940395355,
+          "warmP95Ms": 0.699999988079071,
           "warmOriginReads": [0, 0, 0, 0, 0]
         },
         {
           "engine": "chromium",
           "strategy": "native",
           "repetitions": 5,
-          "coldMedianMs": 85.30000000074506,
-          "coldP95Ms": 85.80000000074506,
-          "warmMedianMs": 0.599999999627471,
-          "warmP95Ms": 0.6000000014901161,
+          "coldMedianMs": 85.09999999403954,
+          "coldP95Ms": 85.40000000596046,
+          "warmMedianMs": 0.5999999940395355,
+          "warmP95Ms": 0.6000000089406967,
           "warmOriginReads": [0, 0, 0, 0, 0]
         },
         {
@@ -15903,7 +15915,7 @@
           "strategy": "server",
           "repetitions": 5,
           "coldMedianMs": 90,
-          "coldP95Ms": 91,
+          "coldP95Ms": 96,
           "warmMedianMs": 4,
           "warmP95Ms": 5,
           "warmOriginReads": [0, 0, 0, 0, 0]
@@ -15912,9 +15924,9 @@
           "engine": "firefox",
           "strategy": "external",
           "repetitions": 5,
-          "coldMedianMs": 87,
-          "coldP95Ms": 89,
-          "warmMedianMs": 1,
+          "coldMedianMs": 88,
+          "coldP95Ms": 88,
+          "warmMedianMs": 2,
           "warmP95Ms": 2,
           "warmOriginReads": [0, 0, 0, 0, 0]
         },
@@ -15922,8 +15934,8 @@
           "engine": "firefox",
           "strategy": "native",
           "repetitions": 5,
-          "coldMedianMs": 87,
-          "coldP95Ms": 89,
+          "coldMedianMs": 88,
+          "coldP95Ms": 90,
           "warmMedianMs": 1,
           "warmP95Ms": 1,
           "warmOriginReads": [0, 0, 0, 0, 0]
@@ -15944,7 +15956,7 @@
           "repetitions": 5,
           "coldMedianMs": 86,
           "coldP95Ms": 86,
-          "warmMedianMs": 0,
+          "warmMedianMs": 1,
           "warmP95Ms": 1,
           "warmOriginReads": [0, 0, 0, 0, 0]
         },
@@ -15952,9 +15964,9 @@
           "engine": "webkit",
           "strategy": "native",
           "repetitions": 5,
-          "coldMedianMs": 85,
+          "coldMedianMs": 86,
           "coldP95Ms": 86,
-          "warmMedianMs": 0,
+          "warmMedianMs": 1,
           "warmP95Ms": 1,
           "warmOriginReads": [0, 0, 0, 0, 0]
         }
@@ -15966,7 +15978,7 @@
       "lines": 82,
       "annualHours": 34,
       "annualHoursRange": [17, 51],
-      "incrementalGzipBytes": 10301,
+      "incrementalGzipBytes": 10414,
       "categories": {
         "benefit": 4,
         "authority": 5,
@@ -15994,7 +16006,7 @@
       "lines": 67,
       "annualHours": 48,
       "annualHoursRange": [24, 72],
-      "incrementalGzipBytes": 9085,
+      "incrementalGzipBytes": 9098,
       "categories": {
         "benefit": 5,
         "authority": 4,
@@ -16022,7 +16034,7 @@
       "lines": 115,
       "annualHours": 50,
       "annualHoursRange": [25, 75],
-      "incrementalGzipBytes": 471,
+      "incrementalGzipBytes": 468,
       "categories": {
         "benefit": 5,
         "authority": 4,
@@ -16289,10 +16301,10 @@
     }
   },
   "browserProof": {
-    "reportPath": ".git/jqstar/resource-strategy/final-browser/results.json",
-    "sha256": "9ee52433d87c2d83d76da5a536f0588ac6921e71b3bef9436fb41ad87a5c83aa",
-    "startedAt": "2026-09-05T20:24:42.708Z",
-    "durationMs": 59271.991,
+    "reportPath": ".git/jqstar/program-audit/resource-corrected-comparison/results.json",
+    "sha256": "27912eadc8b567407698e0cb900f228010656f54f7bc512b01405885e8d51259",
+    "startedAt": "2026-09-06T12:26:37.287Z",
+    "durationMs": 57514.219000000005,
     "executions": 87,
     "observations": [
       {

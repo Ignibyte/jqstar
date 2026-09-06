@@ -197,7 +197,35 @@ produces 62,995 bytes; official Node 24.20.0/zlib 1.3.2.1 produces 63,113. Ticke
 restoring the unchanged installed-core budget through shared implementation. No compressor or
 consumer configuration changes are part of this correction.
 
+### Hosted audit follow-up, 2026-09-06
+
+Hosted run `34017660083` on commit `c3b957ee52307d29d6d73ba3bcaff40ec4bd81a8` completed with two
+failures. The preceding missing-UMD, package-size, and fixture-startup failures are resolved.
+Preserve the full downloaded reports under `.git/jqstar/hosted-audit-34017660083/`.
+
+The random property lane found `persist-canonical-json`, seed `1695469951`, path
+`6:1:1:1:3:3:88:88:87:87`, counterexample `{"a":{"":{"__proto__":0}}}`. The exact counterexample
+reproduces locally. The runtime correctly rejects magic prototype keys at any depth, as required by
+`docs/PERSISTENCE.md`. The property incorrectly claims every generated JSON object is an accepted
+preference. Keep the original generator and seed/path replay. Classify generated magic-key records
+independently of the implementation, assert encode/parse rejection for those records, and retain
+canonical ordering and round-trip assertions for accepted records. Add generated nested object/array
+rejection cases and permanent regressions for all three forbidden names. Do not filter out failures
+or change runtime acceptance. This is a quality-test correction owned here.
+
+The repeated-browser lane found horizontal overflow in Project Inspector S15 at 200% font size and
+2x zoom on Linux. A local wide-font probe reproduces 755px document width in a 640px viewport;
+inherited `overflow-wrap: anywhere` restores 640px. Owner 0020 returns to Plan for the shared
+fixture correction and stronger font-variation evidence. Its existing zoom and accessibility
+assertions stay required for all three strategies. Return this ticket to testing only after a fresh
+fast report, then require delivery and another hosted full audit before closure.
+
 ## Code
+
+Follow-up changes: `test/property/persist.property.test.ts`, `test/property/regressions.json`, and
+`test/persist-data.test.ts` correct the property contract and retain nested prototype-key
+regressions. `docs/TESTING.md` records the accepted-data and rejection obligations. Owner 0020
+tracks the shared fixture reflow correction.
 
 ### Changed-file ledger
 
@@ -243,14 +271,23 @@ guard was removed merely because TypeScript considered it redundant.
 
 Current correction verification under official Node 24.20.0:
 
-| Command                                                                                              | Result  | Evidence                                                                                                                                                             |
-| ---------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run quality:fast`                                                                               | Pass    | Run `2026-09-06T06-00-38-593Z-87431` passes all six gates and 1,239 unit tests. Code validation accepted this exact source before transition to testing.             |
-| Clean-checkout `npm run test:unit` after documented research setup                                   | Pass    | All 1,239 tests pass with `dist/` absent at startup. Reports and setup preconditions are retained under `.git/jqstar/program-audit/node24-clean-unit*`.              |
-| Clean-checkout `npm run test:e2e -- e2e/components.spec.ts --grep "cancels an older virtual window"` | Pass    | Three engines pass; the prepared navigation server reaches HTTP readiness in 106 ms with the same 60-second timeout.                                                 |
-| `npm run test:coverage`                                                                              | Pass    | Current coverage is 94.48% lines, 93.45% functions, and 84.88% branches; every changed executable line/function is covered.                                          |
-| `npm run quality:delivery` (`npm run check`)                                                         | Pass    | Run `2026-09-06T06-34-06-391Z-92532` passes all 13 gates, 1,244 unit tests, 484 browser cases and detector controls; Test validation passed before commit `c3b957e`. |
-| Corrected hosted full audit                                                                          | Running | Run `34017660083` tests exact pushed commit `c3b957ee52307d29d6d73ba3bcaff40ec4bd81a8` on the supported hosted toolchain; outcome required before closure.           |
+| Command                                                                                              | Result | Evidence                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                                               | Pass   | Run `2026-09-06T12-28-37-589Z-76827` passes all six gates and 1,254 unit tests after the resource evidence refresh; Code-phase validation accepted the exact report. |
+| `npm run quality:fast`                                                                               | Pass   | Run `2026-09-06T06-00-38-593Z-87431` passes all six gates and 1,239 unit tests. Code validation accepted this exact source before transition to testing.             |
+| Clean-checkout `npm run test:unit` after documented research setup                                   | Pass   | All 1,239 tests pass with `dist/` absent at startup. Reports and setup preconditions are retained under `.git/jqstar/program-audit/node24-clean-unit*`.              |
+| Clean-checkout `npm run test:e2e -- e2e/components.spec.ts --grep "cancels an older virtual window"` | Pass   | Three engines pass; the prepared navigation server reaches HTTP readiness in 106 ms with the same 60-second timeout.                                                 |
+| `npm run test:coverage`                                                                              | Pass   | Current coverage is 94.48% lines, 93.45% functions, and 84.88% branches; every changed executable line/function is covered.                                          |
+| `npm run quality:delivery` (`npm run check`)                                                         | Pass   | Run `2026-09-06T06-34-06-391Z-92532` passes all 13 gates, 1,244 unit tests, 484 browser cases and detector controls; Test validation passed before commit `c3b957e`. |
+| Corrected hosted full audit                                                                          | Fail   | Run `34017660083` passes the earlier corrected gates but rejects the persistence property and resource-fixture zoom layout; see follow-up plan.                      |
+
+Follow-up verification: the exact hosted seed and path now pass all 54 property cases with the
+replay consumed once by `persist-canonical-json`. The focused persistence suite passes 75 unit
+tests, and six repeated resource zoom executions pass for the three strategies. The first regression
+fixture attempt failed because Vite compiled a JSON import's `__proto__` into object-literal syntax
+and removed the own key. Retain the regression as literal JSON text and parse it inside the test so
+it exercises the actual rejected input. Both failure and corrected replay logs remain under
+`.git/jqstar/program-audit/persist-hosted-replay-*.log`. No generated inputs are skipped.
 
 Earlier evidence:
 
@@ -313,8 +350,9 @@ was Test-phase validated before closure edits.
 Current correction verification: six preparation/artifact boundary tests and eleven Mobile contract
 tests pass in the focused 137-test run. Typecheck and ESLint pass. Clean-checkout unit and prepared
 browser execution passed as recorded above. Package detector controls and delivery now pass in
-`2026-09-06T06-34-06-391Z-92532`. Corrected hosted full audit `34017660083` remains required. The
-compiled core correction is tracked under reopened owner 0013.
+`2026-09-06T06-34-06-391Z-92532`. Hosted full audit `34017660083` subsequently failed the random
+property and repeated browser lanes; a corrected hosted pass remains required. The compiled core
+correction is tracked under reopened owner 0013.
 
 ### Inspection ledger
 
