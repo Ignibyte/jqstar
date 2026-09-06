@@ -177,10 +177,9 @@ inspector.dispose();</code></pre>
       <h2>Terminal disposal</h2>
       <p>
         <code>$.star.dispose()</code> permanently closes one document installation, attempts every
-        owned cleanup, releases its document and expression-engine claims, and returns a frozen
-        JSON-safe report. A cleanup failure throws <code>StarDisposalError</code> after the complete
-        sweep and retains that report. Repeated disposal returns the same report or throws the same
-        error object.
+        owned cleanup, releases its document claim, and returns a frozen JSON-safe report. A cleanup
+        failure throws <code>StarDisposalError</code> after the complete sweep and retains that
+        report. Repeated disposal returns the same report or throws the same error object.
       </p>
       <p>
         Continue with the <a href="%BASE_URL%docs/csp/">CSP expression contract</a>, the

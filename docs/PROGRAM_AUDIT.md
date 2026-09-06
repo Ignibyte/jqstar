@@ -20,9 +20,19 @@ Evidence adapters in `scripts/program-audit/` check named executed unit assertio
 generated properties, static gates, installed-package checks, and exact source excerpts. They reject
 missing or duplicate selectors, required skips, browser retries, expected failures, stale source
 identities, different toolchains, and execution outside the frozen audit interval. A green aggregate
-result cannot replace a named executed assertion. These adapters require a schema-valid, hash-bound
-report loader and reviewed requirement mappings before they can support the final audit. Those
-integration steps remain unfinished.
+result cannot replace a named executed assertion.
+
+`createReportLoader()` verifies report byte counts and SHA-256 digests against explicit references,
+then validates the JSON against schema bytes identified by the frozen input inventory. It returns
+immutable data. Eight report kinds use existing producer schemas; internal Vitest and Playwright
+schemas validate the upstream fields consumed by the adapters. A valid schema does not mean tests
+passed: named execution checks still reject unsuccessful or incomplete runs. Connecting the loader
+to the final immutable manifest, execution index, and reviewed mappings remains unfinished.
+
+Browser selectors may use a unique spec title or a JSON array containing every parent suite title
+followed by the spec title. The latter distinguishes equal titles in separate groups. Missing or
+duplicate matches fail. All selectors are literal strings, including embedded asterisks; they never
+expand patterns. Empty selectors and a bare wildcard are rejected.
 
 Evidence files must be bounded regular UTF-8 files beneath the selected root. The reader refuses
 symbolic links, traversal, changed files, and digest mismatches. Snapshots use exclusive creation,

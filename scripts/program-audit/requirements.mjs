@@ -193,8 +193,8 @@ export function validateMappings(requirements, mappings) {
       safeRelativePath(item.path);
       assert(
         typeof item.selector === "string" &&
-          item.selector.length > 0 &&
-          !item.selector.includes("*"),
+          item.selector.trim().length > 0 &&
+          item.selector.trim() !== "*",
         `${mapping.id}: evidence needs an exact selector`,
       );
     }

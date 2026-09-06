@@ -5,6 +5,13 @@ or GitHub release claim.
 
 ## 1.1.0 - Unreleased
 
+### Runtime corrections
+
+- Cancel superseded Project Browser queries so older responses cannot replace the current window or
+  clear loading state while newer reads or edits remain pending.
+- Complete kernel cleanup after unprintable thrown values or hostile error accessors; retain the
+  original failures in the terminal disposal aggregate.
+
 ### Package upgrades
 
 - Add explicit offline package doctor checks with stable JSON codes, bounded metadata readers,

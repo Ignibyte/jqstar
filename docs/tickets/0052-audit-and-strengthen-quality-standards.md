@@ -243,13 +243,14 @@ guard was removed merely because TypeScript considered it redundant.
 
 Current correction verification under official Node 24.20.0:
 
-| Command                                                                                              | Result  | Evidence                                                                                                                                                 |
-| ---------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run quality:fast`                                                                               | Pass    | Run `2026-09-06T06-00-38-593Z-87431` passes all six gates and 1,239 unit tests. Code validation accepted this exact source before transition to testing. |
-| Clean-checkout `npm run test:unit` after documented research setup                                   | Pass    | All 1,239 tests pass with `dist/` absent at startup. Reports and setup preconditions are retained under `.git/jqstar/program-audit/node24-clean-unit*`.  |
-| Clean-checkout `npm run test:e2e -- e2e/components.spec.ts --grep "cancels an older virtual window"` | Pass    | Three engines pass; the prepared navigation server reaches HTTP readiness in 106 ms with the same 60-second timeout.                                     |
-| `npm run test:coverage`                                                                              | Pass    | Current coverage is 94.48% lines, 93.45% functions, and 84.88% branches; every changed executable line/function is covered.                              |
-| Complete `npm run check` and corrected hosted full audit                                             | Pending | Required before this owner closes.                                                                                                                       |
+| Command                                                                                              | Result  | Evidence                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                                               | Pass    | Run `2026-09-06T06-00-38-593Z-87431` passes all six gates and 1,239 unit tests. Code validation accepted this exact source before transition to testing.             |
+| Clean-checkout `npm run test:unit` after documented research setup                                   | Pass    | All 1,239 tests pass with `dist/` absent at startup. Reports and setup preconditions are retained under `.git/jqstar/program-audit/node24-clean-unit*`.              |
+| Clean-checkout `npm run test:e2e -- e2e/components.spec.ts --grep "cancels an older virtual window"` | Pass    | Three engines pass; the prepared navigation server reaches HTTP readiness in 106 ms with the same 60-second timeout.                                                 |
+| `npm run test:coverage`                                                                              | Pass    | Current coverage is 94.48% lines, 93.45% functions, and 84.88% branches; every changed executable line/function is covered.                                          |
+| `npm run quality:delivery` (`npm run check`)                                                         | Pass    | Run `2026-09-06T06-34-06-391Z-92532` passes all 13 gates, 1,244 unit tests, 484 browser cases and detector controls; Test validation passed before commit `c3b957e`. |
+| Corrected hosted full audit                                                                          | Running | Run `34017660083` tests exact pushed commit `c3b957ee52307d29d6d73ba3bcaff40ec4bd81a8` on the supported hosted toolchain; outcome required before closure.           |
 
 Earlier evidence:
 
@@ -310,9 +311,10 @@ the detector self-tests. No browser case failed, skipped, or passed only on retr
 was Test-phase validated before closure edits.
 
 Current correction verification: six preparation/artifact boundary tests and eleven Mobile contract
-tests pass in the focused 137-test run. Typecheck and ESLint pass. Full clean-checkout unit
-execution, prepared browser execution, package detector controls, delivery, and the corrected hosted
-full audit remain required. The compiled core correction is tracked under reopened owner 0013.
+tests pass in the focused 137-test run. Typecheck and ESLint pass. Clean-checkout unit and prepared
+browser execution passed as recorded above. Package detector controls and delivery now pass in
+`2026-09-06T06-34-06-391Z-92532`. Corrected hosted full audit `34017660083` remains required. The
+compiled core correction is tracked under reopened owner 0013.
 
 ### Inspection ledger
 

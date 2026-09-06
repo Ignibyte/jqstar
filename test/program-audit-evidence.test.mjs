@@ -174,6 +174,33 @@ describe("program audit report adapters", () => {
         r.numPendingTests = 1;
       },
     ]);
+    const literal = make();
+    literal.testResults[0].assertionResults[0].fullName = "plugin version matches *";
+    assert.equal(
+      selectVitest(
+        literal,
+        {
+          ...citation,
+          selector: "plugin version matches *",
+        },
+        "/audit",
+        context,
+      ).status,
+      "pass",
+    );
+    assert.throws(
+      () =>
+        selectVitest(
+          literal,
+          {
+            ...citation,
+            selector: "plugin *",
+          },
+          "/audit",
+          context,
+        ),
+      /missing or ambiguous/,
+    );
   });
 
   it("rejects browser retries, expected failures, missing projects and narrowed repeats", () => {
@@ -183,6 +210,7 @@ describe("program audit report adapters", () => {
       stats: { expected: 1, unexpected: 0, skipped: 0, flaky: 0, startTime: start, duration: 100 },
       suites: [
         {
+          title: "lifecycle.spec.ts",
           specs: [
             {
               title: citation.selector,
@@ -240,6 +268,30 @@ describe("program audit report adapters", () => {
     assert.throws(() =>
       selectPlaywright(make(), citation, { ...context, project: "desktop-webkit", repeats: 2 }),
     );
+
+    const grouped = make();
+    const spec = grouped.suites[0].specs[0];
+    grouped.stats.expected = 2;
+    grouped.suites[0].specs = [];
+    grouped.suites[0].suites = [
+      { title: "first owner", specs: [spec] },
+      { title: "second owner", specs: [structuredClone(spec)] },
+    ];
+    assert.throws(() => verify(grouped), /missing or ambiguous/);
+    const selectGroup = (owner) =>
+      selectPlaywright(
+        grouped,
+        {
+          path: citation.path,
+          selector: JSON.stringify(["lifecycle.spec.ts", owner, citation.selector]),
+        },
+        { ...context, project: "desktop-webkit", repeats: 1 },
+      );
+    assert.equal(selectGroup("first owner").status, "pass");
+    assert.equal(selectGroup("second owner").status, "pass");
+    assert.throws(() => selectGroup("missing owner"), /missing or ambiguous/);
+    grouped.suites[0].suites.push(structuredClone(grouped.suites[0].suites[0]));
+    assert.throws(() => selectGroup("first owner"), /missing or ambiguous/);
   });
 
   it("requires property runs, selected static gates and the exact installed package", async () => {

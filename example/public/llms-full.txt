@@ -604,10 +604,9 @@ complete inspection contract
 for filters, sampling, limits, service summaries and expiring field permissions.
 Terminal disposal
 $.star.dispose() permanently closes one document installation, attempts every
-owned cleanup, releases its document and expression-engine claims, and returns a frozen
-JSON-safe report. A cleanup failure throws StarDisposalError after the complete
-sweep and retains that report. Repeated disposal returns the same report or throws the same
-error object.
+owned cleanup, releases its document claim, and returns a frozen JSON-safe report. A cleanup
+failure throws StarDisposalError after the complete sweep and retains that
+report. Repeated disposal returns the same report or throws the same error object.
 Continue with the CSP expression contract , the
 testing harness , or the
 plugin contract and conformance guide .

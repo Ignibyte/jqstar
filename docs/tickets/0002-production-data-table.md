@@ -1,7 +1,7 @@
 ---
 id: 0002
 title: Complete the production Data Table
-status: testing
+status: done
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -72,7 +72,7 @@ serving as the project's production Data Table reference.
       pointer and keyboard-operable controls.
 - [x] [AC-11] Column visibility, order, and pin state survive row patches and page reloads while
       required selection and Project columns remain available.
-- [ ] [AC-12] Virtual mode scrolls through the complete filtered result set while rendering no more
+- [x] [AC-12] Virtual mode scrolls through the complete filtered result set while rendering no more
       than 80 data rows at once and avoiding stale out-of-order window patches.
 - [x] [AC-13] Selection remains stable by project ID across page, virtual-window, sort, filter,
       group, expand, edit, and column changes.
@@ -257,6 +257,8 @@ spelling rule.
 
 ### Current correction ledger
 
+- `CHANGELOG.md`: record the corrected table behavior in the unreleased package notes.
+
 - `registry/blocks/project-browser.ts`: one current query controller per root, guarded
   query/save-refresh finalization, and pending-edit counts for shared loading state.
 - `test/project-browser-block.test.ts`: nine added cases cover delayed stale responses, different
@@ -298,7 +300,7 @@ Correction verification, 2026-09-06:
 | Focused browser regression                           | Pass, 3 tests      | Chromium, Firefox, and WebKit each observe cancellation of the held older real SDK response and retain virtual rows 191–230 after its release.                                                             |
 | `npm run test:coverage`                              | Pass               | Coverage is 94.50% lines and 84.90% branches; all changed production lines/functions are covered.                                                                                                          |
 | `npm run quality:fast`                               | Pass               | Run `2026-09-06T05-36-47-092Z-9882` passes all six gates and passed Code validation before this transition.                                                                                                |
-| Complete delivery                                    | Pass               | Run `2026-09-06T06-04-04-409Z-6542` passes all 13 gates; later core edits require a fresh current-tree report before phase validation.                                                                     |
+| `npm run quality:delivery` (`npm run check`)         | Pass               | Run `2026-09-06T06-34-06-391Z-92532` passes all 13 gates, 1,244 unit tests and 484 browser cases. Test validation accepted the exact receipt before commit `c3b957e`.                                      |
 
 The latest focused block run passes 23 tests, including both superseded save outcomes (200 and 409)
 and concurrent pending edits. Typecheck, ESLint, and the unchanged 283-file/306-count lint-boundary
@@ -353,28 +355,29 @@ never exceeds the 80-row limit while selection remains stable.
 - Project, architecture, development, testing, and component-architecture brain docs now reflect
   Node 24, SQLite, advanced table ownership, and required evidence.
 - `registry.json` describes the delivered Data Table and Project Browser capabilities.
+- `CHANGELOG.md` records query supersession and loading ownership in the unreleased 1.1 entry.
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                       | Result |
-| ----- | ---------------------------------------------------------------------------------------------- | ------ |
-| AC-01 | File reopen, migration, WAL/foreign-key, shutdown, health, and service-state evidence passes.  | Pass   |
-| AC-02 | Store tests use isolated in-memory and temporary-file databases.                               | Pass   |
-| AC-03 | Migration/seed tests prove an idempotent deterministic 2,500-record dataset.                   | Pass   |
-| AC-04 | Store and server tests cover every query, window, grouping, sorting, and edit allowlist.       | Pass   |
-| AC-05 | Controller, block, server, and browser tests cover ordered additive multi-sort.                | Pass   |
-| AC-06 | Group aggregates and expansion pass store, block, server, and browser tests.                   | Pass   |
-| AC-07 | Semantic companion-row markup exposes project descriptions and versions.                       | Pass   |
-| AC-08 | Validation tests prove invalid edits are announced without changing storage.                   | Pass   |
-| AC-09 | Real concurrent edits return `409`, retain stored data, and support reload/retry.              | Pass   |
-| AC-10 | Keyboard move, pointer drag, pin, and unpin workflows pass.                                    | Pass   |
-| AC-11 | Valid and corrupt local-storage reloads preserve or safely normalize column layout.            | Pass   |
-| AC-12 | Server windows and browser DOM remain at or below 80 project rows.                             | Pass   |
-| AC-13 | Delegated stable IDs preserve selection across every page and virtual operation.               | Pass   |
-| AC-14 | Block and browser tests restore focus after patches, validation, success, and conflict.        | Pass   |
-| AC-15 | Parsed SDK-event tests cover every table response path.                                        | Pass   |
-| AC-16 | Unit, store, server, block, browser, accessibility, performance, deployment, and package pass. | Pass   |
-| AC-17 | Public, backend, self-hosting, architecture, testing, and project documentation was updated.   | Pass   |
+| ID    | Evidence                                                                                                                                                                                                                                                                                                                       | Result |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| AC-01 | File reopen, migration, WAL/foreign-key, shutdown, health, and service-state evidence passes.                                                                                                                                                                                                                                  | Pass   |
+| AC-02 | Store tests use isolated in-memory and temporary-file databases.                                                                                                                                                                                                                                                               | Pass   |
+| AC-03 | Migration/seed tests prove an idempotent deterministic 2,500-record dataset.                                                                                                                                                                                                                                                   | Pass   |
+| AC-04 | Store and server tests cover every query, window, grouping, sorting, and edit allowlist.                                                                                                                                                                                                                                       | Pass   |
+| AC-05 | Controller, block, server, and browser tests cover ordered additive multi-sort.                                                                                                                                                                                                                                                | Pass   |
+| AC-06 | Group aggregates and expansion pass store, block, server, and browser tests.                                                                                                                                                                                                                                                   | Pass   |
+| AC-07 | Semantic companion-row markup exposes project descriptions and versions.                                                                                                                                                                                                                                                       | Pass   |
+| AC-08 | Validation tests prove invalid edits are announced without changing storage.                                                                                                                                                                                                                                                   | Pass   |
+| AC-09 | Real concurrent edits return `409`, retain stored data, and support reload/retry.                                                                                                                                                                                                                                              | Pass   |
+| AC-10 | Keyboard move, pointer drag, pin, and unpin workflows pass.                                                                                                                                                                                                                                                                    | Pass   |
+| AC-11 | Valid and corrupt local-storage reloads preserve or safely normalize column layout.                                                                                                                                                                                                                                            | Pass   |
+| AC-12 | Server and browser windows stay at or below 80 rows. `test/project-browser-block.test.ts` covers superseded bodies, different controls, independent roots, root disposal, pending edits and both save outcomes; the held-response browser regression passes in all three engines in delivery `2026-09-06T06-34-06-391Z-92532`. | Pass   |
+| AC-13 | Delegated stable IDs preserve selection across every page and virtual operation.                                                                                                                                                                                                                                               | Pass   |
+| AC-14 | Block and browser tests restore focus after patches, validation, success, and conflict.                                                                                                                                                                                                                                        | Pass   |
+| AC-15 | Parsed SDK-event tests cover every table response path.                                                                                                                                                                                                                                                                        | Pass   |
+| AC-16 | Unit, store, server, block, browser, accessibility, performance, deployment, and package pass.                                                                                                                                                                                                                                 | Pass   |
+| AC-17 | Public, backend, self-hosting, architecture, testing, and project documentation was updated.                                                                                                                                                                                                                                   | Pass   |
 
 ### Previous completion audit (superseded 2026-09-06)
 
@@ -391,5 +394,10 @@ test, documentation, deployment, or acceptance task remains open in this ticket.
 
 ### Completion audit
 
-The reproduced AC-12 failures are corrected and focused coverage passes. Complete delivery and
-current acceptance evidence remain required. The previous completion record is superseded.
+The stale-window and edit-loading races are corrected in verified commit `c3b957e`. Delivery
+`2026-09-06T06-34-06-391Z-92532` passes every enforced gate, with no failed, skipped, or flaky
+browser case. Test validation passed before the documentation phase. Current source and acceptance
+review confirms all 17 criteria; historical completion remains explicitly separate. The
+documentation phase is complete; the next commit still requires its own current delivery receipt.
+
+Status: Complete

@@ -1,7 +1,7 @@
 ---
 id: 0013
 title: Publish modular core, UI, and Datastar entry points
-status: testing
+status: done
 created: 2026-08-30
 updated: 2026-09-06
 ---
@@ -122,7 +122,7 @@ current required `StarStatic.ui` and global jQuery declarations.
 - [x] [AC-08] `sideEffects` marks only the auto-installing root artifacts and UI CSS. Core, UI, and
       Datastar plugin modules remain side-effect-free; bundlers retain explicitly installed plugins
       and remove unreferenced ones.
-- [ ] [AC-09] A packed core-only consumer executes applications, helpers/directives, observations,
+- [x] [AC-09] A packed core-only consumer executes applications, helpers/directives, observations,
       middleware, generic JSON/HTML requests, patches, and render lifecycle while excluding UI,
       Datastar, persistence, resources, navigation, CSP, testing, inspection, registry, server, and
       website sentinels. Raw/gzip bundle budgets ratchet from the first reviewed artifact.
@@ -140,12 +140,12 @@ current required `StarStatic.ui` and global jQuery declarations.
       settles the barrier once, and leaves no application/resource leak. Preserved roots retain DOM
       identity, state, effects, focus, values, handlers, and plugin/UI records without duplicate
       enhancement.
-- [x] [AC-13] Public metadata and documentation label `core`, `ui`, and `datastar` as 0.4 previews,
-      explain root compatibility versus explicit installation, list formats/side effects, and make
-      no jQuery UI successor or stable-1.0 claim. Full focused and installed-package matrices,
-      coverage/property/static/browser/package/release gates, `npm run check`, and
-      `git diff --check` pass without mutation testing.
-- [ ] [AC-14] Core and root expose the same idempotent public disposal operation. It attempts every
+- [x] [AC-13] Public metadata and documentation use the stable designation approved by ticket 0017
+      for `core`, `ui`, and `datastar`, explain root compatibility versus explicit installation,
+      list formats/side effects, and make no jQuery UI successor claim. Full focused and
+      installed-package matrices, coverage/property/static/browser/package/release gates,
+      `npm run check`, and `git diff --check` pass without mutation testing.
+- [x] [AC-14] Core and root expose the same idempotent public disposal operation. It attempts every
       application, plugin, request, task, observer, listener, subscription, effect, hook, and
       service cleanup; releases installation ownership; and returns a frozen, JSON-safe report of
       attempted, released, failed, and remaining resources by exact category and owner. A cleanup
@@ -381,6 +381,18 @@ accessors. Add kernel and diagnostic regressions before implementation. Planned 
 documentation, derived size measurements, and this ticket. Verify focused failures and passes,
 existing operation diagnostics, unchanged core budgets, coverage, and a fresh complete delivery.
 
+### Current documentation decision, 2026-09-06
+
+Completed ticket 0017 AC-01 explicitly superseded the original 0.4-preview designation. Refresh
+AC-13 to that approved stable contract while retaining this ticket's historical preview scope and
+all quality requirements.
+
+Correct the API page's outdated claim that disposal releases an expression-engine identity. The
+document claim is reusable; a disposed engine stays terminal, as the kernel contract already tests.
+Planned documentation files are `example/docs/api/index.html`, its generated agent mirrors,
+`CHANGELOG.md`, and this ticket. Record the table and cleanup corrections in the unreleased 1.1
+notes without changing the package version or publishing.
+
 ## Code
 
 ### Changed-file ledger
@@ -456,19 +468,25 @@ existing operation diagnostics, unchanged core budgets, coverage, and a fresh co
   diagnostics.
 - `README.md`, `docs/RUNTIME_OWNERSHIP.md`: document bounded disposal formatting and cleanup after
   unprintable failures.
+- `example/docs/api/index.html`, generated agent index/full-text files, `CHANGELOG.md`: correct
+  document versus engine ownership and record the user-visible fixes.
 
 ### Design changes
 
 - A kernel now starts with `core.generic` only. The official Datastar plugin registers
   `core.datastar` and root composition selects it as the default; an explicit core installation
   therefore cannot retain an accidental Datastar import.
-- Kernel disposal releases its document and expression-engine claims, as required by the public
-  terminal disposal contract. Existing tests that expected a disposed document to remain claimed
-  must move to the new reinstall-after-disposal contract.
+- Kernel disposal releases its document installation claim while retaining the terminal expression
+  engine identity. A fresh engine can reinstall that document; a disposed engine cannot be reused.
 - Completion audit found that the CLI did not expose the package version required by AC-10. Add a
   manifest-derived `--version` path and prove both the source CLI and the installed tarball output.
 
 ## Test
+
+Delivery `2026-09-06T06-34-06-391Z-92532` passes all 13 gates: 1,244 unit tests, 484 browser cases,
+coverage, properties, static checks, installed-package checks, reproducibility, and detector
+controls. Every changed production line/function is covered. Test validation accepted that exact
+receipt before verified commit `c3b957e` and this documentation phase.
 
 The budget correction passed delivery `2026-09-06T06-04-04-409Z-6542` under official Node 24.20.0:
 all 13 gates, 1,239 unit tests, 484 browser cases, 13 installed-package groups, and seven release
@@ -488,7 +506,8 @@ repeat the fast gate. This failed run cannot close Code.
 
 Corrected fast run `2026-09-06T06-32-11-544Z-79781` passes all six gates and 1,244 unit tests on
 official Node 24. Code validation accepted this exact current-tree report before the transition to
-testing. Fresh coverage and complete delivery remain required for the additional disposal fix.
+testing. The subsequent delivery recorded above supplies coverage and complete verification for the
+additional disposal fix.
 
 | Command                                                                                                                                                                                                     | Result                     | Evidence                                                                                                                                                                                                                             |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -573,22 +592,22 @@ current verification remains required before closure.
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                                                                                                                                                                                                     | Result |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| AC-01 | `src/core.ts` and `test/modular-entrypoints.test.ts` prove import purity and explicit generic-core installation; the installed `core-only-esm` consumer executes the same contract from the packed artifact.                                                                                                 | Pass   |
-| AC-02 | `dist/core.d.ts` and `dist/core.d.cts` contain no ambient global augmentation, while the root declarations retain it; NodeNext and Bundler consumers prove unrelated jQuery values do not gain `star` from a core type import.                                                                               | Pass   |
-| AC-03 | `src/ui.ts`, `src/ui/index.ts`, plugin tests, and modular tests prove one frozen official UI plugin, all 165 actions, transactional installation and rollback, two-document isolation, auto-enhancement, and exactly-once disposal.                                                                          | Pass   |
-| AC-04 | Source inspection, modular tests, and the packed modular browser consumer prove `$.ui` and `$.widget` remain absent; `README.md` documents `data-jqs`, `data-part`, native HTML, state attributes, and `@ui.*` as the shipped contract.                                                                      | Pass   |
-| AC-05 | `src/datastar.ts`, protocol tests, and the installed modular consumer prove the frozen Datastar plugin installs `core.datastar` without UI or document work, while core alone retains `core.generic`.                                                                                                        | Pass   |
-| AC-06 | `src/index.ts` and `src/compatibility.ts` compose core, Datastar, and UI; root ESM, CommonJS, QUnit, module-browser, and UMD consumers plus the public-baseline suite prove compatibility behavior and the `jQueryStar`/`$.star.ui` identities.                                                              | Pass   |
-| AC-07 | The `package.json` export map and run `2026-09-01T18-56-04-795Z-14492` package report prove five public exports, matched ESM/CommonJS declarations and maps, ten installed consumers, strict `publint`, Are the Types Wrong, and private-import refusal.                                                     | Pass   |
-| AC-08 | `package.json` limits `sideEffects` to root artifacts and UI CSS; the installed bundle matrix proves explicit plugin retention and reports a 194,837-byte raw, 62,395-byte gzip, six-module core-only bundle with every optional sentinel absent.                                                            | Pass   |
-| AC-09 | The installed core-only consumer executes applications, helpers, directives, observations, middleware, generic requests, patches, render, and disposal; its graph and sentinel checks exclude every optional subsystem named by the criterion.                                                               | Pass   |
-| AC-10 | `src/version.ts`, `bin/jqstar.mjs`, `test/cli.test.ts`, and the final package report prove manifest-derived version `0.1.0` across entries, declarations, maps, metadata, runtime facades, source and packed CLI output; the plugin API version remains independently explicit.                              | Pass   |
-| AC-11 | `src/render-adapter.ts`, `src/kernel.ts`, focused render tests, and 100 generated render state-machine sequences prove operation IDs, exact preservation, contained removal boundaries, deepest-first deduplication, terminal ordering, explicit incoming boot, and the complete enhancement barrier.        | Pass   |
-| AC-12 | Render unit and three-engine browser tests prove original-error preservation, complete failure cleanup, zero ownership leaks, and retained root identity, state, effects, focus, values, handlers, and UI/plugin records without duplicate enhancement.                                                      | Pass   |
-| AC-13 | Public metadata and documentation mark all subpaths as `0.4-preview` and distinguish them from root compatibility; delivery run `2026-09-01T18-56-04-795Z-14492` passed all 12 gates, including 734 unit tests, coverage, 1,930 property cases, 263 browser cases, package, and reproducible release checks. | Pass   |
-| AC-14 | `src/disposal.ts`, `src/kernel.ts`, runtime and modular tests prove the shared public disposal operation, exhaustive cleanup, ownership release, frozen JSON-safe reports, stable repeated/recursive results, reinstall after disposal, and typed aggregate failure after the complete cleanup sweep.        | Pass   |
+| ID    | Evidence                                                                                                                                                                                                                                                                                                                                                | Result |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| AC-01 | `src/core.ts` and `test/modular-entrypoints.test.ts` prove import purity and explicit generic-core installation; the installed `core-only-esm` consumer executes the same contract from the packed artifact.                                                                                                                                            | Pass   |
+| AC-02 | `dist/core.d.ts` and `dist/core.d.cts` contain no ambient global augmentation, while the root declarations retain it; NodeNext and Bundler consumers prove unrelated jQuery values do not gain `star` from a core type import.                                                                                                                          | Pass   |
+| AC-03 | `src/ui.ts`, `src/ui/index.ts`, plugin tests, and modular tests prove one frozen official UI plugin, all 165 actions, transactional installation and rollback, two-document isolation, auto-enhancement, and exactly-once disposal.                                                                                                                     | Pass   |
+| AC-04 | Source inspection, modular tests, and the packed modular browser consumer prove `$.ui` and `$.widget` remain absent; `README.md` documents `data-jqs`, `data-part`, native HTML, state attributes, and `@ui.*` as the shipped contract.                                                                                                                 | Pass   |
+| AC-05 | `src/datastar.ts`, protocol tests, and the installed modular consumer prove the frozen Datastar plugin installs `core.datastar` without UI or document work, while core alone retains `core.generic`.                                                                                                                                                   | Pass   |
+| AC-06 | `src/index.ts` and `src/compatibility.ts` compose core, Datastar, and UI; root ESM, CommonJS, QUnit, module-browser, and UMD consumers plus the public-baseline suite prove compatibility behavior and the `jQueryStar`/`$.star.ui` identities.                                                                                                         | Pass   |
+| AC-07 | The current package report validates every declared export, ESM/CommonJS declarations and maps, installed NodeNext/Bundler consumers, strict publint, Are the Types Wrong, and private-import refusal.                                                                                                                                                  | Pass   |
+| AC-08 | Package side-effect metadata and installed graphs preserve explicit plugin installation. The core graph has five modules and excludes optional entries; the source-owned registry pattern does not cause core imports to perform work.                                                                                                                  | Pass   |
+| AC-09 | Delivery 2026-09-06T06-34-06-391Z-92532 executes the installed core workload and module/sentinel checks: 193,511 raw bytes and 62,994 gzip bytes on official Node 24.20.0, below unchanged ceilings of 197,632 and 63,000. Every forbidden optional module is absent.                                                                                   | Pass   |
+| AC-10 | `src/version.ts`, CLI tests, installed consumers and package export checks derive current version 1.1.0 from the manifest. The plugin API remains separately versioned at 0.1.0.                                                                                                                                                                        | Pass   |
+| AC-11 | `src/render-adapter.ts`, `src/kernel.ts`, focused render tests, and 100 generated render state-machine sequences prove operation IDs, exact preservation, contained removal boundaries, deepest-first deduplication, terminal ordering, explicit incoming boot, and the complete enhancement barrier.                                                   | Pass   |
+| AC-12 | Render unit and three-engine browser tests prove original-error preservation, complete failure cleanup, zero ownership leaks, and retained root identity, state, effects, focus, values, handlers, and UI/plugin records without duplicate enhancement.                                                                                                 | Pass   |
+| AC-13 | Completed ticket 0017 AC-01 superseded the historical preview designation. Current package metadata and compatibility docs identify stable 1.x entries. Delivery 2026-09-06T06-34-06-391Z-92532 passes all 13 gates without mutation execution.                                                                                                         | Pass   |
+| AC-14 | Kernel, modular, runtime, and render tests prove complete cleanup, terminal reports, original aggregate values, stable repeated/recursive results and document reuse. Added regressions cover null-prototype values, revoked proxies, throwing conversion and changing accessors; all 1,244 unit tests pass in delivery 2026-09-06T06-34-06-391Z-92532. | Pass   |
 
 ### Previous completion audit (superseded 2026-09-06)
 
@@ -609,4 +628,13 @@ Historical status: Complete
 
 ### Completion audit
 
-Pending current delivery evidence for the core-budget and hostile-value disposal corrections.
+The core-budget and hostile-value disposal corrections pass complete delivery
+`2026-09-06T06-34-06-391Z-92532` and its Test-phase validator. That verified implementation artifact
+has 257 files, 3,163,667 packed bytes and 11,076,409 unpacked bytes; two independent builds
+reproduce SHA-256 `cb9a2c52039fdb5c6e0f564b0fe6299f69c3c2739f53b5c2e0eb4c8548ca2a6c`. All 14 current
+criteria have direct evidence. Public API text now distinguishes reusable document ownership from a
+terminal engine identity, and the changelog records the cleanup correction. Document validation
+passed. The next commit still requires its own current delivery receipt after these documentation
+updates.
+
+Status: Complete

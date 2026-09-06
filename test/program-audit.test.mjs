@@ -97,6 +97,9 @@ describe("program requirement derivation", () => {
       ],
     };
     assert.equal(validateMappings(requirements, [mapping]), true);
+    const literal = structuredClone(mapping);
+    literal.evidence[0].selector = "plugin version matches *";
+    assert.equal(validateMappings(requirements, [literal]), true);
     for (const mutate of [
       (value) => {
         value.evidence = [];
@@ -109,6 +112,9 @@ describe("program requirement derivation", () => {
       },
       (value) => {
         value.evidence[0].selector = "*";
+      },
+      (value) => {
+        value.evidence[0].selector = "   ";
       },
       (value) => {
         value.id = "9999:AC-01";

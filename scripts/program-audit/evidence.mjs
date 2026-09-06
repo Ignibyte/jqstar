@@ -113,13 +113,17 @@ export function selectVitest(report, citation, sourceRoot, context) {
   return { path: citation.path, selector: citation.selector, status: "pass" };
 }
 
-function browserSpecs(suites, output = [], depth = 0) {
-  assert(Array.isArray(suites) && depth <= 32, "Invalid browser suite tree");
+function browserSpecs(suites, output = [], ancestry = []) {
+  assert(Array.isArray(suites) && ancestry.length <= 32, "Invalid browser suite tree");
   for (const suite of suites) {
-    assert(Array.isArray(suite.specs), "Browser suite has no specification inventory");
-    output.push(...suite.specs);
+    assert(
+      Array.isArray(suite.specs) && typeof suite.title === "string",
+      "Invalid browser suite identity",
+    );
+    const titles = [...ancestry, suite.title];
+    output.push(...suite.specs.map((spec) => ({ spec, titles: [...titles, spec.title] })));
     assert(output.length <= 50000, "Browser specification inventory exceeds the audit bound");
-    if (suite.suites) browserSpecs(suite.suites, output, depth + 1);
+    if (suite.suites) browserSpecs(suite.suites, output, titles);
   }
   return output;
 }
@@ -145,9 +149,12 @@ export function selectPlaywright(report, citation, context) {
     "Invalid frozen browser repetition count",
   );
   safeRelativePath(citation.path);
-  const spec = one(browserSpecs(report.suites), ({ file, title }) => {
-    safeRelativePath(file);
-    return `e2e/${file}` === citation.path && title === citation.selector;
+  const { spec } = one(browserSpecs(report.suites), ({ spec, titles }) => {
+    safeRelativePath(spec.file);
+    return (
+      `e2e/${spec.file}` === citation.path &&
+      (spec.title === citation.selector || JSON.stringify(titles) === citation.selector)
+    );
   });
   assert(spec.ok === true, "Named browser specification did not pass");
   const tests = spec.tests.filter(({ projectName }) => projectName === context.project);
