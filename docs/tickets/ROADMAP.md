@@ -33,6 +33,11 @@ complete, as is the README positioning correction (0045). The installed CSP proo
 open before the final program audit. Ticket 0048 removed mutation testing from ticket 0043's active
 contract. Ticket 0017 owns the clean 1.0 candidate audit and non-publishing handoff.
 
+Current testing correction: ticket 0014 is in testing after the program audit reproduced silent
+failure to remove caller-hardened temporary globals and fetch replacements. Its fix reports those
+failures, preserves callback errors and continues the remaining cleanup. Focused regressions and all
+1,572 fast-suite tests pass; complete delivery and closure remain required.
+
 Current guide correction: ticket 0017 aligns the manual release commands with the existing forced
 candidate checks and corrects the documented modular request default. Its prerequisite closure and
 final candidate proof remain pending alongside private-reporting authorization. Ticket 0033's

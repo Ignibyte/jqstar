@@ -1217,3 +1217,29 @@ Exact Code validation passes before this ledger update. A direct wrong-artifact 
 refused before browser execution (`navigation-wrong-artifact.log`). The matching full navigation
 component and forced complete delivery results will be retained under their own immutable run
 directories.
+
+### Ownership review and testing restoration finding (2026-09-06)
+
+The guide batch passed complete delivery `2026-09-06T22-01-29-764Z-96643`, exact receipt and Test
+validation, and was committed/pushed as `b133b25`. Draft semantic review covers nineteen of 74
+public sources and 673 authored units; the 605 of 613 requirement mappings remain planning records.
+
+The ownership review now records every current `src/` path and conservative variable/class-field
+candidates, including closure references. Twenty-three of 109 runtime sources have explicit reviews:
+eleven foundational files and twelve entry or CSP support files. The candidate list does not prove
+complete mutable ownership; caller-managed compatibility helpers and the complete remaining source
+review still require final interpretation.
+
+A direct isolated-process probe found that `withStarDOMRealm()` reports success when deletion of an
+originally absent global returns false. Both response-controller restoration paths have the same
+reproduced defect. Owner 0014 returned to a validated Plan before code changes. Its correction adds
+explicit failed-removal reporting, full remaining cleanup and callback-error preservation, with
+actual non-configurable-property regressions. The owner ticket must close before the final
+inventory. Mutation testing, real accessibility records, original references and private-reporting
+approval remain separate unresolved work.
+
+The corrected batch passes 38 focused tests and fast run `2026-09-06T22-38-12-350Z-72785` with all
+1,572 unit tests and all five selected gates. The unchanged runner self-test explicitly skips. Owner
+0014 passes Code validation against that exact report and moves to testing; complete delivery and
+final closure remain required. Earlier generated-corpus and CSP inventory failures remain in the
+owner ledger with their corrections; no budget, grammar or coverage threshold was relaxed.

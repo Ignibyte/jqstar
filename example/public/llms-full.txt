@@ -1272,6 +1272,8 @@ reports unused expectations during disposal. Use json() , html() ,
 empty() , httpError() , networkError() ,
 delay() , retry() , and abort() . There is no network
 passthrough.
+Cleanup cannot remove caller-made non-configurable properties. Realm and fetch restoration
+report that failure, attempt remaining cleanup, and preserve callback errors.
 jquery-star/datastar/testing adds success, ordered multi-event, chunked, retry,
 malformed, failure, and abort fixtures. Valid event bytes come from the official Datastar
 SDK. Keeping them in a separate entry prevents Datastar from entering generic test and core

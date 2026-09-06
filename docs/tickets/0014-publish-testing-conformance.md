@@ -1,9 +1,9 @@
 ---
 id: 0014
 title: Publish testing and plugin conformance tools
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-09-03
+updated: 2026-09-06
 ---
 
 # 0014: Publish testing and plugin conformance tools
@@ -31,6 +31,45 @@ plugin contract likewise lacks a reusable conformance suite or an installed exte
   documented exports under both the repository runner and QUnit.
 - Ticket 0013 plans side-effect-free modular entries, a public render adapter, and a bounded public
   disposal report. Those are the only runtime hooks this testing package may consume.
+
+### Reopening decision: failed property removal (2026-09-06)
+
+Ticket 0033 reproduced a cleanup-reporting defect in `withStarDOMRealm()` and both
+response-controller restoration paths. When a property was originally absent and the caller makes
+the installed property non-configurable, `Reflect.deleteProperty()` returns false. The
+implementation ignored that result, leaving the property installed while reporting successful
+restoration. A fresh Node process using the actual realm source and JSDOM reproduced this with
+`Node`; independently bundled response source reproduced it for both the returned release function
+and controller disposal. Exact inputs and results are retained in
+`.git/jqstar/program-audit/ownership-census/restoration-finding.json`.
+
+Reopen AC-02, AC-05, AC-07 and AC-12 before changing behavior. Treat failed deletion as a cleanup
+failure using a fixed diagnostic, attempt all remaining restorations, release the realm lease, and
+preserve any callback failure. JavaScript cannot remove a property the caller made non-configurable;
+the required behavior is truthful failure reporting and completion of the other cleanup attempts.
+Successful restoration and public signatures stay compatible. Mutation testing remains deferred.
+
+Planned files: `src/testing/realm.ts`, `src/testing/responses.ts`,
+`test/testing-realm-responses.test.ts`, `README.md`, `example/docs/testing/index.html`,
+`docs/TESTING.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/ARCHITECTURE.md`, this ticket,
+`docs/tickets/0033-audit-full-library-program.md`, and `docs/tickets/ROADMAP.md`.
+
+The first fast run exposed generated-artifact dependencies of the guide edit. Extend the Plan to
+refresh `example/agent-content.generated.json`, `example/public/jqstar-agent-index.json`,
+`example/public/llms-full.txt`, and the generator's unchanged companion guide/index outputs, plus
+`test/fixtures/csp/conformance-map.json`. The agent corpus must retain its existing 190,000-byte
+index and 120,000-byte full-text limits. Shorten the added guide explanation without removing the
+restoration contract; do not raise a budget or change the corpus/source roster. Regenerate only
+through the maintained commands and retain the failed fast run.
+
+Validate this Plan before implementation. Add a regression for real non-configurable globals in an
+isolated child process, covering a successful and throwing callback, remaining descriptor
+restoration, and released lease. Test real non-configurable fetch targets for explicit release and
+controller disposal, including continued restoration of other targets and idempotence. Record the
+failing controls before fixing all three sites. Run focused testing suites, changed-code coverage,
+fast checks, installed-package/browser/release proof through complete delivery, exact phase checks
+and diff checks. Update public and brain guidance to state the failure behavior. Preserve the old
+closure below as historical evidence and refresh source-review identities after the correction.
 
 ### Scope
 
@@ -87,7 +126,7 @@ plugin contract likewise lacks a reusable conformance suite or an installed exte
       Import performs no jQuery installation, document/global access, listener/observer
       registration, DOM creation, test-runner registration, fetch replacement, or plugin
       installation; the entry has no runtime dependency on a DOM implementation or test runner.
-- [x] [AC-02] A caller can create a harness with one explicit same-realm `Window`, `Document`, and
+- [ ] [AC-02] A caller can create a harness with one explicit same-realm `Window`, `Document`, and
       jQuery instance. Managed-global mode snapshots only its documented allowlist, restores every
       prior value or absence after success/failure, and rejects mismatched, nested, or concurrent
       realm ownership before mutation.
@@ -100,7 +139,7 @@ plugin contract likewise lacks a reusable conformance suite or an installed exte
       fixture responses, and finite tasks. Repeating timers, animation loops, third-party tasks, and
       real network are excluded; a bound breach throws a typed JSON-safe diagnostic naming only
       outstanding owned work while leaving the harness disposable.
-- [x] [AC-05] The generic response controller queues deterministic JSON, HTML, empty, HTTP failure,
+- [ ] [AC-05] The generic response controller queues deterministic JSON, HTML, empty, HTTP failure,
       network failure, delay, retry, and abort cases; records exact method/URL/headers/body/signal
       observations; rejects unexpected or leftover requests; and restores the caller's original
       fetch property exactly after success, setup failure, or disposal.
@@ -108,7 +147,7 @@ plugin contract likewise lacks a reusable conformance suite or an installed exte
       ordered multi-event, chunked streaming, retry, malformed, failure, and abort fixtures use the
       official Datastar SDK/public profile path, preserve chunk/event ordering, and are absent from
       generic testing and core dependency graphs.
-- [x] [AC-07] Disposal is idempotent and attempts all cleanup after individual failures. Harness
+- [ ] [AC-07] Disposal is idempotent and attempts all cleanup after individual failures. Harness
       assertions consume only the public frozen disposal report and verify exact stable owners plus
       application, plugin, request, task, observer, listener, subscription, effect, hook, and
       service categories; they make no claim about arbitrary third-party resources or heap leaks.
@@ -129,7 +168,7 @@ plugin contract likewise lacks a reusable conformance suite or an installed exte
       checks prove testing, DOM implementations, runners, fixtures, and conformance examples are
       absent from root/core/UI/Datastar consumer bundles and Datastar testing is absent from generic
       testing bundles.
-- [x] [AC-12] Public and project-brain documentation defines realm ownership, supported work,
+- [ ] [AC-12] Public and project-brain documentation defines realm ownership, supported work,
       exclusions, timeout diagnostics, response queues, teardown-report limits, runner integration,
       external plugin conformance, and preview status. Focused, coverage/property/static/browser,
       installed-package/release, `npm run check`, and `git diff --check` gates pass without mutation
@@ -311,6 +350,18 @@ to `src/` or inject private test helpers.
 | `config/agent-content.json`, `example/{agent-content.generated.json,public/}`                | Add reviewed testing/plugin records and regenerate bounded agent artifacts.                   |
 | `e2e/site.spec.ts`, `scripts/smoke-deployment.mjs`                                           | Exercise and package both new public documentation routes.                                    |
 
+### Current correction ledger (2026-09-06)
+
+| File                                                                                                                                       | Purpose                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/testing/realm.ts`                                                                                                                     | Report a refused deletion, continue other global restorations and preserve callback failures.                                                                  |
+| `src/testing/responses.ts`                                                                                                                 | Share exact fetch restoration between explicit release and disposal, including failed deletion.                                                                |
+| `test/testing-realm-responses.test.ts`                                                                                                     | Cover real non-configurable globals in isolated children, controlled deletion refusal, callback aggregation, fetch targets, continued cleanup and idempotence. |
+| `README.md`, `example/docs/testing/index.html`                                                                                             | Explain the public restoration failure behavior and its non-configurable-property limit.                                                                       |
+| `docs/TESTING.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/ARCHITECTURE.md`                                                                     | Record failed-removal reporting and the remaining cleanup/lease contract.                                                                                      |
+| `example/agent-content.generated.json`, `example/public/{jqstar-agent-index.json,llms-full.txt}`, `test/fixtures/csp/conformance-map.json` | Regenerate the affected guide corpus and source inventory through maintained producers within unchanged limits.                                                |
+| This ticket, `docs/tickets/0033-audit-full-library-program.md`, `docs/tickets/ROADMAP.md`                                                  | Retain the confirmed finding, reopening, commands, evidence and prerequisite status.                                                                           |
+
 ### Design changes
 
 No changes from the approved Plan. Declaration rollups use small CommonJS re-export shims, and the
@@ -318,6 +369,41 @@ existing render adapter is a shared build chunk, so the two testing formats rema
 duplicating the core runtime or relaxing immutable package budgets.
 
 ## Test
+
+| Command                                                   | Result | Evidence                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run quality:fast`                                    | Pass   | `.git/jqstar/runs/2026-09-06T22-38-12-350Z-72785/report.json`: all five selected gates and 1,572 unit tests pass; unchanged runner self-test explicitly skips.                                                                                                                                                                                               |
+| Owner 0014 Code validation against that exact fast report | Pass   | `ownership-census/restoration-code-validation.log`; phase validation passed before moving to testing.                                                                                                                                                                                                                                                        |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check`                   | Fail   | `2026-09-06T22-42-15-929Z-79902` rejects the fast-result row beneath a subsection. After confirming that failure, the owned runner received SIGTERM and ended without a receipt. Move the passing fast result into this main Test ledger, validate the changed tickets, and retry full delivery. Interrupted or unexecuted gates supply no passing evidence. |
+
+### Restoration correction verification (2026-09-06)
+
+Plan validation passed before code changes. The standalone realm probe used the actual source in a
+fresh Node process with JSDOM and reproduced false success; independently bundled response source
+reproduced it for explicit release and disposal. Five corrected regression cases fail against the
+original committed source. Both fixed source files were restored byte-for-byte in `finally` after
+that negative control. The complete focused testing group then records 38 passing tests across four
+files, including every new regression.
+
+The first child-test draft resolved `import.meta.url` through the browser test transform and
+produced an unsupported HTTP module URL. It now uses Node path-to-file-URL conversion. A later draft
+used an opaque JSDOM origin, causing storage setup to fail before the callback; the child now has an
+explicit HTTPS test origin. Those fixture failures remain in their logs and are separate from the
+reproduced product defect. The final negative control uses the corrected tests and rejects all five
+intended original-source failures without either setup error.
+
+| Command                                                      | Result                 | Evidence                                                                                                                   |
+| ------------------------------------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Owner 0014 Plan validation                                   | Pass                   | Required fields, reopening and all eleven planned paths were recorded before implementation.                               |
+| Actual isolated realm and response deletion probes           | Confirmed defect       | `ownership-census/restoration-finding.json` binds original source and the three false-success results.                     |
+| Corrected regression suite against original committed source | Five expected failures | `ownership-census/restoration-regression-original-source.log` and its JSON record; the fixed files were restored exactly.  |
+| Focused realm, harness, external-plugin and Datastar suites  | Pass, 38 tests         | `ownership-census/restoration-focused-corrected.log`; real-property, continued-cleanup and callback-error assertions pass. |
+
+Fast run `2026-09-06T22-33-00-786Z-59080` passes format, workflow and all static checks, but its
+unit gate has four failures: three agent-corpus size checks and one stale CSP source inventory. It
+passes 1,568 of 1,572 tests. The initial explanation exceeded the unchanged 190,000-byte agent index
+limit. Shorten that paragraph, regenerate the derived corpus and CSP inventory under the extended
+Plan, then repeat fast verification. Coverage and complete delivery remain required.
 
 | Command                                                                                    | Result | Evidence                                                                                                                                 |
 | ------------------------------------------------------------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -367,22 +453,28 @@ completed QUnit consumer boundary and does not reopen runtime behavior.
 
 ### Acceptance evidence
 
-| Criterion | Evidence                                                                                                                                                                 | Result |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| AC-01     | Export-map, type-rollup, side-effect, module-graph, and installed import/require checks cover `jquery-star/testing`.                                                     | Pass   |
-| AC-02     | Realm and harness suites cover explicit same-realm peers, descriptor restoration, mismatch rejection, and lease contention.                                              | Pass   |
-| AC-03     | The installed Node DOM consumer mounts both application forms, exercises public state/events/observations, flushes, destroys, and disposes.                              | Pass   |
-| AC-04     | Unit and property suites cover transitive finite work, stable settlement, default/custom bounds, typed diagnostics, exclusions, and post-timeout disposal.               | Pass   |
-| AC-05     | Response-controller suites cover every fixture class, request capture, unexpected/leftover requests, cancellation, and exact fetch restoration.                          | Pass   |
-| AC-06     | Datastar testing suites and package graphs verify SDK-backed ordered/chunked fixtures, failure paths, and separation from generic testing/core.                          | Pass   |
-| AC-07     | Harness and external-plugin suites assert idempotent exhaustive cleanup through frozen public disposal reports, including failed cleanup.                                | Pass   |
-| AC-08     | The separately packed external plugin exercises all six seams plus ordering, rollback, use, root teardown, disposal, and cleanup failure.                                | Pass   |
-| AC-09     | The separately packed navigation fixture and three-engine browser case verify public-adapter rendering, preservation, focus/value continuity, and operation correlation. | Pass   |
-| AC-10     | The same public conformance functions run in Vitest, installed Node, installed QUnit, and Chromium/Firefox/WebKit consumers.                                             | Pass   |
-| AC-11     | Package quality verifies import/require, NodeNext/Bundler, refusal of private paths, package contents, publint/ATTW, bundle graphs, and immutable sizes.                 | Pass   |
-| AC-12     | Updated public/brain docs plus focused, coverage, property, static, browser, package, release, delivery, and diff checks cover the documented contract.                  | Pass   |
+| Criterion | Evidence                                                                                                                                                                 | Result  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| AC-01     | Export-map, type-rollup, side-effect, module-graph, and installed import/require checks cover `jquery-star/testing`.                                                     | Pass    |
+| AC-02     | Pending correction of the reproduced false-success property-restoration path, direct regression evidence and full delivery.                                              | Pending |
+| AC-03     | The installed Node DOM consumer mounts both application forms, exercises public state/events/observations, flushes, destroys, and disposes.                              | Pass    |
+| AC-04     | Unit and property suites cover transitive finite work, stable settlement, default/custom bounds, typed diagnostics, exclusions, and post-timeout disposal.               | Pass    |
+| AC-05     | Pending correction of the reproduced false-success property-restoration path, direct regression evidence and full delivery.                                              | Pending |
+| AC-06     | Datastar testing suites and package graphs verify SDK-backed ordered/chunked fixtures, failure paths, and separation from generic testing/core.                          | Pass    |
+| AC-07     | Pending correction of the reproduced false-success property-restoration path, direct regression evidence and full delivery.                                              | Pending |
+| AC-08     | The separately packed external plugin exercises all six seams plus ordering, rollback, use, root teardown, disposal, and cleanup failure.                                | Pass    |
+| AC-09     | The separately packed navigation fixture and three-engine browser case verify public-adapter rendering, preservation, focus/value continuity, and operation correlation. | Pass    |
+| AC-10     | The same public conformance functions run in Vitest, installed Node, installed QUnit, and Chromium/Firefox/WebKit consumers.                                             | Pass    |
+| AC-11     | Package quality verifies import/require, NodeNext/Bundler, refusal of private paths, package contents, publint/ATTW, bundle graphs, and immutable sizes.                 | Pass    |
+| AC-12     | Pending correction of the reproduced false-success property-restoration path, direct regression evidence and full delivery.                                              | Pending |
 
 ### Completion audit
+
+The 2026-09-06 reopening supersedes the previous closure. The restoration correction passes focused
+regressions, fast checks and Code validation. AC-02, AC-05, AC-07 and AC-12 remain pending until
+complete delivery and the final criterion audit pass.
+
+### Historical completion audit
 
 The public entries, declarations, documentation, generated corpus, independently packed consumers,
 and delivery evidence match all twelve criteria. The final audit found no private testing imports,
@@ -390,3 +482,26 @@ runner coupling, unbounded-idle promise, handwritten valid Datastar stream, undi
 growth, or unresolved inspection finding.
 
 Status: Complete
+
+### Generated evidence refresh (2026-09-06)
+
+The extended Plan passed before regeneration. The concise guide retains refused-removal reporting,
+continued cleanup and callback-error preservation. `npm run build:agent-content` succeeds with
+189,879-byte indexes and 115,348-byte full text, below the unchanged 190,000/120,000 limits.
+`npm run csp:inventory` refreshes the source inventory without changing the expression corpus,
+grammar or capability scope. Three generated agent artifacts and one CSP map change; companion
+outputs remain identical. Repeat fast and complete delivery after this finalized ledger.
+
+### Inventory identity follow-up (2026-09-06)
+
+The second fast run `2026-09-06T22-35-25-848Z-65931` passes 1,571 of 1,572 unit tests but rejects
+the changed aggregate CSP digest after 43 README location shifts. The map comparison proves that
+only those line positions changed. Tighten the README paragraph while retaining the full restoration
+contract, then regenerate and validate the inventory. Do not change the frozen CSP digest, grammar,
+API or budgets for unrelated prose if the maintained generator reproduces the original inventory.
+
+The concise README revision preserves the original expression locations. The maintained generator
+now reproduces `test/fixtures/csp/conformance-map.json` byte-for-byte, so it has no final diff.
+`npm run test:csp-contract` passes all four tests at the original digest `40d98004…1c855`, with 34
+accepted, 57 denied, 46 adversarial, 33 context cases and 240 public sources/421 occurrences. The
+CSP implementation, public literal type, grammar and budgets remain unchanged.

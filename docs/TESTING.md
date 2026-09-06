@@ -433,7 +433,9 @@ observer, plugin, or suite work. The caller supplies one Window/Document realm a
 `assertStarDOMRealm()` rejects mixed ownership. `withStarDOMRealm()` is an optional process-wide
 lease for packages that require ambient browser constructors; it snapshots only `STAR_DOM_GLOBALS`,
 rejects overlap before mutation, attempts every reverse restoration, and preserves callback and
-cleanup failures.
+cleanup failures. A failed deletion of an originally absent property counts as a restoration
+failure. If caller code makes an installed global non-configurable, the lease reports that failure
+after restoring the other globals and releases its process lease.
 
 `createStarHarness()` creates an explicit core installation and exposes only public applications,
 state, operation snapshots, native/jQuery event triggering, plugin installation, finite task
@@ -451,9 +453,11 @@ or DOM nodes into task owners.
 `createResponseController()` consumes exact FIFO expectations with no passthrough. Unit and
 installed-package cases cover JSON, HTML, empty, HTTP error, network error, delay, retry, abort,
 method/URL/header/body capture, mismatch, unexpected calls, leftover expectations, setup failure,
-and exact fetch descriptor restoration. `jquery-star/datastar/testing` remains separate and uses the
-official SDK for valid success, ordered multi-event, chunked, retry, failure, and abort streams;
-only fixed inert malformed bytes are written directly.
+and exact fetch descriptor restoration. Explicit release and controller disposal report a failed
+removal of an originally absent `fetch` property; disposal still attempts every other target.
+`jquery-star/datastar/testing` remains separate and uses the official SDK for valid success, ordered
+multi-event, chunked, retry, failure, and abort streams; only fixed inert malformed bytes are
+written directly.
 
 `runCoreConformance()` and `runPluginConformance()` own runner-neutral named cases and immutable
 reports. The latter covers repeated facade identity, exercise/use, failed-install rollback,

@@ -49,11 +49,13 @@ registered through a jQStar or harness capability.
   fetch-restoration, and terminal report/error records for one explicit realm. Setup rollback
   disposes a partially created core installation before restoring replacements.
 - `src/testing/responses.ts`: one FIFO expectation queue, immutable request captures, active
-  response records, cancellation callbacks, and exact target property descriptors. No request can
-  pass through to the real network.
+  response records, cancellation callbacks, and exact target property descriptors. Failed property
+  removal is reported; controller disposal still attempts every target. No request can pass through
+  to the real network.
 - `src/testing/realm.ts`: one process-local ambient lease plus the current callback's finite global
   descriptor stack. It rejects a second lease before mutation and clears the lease after attempting
-  every restoration.
+  every restoration. Refused deletion of a temporary global is a cleanup failure, combined with any
+  callback failure; a caller-made non-configurable property cannot be removed.
 - `src/testing/conformance.ts`: case definitions only. Reports retain frozen JSON diagnostics, not
   DOM nodes, callbacks, live applications, response bodies, or private registry collections.
 

@@ -48,6 +48,13 @@ interface InstalledFetch {
   readonly target: object;
 }
 
+function restoreFetch({ descriptor, target }: InstalledFetch): void {
+  if (descriptor) Object.defineProperty(target, "fetch", descriptor);
+  else if (!Reflect.deleteProperty(target, "fetch")) {
+    throw new StarResponseError("Could not restore absent fetch property.");
+  }
+}
+
 export interface StarResponseController {
   enqueue(expectation: StarResponseExpectation): StarResponseController;
   json(
@@ -352,8 +359,7 @@ export function createResponseController(
         active = false;
         const index = installations.indexOf(record);
         if (index >= 0) installations.splice(index, 1);
-        if (descriptor) Object.defineProperty(target, "fetch", descriptor);
-        else Reflect.deleteProperty(target, "fetch");
+        restoreFetch(record);
       };
     },
     requests: () => Object.freeze([...captured]),
@@ -388,9 +394,7 @@ export function createResponseController(
       }
       for (const installation of [...installations].reverse()) {
         try {
-          if (installation.descriptor) {
-            Object.defineProperty(installation.target, "fetch", installation.descriptor);
-          } else Reflect.deleteProperty(installation.target, "fetch");
+          restoreFetch(installation);
         } catch (error) {
           errors.push(error);
         }

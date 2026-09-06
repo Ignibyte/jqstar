@@ -109,7 +109,9 @@ back the claimed core installation and restores every replaced fetch descriptor.
 
 `withStarDOMRealm()` is an opt-in process-local compatibility lease, not the normal ownership model.
 It snapshots a finite browser-global allowlist, rejects overlapping leases before mutation, and
-restores exact descriptors in reverse order after callback and cleanup failures. DOM creation and
+attempts exact descriptor restoration in reverse order after callback and cleanup failures. A
+refused deletion is reported alongside any callback failure without skipping other restorations; the
+process lease is released even if a caller-made non-configurable property remains. DOM creation and
 jQuery loading remain the caller's responsibility.
 
 Harness `flush()` combines the public enhancement barrier with pending queued responses and

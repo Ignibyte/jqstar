@@ -184,11 +184,11 @@ they register transitively. It does not wait for arbitrary timers, animation loo
 promises, or real network idleness. A `StarFlushError` carries a JSON-safe diagnostic containing
 only owned operation/request/task IDs, owners, rounds, and elapsed time.
 
-The strict FIFO response controller captures exact requests and supplies JSON, HTML, empty, HTTP
-failure, network failure, delay, retry, and abort cases without network passthrough. Its fetch
-replacement and `withStarDOMRealm()`'s finite ambient-global lease restore prior property
-descriptors after success, setup failure, callback failure, or disposal. Only one ambient realm
-lease may be active in a process.
+The strict FIFO controller captures exact requests and supplies JSON, HTML, empty, HTTP/network
+failure, delay, retry and abort fixtures without passthrough. Fetch replacement and
+`withStarDOMRealm()` restore prior descriptors after success, failure or disposal. Non-configurable
+properties cannot be removed: cleanup reports the failure and attempts remaining work. Only one
+ambient realm lease may be active per process.
 
 Valid Datastar stream fixtures live in `jquery-star/datastar/testing` and use the official SDK.
 Keeping that entry separate prevents Datastar from entering the generic testing or core graph. See

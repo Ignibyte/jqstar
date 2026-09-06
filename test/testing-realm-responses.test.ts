@@ -1,3 +1,6 @@
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import $ from "jquery";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -84,43 +87,138 @@ describe("testing DOM realms", () => {
     );
   });
 
-  it("restores absent globals and aggregates callback and restoration failures", async () => {
-    const owner = realm();
-    const selfDescriptor = Object.getOwnPropertyDescriptor(globalThis, "self");
-    Reflect.deleteProperty(globalThis, "self");
-    await withStarDOMRealm({ window: owner }, () => {
-      expect(globalThis.getComputedStyle(owner.document.body).display).toBe("block");
-    });
-    expect(Object.prototype.hasOwnProperty.call(globalThis, "self")).toBe(false);
-
-    const originalDelete = Reflect.deleteProperty;
-    try {
-      await expect(
-        withStarDOMRealm({ window: owner }, () => {
-          Reflect.deleteProperty = (target, key) => {
-            if (target === globalThis && key === "self") {
-              throw new Error("self restoration failed");
-            }
-            return originalDelete(target, key);
-          };
-          return thrownValue("realm body thrown value");
-        }),
-      ).rejects.toMatchObject({
-        name: "AggregateError",
-        errors: [
-          expect.objectContaining({ message: expect.stringContaining("non-Error value") }),
-          expect.objectContaining({ message: "self restoration failed" }),
-        ],
+  it.each(["throw", "refuse"])(
+    "restores absent globals and aggregates %s cleanup failures",
+    async (mode) => {
+      const owner = realm();
+      const selfDescriptor = Object.getOwnPropertyDescriptor(globalThis, "self");
+      Reflect.deleteProperty(globalThis, "self");
+      await withStarDOMRealm({ window: owner }, () => {
+        expect(globalThis.getComputedStyle(owner.document.body).display).toBe("block");
       });
-    } finally {
-      Reflect.deleteProperty = originalDelete;
-      if (selfDescriptor) Object.defineProperty(globalThis, "self", selfDescriptor);
-      else originalDelete(globalThis, "self");
-    }
+      expect(Object.prototype.hasOwnProperty.call(globalThis, "self")).toBe(false);
+
+      const originalDelete = Reflect.deleteProperty;
+      try {
+        await expect(
+          withStarDOMRealm({ window: owner }, () => {
+            Reflect.deleteProperty = (target, key) => {
+              if (target === globalThis && key === "self") {
+                if (mode === "refuse") return false;
+                throw new Error("self restoration failed");
+              }
+              return originalDelete(target, key);
+            };
+            return thrownValue("realm body thrown value");
+          }),
+        ).rejects.toMatchObject({
+          name: "AggregateError",
+          errors: [
+            expect.objectContaining({ message: expect.stringContaining("non-Error value") }),
+            expect.objectContaining({
+              message:
+                mode === "refuse"
+                  ? "Could not restore absent global self."
+                  : "self restoration failed",
+            }),
+          ],
+        });
+      } finally {
+        Reflect.deleteProperty = originalDelete;
+        if (selfDescriptor) Object.defineProperty(globalThis, "self", selfDescriptor);
+        else originalDelete(globalThis, "self");
+      }
+    },
+  );
+
+  it.each([false, true])(
+    "reports a non-configurable temporary global and completes cleanup (callback throws: %s)",
+    (callbackThrows) => {
+      const output = execFileSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "--eval",
+          `
+import assert from "node:assert/strict";
+import { JSDOM } from "jsdom";
+import { STAR_DOM_GLOBALS, withStarDOMRealm } from ${JSON.stringify(pathToFileURL(resolve("src/testing/realm.ts")).href)};
+const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "https://realm-test.invalid/" });
+const before = new Map(STAR_DOM_GLOBALS.map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
+assert.equal(before.get("Node"), undefined);
+const callbackError = new Error("realm callback failed");
+let failure;
+try {
+  await withStarDOMRealm({ window: dom.window }, () => {
+    Object.defineProperty(globalThis, "Node", { configurable: false });
+    if (${callbackThrows}) throw callbackError;
   });
+} catch (error) {
+  failure = error;
+}
+assert(failure instanceof AggregateError);
+assert.equal(failure.errors.length, ${callbackThrows ? 2 : 1});
+if (${callbackThrows}) assert.equal(failure.errors[0], callbackError);
+assert.match(failure.errors.at(-1).message, /Could not restore absent global Node/);
+for (const [name, descriptor] of before) {
+  if (name !== "Node") assert.deepEqual(Object.getOwnPropertyDescriptor(globalThis, name), descriptor, name);
+}
+assert.equal(Object.getOwnPropertyDescriptor(globalThis, "Node").configurable, false);
+await assert.rejects(withStarDOMRealm({ window: dom.window }, () => undefined), (error) => {
+  assert(error instanceof TypeError);
+  assert(!error.message.includes("already active"));
+  return true;
+});
+dom.window.close();
+console.log(JSON.stringify({ failures: failure.errors.length, otherGlobalsRestored: true, leaseReleased: true }));
+`,
+        ],
+        { encoding: "utf8", timeout: 10_000, maxBuffer: 100_000 },
+      );
+      expect(JSON.parse(output)).toEqual({
+        failures: callbackThrows ? 2 : 1,
+        otherGlobalsRestored: true,
+        leaseReleased: true,
+      });
+    },
+  );
 });
 
 describe("queued response controller", () => {
+  it("reports a refused removal of an originally absent fetch during explicit release", () => {
+    const controller = createResponseController();
+    const target = {} as { fetch?: typeof fetch };
+    const release = controller.install(target);
+    Object.defineProperty(target, "fetch", { configurable: false });
+
+    expect(release).toThrow("Could not restore absent fetch property");
+    expect(Object.hasOwn(target, "fetch")).toBe(true);
+    expect(release).not.toThrow();
+    expect(() => controller.dispose()).not.toThrow();
+  });
+
+  it("reports refused fetch removal and continues restoring every other target during disposal", () => {
+    const controller = createResponseController();
+    const first = {} as { fetch?: typeof fetch };
+    const blocked = {} as { fetch?: typeof fetch };
+    const last = {} as { fetch?: typeof fetch };
+    controller.install(first);
+    controller.install(blocked);
+    controller.install(last);
+    Object.defineProperty(blocked, "fetch", { configurable: false });
+
+    expect(() => controller.dispose()).toThrow(
+      expect.objectContaining({
+        name: "AggregateError",
+        errors: [expect.objectContaining({ message: "Could not restore absent fetch property." })],
+      }),
+    );
+    expect(Object.hasOwn(first, "fetch")).toBe(false);
+    expect(Object.hasOwn(last, "fetch")).toBe(false);
+    expect(Object.hasOwn(blocked, "fetch")).toBe(true);
+    expect(() => controller.dispose()).not.toThrow();
+  });
+
   it("captures exact requests and supplies JSON, HTML, empty, HTTP, network, delay, and retry cases", async () => {
     const owner = realm();
     const controller = createResponseController({ window: owner });
