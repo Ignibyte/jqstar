@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 
 import fc from "fast-check";
 import { expect, it } from "vitest";
+import { assertProperty } from "./helpers";
 
 interface Assignment {
   groupId: string;
@@ -20,7 +21,8 @@ const contract = JSON.parse(
 };
 
 it("preserves all API assignments under generated orderings", () => {
-  fc.assert(
+  assertProperty(
+    "jquery-mobile-inventory-order",
     fc.property(
       fc.shuffledSubarray(contract.apiInventory, { minLength: 95, maxLength: 95 }),
       (entries) => {
@@ -33,7 +35,8 @@ it("preserves all API assignments under generated orderings", () => {
 });
 
 it("detects generated missing, duplicate, and unknown data attributes", () => {
-  fc.assert(
+  assertProperty(
+    "jquery-mobile-attribute-rejection",
     fc.property(fc.integer({ min: 0, max: 59 }), fc.string({ minLength: 1 }), (index, suffix) => {
       const expected = new Set(contract.dataAttributes.map(({ name }) => name));
       const names = contract.dataAttributes.map(({ name }) => name);
@@ -48,7 +51,8 @@ it("detects generated missing, duplicate, and unknown data attributes", () => {
 });
 
 it("keeps generated owner and transition selections inside the frozen sets", () => {
-  fc.assert(
+  assertProperty(
+    "jquery-mobile-owner-transitions",
     fc.property(
       fc.constantFrom(...contract.groups),
       fc.constantFrom(...contract.transitions),

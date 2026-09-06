@@ -236,7 +236,89 @@ nested rejection for all twelve reserved fields. No input filtering, runtime beh
 mutation execution is part of this correction. Run focused property replay, fast, delivery, and a
 hosted full audit for the resulting committed source before closure.
 
+### JSON number and repeated-browser execution corrections, 2026-09-06
+
+Hosted run `34034049302` on `e6a57cafb919a56ffb7bd5acd88442899361d05a` failed two quality lanes. The
+full artifact remains under `.git/jqstar/hosted-audit-34034049302/`. Local exact replay at
+`.git/jqstar/program-audit/persist-negative-zero-replay-before/` fails `persist-canonical-json` with
+seed `804029289`, path `75:1:1:2:4:3`, and input `[{"a":[-0]}]`. Exactly one property consumes the
+replay. The existing serializer and canonical-data unit test already require JSON encoding of
+negative zero as `0`. The generated property incorrectly expects the decoded number to retain
+negative zero.
+
+Preserve the original generator, property ID, prototype-key rejection, and exact replay. Compare
+accepted decoded data against the independent standard JSON round trip, retain canonical ordering,
+and add canonical idempotence and caller-input preservation assertions. Record the counterexample as
+literal JSON text so its negative zero survives fixture loading. Add a named nested regression. This
+corrects quality expectations; it does not change persistence behavior or reopen owner 0019.
+
+The browser lane passed six projects, then WebKit logged 297 passing executions out of 304. Their
+reported durations total 893.364 seconds, and the process ended at the fixed 900-second child
+boundary with no JSON execution report. The final no-JavaScript project did not execute. No browser
+assertion failure was reported, but the incomplete matrix remains failed evidence. The runner
+applies the same process bound to both one repetition and two repetitions, despite doubling the
+workload. It also discards the child timeout, signal, and duration diagnostics.
+
+Keep the 900-second allowance per repetition and scale only project execution by its requested
+repetition count: the canonical two-repetition audit receives 1,800 seconds per project. Selection
+keeps its existing bound. The 45-second launch preflight, 60-second test/readiness limits, outer
+90-minute audit bound, browsers, repetitions, retries-as-failure, and exact execution counts remain
+unchanged. Reject invalid or overflowing process timers before spawning. Retain child duration,
+exit, signal, timeout flag and configured bound in the isolated log, and refuse timeout/signal/spawn
+failures even if an exit code is zero. Do not retry a project to replace failed evidence.
+
+Planned files: `test/property/persist.property.test.ts`, `test/property/regressions.json`,
+`scripts/quality-browser.mjs`, a focused `scripts/quality/browser-process.mjs` helper and
+`test/browser-process.test.mjs`, `docs/TESTING.md`, `docs/QUALITY_PROGRAM.md`, and this ticket.
+Update 0033's prerequisite ledger. Verify exact replay and the complete recorded seed, focused
+process failure controls, ESLint, fast, delivery, and the hosted full audit on committed source. The
+thirteen passing ignored prototype controls establish the proposed process boundary only; maintained
+and hosted verification are still required. Mutation 0053 remains deferred.
+
+Include `quality/gates.mjs` in this correction so future changes to the extracted process helper or
+its tests continue to select the 0044 detector lane.
+
+### Migration property registration correction, 2026-09-06
+
+Review of owner 0039 found three direct `fc.assert` calls in each of the UI and Mobile migration
+property suites. Those six tests execute, but bypass `test/property/helpers.ts`. They therefore
+ignore the quality command's seed/run-count/replay settings and produce no per-property usage
+records. The passing recorded-seed log lists both three-test suites, while its report contains 43
+property IDs and none for either migration suite. There is no global fast-check configuration that
+connects those direct calls to the quality environment.
+
+Return to Code and preserve all six generators and assertions. Route them through `assertProperty`
+with distinct stable IDs, yielding 49 recorded properties. Add a source-policy rejection for direct
+`fc.assert` and `fc.check` calls in property test files, with failing direct-call and passing
+wrapper controls in the existing static self-test. The helper's internal `fc.check` remains allowed.
+This is a quality evidence correction, with no runtime or migration contract change.
+
+Additional planned files: `test/property/jquery-ui-migration.property.test.ts`,
+`test/property/jquery-mobile-migration.property.test.ts`, `scripts/quality/source-policy.mjs`,
+`scripts/quality/static-self-test.mjs`, and the existing quality documentation. Verify all 49 IDs
+record their seed/count and all six migration properties honor the requested count; exercise exact
+replay for each newly named property, retain the negative-zero replay, run static detector controls,
+then fresh fast/delivery and hosted validation.
+
+Delivery `2026-09-06T14-01-24-670Z-21736` was intentionally interrupted during unit execution to
+include this newly identified correction in the same verification cycle. Its report records SIGINT,
+incomplete gates and no receipt. It is not a product failure or a passing delivery result.
+
 ## Code
+
+The two migration property suites now use the shared seed/replay recorder for six stable IDs.
+`source-policy.mjs` rejects direct fast-check assertion/check calls in property test files, and
+`static-self-test.mjs` proves that rejection while accepting the shared wrapper and helper.
+
+Current JSON/process corrections: `test/property/persist.property.test.ts` preserves the generated
+input domain while asserting standard JSON number normalization, canonical idempotence and unchanged
+caller data. `test/property/regressions.json` retains the exact negative-zero input.
+`scripts/quality/browser-process.mjs` owns repetition-scaled process limits and explicit failure
+diagnostics; `scripts/quality-browser.mjs` consumes those diagnostics and preserves exact matrix
+counts. `test/browser-process.test.mjs` verifies process boundaries, invalid timers, failure
+retention and absence of retries. `docs/TESTING.md` and `docs/QUALITY_PROGRAM.md` document these
+contracts. `quality/gates.mjs` enrolls the extracted helper and test in detector impact selection.
+Ticket 0033 records the prerequisite failures and its preceding verified integration.
 
 Follow-up changes: `test/property/persist.property.test.ts`, `test/property/regressions.json`, and
 `test/persist-data.test.ts` correct the property contract and retain nested prototype-key
@@ -288,6 +370,34 @@ negative async contract fixtures use unknown input before a deliberate boundary 
 guard was removed merely because TypeScript considered it redundant.
 
 ## Test
+
+Combined correction fast run `2026-09-06T14-05-58-352Z-37336` passes all six gates and Code
+validation. The ticket is testing; full delivery and the hosted audit remain required.
+
+Combined correction verification passes 68 focused tests, ESLint and all sixteen static detector
+controls. `.git/jqstar/program-audit/migration-property-registration-after/summary.json` records 49
+properties with the requested seed, seven effective cases for every new migration property, exact
+path `0` replay consumption for each of the six new IDs, and the preserved negative-zero seed/path
+replay. Every replay is consumed exactly once; no property skips a generated case. The existing
+request-signal property retains its explicit 30-case override. An initial diagnostic assertion
+incorrectly expected that existing override to equal the command's requested count; the underlying
+property report passed, and corrected inspection uses the recorded per-property counts. Fresh
+fast/delivery and hosted checks remain required for the combined changes.
+
+Process/JSON correction fast run `2026-09-06T14-00-00-237Z-9057` passes all six gates, followed by
+Code validation. The ticket advances to testing. Full delivery and hosted audit remain required.
+
+The negative-zero correction passes 62 focused persistence, preparation and process tests plus
+ESLint. Canonical exact replay at `.git/jqstar/program-audit/persist-negative-zero-replay-after/`
+passes all 43 properties with exactly one consumer of path `75:1:1:2:4:3`. The complete seed
+`804029289` also passes all 43 properties without a replay path in
+`.git/jqstar/program-audit/persist-negative-zero-seed-after/`. Both retain the original generator
+and zero skipped cases. The reports record the existing explicit 30-case request-signal override
+separately from the requested count.
+
+Fast run `2026-09-06T13-58-05-260Z-95605` passes all six gates and Code validation. The detector
+impact list was then extended for the extracted helper and its test; fresh fast and delivery
+verification must cover that final selection change. Hosted verification remains required.
 
 Current correction verification under official Node 24.20.0:
 

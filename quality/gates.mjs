@@ -225,6 +225,8 @@ const ticket0044SelfTest = gate("ticket-0044-detector-self-test", "test:quality:
       "scripts/build-types.mjs",
       "scripts/quality-0044-self-test.mjs",
       "scripts/quality-browser.mjs",
+      "scripts/quality/browser-process.mjs",
+      "test/browser-process.test.mjs",
       "scripts/prepare-browser-fixtures.mjs",
       "scripts/prepare-navigation-decision.mjs",
       "scripts/prepare-resource-strategy.mjs",

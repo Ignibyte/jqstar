@@ -19,6 +19,8 @@ const sourceSabotage = [
   ["suppression/coverage", "src/a.ts", "/* c8 ignore next */"],
   ["suppression/semgrep", "src/a.ts", "// nosemgrep"],
   ["tests/focused-or-skipped", "test/a.test.ts", "test.only('focused', () => {})"],
+  ["tests/unrecorded-property", "test/property/a.property.test.ts", "fc.assert(property)"],
+  ["tests/unrecorded-property", "test/property/a.property.test.mjs", "fc.check(property)"],
   ["source/dynamic-evaluation", "src/a.ts", "eval('unsafe')"],
   ["source/private-package-entry", "src/a.ts", "import 'jquery-star/src/runtime'"],
   ["source/production-test-import", "src/a.ts", "import { expect } from 'vitest'"],
@@ -43,6 +45,16 @@ function selfTestSourcePolicy() {
       `${id} green fixture failed`,
     );
   }
+  assert.deepEqual(
+    scanSourcePolicy(
+      new Map([
+        ["test/property/a.property.test.ts", "assertProperty('named', property)"],
+        ["test/property/helpers.ts", "const details = fc.check(property, parameters)"],
+      ]),
+    ),
+    [],
+    "recorded property wrapper or shared helper was rejected",
+  );
   assert.deepEqual(
     scanSourcePolicy(
       new Map([

@@ -2,6 +2,7 @@ import { prepareBrowserFixtures } from "./prepare-browser-fixtures.mjs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { runChild, terminateActiveChildren } from "./quality/lib/process.mjs";
+import { runPlaywright } from "./quality/browser-process.mjs";
 
 const requiredProjects = [
   "desktop-chromium",
@@ -81,15 +82,11 @@ const report = {
   status: "error",
 };
 
-async function run(args, env = {}) {
-  const result = await runChild({
-    command: process.platform === "win32" ? "npx.cmd" : "npx",
-    args,
-    cwd: process.cwd(),
+async function run(args, env = {}, repetitions = 1) {
+  return runPlaywright(args, {
     env: { ...process.env, CI: process.env.CI ?? "1", JQS_BROWSER_SEED: seed, ...env },
-    timeoutMs: 900_000,
+    repeatEach: repetitions,
   });
-  return { ...result, status: result.exitCode, error: result.spawnError };
 }
 
 async function writeReport() {
@@ -175,11 +172,11 @@ try {
     const combined = `${listed.stdout ?? ""}\n${listed.stderr ?? ""}`;
     const match = /Total:\s+(\d+)\s+tests?/.exec(combined);
     const tests = Number(match?.[1] ?? 0);
-    const item = projectItem(project, tests, listed.status);
+    const item = projectItem(project, tests, listed.exitCode);
     report.projects.push(item);
-    if (listed.status !== 0 || tests === 0) {
+    if (listed.failureReason !== null || tests === 0) {
       failed = true;
-      failureReason ??= `${project} selected no runnable tests`;
+      failureReason ??= `${project} ${listed.failureReason ?? "selected no runnable tests"}`;
       process.stderr.write(combined);
     }
   }
@@ -228,8 +225,11 @@ try {
       await rm(resultsPath, { force: true });
       const args = ["--no-install", "playwright", "test", `--project=${item.project}`];
       if (repeatEach > 1) args.push(`--repeat-each=${repeatEach}`);
-      const executed = await run(args, playwrightEnvironment);
-      item.runExitCode = executed.status;
+      const executed = await run(args, playwrightEnvironment, repeatEach);
+      item.runExitCode = executed.exitCode;
+      process.stdout.write(
+        `${item.project}: duration=${executed.durationMs} ms, limit=${executed.timeoutMs} ms, exit=${String(executed.exitCode)}, signal=${executed.signal ?? "none"}, timeout=${String(executed.timedOut)}\n`,
+      );
       process.stdout.write(executed.stdout ?? "");
       process.stderr.write(executed.stderr ?? "");
       try {
@@ -252,9 +252,9 @@ try {
           `${item.project}: execution report is missing or invalid (${error instanceof Error ? error.message : String(error)}).\n`,
         );
       }
-      if (executed.status !== 0) {
+      if (executed.failureReason !== null) {
         failed = true;
-        failureReason ??= `${item.project} execution failed`;
+        failureReason ??= `${item.project} ${executed.failureReason}`;
       }
       if (failed) break;
     }

@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 
 import fc from "fast-check";
 import { expect, it } from "vitest";
+import { assertProperty } from "./helpers";
 
 interface Entry {
   id: string;
@@ -26,7 +27,8 @@ const contract = JSON.parse(
 };
 
 it("preserves total inventory mapping under generated orderings", () => {
-  fc.assert(
+  assertProperty(
+    "jquery-ui-inventory-order",
     fc.property(
       fc.shuffledSubarray(contract.officialInventory, { minLength: 72, maxLength: 72 }),
       (entries) => {
@@ -42,7 +44,8 @@ it("preserves total inventory mapping under generated orderings", () => {
 });
 
 it("rejects generated duplicate, missing, and unknown inventory assignments", () => {
-  fc.assert(
+  assertProperty(
+    "jquery-ui-inventory-rejection",
     fc.property(fc.integer({ min: 0, max: 71 }), fc.string({ minLength: 1 }), (index, suffix) => {
       const expected = new Set(contract.officialInventory.map(({ id }) => id));
       const mapped = contract.matrix.flatMap(({ inventoryIds }) => inventoryIds);
@@ -57,7 +60,8 @@ it("rejects generated duplicate, missing, and unknown inventory assignments", ()
 });
 
 it("keeps the adapter line-saving failure invariant across generated rounding precision", () => {
-  fc.assert(
+  assertProperty(
+    "jquery-ui-adapter-thresholds",
     fc.property(fc.integer({ min: 0, max: 6 }), (precision) => {
       for (const slice of contract.applicationSlices) {
         const saved =

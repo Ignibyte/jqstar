@@ -53,6 +53,12 @@ const rules = [
     message: "Focused, skipped, or TODO tests are not delivery evidence.",
   },
   {
+    id: "tests/unrecorded-property",
+    applies: (path) => /^test\/property\/.*\.test\.(?:ts|mjs)$/.test(path),
+    expression: /\bfc\.(?:assert|check)\s*\(/,
+    message: "Use the shared property helper to record seed, run count, and replay consumption.",
+  },
+  {
     id: "source/dynamic-evaluation",
     applies: (path) => codePath.test(path) && path !== "src/expression.ts",
     expression: /\beval\s*\(|\bnew\s+Function\s*\(/,

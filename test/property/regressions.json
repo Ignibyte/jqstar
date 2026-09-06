@@ -22,6 +22,12 @@
     "counterexampleJson": "{\"a\":{\"\":{\"__proto__\":0}}}",
     "expected": { "serialize": "encode", "parse": "corrupt" }
   },
+  "persist-negative-zero-json": {
+    "seed": 804029289,
+    "path": "75:1:1:2:4:3",
+    "counterexampleJson": "{\"a\":[-0]}",
+    "canonicalJson": "{\"a\":[0]}"
+  },
   "stores-reserved-field-domain": {
     "seed": 430043,
     "path": "5887:2:12:11:10",

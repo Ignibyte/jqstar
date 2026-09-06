@@ -163,7 +163,11 @@ shrunk counterexample for a standalone run. The audit uses `property-audit-gate.
 canonical runner these records live in the run's `.git/jqstar/.../evidence/` directory. Promote
 discovered counterexamples to `test/property/regressions.json` and retain a named regression test. A
 replay names one known property and must be consumed by that property exactly once. An unknown ID,
-unused replay path, or replay consumed by more than one property fails even if Vitest is green.
+unused replay path, or replay consumed by more than one property fails even if Vitest is green. All
+property suites, including UI and Mobile migration inventories, use the shared helper so the
+requested seed and run count appear in each property's evidence. Explicit per-property run-count
+overrides are recorded separately from the command's requested count. Source policy rejects direct
+`fc.assert` or `fc.check` calls in property test files that bypass that recorder.
 
 Mutation testing is deliberately excluded from the repository and every normal quality mode. It may
 be reconsidered only through an explicitly requested quality ticket.
@@ -457,6 +461,12 @@ flakes, or skips. Full audit sets `JQS_BROWSER_REPEAT_EACH` above one and uses a
 `JQS_BROWSER_REPORT_NAME` basename so repeated evidence cannot overwrite the delivery report. The
 canonical full audit uses this repeated browser matrix as its cross-engine stability proof.
 
+Project execution allows 900 seconds per repetition, so the canonical repeated audit allows 1,800
+seconds for twice the selected tests. The per-test and HTTP-readiness limits remain 60 seconds; the
+outer repeated-browser gate remains 90 minutes. Isolated logs retain the configured process bound,
+elapsed time, exit code, signal, and timeout flag. A timeout, signal, spawn failure, missing report,
+or incomplete execution count fails the gate, including when a process reports exit zero.
+
 The package command builds the self-hosted artifact, packs it, installs the tarball outside the
 repository, and exercises root/core/UI/Datastar ESM, CommonJS, TypeScript NodeNext and Bundler
 resolution, browser module and root UMD loading, QUnit, Vite bundling, the CLI registry, API
@@ -524,10 +534,11 @@ Data Table and its server-driven blocks require evidence for:
 adapters, plus canonical data, codec, envelope, migration, recovery, scheduling, and disposal tests.
 Property tests generate JSON ordering, revision permutations, and edit/corruption/recovery
 sequences. Generated prototype keys at any depth must fail encoding and stored-data parsing;
-accepted preferences must preserve canonical ordering and round-trip values. A separate generated
-object/array nesting property and the retained hosted counterexample enforce this distinction
-without discarding generated inputs. `e2e/persist.spec.ts` exercises three engines with actual
-same-origin pages: hydration before UI, reload, local sharing, session partitioning,
+accepted preferences must preserve canonical ordering and JSON round-trip values, including JSON's
+normalization of negative zero to zero. Canonical re-encoding must be stable and caller input must
+remain unchanged. Separate nested prototype-key and negative-zero regressions retain the hosted
+counterexamples without discarding generated inputs. `e2e/persist.spec.ts` exercises three engines
+with actual same-origin pages: hydration before UI, reload, local sharing, session partitioning,
 clock-controlled expiry, failures, and disposal flush. Package consumers exercise ESM, CommonJS,
 NodeNext, Bundler, QUnit, and the installed browser entry. Optional graph checks reject persistence
 code from consumers that do not import it.

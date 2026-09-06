@@ -363,7 +363,10 @@ globally, plus committed subsystem ratchets. Changed executable lines and functi
 
 The deterministic property lane uses seed 430043. The acknowledged audit lane generates a fresh
 signed 32-bit seed and records it with the test result; discovered minimized cases remain in
-`test/property/regressions.json`.
+`test/property/regressions.json`. Each generated property uses the shared recorder for its seed,
+configured/effective runs and exact replay consumption, including the UI and Mobile migration
+suites. Source policy rejects direct fast-check assertion/check calls in property test files, with
+failing and passing detector controls.
 
 Standalone evidence is written below `test-results/quality/` (and `coverage/quality/` for coverage
 detail). A canonical quality run relocates the same evidence beneath that run's `.git/jqstar/`
@@ -382,6 +385,10 @@ was harmless.
 
 The full-audit runner executes repeated browser projects with isolated reports and deterministic
 selection. Host pressure, timeouts, retry-only passes, and incomplete project counts fail closed.
+Each project receives the same 900-second process allowance per repetition: 1,800 seconds for the
+canonical two repetitions. Per-test/readiness limits and the outer 90-minute browser-audit bound
+remain unchanged. Child exit, signal, timeout, elapsed time and configured bound are retained in the
+isolated log so an interrupted project cannot be mistaken for an assertion failure or a pass.
 
 Automated axe and ARIA checks do not prove screen-reader usability. Release-critical focus,
 announcement, drag/drop, complex grid, dialog, menu, combobox, and navigation changes include a

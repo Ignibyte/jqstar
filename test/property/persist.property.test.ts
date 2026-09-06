@@ -26,19 +26,35 @@ function containsPrototypeKey(value: unknown): boolean {
   );
 }
 
+it("normalizes the recorded negative zero without changing the caller's input", () => {
+  const recorded = regressions["persist-negative-zero-json"];
+  const value = JSON.parse(recorded.counterexampleJson) as { a: number[] };
+  expect(value.a[0]).toBe(-0);
+  const canonical = serialize(value);
+  expect(canonical).toBe(recorded.canonicalJson);
+  expect(parse(canonical, 65536)).toEqual({ a: [0] });
+  expect(serialize(parse(canonical, 65536))).toBe(canonical);
+  expect(value.a[0]).toBe(-0);
+});
+
 it("round-trips generated JSON preferences without depending on record insertion order", () => {
   assertProperty(
     "persist-canonical-json",
     fc.property(fc.dictionary(fc.stringMatching(/^[a-z]{1,8}$/), fc.jsonValue()), (value) => {
+      const before = structuredClone(value);
       const reversed = Object.fromEntries(Object.entries(value).reverse());
       if (containsPrototypeKey(value)) {
         expect(() => serialize(value)).toThrow("encode");
         expect(() => serialize(reversed)).toThrow("encode");
         expect(() => parse(JSON.stringify(value), 65536)).toThrow("corrupt");
-        return;
+      } else {
+        const canonical = serialize(value);
+        const decoded = parse(canonical, 65536);
+        expect(canonical).toBe(serialize(reversed));
+        expect(decoded).toEqual(JSON.parse(JSON.stringify(value)));
+        expect(serialize(decoded)).toBe(canonical);
       }
-      expect(serialize(value)).toBe(serialize(reversed));
-      expect(parse(serialize(value), 65536)).toEqual(value);
+      expect(value).toEqual(before);
     }),
   );
 });
