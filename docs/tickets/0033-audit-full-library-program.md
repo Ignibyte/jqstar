@@ -665,6 +665,30 @@ existing navigation adapter tests, actual current-artifact 840-flow execution wi
 before/after inputs, focused lint, fast and complete delivery gates. Keep failures and corrections
 in the Test and inspection ledgers.
 
+### Navigation execution index integration, 2026-09-06
+
+The full navigation component now passes its actual 840-flow execution. Add a maintained reader that
+binds its execution index to independently frozen program expectations before accepting named
+navigation evidence. Expectations must explicitly distinguish development evidence from final proof,
+identify the complete prepared input snapshot, source, ordinary artifact, browser versions, Node
+executable and permitted execution interval. Final proof refuses a mutable source.
+
+Validate exact index, manifest and process shapes, fixed command and time limit, successful process
+termination, chronological bounds, canonical sibling paths, digest/byte references, and the separate
+process record. Read logs even when empty. Load all raw navigation observations through the frozen
+schema and existing full-matrix validator, compare their computed summary, and recheck the prepared
+source/artifact snapshot before and after loading. Return immutable validated evidence and preserve
+its original source identity. Do not rewrite a historical run to the current commit.
+
+Planned files: `scripts/program-audit/navigation-execution.mjs`,
+`test/program-audit-navigation-index.test.mjs`, `docs/PROGRAM_AUDIT.md`, `docs/TESTING.md`, and this
+ticket. Verification uses independent index/manifest/process fixtures, altered identity/time/path/
+process controls, actual bounded file reads with complete historical raw navigation observations,
+and an explicitly labeled historical compatibility probe. Existing preparation, executor and
+full-matrix tests remain required, followed by fast, complete delivery and phase checks. This reader
+completes navigation evidence loading; the whole-program manifest, execution and acceptance report
+remain separate unfinished work.
+
 ## Code
 
 ### Changed-file ledger
@@ -704,6 +728,9 @@ in the Test and inspection ledgers.
 | `scripts/program-audit/navigation-runner.mjs`                                                                                                   | Execute all thirty complete rows from a verified owned asset snapshot and retain immutable rows with browser/server cleanup.                                                           |
 | `scripts/program-audit/run-navigation.mjs`                                                                                                      | Freeze a component manifest before a supervised child and validate its actual process, source identity verification, raw schema and complete result before writing an execution index. |
 | `test/program-audit-navigation-execution.test.mjs`                                                                                              | Independent preparation, graph/lock, full-selection, failure/cleanup, process and immutable-record controls.                                                                           |
+| `scripts/program-audit/navigation-execution.mjs`                                                                                                | Bind the component index, manifest, process, logs and complete raw observations to independent frozen expectations, with current input verification and immutable results.             |
+| `test/program-audit-navigation-index.test.mjs`                                                                                                  | Independent index/process identity controls and actual bounded file/schema/raw-report loading, including stale input and contradictory evidence refusal.                               |
+| `docs/TESTING.md`                                                                                                                               | Explain navigation index controls, the single replaced preparation reader in disk fixtures, and historical versus current evidence.                                                    |
 
 The mapping validator and `quality/program-audit/mappings.schema.json` now distinguish release
 evidence from installed-package evidence. `docs/PROGRAM_AUDIT.md` records that distinction and the
@@ -744,7 +771,7 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 
 | Command                                                                      | Result              | Evidence                                                                                                                                                                                                                                                                                                                      |
 | ---------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run quality:fast`                                                       | Pass                | Run `2026-09-06T21-07-41-367Z-50541`: all five selected gates and 1,504 unit tests pass. The unchanged workflow self-test is explicitly skipped. Exact Code validation passes before this ledger update.                                                                                                                      |
+| `npm run quality:fast`                                                       | Pass                | Run `2026-09-06T21-34-49-277Z-19979`: all five selected gates and 1,567 unit tests pass. The unchanged workflow self-test is explicitly skipped. Exact Code validation passes before this ledger update.                                                                                                                      |
 | `JQS_QUALITY_FORCE_ALL=1 npm run check` (invokes `npm run quality:delivery`) | Pass                | Run `2026-09-06T19-59-38-133Z-2581`: all thirteen gates, 1,414 unit tests, 487 browser tests, thirteen package checks, seven release checks and sixteen detectors. Its matching receipt passed before these ledger and Plan edits.                                                                                            |
 | Current coverage adapter probe                                               | Pass                | `coverage-evidence-plan/current-adapter-probe.json`: five selectors and 21 refusal cases; all 1,414 tests were collected before invocation, and their source digests and the 843-file startup fingerprint match. Empty changed scope remains `not-measured`.                                                                  |
 | Detector integration prototypes                                              | Pass                | Nine raw browser controls/traces, sixteen project listings, all sixteen summaries, package/release failures and API artifacts; 91 refusal cases across four probes. These are integration checks, not final audit acceptance.                                                                                                 |
@@ -756,6 +783,11 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 | Navigation execution Plan validator                                          | Pass                | Full installed matrix, separate preparation, frozen component manifest, supervised process/index and unchanged decision boundary recorded before code.                                                                                                                                                                        |
 | Navigation executor and existing adapter tests                               | Pass                | `navigation-execution-focused.log`: 76 tests, including 40 new preparation, graph, selection, process, cleanup and immutable-record controls.                                                                                                                                                                                 |
 | Navigation executor focused ESLint                                           | Pass                | All three new automation modules and the new test file pass the maintained rules.                                                                                                                                                                                                                                             |
+| Navigation component complete delivery                                       | Pass                | Run `2026-09-06T21-09-59-648Z-57385`: all thirteen gates. Actual Test validation and matching receipt pass before and after staging. All eight paths committed and pushed as `3ed84e6`; this receipt is historical after that commit.                                                                                         |
+| Navigation component execution                                               | Pass                | `navigation-executions/2026-09-06T21-09-59.956Z-X8xlyG/execution.json`: 840 flows, 498 configured passes, six exclusions and 72 retained host-default failures. All indexed hashes agree and the owned asset snapshot is removed. This was a mutable development source, not final program acceptance.                        |
+| Navigation index Plan validation                                             | Pass                | Independent frozen expectations, strict index/process/file validation, immutable results and final clean-source refusal recorded before implementation.                                                                                                                                                                       |
+| Navigation index, executor and raw adapter tests                             | Pass                | `navigation-index-focused.log`: 139 tests, including 63 new index and file-loading controls. Complete historical raw observations exercise the maintained schema and navigation selector.                                                                                                                                     |
+| Navigation index focused ESLint                                              | Pass                | New index reader and test file pass maintained lint rules.                                                                                                                                                                                                                                                                    |
 | Previous exact-tree complete delivery                                        | Pass                | `2026-09-06T20-34-46-930Z-77599`: all thirteen gates, 1,464 unit and 487 browser tests, thirteen package/seven release checks and sixteen detectors. Matching receipt and actual Test validation pass before commit `daa9970`, now pushed. This is historical evidence for that batch.                                        |
 
 Fast run `2026-09-06T20-32-00-811Z-64051` passes all six selected gates and 1,464 unit tests. Exact
@@ -968,6 +1000,7 @@ required for these changes.
 | A trace attached to the successful retry or altered raw listing configuration could satisfy the initial adapter.         | Bind trace ownership to the failed attempt and verify raw listing workers, shard, flaky policy, project IDs, source directories and timeouts.                                         | Seven independent failing controls are retained in `detector-evidence-plan/maintained-review-controls-before-fix.log`.                                     |
 | The research measurement command updates its tracked decision even without the recording option.                         | Added a separate executor that only reads preparation and stores its full result in the audit output directory.                                                                       | Direct inspection of `scripts/measure-navigation-decision.mjs`; the new runner never imports or invokes it.                                                |
 | The ordinary browser suite covers nine scenarios, while the full decision requires twenty-eight per row.                 | The executor supplies no subset or timeout override and validates all thirty rows through the maintained full-navigation adapter.                                                     | Independent 30-row invocation test and existing 840-flow/498-pass/six-exclusion adapter controls.                                                          |
+| Navigation component indexes were not yet bound to independent program expectations.                                     | Added a maintained reader for source, artifact, process, interval, file and complete raw-result identities.                                                                           | 63 new controls and 139 combined navigation tests pass; actual component composition and complete delivery follow this finalized ledger.                   |
 
 ## Document
 
@@ -1147,7 +1180,18 @@ as the prior verified delivery: `8ef13f0d0b2a7a1512c84bd2ad15f956cefbca73c87af2e
 3,168,982 packed bytes. The maintained input loader validates 138 input references, fifteen schemas,
 six installed bundles and thirty required rows before scenarios. Logs remain in
 `navigation-preparation-current.log` and `navigation-execution-focused.log`. The actual complete
-navigation component run and matching delivery for these new modules remain pending.
+navigation component run and matching delivery were pending at that checkpoint. The subsequent
+840-flow component and thirteen-gate delivery pass are recorded above and committed as `3ed84e6`.
+
+### Navigation index checkpoint (2026-09-06)
+
+The maintained index reader and its 63 controls pass alongside the 76 existing navigation tests.
+Fast run `2026-09-06T21-34-49-277Z-19979` passes all five selected gates and all 1,567 unit tests;
+the unchanged quality-runner self-test is explicitly skipped. Actual Code validation passes against
+that exact report before this ledger update. The next complete delivery and actual component-index
+probe will verify the finalized five-file batch. The final whole-program manifest and report, eight
+remaining requirement mappings, public-claim review, real accessibility records, original references
+and prerequisite closure remain unfinished. Mutation testing remains deferred.
 
 The corrected fast run `2026-09-06T21-07-41-367Z-50541` passes 1,504 unit tests and all five
 selected gates. The unchanged workflow self-test is recorded as a conditional skip, not a pass.

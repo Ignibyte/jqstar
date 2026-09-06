@@ -105,8 +105,13 @@ remain exclusions. Host-default failures stay recorded as observations. Artifact
 dependency, bundle and tool identities must match the frozen expectations, and successful flows must
 show complete cleanup. Navigation selectors are literal JSON arrays containing the candidate,
 browser and scenario ID, and select only configured executed passes. The read-only component
-executor below now supplies its own frozen inputs and supervised parent interval. Binding that
-component index into the complete program manifest and acceptance matrix remains required.
+executor below supplies its own frozen inputs and supervised parent interval.
+`loadNavigationExecution()` binds that component index to independently frozen inputs, source,
+ordinary tarball, browsers, Node executable and execution interval. It verifies the separate process
+record, every log and raw-report reference, the complete raw matrix and its computed summary, and
+unchanged prepared inputs before and after loading. Returned observations and selector context are
+immutable. Callers must explicitly identify development or final evidence; final evidence requires a
+clean source. The whole-program manifest and acceptance matrix remain unfinished.
 
 Run the full navigation component after preparing the installed candidates separately:
 

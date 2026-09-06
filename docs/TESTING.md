@@ -647,6 +647,14 @@ immutable recording. The existing navigation adapter tests continue to check eve
 cleanup contract. Neither the component result nor its synthetic unit fixtures replace the two real
 assistive-technology charters or the complete final program audit.
 
+`test/program-audit-navigation-index.test.mjs` checks the component index against independent
+source, artifact, browser, process and time expectations. Its disk fixtures exercise actual bounded
+manifest/process/log/schema/report loading, including empty logs, changed bytes, contradictory
+process results and complete historical raw observations. Only the separately tested preparation
+reader is replaced in those fixtures. Historical raw reports under synthetic process envelopes are
+test inputs, not current acceptance evidence. The maintained reader refuses development evidence
+when final acceptance is requested and returns immutable data for exact navigation selectors.
+
 ## Inspection evidence
 
 Ticket 0031's `test/inspection-decision.test.mjs` validates two controlled installed registry
