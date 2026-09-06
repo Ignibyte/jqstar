@@ -1,7 +1,7 @@
 # jQStar reviewed agent corpus
 
 Package: jquery-star@1.1.0
-Corpus version: 5
+Corpus version: 6
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Framework invariants
@@ -180,11 +180,12 @@ shared stores , verify an
 external plugin , use the
 testing harness , diagnose ownership with
 inspection and tracing , follow the
-1.0 migration guide , or open the
+package upgrade diagnostics , read
+the 1.0 migration guide , or open the
 complete Component Lab .
 
 ### Compatibility [compatibility]
-Stable jQStar 1.0 entries, formats, browser and tool support, host ranges, document topology, and lifecycle policy.
+Stable jQStar 1.1 entries, formats, package doctor, support ranges, document topology, and lifecycle policy.
 Citation: https://ignibyte.github.io/jqstar/docs/compatibility/
 Source: example/docs/compatibility/index.html
 
@@ -193,6 +194,13 @@ jQStar 1.1 preserves the stable root and modular runtime entries and adds option
 stores, selected-preference persistence, and explicit inspection. The testing harnesses, CSP
 runtime, and Turbo and htmx bridges are tested from the packed tarball, not from
 repository-only imports.
+Package upgrades
+jqstar doctor --packages --cwd . --json checks local metadata without writes or
+network calls. Exit 0 means no errors, 1 incompatibility, and 2 invalid input or failed
+operation. Also inspect complete and unknown diagnostics.
+jqstar doctor --upgrade-config --cwd . --json prints a dry-run plan. Read the
+upgrade guide
+before explicit apply or rollback.
 Stable package entries
 Entry
 Formats

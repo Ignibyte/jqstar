@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { checkLocalLinks } from "./check-links.mjs";
 import { validateLicenses } from "./check-licenses.mjs";
 import { validateLockfile } from "./check-lockfile.mjs";
-import { effectiveMaximum, validateMetrics } from "./check-metrics.mjs";
+import { effectiveMaximum, evaluateMetricRatchet, validateMetrics } from "./check-metrics.mjs";
 import { classifyPaths } from "./scope-census.mjs";
 import { scanSourcePolicy, validateDeviations } from "./source-policy.mjs";
 import { createSchemaValidator } from "./validate-json.mjs";
@@ -151,10 +151,31 @@ function selfTestPolicies() {
   );
   const metrics = {
     schemaVersion: "jqstar-static-metrics/1",
+    sonarjs: { cognitiveComplexityMaximum: 65 },
     duplication: { maximumPercent: 10, minimumLines: 8, minimumTokens: 70 },
   };
   const jscpd = { threshold: 10, minLines: 8, minTokens: 70 };
   assert.deepEqual(validateMetrics(metrics, jscpd), []);
+  assert.deepEqual(evaluateMetricRatchet(metrics, metrics, jscpd, jscpd), []);
+  for (const group of ["sonarjs", "duplication"]) {
+    for (const key of Object.keys(metrics[group])) {
+      const weakened = structuredClone(metrics);
+      weakened[group][key]++;
+      assert(
+        evaluateMetricRatchet(weakened, metrics, jscpd, jscpd).length > 0,
+        `${group}.${key} weakening stayed green`,
+      );
+      Reflect.deleteProperty(weakened[group], key);
+      assert(
+        evaluateMetricRatchet(weakened, metrics, jscpd, jscpd).length > 0,
+        `${group}.${key} removal stayed green`,
+      );
+    }
+  }
+  assert(
+    evaluateMetricRatchet(metrics, metrics, { ...jscpd, ignore: ["src/**"] }, jscpd).length > 0,
+    "duplication scope weakening stayed green",
+  );
   jscpd.threshold = 11;
   assert.equal(validateMetrics(metrics, jscpd).length, 1, "metric mismatch sabotage stayed green");
   assert.equal(effectiveMaximum(10, "20"), 10, "environment lowered a committed maximum");

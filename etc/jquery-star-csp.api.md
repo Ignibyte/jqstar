@@ -274,14 +274,12 @@ export interface StarExpressionLocation {
 }
 
 // Warning: (ae-forgotten-export) The symbol "StarContext" needs to be exported by the entry point csp.d.ts
-// Warning: (ae-forgotten-export) The symbol "StateRecord" needs to be exported by the entry point csp.d.ts
-// Warning: (ae-forgotten-export) The symbol "ComputedRecord" needs to be exported by the entry point csp.d.ts
 //
 // @public (undocumented)
-export type StarStatementEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarStatementEvaluator = (context: StarContext) => unknown;
 
 // @public (undocumented)
-export type StarValueEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarValueEvaluator = (context: StarContext) => unknown;
 
 // (No @packageDocumentation comment for this package)
 

@@ -124,6 +124,37 @@ independently.
 Export returns data to application tooling. It performs no network or file write and creates no
 public endpoint, console logger, UI, action or declarative control.
 
+## Investigating application problems
+
+For lifecycle questions, compare `snapshot().kernel.applications` before and after the operation.
+Hiding an outgoing application root leaves it owned. Use the public render adapter to dispose roots
+that an application removes, then check that the remaining application count matches the intended
+screen. Normal browser DOM inspection supplies selectors and element identity that snapshots omit.
+
+For a failed action, enable a bounded action/request trace before reproducing it:
+
+```ts
+inspector.enableTrace({ maxEntries: 64, maxBytes: 16_384, kinds: ["action", "request"] });
+// Reproduce the failing action, then inspect its fixed categories and HTTP status.
+const trace = inspector.exportTrace();
+const failures = trace.records.filter((record) => record.outcome === "failed");
+const failedRequest = failures.find((record) => record.kind === "request");
+const parentAction = trace.records.find(
+  (record) => record.kind === "action" && record.id === failedRequest?.parentId,
+);
+```
+
+A correlated request failure confirms that an action issued a request; the HTTP status helps
+distinguish a backend failure from missing registration. Browser network tools supply response and
+URL context. Clear the trace, correct the application/backend problem, and repeat the same action to
+check completion and visible state. Disable tracing and dispose the lease after the investigation.
+
+The packaged Project Browser and Audit Log investigations exercised these workflows in Chromium,
+Firefox, and WebKit. They support the current
+[no-go decision for an official DevTools UI](decisions/DEVTOOLS.md). `jquery-star/devtools` is not
+an available export. Applications can consume the public data themselves; an application-owned
+viewer must preserve disclosure, bounds, accessibility, and lease cleanup.
+
 ## Service summaries and limits
 
 | Service         | Counting boundary                                                                                                                                          |

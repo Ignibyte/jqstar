@@ -1939,7 +1939,7 @@ export interface StarSortableStatic {
 }
 
 // @public (undocumented)
-export type StarStatementEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarStatementEvaluator = (context: StarContext) => unknown;
 
 // @public (undocumented)
 export interface StarStatic extends StarCoreStatic {
@@ -2233,7 +2233,7 @@ export interface StarUIStatic {
 }
 
 // @public (undocumented)
-export type StarValueEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarValueEvaluator = (context: StarContext) => unknown;
 
 // @public (undocumented)
 export type StateRecord = Record<string, unknown>;

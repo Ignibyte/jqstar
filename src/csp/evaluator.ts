@@ -60,7 +60,7 @@ type EventMethod = (typeof CSP_METHODS.event)[number];
 type JQueryMethod = (typeof CSP_METHODS.jquery)[number];
 type StringMethod = (typeof CSP_METHODS.string)[number];
 
-const pendingValues = new WeakSet<object>();
+const pendingValues = new WeakSet();
 // The captured intrinsic verifies native Promise internal slots without reading a public `then`.
 const nativePromiseThen = Object.getOwnPropertyDescriptor(Promise.prototype, "then")!
   .value as NativePromiseThen;
@@ -654,8 +654,8 @@ class EvaluationFrame {
       )) {
         this.fail("CSP_EVALUATE_TYPE", span);
       }
-      const leftValue = left.value as number | string;
-      const rightValue = right.value as number | string;
+      const leftValue = left.value;
+      const rightValue = right.value;
       const result =
         operator === "<"
           ? leftValue < rightValue
@@ -870,12 +870,11 @@ class EvaluationFrame {
           ? this.jqueryArguments(trackedArgs, node.span)
           : trackedArgs.map(({ value }) => value);
       if (object.kind === "primitive")
-        return this.stringMethod(String(object.value), name as StringMethod, args, node.span);
+        return this.stringMethod(String(object.value), name, args, node.span);
       if (object.kind === "array" || object.kind === "arguments") {
-        return this.arrayMethod(object, name as ArrayMethod, args, node.span);
+        return this.arrayMethod(object, name, args, node.span);
       }
-      if (object.kind === "event")
-        return this.eventMethod(object.value, name as EventMethod, args, node.span);
+      if (object.kind === "event") return this.eventMethod(object.value, name, args, node.span);
       return this.jqueryMethod(object.value, name, args, node);
     });
   }
@@ -987,7 +986,7 @@ class EvaluationFrame {
             output.push(String(value));
           else this.fail("CSP_EVALUATE_TYPE", span);
         }
-        return tracked("primitive", output.join((args[0] as string | undefined) ?? ","));
+        return tracked("primitive", output.join(args[0] ?? ","));
       }
       case "slice": {
         if (args.length > 2) this.fail("CSP_CAPABILITY_CALL", span);
@@ -1021,7 +1020,7 @@ class EvaluationFrame {
 
   private validateJQueryArguments(node: CSPMethodCallNode): void {
     const name = node.name!;
-    const bounds = jqueryMethodArity[name as JQueryMethod];
+    const bounds = jqueryMethodArity[name];
     if (!bounds) this.fail("CSP_CAPABILITY_CALL", node.span);
     const [minimum, maximum] = bounds;
     if (node.arguments.length < minimum || node.arguments.length > maximum) {

@@ -115,7 +115,7 @@ describe("declarative jQuery Star", () => {
     expect($("output").hasClass("ready")).toBe(true);
     expect($("output").attr("aria-label")).toBe("Count 2");
     expect($("output").prop("title")).toBe("Double 4");
-    expect($<HTMLElement>("output").get(0)?.style.color).toBe("green");
+    expect($("output").get(0)?.style.color).toBe("green");
     expect($("i").attr("data-seen")).toBe("2");
   });
 
@@ -608,7 +608,7 @@ describe("declarative jQuery Star", () => {
     const eventCleanupFailure = new Error("native cleanup failed");
     const reports: unknown[] = [];
     $("#app").on("jquery-star:error", (_event, detail) => reports.push(detail));
-    const originalOn = Reflect.get($.fn, "on") as JQuery["on"];
+    const originalOn = Reflect.get($.fn, "on");
     const originalOff = $.fn.off;
     const on = vi.spyOn($.fn, "on").mockImplementation(function (this: JQuery, ...args: unknown[]) {
       if (typeof args[0] === "string" && args[0].includes("jqueryStarBind")) throw modelFailure;

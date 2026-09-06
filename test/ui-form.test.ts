@@ -153,4 +153,27 @@ describe("jQuery Star Form", () => {
     expect(message().hidden).toBe(true);
     expect(reset).toHaveBeenCalledOnce();
   });
+  it("clears selected backend errors through explicit and implicit named actions", async () => {
+    const instance = $("#app").star("instance");
+    if (!instance) throw new Error("Application was not created.");
+    email().value = "taken@example.com";
+    $.star.ui.form.setErrors(form(), {
+      email: "Already registered.",
+      _form: "Review your profile.",
+    });
+    await instance.run("ui.form.clear-errors", {
+      args: ["#profile-form", ["email"]],
+      element: form(),
+    });
+    expect(email().validity.customError).toBe(false);
+    expect(message().hidden).toBe(true);
+    expect(form().querySelector('[data-part="server-message"]')?.textContent).toBe(
+      "Review your profile.",
+    );
+    await instance.run("ui.form.clear-errors", { args: [], element: email() });
+    expect(form().hasAttribute("data-server-invalid")).toBe(false);
+    await expect(
+      instance.run("ui.form.clear-errors", { args: [[42]], element: form() }),
+    ).rejects.toThrow("names must be a string or string array");
+  });
 });

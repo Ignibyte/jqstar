@@ -91,11 +91,11 @@ must be called out in the changelog, security advisory, and migration instructio
 
 ## Features outside 1.1
 
-Native resources and mutations, native navigation and regions, prefetching, an in-page DevTools UI,
-and package-upgrade diagnostics are not 1.1 package entries. Their planned tickets do not block 1.1
-and must not appear in stable bundle graphs. Shared stores are client-visible coordination state
-only; see [STORES.md](STORES.md). Selected browser preferences use the separate
-[persistence contract](PERSISTENCE.md).
+Native resources and mutations, native navigation and regions, prefetching, and an in-page DevTools
+UI are excluded from 1.1 package entries and stable bundle graphs. Package-upgrade diagnostics are
+explicit CLI modes, documented in [UPGRADES.md](UPGRADES.md), with no browser runtime entry. Shared
+stores are client-visible coordination state only; see [STORES.md](STORES.md). Selected browser
+preferences use the separate [persistence contract](PERSISTENCE.md).
 
 ## Verification
 

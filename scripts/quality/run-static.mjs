@@ -23,6 +23,7 @@ const gates = [
   gate("source-policy", node, ["scripts/quality/source-policy.mjs"]),
   gate("schemas", node, ["scripts/quality/validate-json.mjs"]),
   gate("metrics", node, ["scripts/quality/check-metrics.mjs"]),
+  gate("lint-boundaries", node, ["scripts/quality/check-lint-boundaries.mjs"]),
   gate("lockfile", node, ["scripts/quality/check-lockfile.mjs"]),
   gate("typescript-production", npx, [
     "--no-install",
@@ -47,9 +48,18 @@ const gates = [
     "quality",
     "config/**/*.ts",
     "*.config.ts",
+    "*.config.js",
+    ".dependency-cruiser.cjs",
     "--max-warnings=0",
   ]),
-  gate("stylelint", npx, ["--no-install", "stylelint", "src/**/*.css"]),
+  gate("stylelint", npx, [
+    "--no-install",
+    "stylelint",
+    "src/**/*.css",
+    "example/**/*.css",
+    "test/**/*.css",
+    "e2e/**/*.css",
+  ]),
   gate("html", npx, ["--no-install", "html-validate", "example/**/*.html", "registry/**/*.html"]),
   gate("dependency-architecture", npx, [
     "--no-install",
@@ -124,6 +134,10 @@ function escapeWorkflowCommandData(value) {
 
 function escapeWorkflowCommandProperty(value) {
   return escapeWorkflowCommandData(value).replaceAll(":", "%3A").replaceAll(",", "%2C");
+}
+
+export function configuredStaticGates() {
+  return structuredClone(gates);
 }
 
 export function githubErrorAnnotation(result) {

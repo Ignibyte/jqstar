@@ -1,6 +1,6 @@
 {
   "$schema": "jqstar-agent-content/1",
-  "corpusVersion": 5,
+  "corpusVersion": 6,
   "canonicalBaseUrl": "https://ignibyte.github.io/jqstar/",
   "webMcpDraft": "2026-08-26",
   "limits": {
@@ -64,7 +64,7 @@
       "id": "compatibility",
       "title": "Compatibility",
       "path": "docs/compatibility/",
-      "summary": "Stable jQStar 1.0 entries, formats, browser and tool support, host ranges, document topology, and lifecycle policy.",
+      "summary": "Stable jQStar 1.1 entries, formats, package doctor, support ranges, document topology, and lifecycle policy.",
       "keywords": ["compatibility", "support", "node", "jquery", "browser", "entry points"],
       "source": "example/docs/compatibility/index.html",
       "contentRoot": "article"

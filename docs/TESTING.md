@@ -1,5 +1,23 @@
 # Testing strategy
 
+## Offline package doctor
+
+`test/doctor.test.mjs` exercises npm, pnpm, and Yarn metadata resolution, workspaces, aliases,
+incompatible direct versus separate transitive packages, bounded scans, schemas, and output privacy.
+`test/doctor-migrations.test.mjs` covers dry runs, atomic apply, repeat no-ops, exact rollback,
+permission/identity/content drift, symlinks, concurrent writers, and failures around file creation
+and replacement. Signal tests exercise the same interruption handlers without terminating Vitest.
+The two doctor properties retain 100 generated cases; the durable filesystem round trip has a
+30-second test timeout because it includes actual file and directory flushes.
+
+`test/doctor-consumer.test.mjs` runs the real CLI with preload guards that reject network calls,
+child processes, and writes in read-only modes. Positive controls prove those guards reject each
+forbidden effect. Metadata and application-file snapshots independently prove no writes. The package
+gate copies that same fixture into an isolated tarball consumer and executes its installed CLI.
+`test/doctor-contract.test.mjs` checks rule provenance, schemas, support/entrypoint agreement, and
+negative controls for stale digests, ranges, exports, duplicate codes, and documentation links. The
+static JSON gate also validates the shipped rule manifest and its authority hashes.
+
 ## Evidence layers
 
 | Layer              | Location                          | Proves                                                                   |
@@ -541,6 +559,14 @@ pre-header browser write retry, older htmx private-entry and handled Firefox pag
 No manual assistive-technology, browser-chrome or cache-performance claim follows from these tests.
 
 ## Inspection evidence
+
+Ticket 0031's `test/inspection-decision.test.mjs` validates two controlled installed registry
+application investigations across Chromium, Firefox, and WebKit. The saved snapshots/traces must
+match the public schema, fixture hashes, diagnosed failures, corrections, and terminal cleanup.
+`npm run research:inspection:measure` reproduces both investigations from a current locally packed
+artifact and records isolated browser/version/import-graph evidence. These runs establish diagnostic
+sufficiency for the tested questions; they are not independent usability or accessibility studies.
+Package quality separately rejects a DevTools export, runtime, or packed research artifact.
 
 `test/inspection.test.ts` checks post-boot attachment, default-off ownership, shared leases, closed
 schemas, service inventories, policy expiry/revocation, transactional metadata and contained cleanup

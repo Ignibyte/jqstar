@@ -1,10 +1,8 @@
-import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import {
   classifyPath,
-  existedAtRevision,
   loadQualityScope,
   qualityEvidencePath,
   qualityRunId,
@@ -14,11 +12,8 @@ import {
   run,
   writeJsonAtomic,
 } from "./lib.mjs";
-import {
-  evaluateCoverage,
-  evaluateCoverageThresholdRatchet,
-  verifyExecutedTestEvidence,
-} from "./coverage-report.mjs";
+import { evaluateCoverage, verifyExecutedTestEvidence } from "./coverage-report.mjs";
+import { currentCoverageThresholdRatchet } from "./coverage-thresholds.mjs";
 
 const reportDirectory = process.env.JQS_QUALITY_RUN_DIRECTORY
   ? qualityEvidencePath("coverage")
@@ -27,17 +22,6 @@ const gateReport = qualityEvidencePath("coverage-gate.json");
 const coverageMode = process.argv.includes("--stabilization") ? "stabilization" : "delivery";
 const runId = qualityRunId();
 const executedTestsReport = qualityEvidencePath("executed-tests.json");
-
-function readBaseThresholds(base) {
-  const path = "quality/coverage-thresholds.json";
-  if (!base || !existedAtRevision(path, base)) return null;
-  return JSON.parse(
-    execFileSync("git", ["show", `${base}:${path}`], {
-      cwd: repoPath("."),
-      encoding: "utf8",
-    }),
-  );
-}
 
 async function main() {
   const stabilization = coverageMode === "stabilization";
@@ -85,11 +69,7 @@ async function main() {
       await readJson(repoPath("quality/test-evidence.json")),
       await readJson(executedTestsReport),
     );
-    const thresholdRatchet = evaluateCoverageThresholdRatchet(
-      thresholds,
-      readBaseThresholds(scope.base),
-      scope.base,
-    );
+    const thresholdRatchet = currentCoverageThresholdRatchet(thresholds, scope, repoPath("."));
     evaluation = evaluateCoverage({
       summary,
       finalCoverage,

@@ -435,8 +435,8 @@
         "version": { "type": "string", "minLength": 1 },
         "documentation": {
           "type": "array",
-          "minItems": 12,
-          "maxItems": 12,
+          "minItems": 14,
+          "maxItems": 14,
           "prefixItems": [
             { "const": "docs/BACKEND.md" },
             { "const": "docs/COMPATIBILITY.md" },
@@ -449,7 +449,9 @@
             { "const": "docs/JQUERY_UI_MIGRATION.md" },
             { "const": "docs/PERSISTENCE.md" },
             { "const": "docs/SELF_HOSTING.md" },
-            { "const": "docs/STORES.md" }
+            { "const": "docs/STORES.md" },
+            { "const": "docs/UPGRADES.md" },
+            { "const": "docs/decisions/DEVTOOLS.md" }
           ],
           "items": false
         }

@@ -540,7 +540,7 @@ function requestRangeSelection(root: HTMLElement, date: Date, endDate?: Date): H
   rangeStatus(
     root,
     end
-      ? `Range selected, ${dayFormatter.format(nextStart)} through ${dayFormatter.format(nextEnd!)}.`
+      ? `Range selected, ${dayFormatter.format(nextStart)} through ${dayFormatter.format(nextEnd)}.`
       : `${dayFormatter.format(nextStart)} selected as the start date. Choose an end date.`,
   );
   emitRange(root, "change", detail);

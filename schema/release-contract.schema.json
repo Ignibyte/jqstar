@@ -46,7 +46,7 @@
       "type": "object",
       "required": ["ticket", "expectedBranch", "expectedTag"],
       "properties": {
-        "ticket": { "const": "0030" },
+        "ticket": { "const": "0032" },
         "expectedBranch": { "const": "feat/shared-stores" },
         "expectedTag": { "const": "v1.1.0" }
       },
@@ -125,8 +125,8 @@
     },
     "policies": {
       "type": "array",
-      "minItems": 18,
-      "maxItems": 18,
+      "minItems": 19,
+      "maxItems": 19,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/policy" }
     },
@@ -138,8 +138,8 @@
         "criterionRule": { "const": "criterion-has-one-matching-terminal-evidence-row" },
         "tickets": {
           "type": "array",
-          "minItems": 37,
-          "maxItems": 37,
+          "minItems": 40,
+          "maxItems": 40,
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^[0-9]{4}$" }
         }
@@ -182,8 +182,8 @@
     },
     "optionalExclusions": {
       "type": "array",
-      "minItems": 7,
-      "maxItems": 7,
+      "minItems": 6,
+      "maxItems": 6,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/nonemptyString" }
     },

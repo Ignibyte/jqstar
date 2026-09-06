@@ -105,7 +105,7 @@ describe("jQStar website structure", () => {
     expect(full).toContain("@starfederation/datastar-sdk");
     expect(JSON.parse(index)).toMatchObject({
       schema: "jqstar-agent-index/1",
-      corpusVersion: 5,
+      corpusVersion: 6,
       package: { name: "jquery-star", version: "1.1.0" },
     });
   });

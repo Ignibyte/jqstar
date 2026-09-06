@@ -176,7 +176,7 @@ describe("jQuery Star", () => {
     expect($(".status").attr("href")).toBe("/ready");
     expect($(".status").attr("aria-live")).toBe("polite");
     expect($(".status").prop("title")).toBe("Done");
-    expect($<HTMLElement>(".status").get(0)?.style.color).toBe("green");
+    expect($(".status").get(0)?.style.color).toBe("green");
     expect($(".markup strong").text()).toBe("Complete");
   });
 

@@ -1,0 +1,1968 @@
+{
+  "schema": "jqstar-inspection-investigations/1",
+  "recordedAt": "2026-09-06T03:33:14.787Z",
+  "rows": [
+    {
+      "engine": "chromium",
+      "version": "151.0.7922.34",
+      "app": "project-browser",
+      "id": "project-browser-ownership",
+      "elapsedMs": 4.600000001490116,
+      "resolved": true,
+      "publicReads": 4,
+      "diagnosis": "hidden-root-remains-owned",
+      "before": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "sequence": 1,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-1", "mode": "attributes" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "fault": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "sequence": 2,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [
+            { "id": "application-1", "mode": "attributes" },
+            { "id": "application-2", "mode": "behavior" }
+          ],
+          "applicationCount": 2,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 4,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "corrected": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "sequence": 3,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-2", "mode": "behavior" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "terminal": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-5a5ffcc96a4ed59b12264f4b24f6aa6e",
+        "sequence": 4,
+        "lifecycle": "disposed",
+        "kernel": null,
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": {
+          "attempted": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 1,
+            "task": 0
+          },
+          "released": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 1,
+            "task": 0
+          },
+          "failed": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          },
+          "remaining": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          }
+        },
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "cleanup": { "failed": 0, "remaining": 0 }
+    },
+    {
+      "engine": "chromium",
+      "version": "151.0.7922.34",
+      "app": "audit-log",
+      "id": "audit-log-request",
+      "elapsedMs": 10.800000004470348,
+      "resolved": true,
+      "publicReads": 4,
+      "diagnosis": "backend-http-503-action-was-registered",
+      "before": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "sequence": 1,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-1", "mode": "attributes" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 1,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 0,
+          "bytes": 2,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "fault": {
+        "schema": "jqstar-inspection-trace/1",
+        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 4,
+          "bytes": 628,
+          "sequence": 5,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 4,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 4,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "records": [
+          {
+            "sequence": 2,
+            "kind": "action",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 0,
+            "id": "operation-1",
+            "ownerId": "application-1"
+          },
+          {
+            "sequence": 3,
+            "kind": "request",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 1,
+            "id": "operation-2",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 0,
+            "parentId": "operation-1"
+          },
+          {
+            "sequence": 4,
+            "kind": "request",
+            "phase": "failed",
+            "outcome": "failed",
+            "elapsedMs": 4,
+            "id": "operation-2",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "status": 503,
+            "parentId": "operation-1"
+          },
+          {
+            "sequence": 5,
+            "kind": "action",
+            "phase": "failed",
+            "outcome": "failed",
+            "elapsedMs": 4,
+            "id": "operation-1",
+            "ownerId": "application-1"
+          }
+        ]
+      },
+      "corrected": {
+        "schema": "jqstar-inspection-trace/1",
+        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 5,
+          "bytes": 836,
+          "sequence": 10,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 9,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 9,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "records": [
+          {
+            "sequence": 6,
+            "kind": "action",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 4,
+            "id": "operation-3",
+            "ownerId": "application-1"
+          },
+          {
+            "sequence": 7,
+            "kind": "request",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 4,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 0,
+            "parentId": "operation-3"
+          },
+          {
+            "sequence": 8,
+            "kind": "request",
+            "phase": "progress",
+            "outcome": "pending",
+            "elapsedMs": 7,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "parentId": "operation-3",
+            "loaded": 131
+          },
+          {
+            "sequence": 9,
+            "kind": "request",
+            "phase": "completed",
+            "outcome": "completed",
+            "elapsedMs": 7,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "status": 200,
+            "parentId": "operation-3"
+          },
+          {
+            "sequence": 10,
+            "kind": "action",
+            "phase": "completed",
+            "outcome": "completed",
+            "elapsedMs": 7,
+            "id": "operation-3",
+            "ownerId": "application-1"
+          }
+        ]
+      },
+      "terminal": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-4a904c65743c26e0a74b65c4de82df23",
+        "sequence": 11,
+        "lifecycle": "disposed",
+        "kernel": null,
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": {
+          "attempted": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 2,
+            "task": 0
+          },
+          "released": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 2,
+            "task": 0
+          },
+          "failed": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          },
+          "remaining": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          }
+        },
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "cleanup": { "failed": 0, "remaining": 0 }
+    },
+    {
+      "engine": "firefox",
+      "version": "153.0",
+      "app": "project-browser",
+      "id": "project-browser-ownership",
+      "elapsedMs": 6,
+      "resolved": true,
+      "publicReads": 4,
+      "diagnosis": "hidden-root-remains-owned",
+      "before": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "sequence": 1,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-1", "mode": "attributes" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "fault": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "sequence": 2,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [
+            { "id": "application-1", "mode": "attributes" },
+            { "id": "application-2", "mode": "behavior" }
+          ],
+          "applicationCount": 2,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 4,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "corrected": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "sequence": 3,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-2", "mode": "behavior" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "terminal": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-ee0e1e54a522cd423f4dfdcffa5765ac",
+        "sequence": 4,
+        "lifecycle": "disposed",
+        "kernel": null,
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": {
+          "attempted": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 1,
+            "task": 0
+          },
+          "released": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 1,
+            "task": 0
+          },
+          "failed": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          },
+          "remaining": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          }
+        },
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "cleanup": { "failed": 0, "remaining": 0 }
+    },
+    {
+      "engine": "firefox",
+      "version": "153.0",
+      "app": "audit-log",
+      "id": "audit-log-request",
+      "elapsedMs": 9,
+      "resolved": true,
+      "publicReads": 4,
+      "diagnosis": "backend-http-503-action-was-registered",
+      "before": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "sequence": 1,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-1", "mode": "attributes" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 1,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 0,
+          "bytes": 2,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "fault": {
+        "schema": "jqstar-inspection-trace/1",
+        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 4,
+          "bytes": 628,
+          "sequence": 5,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 4,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 4,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "records": [
+          {
+            "sequence": 2,
+            "kind": "action",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 1,
+            "id": "operation-1",
+            "ownerId": "application-1"
+          },
+          {
+            "sequence": 3,
+            "kind": "request",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 1,
+            "id": "operation-2",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 0,
+            "parentId": "operation-1"
+          },
+          {
+            "sequence": 4,
+            "kind": "request",
+            "phase": "failed",
+            "outcome": "failed",
+            "elapsedMs": 4,
+            "id": "operation-2",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "status": 503,
+            "parentId": "operation-1"
+          },
+          {
+            "sequence": 5,
+            "kind": "action",
+            "phase": "failed",
+            "outcome": "failed",
+            "elapsedMs": 4,
+            "id": "operation-1",
+            "ownerId": "application-1"
+          }
+        ]
+      },
+      "corrected": {
+        "schema": "jqstar-inspection-trace/1",
+        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 5,
+          "bytes": 836,
+          "sequence": 10,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 9,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 9,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "records": [
+          {
+            "sequence": 6,
+            "kind": "action",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 5,
+            "id": "operation-3",
+            "ownerId": "application-1"
+          },
+          {
+            "sequence": 7,
+            "kind": "request",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 5,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 0,
+            "parentId": "operation-3"
+          },
+          {
+            "sequence": 8,
+            "kind": "request",
+            "phase": "progress",
+            "outcome": "pending",
+            "elapsedMs": 7,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "parentId": "operation-3",
+            "loaded": 131
+          },
+          {
+            "sequence": 9,
+            "kind": "request",
+            "phase": "completed",
+            "outcome": "completed",
+            "elapsedMs": 7,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "status": 200,
+            "parentId": "operation-3"
+          },
+          {
+            "sequence": 10,
+            "kind": "action",
+            "phase": "completed",
+            "outcome": "completed",
+            "elapsedMs": 7,
+            "id": "operation-3",
+            "ownerId": "application-1"
+          }
+        ]
+      },
+      "terminal": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-c4eaddb03c45492b6dae188efce5c4e7",
+        "sequence": 11,
+        "lifecycle": "disposed",
+        "kernel": null,
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": {
+          "attempted": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 2,
+            "task": 0
+          },
+          "released": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 2,
+            "task": 0
+          },
+          "failed": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          },
+          "remaining": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          }
+        },
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "cleanup": { "failed": 0, "remaining": 0 }
+    },
+    {
+      "engine": "webkit",
+      "version": "26.5",
+      "app": "project-browser",
+      "id": "project-browser-ownership",
+      "elapsedMs": 7,
+      "resolved": true,
+      "publicReads": 4,
+      "diagnosis": "hidden-root-remains-owned",
+      "before": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "sequence": 1,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-1", "mode": "attributes" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "fault": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "sequence": 2,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [
+            { "id": "application-1", "mode": "attributes" },
+            { "id": "application-2", "mode": "behavior" }
+          ],
+          "applicationCount": 2,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 4,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "corrected": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "sequence": 3,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-2", "mode": "behavior" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 0,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "terminal": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-775333543563cf05953ea094d9994a57",
+        "sequence": 4,
+        "lifecycle": "disposed",
+        "kernel": null,
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": {
+          "attempted": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 1,
+            "task": 0
+          },
+          "released": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 1,
+            "task": 0
+          },
+          "failed": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          },
+          "remaining": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          }
+        },
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "cleanup": { "failed": 0, "remaining": 0 }
+    },
+    {
+      "engine": "webkit",
+      "version": "26.5",
+      "app": "audit-log",
+      "id": "audit-log-request",
+      "elapsedMs": 13,
+      "resolved": true,
+      "publicReads": 4,
+      "diagnosis": "backend-http-503-action-was-registered",
+      "before": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "sequence": 1,
+        "lifecycle": "active",
+        "kernel": {
+          "applications": [{ "id": "application-1", "mode": "attributes" }],
+          "applicationCount": 1,
+          "plugins": [
+            { "name": "core.datastar", "version": "1.1.0" },
+            { "name": "ui", "version": "1.1.0" }
+          ],
+          "pluginCount": 2,
+          "serviceCount": 0,
+          "ownership": {
+            "effect": 0,
+            "listener": 30,
+            "observer": 3,
+            "service": 10,
+            "subscription": 1,
+            "task": 0
+          },
+          "pendingEnhancements": 0,
+          "pendingTasks": 0,
+          "protocolProfiles": 2,
+          "protocolBodies": 0,
+          "middleware": 0,
+          "expression": "installed"
+        },
+        "services": [],
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 0,
+          "bytes": 2,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": null,
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "fault": {
+        "schema": "jqstar-inspection-trace/1",
+        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 4,
+          "bytes": 628,
+          "sequence": 5,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 4,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 4,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "records": [
+          {
+            "sequence": 2,
+            "kind": "action",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 0,
+            "id": "operation-1",
+            "ownerId": "application-1"
+          },
+          {
+            "sequence": 3,
+            "kind": "request",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 1,
+            "id": "operation-2",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 0,
+            "parentId": "operation-1"
+          },
+          {
+            "sequence": 4,
+            "kind": "request",
+            "phase": "failed",
+            "outcome": "failed",
+            "elapsedMs": 4,
+            "id": "operation-2",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "status": 503,
+            "parentId": "operation-1"
+          },
+          {
+            "sequence": 5,
+            "kind": "action",
+            "phase": "failed",
+            "outcome": "failed",
+            "elapsedMs": 5,
+            "id": "operation-1",
+            "ownerId": "application-1"
+          }
+        ]
+      },
+      "corrected": {
+        "schema": "jqstar-inspection-trace/1",
+        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "trace": {
+          "enabled": true,
+          "maxEntries": 64,
+          "maxBytes": 16384,
+          "entries": 5,
+          "bytes": 836,
+          "sequence": 10,
+          "policyId": 0,
+          "kinds": ["action", "request"],
+          "outcomes": ["pending", "completed", "cancelled", "failed"],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 9,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 9,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "records": [
+          {
+            "sequence": 6,
+            "kind": "action",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 5,
+            "id": "operation-3",
+            "ownerId": "application-1"
+          },
+          {
+            "sequence": 7,
+            "kind": "request",
+            "phase": "started",
+            "outcome": "pending",
+            "elapsedMs": 5,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 0,
+            "parentId": "operation-3"
+          },
+          {
+            "sequence": 8,
+            "kind": "request",
+            "phase": "progress",
+            "outcome": "pending",
+            "elapsedMs": 8,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "parentId": "operation-3",
+            "loaded": 131
+          },
+          {
+            "sequence": 9,
+            "kind": "request",
+            "phase": "completed",
+            "outcome": "completed",
+            "elapsedMs": 8,
+            "id": "operation-4",
+            "ownerId": "application-1",
+            "method": "GET",
+            "attempt": 1,
+            "status": 200,
+            "parentId": "operation-3"
+          },
+          {
+            "sequence": 10,
+            "kind": "action",
+            "phase": "completed",
+            "outcome": "completed",
+            "elapsedMs": 8,
+            "id": "operation-3",
+            "ownerId": "application-1"
+          }
+        ]
+      },
+      "terminal": {
+        "schema": "jqstar-inspection-snapshot/1",
+        "version": "1.1.0",
+        "kernelId": "kernel-17b96240992c803a9124705006196a50",
+        "sequence": 11,
+        "lifecycle": "disposed",
+        "kernel": null,
+        "services": [],
+        "trace": {
+          "enabled": false,
+          "maxEntries": 0,
+          "maxBytes": 0,
+          "entries": 0,
+          "bytes": 0,
+          "sequence": 0,
+          "policyId": 0,
+          "kinds": [],
+          "outcomes": [],
+          "everyNth": 1,
+          "policies": [],
+          "counters": {
+            "observed": 0,
+            "filtered": 0,
+            "sampled": 0,
+            "retained": 0,
+            "evicted": 0,
+            "oversized": 0,
+            "purged": 0,
+            "failures": {
+              "configuration": 0,
+              "capture": 0,
+              "serializer": 0,
+              "reentrant": 0,
+              "clock": 0,
+              "export": 0,
+              "cleanup": 0
+            }
+          }
+        },
+        "disposal": {
+          "attempted": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 2,
+            "task": 0
+          },
+          "released": {
+            "application": 1,
+            "effect": 2,
+            "hook": 1,
+            "listener": 31,
+            "observer": 3,
+            "plugin": 2,
+            "request": 2,
+            "service": 14,
+            "subscription": 2,
+            "task": 0
+          },
+          "failed": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          },
+          "remaining": {
+            "application": 0,
+            "effect": 0,
+            "hook": 0,
+            "listener": 0,
+            "observer": 0,
+            "plugin": 0,
+            "request": 0,
+            "service": 0,
+            "subscription": 0,
+            "task": 0
+          }
+        },
+        "omitted": { "applications": 0, "plugins": 0, "services": 0 }
+      },
+      "cleanup": { "failed": 0, "remaining": 0 }
+    }
+  ],
+  "package": {
+    "name": "jquery-star",
+    "version": "1.1.0",
+    "sha256": "08fac88a32da4ba7834aaa2d3ad8b58daaa58484894bceb9833ebdd86a7d1971"
+  },
+  "source": "0d51340f4b134b8c3557ea777c86c0e20c2dcf3e",
+  "inputs": {
+    "test/fixtures/inspection-investigations.mjs": "fa4ac2726bee7e821147ee058ad703f8ea111d35947f0873d5404d61e5417e62",
+    "scripts/measure-inspection-investigations.mjs": "999d09247dbce6b6c52df58e67e4b2bb8302abe5041d8aadae8475aa6dc48669",
+    "registry/blocks/project-browser.ts": "c752903746c92bb21b5967cbd5543a5c52c9952a4f548808387a8047d06fa4c5",
+    "registry/blocks/project-browser.html": "07034b206effd944c98c434f770a78abe36d08c7775bace6751abab96b5ec4d5",
+    "registry/blocks/audit-log.ts": "69fed1c8403868b44e35da82812f1d8c7416470989b0fe8cf40356267f47075c",
+    "registry/blocks/audit-log.html": "80f094d76dae98a7de9d27e5ef748b403ef1267b631ae305222e87f8d162e3b5",
+    "package-lock.json": "dbd286b2d6a0e5f0676819bcbd6ceabc0e1db55a9722d20513afa83d41566a9c"
+  },
+  "absence": { "devtoolsExport": false, "devtoolsPackedFiles": 0, "repositoryRuntimeImports": 0 },
+  "graphs": {
+    "project-browser": [
+      "investigations.mjs",
+      "node_modules/jquery-star/dist/datastar-DzHbAsT6.js",
+      "node_modules/jquery-star/dist/inspect.js",
+      "node_modules/jquery-star/dist/jquery-star.js",
+      "node_modules/jquery-star/dist/render-adapter-bjdCWt5j.js",
+      "node_modules/jquery-star/dist/ui.js",
+      "node_modules/jquery/dist-module/jquery.module.js",
+      "project-browser.mjs",
+      "project-browser.ts"
+    ],
+    "audit-log": [
+      "audit-log.mjs",
+      "audit-log.ts",
+      "investigations.mjs",
+      "node_modules/jquery-star/dist/datastar-DzHbAsT6.js",
+      "node_modules/jquery-star/dist/inspect.js",
+      "node_modules/jquery-star/dist/jquery-star.js",
+      "node_modules/jquery-star/dist/render-adapter-bjdCWt5j.js",
+      "node_modules/jquery-star/dist/ui.js",
+      "node_modules/jquery/dist-module/jquery.module.js"
+    ]
+  },
+  "backendRequests": 6,
+  "status": "pass"
+}

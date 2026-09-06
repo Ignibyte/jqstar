@@ -423,7 +423,7 @@ function normalizeBody(value: unknown): StarRequestBodyMetadata {
   }
   return Object.freeze({
     kind: value.kind as StarRequestBodyKind,
-    ...(value.size === undefined ? {} : { size: value.size as number }),
+    ...(value.size === undefined ? {} : { size: value.size }),
   });
 }
 
@@ -478,8 +478,8 @@ export function normalizeRequestDescriptor(value: unknown): StarRequestDescripto
     headers: normalizeHeaders(value.headers),
     credentials: value.credentials as RequestCredentials,
     body: normalizeBody(value.body),
-    ...(value.target === undefined ? {} : { target: value.target as string }),
-    ...(value.selector === undefined ? {} : { selector: value.selector as string | null }),
+    ...(value.target === undefined ? {} : { target: value.target }),
+    ...(value.selector === undefined ? {} : { selector: value.selector }),
     ...(value.mode === undefined ? {} : { mode: value.mode as PatchMode }),
     profile: value.profile,
   };

@@ -789,7 +789,7 @@ export function createQuestionnaires(registerAction: ActionRegistrar): Questionn
     ) {
       throw new Error("ui.questionnaire.answer needs a string, string array, or undefined value.");
     }
-    return api.answer(target, name, answer as QuestionnaireAnswer);
+    return api.answer(target, name, answer);
   });
   return { api, enhance: enhanceAll };
 }

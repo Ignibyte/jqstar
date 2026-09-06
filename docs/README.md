@@ -32,6 +32,8 @@ The package has two public layers:
   transactions, subscriptions, lifecycle, and authority boundaries.
 - [INSPECTION.md](INSPECTION.md): explicit snapshots, bounded tracing, disclosure policy, service
   summaries, leases, and cleanup.
+- [decisions/DEVTOOLS.md](decisions/DEVTOOLS.md): two installed application investigations,
+  supported public inspection workflows, and the decision to decline an official in-page UI.
 - [PERSISTENCE.md](PERSISTENCE.md): selected browser preferences, synchronous hydration, codecs,
   migrations, recovery, revision ordering, storage adapters, and disposal.
 - [decisions/RESOURCE_STRATEGY.md](decisions/RESOURCE_STRATEGY.md): measured server-patch decision,
@@ -43,6 +45,8 @@ The package has two public layers:
   revisit criteria.
 - [COMPATIBILITY.md](COMPATIBILITY.md): stable 1.x entries, environments, version boundaries,
   deprecation policy, and executable evidence map.
+- [UPGRADES.md](UPGRADES.md): offline package doctor, evidence limits, stable exit/schema contracts,
+  configuration plans, explicit apply/rollback, and Migrate summaries.
 - [../MIGRATING_TO_1.md](../MIGRATING_TO_1.md): complete 0.1-to-1.0 package migration.
 - [../SUPPORT.md](../SUPPORT.md): maintained release lines and support expectations.
 - [../RELEASING.md](../RELEASING.md): clean candidate proof, publication authorization boundary,

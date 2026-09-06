@@ -414,7 +414,7 @@ export async function executeBackendRequest(
                 request: finalDescriptor,
                 signal: controller.signal,
                 patchSignals: (source, patchOptions) =>
-                  patchSignals(context.state, source as Record<string, unknown>, patchOptions),
+                  patchSignals(context.state, source, patchOptions),
                 patchElements: (source, patchOptions) =>
                   patchElements(context.root, source, patchOptions),
                 emitSSE: (message) => emitSSE(context, message),
@@ -577,13 +577,7 @@ export function createBackendAction<
   url: string,
   options: BackendActionOptions<State, Computed> = {},
 ): StarAction<State, Computed> {
-  return (context) =>
-    executeBackendRequest(
-      method,
-      url,
-      options as BackendActionOptions,
-      context as unknown as StarContext,
-    );
+  return (context) => executeBackendRequest(method, url, options as BackendActionOptions, context);
 }
 
 export function dynamicBackendAction(method: BackendMethod): StarAction {
@@ -593,6 +587,6 @@ export function dynamicBackendAction(method: BackendMethod): StarAction {
       throw new Error(`@${method.toLowerCase()} requires a URL.`);
     }
     if (!isPlainObject(options)) throw new Error("Backend action options must be an object.");
-    return executeBackendRequest(method, url, options as BackendActionOptions, context);
+    return executeBackendRequest(method, url, options, context);
   };
 }

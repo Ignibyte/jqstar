@@ -182,12 +182,7 @@ class Application<
     if (!resolved) throw new Error(`Unknown jQuery Star action: ${String(action)}`);
     const context = { ...this.context(), ...overrides };
     const label = typeof action === "string" ? action : resolved.name || "anonymous";
-    return this.capabilities.runAction(
-      this,
-      label,
-      resolved as unknown as StarAction,
-      context as unknown as StarContext,
-    );
+    return this.capabilities.runAction(this, label, resolved as unknown as StarAction, context);
   }
 
   observeOperations(

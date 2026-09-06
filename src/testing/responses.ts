@@ -226,9 +226,7 @@ export function createResponseController(
   const fetchStub = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     assertActive();
     const source =
-      typeof input === "object" && input !== null && "url" in input
-        ? (input as Request)
-        : undefined;
+      typeof input === "object" && input !== null && "url" in input ? input : undefined;
     const method = (init?.method ?? source?.method ?? "GET").toUpperCase();
     const headers = new Headers(source?.headers);
     if (init?.headers) {

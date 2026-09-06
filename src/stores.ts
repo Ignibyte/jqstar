@@ -6,11 +6,7 @@ import {
   type StarPluginRegistrar,
 } from "./plugin";
 import { effect, reactive, stop, type ReactiveEffect } from "./reactivity";
-import type {
-  StarOperationTerminalPhase,
-  StarStoreOperationCategory,
-  StarStoreOperationObservation,
-} from "./observation";
+import type { StarOperationTerminalPhase, StarStoreOperationCategory } from "./observation";
 import type {
   StarStoreChange,
   StarStoreCleanup,
@@ -59,7 +55,7 @@ const reservedNames = new Set([
   "stores",
   "__proto__",
 ]);
-const definitions = new WeakSet<object>();
+const definitions = new WeakSet();
 
 type StoreRecord = {
   active: boolean;
@@ -84,7 +80,7 @@ function isObject(value: unknown): value is object {
 
 function isThenable(value: unknown): value is PromiseLike<unknown> {
   if ((!isObject(value) && typeof value !== "function") || value === null) return false;
-  let current: object | null = value as object;
+  let current: object | null = value;
   try {
     while (current) {
       const descriptor = Object.getOwnPropertyDescriptor(current, "then");
@@ -233,7 +229,7 @@ function assertMethodsUnchanged(
   }
 }
 
-function assertNoMethods(value: object, seen = new WeakSet<object>()): void {
+function assertNoMethods(value: object, seen = new WeakSet()): void {
   if (seen.has(value)) return;
   seen.add(value);
   for (const child of Object.values(value)) {
@@ -491,7 +487,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
           : phase === "cancelled"
             ? { ...base, phase, reason: "cleanup" as const }
             : { ...base, phase },
-      ) as StarStoreOperationObservation,
+      ),
     );
   };
 
@@ -677,7 +673,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
   ): Store => {
     assertActive("define stores");
     assertStoreName(name);
-    if (!definitions.has(definition as object)) {
+    if (!definitions.has(definition)) {
       throw new TypeError("Store definitions must be created with defineStore().");
     }
     const existing = records.get(name);
@@ -687,7 +683,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
       }
       return existing.store as Store;
     }
-    const priorName = definitionNames.get(definition as object);
+    const priorName = definitionNames.get(definition);
     if (priorName !== undefined && priorName !== name) {
       throw new Error(`This store definition already owns the name ${priorName}.`);
     }
@@ -696,9 +692,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
     let cloned: Store;
     try {
       const initial =
-        typeof definition.initial === "function"
-          ? (definition.initial as () => Store)()
-          : definition.initial;
+        typeof definition.initial === "function" ? definition.initial() : definition.initial;
       if (isThenable(initial))
         throw new TypeError(`Store ${name} initial value cannot be a promise.`);
       cloned = cloneStore(initial, `Store ${name}`);
@@ -757,11 +751,11 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
       });
       record.releases.push(once(lifetime));
       records.set(name, record);
-      definitionNames.set(definition as object, name);
+      definitionNames.set(definition, name);
       namespaceTarget[name] = published as StarStoreObject;
       if (definition.setup) observe(name, "setup", `${id}:setup`, "completed");
       observe(name, "definition", id, "completed");
-      return published as Store;
+      return published;
     } catch (error) {
       if (definition.setup) observe(name, "setup", `${id}:setup`, "failed");
       observe(name, "definition", id, "failed");

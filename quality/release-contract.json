@@ -10,7 +10,11 @@
     "pluginApiVersion": "0.1.0",
     "cspGrammarVersion": "jqstar-csp-expression/1"
   },
-  "source": { "ticket": "0030", "expectedBranch": "feat/shared-stores", "expectedTag": "v1.1.0" },
+  "source": {
+    "ticket": "0032",
+    "expectedBranch": "feat/shared-stores",
+    "expectedTag": "v1.1.0"
+  },
   "stableEntries": [
     {
       "id": "root",
@@ -112,27 +116,88 @@
     "moduleFormats": ["browser-module", "commonjs", "esm", "umd"],
     "documents": ["ordinary-html-document", "same-origin-frame-document"],
     "unsupportedDocuments": ["shadow-root-application"],
-    "bridges": { "turbo": ">=8.0.21 <8.1.0", "htmx": ">=2.0.0 <2.1.0" }
+    "bridges": {
+      "turbo": ">=8.0.21 <8.1.0",
+      "htmx": ">=2.0.0 <2.1.0"
+    }
   },
   "policies": [
-    { "kind": "compatibility", "path": "docs/COMPATIBILITY.md" },
-    { "kind": "security", "path": "SECURITY.md" },
-    { "kind": "support", "path": "SUPPORT.md" },
-    { "kind": "migration", "path": "MIGRATING_TO_1.md" },
-    { "kind": "release", "path": "RELEASING.md" },
-    { "kind": "changelog", "path": "CHANGELOG.md" },
-    { "kind": "architecture", "path": "docs/ARCHITECTURE.md" },
-    { "kind": "backend", "path": "docs/BACKEND.md" },
-    { "kind": "testing", "path": "docs/TESTING.md" },
-    { "kind": "csp", "path": "docs/CSP_EXPRESSIONS.md" },
-    { "kind": "interoperability", "path": "docs/INTEROPERABILITY.md" },
-    { "kind": "jquery-ecosystem", "path": "docs/JQUERY_ECOSYSTEM.md" },
-    { "kind": "jquery-ui-migration", "path": "docs/JQUERY_UI_MIGRATION.md" },
-    { "kind": "jquery-mobile-migration", "path": "docs/JQUERY_MOBILE_MIGRATION.md" },
-    { "kind": "self-hosting", "path": "docs/SELF_HOSTING.md" },
-    { "kind": "stores", "path": "docs/STORES.md" },
-    { "kind": "persistence", "path": "docs/PERSISTENCE.md" },
-    { "kind": "inspection", "path": "docs/INSPECTION.md" }
+    {
+      "kind": "compatibility",
+      "path": "docs/COMPATIBILITY.md"
+    },
+    {
+      "kind": "security",
+      "path": "SECURITY.md"
+    },
+    {
+      "kind": "support",
+      "path": "SUPPORT.md"
+    },
+    {
+      "kind": "migration",
+      "path": "MIGRATING_TO_1.md"
+    },
+    {
+      "kind": "release",
+      "path": "RELEASING.md"
+    },
+    {
+      "kind": "changelog",
+      "path": "CHANGELOG.md"
+    },
+    {
+      "kind": "architecture",
+      "path": "docs/ARCHITECTURE.md"
+    },
+    {
+      "kind": "backend",
+      "path": "docs/BACKEND.md"
+    },
+    {
+      "kind": "testing",
+      "path": "docs/TESTING.md"
+    },
+    {
+      "kind": "csp",
+      "path": "docs/CSP_EXPRESSIONS.md"
+    },
+    {
+      "kind": "interoperability",
+      "path": "docs/INTEROPERABILITY.md"
+    },
+    {
+      "kind": "jquery-ecosystem",
+      "path": "docs/JQUERY_ECOSYSTEM.md"
+    },
+    {
+      "kind": "jquery-ui-migration",
+      "path": "docs/JQUERY_UI_MIGRATION.md"
+    },
+    {
+      "kind": "jquery-mobile-migration",
+      "path": "docs/JQUERY_MOBILE_MIGRATION.md"
+    },
+    {
+      "kind": "self-hosting",
+      "path": "docs/SELF_HOSTING.md"
+    },
+    {
+      "kind": "stores",
+      "path": "docs/STORES.md"
+    },
+    {
+      "kind": "persistence",
+      "path": "docs/PERSISTENCE.md"
+    },
+    {
+      "kind": "inspection",
+      "path": "docs/INSPECTION.md"
+    },
+    {
+      "kind": "upgrades",
+      "path": "docs/UPGRADES.md"
+    }
   ],
   "prerequisites": {
     "requiredStatus": "done",
@@ -158,6 +223,7 @@
       "0018",
       "0019",
       "0030",
+      "0032",
       "0034",
       "0035",
       "0036",
@@ -174,7 +240,9 @@
       "0047",
       "0048",
       "0049",
-      "0050"
+      "0050",
+      "0051",
+      "0052"
     ]
   },
   "qualityModes": [
@@ -225,12 +293,17 @@
     "native-navigation",
     "navigation-regions",
     "prefetch-cache",
-    "devtools",
-    "upgrade-diagnostics"
+    "devtools"
   ],
   "archivedRuntimeExclusions": [
-    { "project": "jquery-ui", "package": "jquery-ui" },
-    { "project": "jquery-mobile", "package": "jquery-mobile" }
+    {
+      "project": "jquery-ui",
+      "package": "jquery-ui"
+    },
+    {
+      "project": "jquery-mobile",
+      "package": "jquery-mobile"
+    }
   ],
   "candidate": {
     "cleanWorkingTree": true,

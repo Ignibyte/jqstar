@@ -1,4 +1,4 @@
-import type { ComputedRecord, StarContext, StateRecord } from "./types";
+import type { StarContext } from "./types";
 
 export interface StarExpressionLocation {
   readonly attribute?: string;
@@ -12,8 +12,8 @@ export interface StarExpressionError extends Error {
   readonly source: string;
 }
 
-export type StarValueEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
-export type StarStatementEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarValueEvaluator = (context: StarContext) => unknown;
+export type StarStatementEvaluator = (context: StarContext) => unknown;
 
 export interface StarExpressionEngine {
   clearCache(): void;

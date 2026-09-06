@@ -21,6 +21,12 @@ const files = new Set(report[0]?.files?.map((file) => file.path));
 assertExactPackageDocumentationPaths([...files]);
 const required = [
   "bin/jqstar.mjs",
+  "bin/doctor/index.mjs",
+  "bin/doctor/compatibility.json",
+  "bin/doctor/migrations.mjs",
+  "schema/doctor.schema.json",
+  "schema/doctor-rules.schema.json",
+  "docs/UPGRADES.md",
   "demo-dist/site.br",
   "deploy/jqstar.env.example",
   "deploy/jqstar.service",

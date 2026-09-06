@@ -121,6 +121,12 @@
       "evidence": ["npm run test:unit", "npm run test:package"]
     },
     {
+      "id": "shipped-doctor-rules",
+      "kind": "schema-contract-evidence",
+      "paths": ["bin/doctor/compatibility.json"],
+      "evidence": ["npm run quality:static", "npm run test:unit", "npm run test:package"]
+    },
+    {
       "id": "deployment-assets",
       "kind": "deployment-evidence",
       "prefixes": ["deploy/"],

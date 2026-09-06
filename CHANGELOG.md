@@ -5,6 +5,16 @@ or GitHub release claim.
 
 ## 1.1.0 - Unreleased
 
+### Package upgrades
+
+- Add explicit offline package doctor checks with stable JSON codes, bounded metadata readers,
+  workspace-aware dependency resolution, entrypoint checks, and opt-in Migrate category summaries.
+- Add dry-run schema 0-to-1 configuration plans, verified atomic apply, protected backup/journal
+  files, idempotent reapply, and hash-checked rollback. Existing registry commands keep their
+  behavior.
+- Record the decision to decline an in-page DevTools UI after two controlled application
+  investigations; the public inspection API remains the supported diagnostic interface.
+
 ### Inspection and tracing
 
 - Add explicit `jquery-star/inspect` ESM/CommonJS attachment with immutable, versioned snapshots,

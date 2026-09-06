@@ -163,7 +163,7 @@ function expectedKey(key: string): string {
 }
 
 export class DeclarativeApplication<State extends StateRecord = StateRecord>
-  implements StarInstance<State, ComputedRecord>, ApplicationLifecycle
+  implements StarInstance<State>, ApplicationLifecycle
 {
   readonly mode = "attributes" as const;
   readonly root: Element;
@@ -230,20 +230,15 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
   }
 
   async run(
-    action: string | StarAction<State, ComputedRecord>,
-    overrides: Partial<StarContext<State, ComputedRecord>> = {},
+    action: string | StarAction<State>,
+    overrides: Partial<StarContext<State>> = {},
   ): Promise<unknown> {
     if (this.isDestroyed) throw new Error("This jQuery Star application has been destroyed.");
     const resolved = typeof action === "string" ? this.capabilities.resolveAction(action) : action;
     if (!resolved) throw new Error(`Unknown jQuery Star action: ${String(action)}`);
     const context = { ...this.context(), ...overrides };
     const label = typeof action === "string" ? action : resolved.name || "anonymous";
-    return this.capabilities.runAction(
-      this,
-      label,
-      resolved as unknown as StarAction,
-      context as unknown as StarContext,
-    );
+    return this.capabilities.runAction(this, label, resolved as unknown as StarAction, context);
   }
 
   observeOperations(
@@ -273,7 +268,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     this.cleanupTree(tree, preservedRoots);
   }
 
-  private context(element = this.root, event?: JQuery.Event): StarContext<State, ComputedRecord> {
+  private context(element = this.root, event?: JQuery.Event): StarContext<State> {
     return {
       $: this.$,
       state: this.state,
@@ -304,7 +299,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       try {
         const result = this.capabilities.expressions.compileValue(source, {
           attribute: "data-signals",
-        })(this.context(element) as StarContext);
+        })(this.context(element));
         if (!isPlainObject(result)) throw new TypeError("data-signals must evaluate to an object.");
         mergeState(this.state, result);
       } catch (error) {
@@ -373,12 +368,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     const source = element.getAttribute(attributeName);
     if (definition) {
       try {
-        this.reconcileRegisteredDirective(
-          element,
-          attributeName,
-          source,
-          definition as unknown as StarDirective<unknown>,
-        );
+        this.reconcileRegisteredDirective(element, attributeName, source, definition);
       } catch (error) {
         this.report(error, element, attributeName, source ?? "");
       }
@@ -440,18 +430,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
           attribute: attributeName,
         });
         this.bindEffect(element, attributeName, () =>
-          this.handleResult(
-            execute(this.context(element) as StarContext),
-            element,
-            attributeName,
-            source,
-          ),
+          this.handleResult(execute(this.context(element)), element, attributeName, source),
         );
       } else if (attributeName === "data-init") {
         this.handleResult(
           this.capabilities.expressions.compileStatement(source, {
             attribute: attributeName,
-          })(this.context(element) as StarContext),
+          })(this.context(element)),
           element,
           attributeName,
           source,
@@ -527,7 +512,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       active: true,
       attribute,
       cleanups: [],
-      definition: definition as StarDirective<unknown>,
+      definition: definition,
     };
     attributes.set(attribute.name, record);
 
@@ -553,7 +538,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     const context: StarDirectiveContext<unknown> = {
       application: this,
       attribute,
-      context: this.context(element) as StarContext,
+      context: this.context(element),
       element,
       expressions: this.capabilities.expressions,
       helpers: this.capabilities.helpers,
@@ -656,7 +641,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     });
     this.bindEffect(element, attributeName, () => {
       try {
-        apply(evaluate(this.context(element) as StarContext));
+        apply(evaluate(this.context(element)));
       } catch (error) {
         this.report(error, element, attributeName, source);
       }
@@ -731,7 +716,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         invoked = true;
         lastInvocation = Date.now();
         this.handleResult(
-          execute(this.context(element, nativeEvent as JQuery.Event) as unknown as StarContext),
+          execute(this.context(element, nativeEvent as JQuery.Event)),
           element,
           attributeName,
           source,
@@ -758,7 +743,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     const cleanup = (): void => {
       if (debounceTimer) clearTimeout(debounceTimer);
       if (native)
-        target.removeEventListener(options.event, invoke as EventListener, {
+        target.removeEventListener(options.event, invoke, {
           capture: options.capture,
         });
       else this.$(element).off(options.event, jqueryInvoke);
@@ -766,7 +751,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     this.setCleanup(element, attributeName, cleanup);
     try {
       if (native) {
-        target.addEventListener(options.event, invoke as EventListener, {
+        target.addEventListener(options.event, invoke, {
           capture: options.capture,
           passive: options.passive,
         });

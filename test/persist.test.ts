@@ -6,7 +6,6 @@ import {
   createLocalStorageAdapter,
   createMemoryStorageAdapter,
   persistPlugin,
-  type StarPersistAdapter,
   type StarPersistEnvelope,
   type StarPersistOptions,
 } from "../src/persist";
@@ -158,7 +157,7 @@ describe("persistence attachment", () => {
     ["decode", envelope({ codec: { id: "different", version: 1 } })],
   ])("preserves %s source bytes until explicit reset", (code, raw) => {
     const current = setup();
-    current.adapter.replace(key, raw!);
+    current.adapter.replace(key, raw);
     const attachment = current.attach();
     expect(attachment.status().error).toBe(code);
     expect(current.store.count).toBe(1);
@@ -293,9 +292,10 @@ describe("persistence attachment", () => {
     }
     const current = setup();
     current.adapter.replace(key, envelope());
-    expect(() =>
-      current.attach({ codec: { ...codec, decode: (() => Promise.resolve()) as never } }),
-    ).toThrow("contract");
+    const invalidAsync: unknown = () => Promise.resolve();
+    expect(() => current.attach({ codec: { ...codec, decode: invalidAsync as never } })).toThrow(
+      "contract",
+    );
     expect(current.persist.attachments()).toEqual([]);
     expect(current.store.count).toBe(1);
   });
@@ -460,9 +460,10 @@ describe("persistence attachment", () => {
               "private payload",
               operation === "replace" ? "QuotaExceededError" : "SecurityError",
             );
-          return (base[operation] as (...input: never[]) => unknown)(...args);
+          const invoke: (...input: never[]) => unknown = base[operation];
+          return invoke.apply(base, args);
         },
-      } as StarPersistAdapter);
+      });
       const current = setup(adapter);
       const attachment = current.attach();
       if (operation === "replace") {

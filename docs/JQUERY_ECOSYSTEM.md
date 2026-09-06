@@ -49,8 +49,9 @@ across several major versions with one Migrate build:
 
 Use the uncompressed Migrate build during representative browser testing so its warnings remain
 visible. A warning is evidence to investigate, not permission for an automatic rewrite. jQStar never
-bundles, injects, loads, suppresses, or interprets Migrate warnings. Ticket 0032 may read only
-declared dependency metadata or a bounded schema-valid summary that the application owner supplies.
+bundles, injects, loads, suppresses, or interprets individual Migrate warnings. The explicit package
+doctor reads dependency metadata or a bounded schema-valid category summary that the application
+owner supplies; see [package upgrade diagnostics](UPGRADES.md).
 
 ## QUnit is a supported consumer
 

@@ -181,7 +181,7 @@ function wire(record: PaginationRecord): () => void {
         record.root.dataset.navigation === "manual" || control instanceof HTMLButtonElement;
       if (blocked || manual || page === record.page) event.preventDefault();
       if (!blocked) {
-        const accepted = change(record, page!);
+        const accepted = change(record, page);
         if (!accepted && page !== record.page) event.preventDefault();
       }
     };

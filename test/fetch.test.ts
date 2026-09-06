@@ -172,10 +172,10 @@ describe("backend actions", () => {
     }
 
     expect(requests).toHaveLength(methods.length);
-    for (const [[action, method], [url, init]] of methods.map((entry, index) => [
-      entry,
-      requests[index]!,
-    ]) as Array<[(typeof methods)[number], [URL, RequestInit]]>) {
+    for (const [index, [action, method]] of methods.entries()) {
+      const request = requests[index];
+      if (!request) throw new Error("Expected one backend request for each method.");
+      const [url, init] = request;
       const headers = new Headers(init.headers);
       expect(url.pathname).toBe(`/contract/${action}`);
       expect(init.method).toBe(method);
@@ -192,7 +192,8 @@ describe("backend actions", () => {
         });
       } else {
         expect(headers.get("Content-Type")).toBe("application/json");
-        expect(JSON.parse(String(init.body))).toEqual({ count: 3, action });
+        if (typeof init.body !== "string") throw new Error("Expected a JSON request body.");
+        expect(JSON.parse(init.body)).toEqual({ count: 3, action });
         expect(url.searchParams.has("datastar")).toBe(method === "DELETE");
       }
     }

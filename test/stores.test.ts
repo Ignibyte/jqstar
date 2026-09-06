@@ -74,7 +74,7 @@ describe("shared stores", () => {
     };
     const initial = { count: 2, first: shared, second: shared, reset };
     const definition = defineStore({ initial });
-    const store = facade.define("session", definition) as typeof initial;
+    const store = facade.define("session", definition);
 
     expect(store).not.toBe(initial);
     expect(store.first).not.toBe(shared);
@@ -160,7 +160,7 @@ describe("shared stores", () => {
         ) as never,
       ),
     ).toThrow("fields must be readable");
-    expect(() => facade.define("raw", { initial: {} } as never)).toThrow("defineStore");
+    expect(() => facade.define("raw", { initial: {} })).toThrow("defineStore");
 
     const invalidValues: unknown[] = [Symbol("value"), 1n, Number.NaN, new Date(), []];
     for (const [index, value] of invalidValues.entries()) {
@@ -232,10 +232,12 @@ describe("shared stores", () => {
   it("guards namespace and live-store reflection, deletion, and method structure", () => {
     const { facade, kernel: current } = install();
     const method = () => undefined;
-    const store = facade.define(
-      "guarded",
-      defineStore({ initial: { data: { value: 1 }, scalar: 1 as unknown, method } }),
-    );
+    const initial: { data: { value: number }; scalar: unknown; method: typeof method } = {
+      data: { value: 1 },
+      scalar: 1,
+      method,
+    };
+    const store = facade.define("guarded", defineStore({ initial }));
 
     expect("guarded" in facade.stores).toBe(true);
     expect(Symbol.iterator in facade.stores).toBe(false);
@@ -304,13 +306,12 @@ describe("shared stores", () => {
       }),
     ).toThrow("stop");
     expect(store.count).toBe(2);
-    expect(() => facade.transaction("counter", (() => Promise.resolve()) as never)).toThrow(
-      "synchronous",
-    );
+    const invalidAsync: unknown = () => Promise.resolve();
+    expect(() => facade.transaction("counter", invalidAsync as never)).toThrow("synchronous");
     expect(store.count).toBe(2);
     expect(() =>
       facade.transaction<typeof store>("counter", (draft) => {
-        draft.increment = (() => undefined) as never;
+        draft.increment = () => undefined;
       }),
     ).toThrow("cannot add, remove, or replace methods");
     expect(() => {

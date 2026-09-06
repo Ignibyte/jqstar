@@ -3,7 +3,7 @@ id: 0033
 title: Audit the full library program
 status: planned
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-06
 ---
 
 # 0033: Audit the full library program
@@ -27,8 +27,9 @@ reopening the owning ticket when reality no longer matches its record.
 - docs/LIBRARY_EXPANSION_PLAN.md defines the program invariants, product position, capability
   tracks, quality expectations, and completion criteria.
 - docs/tickets/ROADMAP.md orders stable, conditional, ecosystem, website, and later release tracks.
-- Tickets 0001–0049 are the decision/change records. Resource, navigation, and DevTools tracks may
-  legitimately finish done or declined, but not remain planned/coding/testing/documenting/blocked.
+- Tickets 0001–0052 are the decision/change records (excluding this audit itself). Resource,
+  navigation, and DevTools tracks may legitimately finish done or declined, but not remain
+  planned/coding/testing/documenting/blocked.
 - Ticket 0017 audits the stable 1.0 artifact. Tickets 0018–0032 add later optional services and
   upgrade tooling; this ticket audits the whole program rather than weakening the 1.0 boundary.
 - Tickets 0038–0040 own ecosystem stewardship and migration. Tickets 0046 and 0049 own the jQStar
@@ -39,6 +40,10 @@ reopening the owning ticket when reality no longer matches its record.
   claims, declined-surface absence, and requirement traceability still require a separate audit.
 
 ### Activation gate
+
+The 2026-09-06 user request adds quality-review ticket 0052 as a prerequisite and explicitly defers
+mutation execution to 0053. Inventory 0053 as planned follow-up assurance outside this audit's
+completion prerequisites. Do not run mutation tooling or claim mutation evidence in this audit.
 
 Do not begin the final evidence run until every prerequisite ticket is terminal and no owning ticket
 reports pending acceptance work. Freeze the exact source reference, lockfile, toolchain, browser
@@ -117,7 +122,7 @@ criteria, or documentation under this umbrella ticket to make the audit pass.
 
 - Every roadmap ticket whose outcome contributes to the audited program. At minimum: tickets
   0001–0019, decision tickets 0020 and 0023, approved/declined children 0021–0022 and 0024–0029,
-  0030–0032, 0034–0049. Ticket 0031 must be done or declined.
+  0030–0032, 0034–0052. Ticket 0031 must be done or declined.
 - All conditional tickets must be terminal before this audit starts.
 
 ### Acceptance criteria

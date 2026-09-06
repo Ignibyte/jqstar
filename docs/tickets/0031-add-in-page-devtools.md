@@ -1,9 +1,9 @@
 ---
 id: 0031
 title: Add optional in-page DevTools
-status: planned
+status: declined
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-06
 ---
 
 # 0031: Add optional in-page DevTools
@@ -22,6 +22,27 @@ The UI is therefore conditional. Ticket 0030 must first prove that real users ca
 through the public data API and that the remaining usability gap warrants a maintained visual tool.
 
 ### Current evidence
+
+2026-09-06 activation work: 0030 is done at source commit `0d51340`. Run two controlled application
+investigations using the packed Project Browser and Audit Log registry applications. These are
+developer investigations with deliberately seeded integration faults, not independent user studies.
+Record browser execution duration separately from operator preparation/analysis time; neither is a
+user-productivity benchmark.
+
+- Project Browser question: after an application replacement, are removed roots still owned, and
+  does public disposal remove them while retaining a sibling application? Consult snapshots and
+  browser DOM identity; compare an incorrect retained hidden root with its corrected disposal.
+- Audit Log question: is a failed refresh caused by missing action registration or a failed backend
+  request? Consult bounded action/request traces, operation correlation, HTTP status, and native
+  browser response behavior. Repair the controlled backend response and repeat the same action.
+- Freeze the decision rule before measurements: approve a UI only if a recorded investigation has an
+  unresolved diagnosis or repeated material inspection friction that a named visual interaction can
+  resolve using the existing public schema. Score API/console, a small application-owned view, and
+  an official UI for diagnostic sufficiency, access/redaction, adoption, and lifecycle cost. No
+  speculative usability or performance credit goes to an unbuilt UI.
+- Research fixtures and an installed-package absence check are permitted during this decision phase.
+  No `jquery-star/devtools` export, runtime, overlay, or production dependency is authorized until
+  the activation gate passes.
 
 - Ticket 0030 conditionally supplies stable, read-only, versioned snapshots and bounded redacted
   traces. It deliberately exposes no mutation, replay, transport, or live runtime object.
@@ -101,7 +122,7 @@ documented inspection API and no jquery-star/devtools export may ship.
 
 ### Acceptance criteria
 
-- [ ] [AC-01] Two public-API investigations and a scored go/no-go record identify the unmet visual
+- [x] [AC-01] Two public-API investigations and a scored go/no-go record identify the unmet visual
       need, alternatives, bundle/maintenance/accessibility cost, and decision. A no-go declines this
       ticket and package/graph tests prove no DevTools export or runtime shipped.
 - [ ] [AC-02] On go, jquery-star/devtools is side-effect-free on import and mounts only through an
@@ -136,7 +157,7 @@ documented inspection API and no jquery-star/devtools export may ship.
 - [ ] [AC-12] Installed package declarations, module formats approved by 0013, version identity, CSP
       compatibility, no-auto-install behavior, root exclusion/tree-shaking, and packed/bundled size
       budgets pass from the exact tarball.
-- [ ] [AC-13] Focused, coverage/property/static, three-browser/accessibility, package, release, npm
+- [x] [AC-13] Focused, coverage/property/static, three-browser/accessibility, package, release, npm
       run check, ticket phase validation, and git diff --check pass without mutation testing.
 
 ### Design
@@ -198,6 +219,11 @@ the browser; it never sends it to a server.
 
 ### Planned files
 
+- `test/fixtures/inspection-investigations.mjs`, `scripts/measure-inspection-investigations.mjs`,
+  and contract tests: two real registry application investigations using installed public entries.
+- `quality/inspection-decision.json`, `docs/decisions/DEVTOOLS.md`, and `docs/INSPECTION.md`:
+  recorded measurements, scored decision, evidence limits, and supported inspection workflow.
+
 - src/devtools modules: inert mount API, public-data projection, windowing, controls, copy/export,
   ownership, and disposal.
 - src/devtools/devtools.css and registry/application templates built from native HTML and public
@@ -212,30 +238,82 @@ the browser; it never sends it to a server.
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File                                                                                                          | Purpose                                                                                               |
+| ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `test/fixtures/inspection-investigations.mjs`                                                                 | Public-API diagnoses and corrections in two installed registry applications.                          |
+| `scripts/measure-inspection-investigations.mjs`                                                               | Isolated pack/install/build/browser runner with source hashes and import graphs.                      |
+| `quality/inspection-decision.json`                                                                            | Six recorded browser investigations and redacted public evidence.                                     |
+| `test/inspection-decision.test.mjs`                                                                           | Current fixture hashes, published schemas, complete browser matrix, diagnosis, and cleanup checks.    |
+| `scripts/quality-package.mjs`, `package.json`                                                                 | Independent packed DevTools absence check, reproduction command, and packaged decision documentation. |
+| `docs/decisions/DEVTOOLS.md`, `docs/INSPECTION.md`, `docs/README.md`, `docs/TESTING.md`, roadmap, this ticket | No-go decision, supported investigations, evidence boundaries, and workflow record.                   |
 
 ### Design changes
 
-None recorded.
+Decision-phase research only. No UI implementation was activated. Both controlled investigations
+resolved their questions through the public API in three engines. The recorded gate is no-go; the
+supported solution is public inspection plus ordinary browser tools. Operator time was not measured
+and the scenario durations are not usability evidence.
 
 ## Test
 
-| Command   | Result      | Evidence                                    |
-| --------- | ----------- | ------------------------------------------- |
-| _Not run_ | Conditional | Waiting for the ticket-0030 usage decision. |
+| Command                                            | Result          | Evidence                                                                                                                                                                |
+| -------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan validator                                     | Pass            | Decision-phase investigations and activation boundary validated before fixture changes.                                                                                 |
+| `npm run research:inspection:measure -- --record`  | Pass            | Both installed applications resolve their seeded question in Chromium, Firefox, and WebKit; six rows in `quality/inspection-decision.json`.                             |
+| `npx vitest run test/inspection-decision.test.mjs` | Fail, corrected | Initial graph assertion exposed macOS temporary-path canonicalization; runner now resolves the consumer's real path and rejects all outside modules.                    |
+| `npx vitest run test/inspection-decision.test.mjs` | Pass            | Eight tests validate schema, full matrix, fixture hashes, diagnoses, corrections, and cleanup.                                                                          |
+| `npm run quality:fast`                             | Fail, corrected | Run `2026-09-06T02-43-59-457Z-21933` detected a graph-string false positive under the private-import source rule. Assert the exact installed `node_modules` graph path. |
+| `npm run quality:fast`                             | Pass            | Run `2026-09-06T02-45-37-560Z-33504`; all six gates passed.                                                                                                             |
+| Code phase validator                               | Pass            | Exact matching fast report validated before subsequent ticket edits.                                                                                                    |
+| `npm run check`                                    | Pass            | Delivery and independent package absence proof passed with the completed remaining tracks.                                                                              |
+| `npm run quality:delivery` (`npm run check`)       | Pass            | Exact report `2026-09-06T04-09-28-284Z-93807`; all 13 gates.                                                                                                            |
+
+Delivery `2026-09-06T04-09-28-284Z-93807` passed all 13 enforced gates with 1,199 unit tests, 50
+property tests, 29 static checks, 481 browser cases, 13 package checks, seven release checks, and
+the detector self-tests. No browser case failed, skipped, or passed only on retry. The exact report
+was Test-phase validated before closure edits.
+
+### Inspection ledger
+
+| Finding                                                      | Resolution                                                                                                                  |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| Automated scenario duration cannot prove user productivity   | Decision explicitly distinguishes execution time from unmeasured operator time and independent usability.                   |
+| Root visibility does not imply lifecycle cleanup             | Installed Project Browser investigation confirms public disposal and surviving sibling identity.                            |
+| Traces withhold action labels and URLs                       | Audit investigation correlates fixed-category request and action IDs; browser tools supply context without widening policy. |
+| macOS `/var` resolves to `/private/var` in Vite graphs       | Canonicalize the owned consumer before comparing every imported module.                                                     |
+| An unbuilt UI has no measured cost or accessibility evidence | No-go decision retains public API; all conditional UI criteria now have explicit dispositions after delivery proof.         |
 
 ## Document
 
 ### Documentation changed
 
-Pending.
+`docs/decisions/DEVTOOLS.md`, `docs/INSPECTION.md`, the brain index/testing guide, roadmap, packaged
+decision guide, and this ticket describe the supported workflow and its limits.
 
 ### Acceptance evidence
 
-Pending implementation.
+| Criterion | Result               | Evidence                                                                                                                                                                                                                                                                                                                                                                    |
+| --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass                 | `docs/decisions/DEVTOOLS.md` freezes the no-go rule and scores all three alternatives. Six installed Project Browser/Audit Log investigations resolve both seeded faults through public reads; fresh `.git/jqstar/inspection-investigations/report.json` uses the delivery tarball. Package `exports-and-files`, module graphs, and the eight decision tests prove absence. |
+| AC-02     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-03     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-04     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-05     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-06     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-07     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-08     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-09     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-10     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-11     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-12     | Approved-Disposition | The recorded 0031 no-go rejects this conditional UI requirement. Public `jquery-star/inspect` plus ordinary browser tools is the supported alternative; no DevTools runtime, export, declarations, overlay, or graph edge ships.                                                                                                                                            |
+| AC-13     | Pass                 | Delivery `2026-09-06T04-09-28-284Z-93807` passes all enforced gates, including package absence and all three browsers. Phase validation and whitespace checks pass; mutation remains deferred.                                                                                                                                                                              |
 
 ### Completion audit
 
-Pending.
+Both application questions were resolved through the public inspection API in Chromium, Firefox, and
+WebKit. The frozen decision found no demonstrated need for an official UI. All eleven conditional UI
+criteria have explicit dispositions. Installed source/export/type/graph checks prove no partial
+surface shipped. Controlled execution durations are not operator productivity or user-study
+evidence. The no-go outcome closes this ticket as declined.
+
+Status: Complete

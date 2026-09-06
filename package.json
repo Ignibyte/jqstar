@@ -216,7 +216,9 @@
     "!schema/navigation-decision.schema.json",
     "server-dist",
     "docs/PERSISTENCE.md",
-    "docs/INSPECTION.md"
+    "docs/INSPECTION.md",
+    "docs/decisions/DEVTOOLS.md",
+    "docs/UPGRADES.md"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:js && npm run build:css",
@@ -233,7 +235,7 @@
     "demo": "npm run build:agent-content && vite --config vite.demo.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint src server test example e2e bin scripts *.config.ts",
+    "lint": "eslint src server registry/blocks test example e2e bin scripts quality config/**/*.ts *.config.ts *.config.js .dependency-cruiser.cjs --max-warnings=0",
     "quality:delivery": "node scripts/quality/run.mjs delivery",
     "quality:fast": "node scripts/quality/run.mjs fast",
     "quality:full-audit": "node scripts/quality/run.mjs full-audit",
@@ -242,7 +244,7 @@
     "quality:guard:uninstall": "node scripts/quality/commit-guard.mjs uninstall",
     "quality:receipt": "node scripts/quality/verify-receipt.mjs",
     "quality:runner:self-test": "node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs",
-    "lint:css": "stylelint src/**/*.css example/**/*.css",
+    "lint:css": "stylelint \"src/**/*.css\" \"example/**/*.css\" \"test/**/*.css\" \"e2e/**/*.css\"",
     "lint:html": "html-validate example/**/*.html registry/**/*.html",
     "lint:markdown": "markdownlint-cli2 **/*.md",
     "lint:spelling": "cspell README.md SECURITY.md AGENTS.md docs/**/*.md",
@@ -263,6 +265,7 @@
     "research:resources:score": "node scripts/score-resource-strategy.mjs",
     "research:navigation:prepare": "node scripts/prepare-navigation-decision.mjs",
     "research:navigation:measure": "node scripts/measure-navigation-decision.mjs",
+    "research:inspection:measure": "node scripts/measure-inspection-investigations.mjs",
     "research:resources:prepare": "node scripts/prepare-resource-strategy.mjs",
     "release:candidate": "node scripts/release/candidate.mjs",
     "release:handoff": "node scripts/release/handoff.mjs",
@@ -353,8 +356,11 @@
   },
   "dependencies": {
     "@starfederation/datastar-sdk": "^1.0.0",
+    "@yarnpkg/parsers": "3.1.0",
     "idiomorph": "^0.7.4",
-    "json5": "^2.2.3"
+    "json5": "^2.2.3",
+    "semver": "7.8.5",
+    "yaml": "2.9.0"
   },
   "overrides": {
     "qs": "^6.15.2"

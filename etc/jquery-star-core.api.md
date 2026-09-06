@@ -1143,7 +1143,7 @@ export interface StarServiceMetadataView {
 }
 
 // @public (undocumented)
-export type StarStatementEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarStatementEvaluator = (context: StarContext) => unknown;
 
 // Warning: (ae-forgotten-export) The symbol "StarStoreOperationBase" needs to be exported by the entry point core.d.ts
 //
@@ -1191,7 +1191,7 @@ export type StarStoreOperationObservation = StarStoreCompletedObservation | Star
 export type StarStoresScope = Readonly<Record<string, StarStoreObject | undefined>>;
 
 // @public (undocumented)
-export type StarValueEvaluator = (context: StarContext<StateRecord, ComputedRecord>) => unknown;
+export type StarValueEvaluator = (context: StarContext) => unknown;
 
 // @public (undocumented)
 export type StateRecord = Record<string, unknown>;

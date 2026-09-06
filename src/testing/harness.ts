@@ -29,8 +29,7 @@ interface HarnessTask {
 
 const DEFAULT_MAX_ROUNDS = 100;
 const DEFAULT_TIMEOUT_MS = 2_000;
-type HarnessApplicationInput =
-  StarDefinition<StateRecord, ComputedRecord> | "destroy" | "refresh" | "instance" | "state";
+type HarnessApplicationInput = StarDefinition | "destroy" | "refresh" | "instance" | "state";
 type InvokableApplicationMethod = (
   this: JQuery<Element>,
   value?: HarnessApplicationInput,
@@ -246,11 +245,7 @@ export function createStarHarness(options: CreateStarHarnessOptions): StarHarnes
     ) {
       assertActive("mount applications");
       sameRealm(root, options);
-      invokeApplication(
-        installed,
-        installed(root),
-        definition as StarDefinition<StateRecord, ComputedRecord>,
-      );
+      invokeApplication(installed, installed(root), definition as StarDefinition);
       return createHandle(root, instanceFor<State, Computed>(root));
     },
     state<State extends StateRecord = StateRecord>(

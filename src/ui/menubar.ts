@@ -61,7 +61,7 @@ function availableIndexes(record: MenubarRecord): number[] {
 }
 
 function setActive(record: MenubarRecord, index: number, focus = false): void {
-  if (!record.triggers[index] || disabled(record.triggers[index]!)) return;
+  if (!record.triggers[index] || disabled(record.triggers[index])) return;
   record.activeIndex = index;
   for (const [candidate, trigger] of record.triggers.entries()) {
     trigger.tabIndex = candidate === index ? 0 : -1;

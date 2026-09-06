@@ -1,0 +1,1568 @@
+{
+  "schema": "jqstar-lint-boundaries/1",
+  "ownerTicket": "0052",
+  "reviewedAt": "2026-09-06",
+  "reviewAfter": "2027-03-03",
+  "rules": [
+    {
+      "rule": "@typescript-eslint/no-base-to-string",
+      "reason": "Existing public coercion and formatting boundaries; each use remains reviewable legacy debt rather than proof that arbitrary object stringification is useful."
+    },
+    {
+      "rule": "@typescript-eslint/no-dynamic-delete",
+      "reason": "Existing removal from mutable owned dictionaries; changing delete to a different operation requires preserving proxy and strict-mode behavior."
+    },
+    {
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "reason": "Existing indexed-access, lifecycle-precondition, DOM, and fixture assertions. This allowance records remaining assertions and does not claim all preconditions are statically proved."
+    },
+    {
+      "rule": "@typescript-eslint/no-this-alias",
+      "reason": "Existing callback receiver capture; preserve the documented jQuery receiver while reviewing replacement structure."
+    },
+    {
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "reason": "Existing defensive checks for JavaScript callers and closure state that TypeScript narrows more strongly; retain runtime validation until individually reviewed."
+    },
+    {
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "reason": "Existing runtime coercion for signals and JavaScript input; compile-time primitive types alone do not prove the value supplied at runtime."
+    },
+    {
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "reason": "Existing public generic inference and caller-selected type contracts; type-surface changes need consumer and API evidence."
+    }
+  ],
+  "allowances": [
+    {
+      "path": "e2e/components.spec.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "e2e/components.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 32
+    },
+    {
+      "path": "e2e/csp-engine.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "e2e/fixtures/persist.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "e2e/interoperability-baseline.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 37
+    },
+    {
+      "path": "e2e/interoperability-baseline.spec.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "e2e/jquery-mobile-migration.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "e2e/jquery-ui-migration.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "e2e/persist.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "e2e/quality-contracts.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 10
+    },
+    {
+      "path": "e2e/quality-contracts.spec.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "e2e/resource-strategy.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "e2e/resource-strategy.spec.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 3
+    },
+    {
+      "path": "e2e/site.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "e2e/stores.spec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "example/main.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 7
+    },
+    {
+      "path": "example/main.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 9
+    },
+    {
+      "path": "example/main.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "example/main.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 2
+    },
+    {
+      "path": "example/webmcp.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "registry/blocks/access-manager.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "registry/blocks/audit-log.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "registry/blocks/profile-settings.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "registry/blocks/profile-settings.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "registry/blocks/project-browser.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "registry/blocks/project-browser.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "registry/blocks/project-browser.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "server/api.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 9
+    },
+    {
+      "path": "server/api.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "server/api.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "server/project-store.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/compatibility.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/csp/engine.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/csp/engine.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/csp/engine.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "src/csp/evaluator.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/csp/evaluator.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "src/csp/parser.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "src/csp/parser.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "src/csp/tokenizer.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "src/declarative.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 5
+    },
+    {
+      "path": "src/declarative.ts",
+      "rule": "@typescript-eslint/no-dynamic-delete",
+      "count": 1
+    },
+    {
+      "path": "src/declarative.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "src/directive.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/directive.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/directive.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/expression.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/htmx.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "src/htmx.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 20
+    },
+    {
+      "path": "src/htmx.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "src/inspect/collector.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "src/inspect/service-adapter.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/inspect/trace.ts",
+      "rule": "@typescript-eslint/no-dynamic-delete",
+      "count": 1
+    },
+    {
+      "path": "src/inspect/trace.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "src/kernel-metadata.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/kernel.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/metadata-adapter.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/observation.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/observation.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/patch.ts",
+      "rule": "@typescript-eslint/no-dynamic-delete",
+      "count": 1
+    },
+    {
+      "path": "src/patch.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/persist.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/persist.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/persist/adapters.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/persist/adapters.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/persist/codec.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/persist/data.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/persist/envelope.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/plugin.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "src/plugin.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 6
+    },
+    {
+      "path": "src/plugin.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 5
+    },
+    {
+      "path": "src/protocol.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/protocol.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/protocol.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 3
+    },
+    {
+      "path": "src/reactivity.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/request-middleware.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/request-middleware.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "src/request-middleware.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/runtime.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 2
+    },
+    {
+      "path": "src/runtime.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/runtime.ts",
+      "rule": "@typescript-eslint/no-this-alias",
+      "count": 2
+    },
+    {
+      "path": "src/runtime.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/runtime.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 3
+    },
+    {
+      "path": "src/service-metadata.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/stores.ts",
+      "rule": "@typescript-eslint/no-dynamic-delete",
+      "count": 1
+    },
+    {
+      "path": "src/stores.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "src/stores.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/stores.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/stores/types.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/testing/conformance.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "src/testing/conformance.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/testing/harness.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/testing/harness.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/testing/realm.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/testing/realm.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/testing/responses.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 2
+    },
+    {
+      "path": "src/testing/responses.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/testing/responses.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/turbo.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/turbo.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 15
+    },
+    {
+      "path": "src/turbo.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "src/types.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 2
+    },
+    {
+      "path": "src/ui/calendar.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 4
+    },
+    {
+      "path": "src/ui/calendar.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/ui/calendar.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/carousel.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/carousel.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/ui/chart.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/chart.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/ui/chart.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 5
+    },
+    {
+      "path": "src/ui/chart.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "src/ui/clipboard-write.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/clipboard.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/clipboard.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/clipboard.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/code-block.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/code-block.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/code-block.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/color-picker.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/color-picker.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/combobox.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/combobox.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/countdown.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/countdown.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/data-table.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 2
+    },
+    {
+      "path": "src/ui/data-table.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "src/ui/data-table.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 3
+    },
+    {
+      "path": "src/ui/editable.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/editable.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 2
+    },
+    {
+      "path": "src/ui/feed.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/feed.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "src/ui/feed.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/feed.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/file-upload.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/file-upload.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 3
+    },
+    {
+      "path": "src/ui/form.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/hover-card.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/input-otp.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/json-viewer.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/json-viewer.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 3
+    },
+    {
+      "path": "src/ui/json-viewer.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/log-viewer.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/log-viewer.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/menu.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/menu.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/ui/menu.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/menubar.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/menubar.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "src/ui/menubar.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 3
+    },
+    {
+      "path": "src/ui/message-scroller.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/message-scroller.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/multi-select.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/multi-select.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/ui/multi-select.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 3
+    },
+    {
+      "path": "src/ui/number-field.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/pagination.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/password-field.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/popover.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/questionnaire.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/questionnaire.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 9
+    },
+    {
+      "path": "src/ui/questionnaire.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/questionnaire.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/rating.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/resizable.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/resizable.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/search-field.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/search-field.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "src/ui/select.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/select.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 2
+    },
+    {
+      "path": "src/ui/sidebar.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/sortable.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/sortable.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/stepper.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/stepper.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 8
+    },
+    {
+      "path": "src/ui/stepper.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/tabs.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/tags-input.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/time-picker.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/toast.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 2
+    },
+    {
+      "path": "src/ui/toast.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 4
+    },
+    {
+      "path": "src/ui/toggle.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 2
+    },
+    {
+      "path": "src/ui/toolbar.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/toolbar.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "src/ui/toolbar.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "src/ui/tooltip.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/transfer-list.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/transfer-list.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 13
+    },
+    {
+      "path": "src/ui/tree.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "src/ui/tree.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/access-manager-block.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/audit-log-block.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/csp-contract.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/csp-engine.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/csp-entrypoint.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/csp-parser.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/csp-tokenizer.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/declarative.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 47
+    },
+    {
+      "path": "test/directive-application.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 16
+    },
+    {
+      "path": "test/directive.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/expression-runtime.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/external-render-contract.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 41
+    },
+    {
+      "path": "test/fetch.test.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 2
+    },
+    {
+      "path": "test/fixtures/resource-strategy/common.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "test/fixtures/resource-strategy/common.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 14
+    },
+    {
+      "path": "test/htmx-bridge.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 73
+    },
+    {
+      "path": "test/inspection-failures.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/inspection-failures.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/inspection.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 22
+    },
+    {
+      "path": "test/inspection.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/jquery-mobile-migration-contract.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/jquery-ui-migration-contract.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/kernel.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 35
+    },
+    {
+      "path": "test/modular-entrypoints.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/observation.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/patch.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 32
+    },
+    {
+      "path": "test/patch.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/persist-adapters.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/persist.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 17
+    },
+    {
+      "path": "test/persist.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/plugin.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/profile-settings-block.test.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "test/profile-settings-block.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/project-browser-block.test.ts",
+      "rule": "@typescript-eslint/no-base-to-string",
+      "count": 1
+    },
+    {
+      "path": "test/project-browser-block.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 30
+    },
+    {
+      "path": "test/project-store.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 11
+    },
+    {
+      "path": "test/project-store.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 6
+    },
+    {
+      "path": "test/property/htmx-bridge.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 13
+    },
+    {
+      "path": "test/property/inspection.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/property/jquery-mobile-migration.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/property/jquery-ui-migration.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/property/persist.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/property/render-adapter.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/property/request-middleware.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/property/stores.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/property/turbo-bridge.property.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/protocol-datastar.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/protocol.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/public-baseline.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/public-baseline.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "test/public-baseline.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+      "count": 1
+    },
+    {
+      "path": "test/render-adapter.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 32
+    },
+    {
+      "path": "test/request-middleware-integration.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/request-middleware.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/resource-strategy.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/runtime-install.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/runtime-private-properties.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 1
+    },
+    {
+      "path": "test/runtime-private-properties.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/runtime.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 30
+    },
+    {
+      "path": "test/stores.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 8
+    },
+    {
+      "path": "test/testing-external-plugins.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/testing-harness-conformance.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/testing-harness-conformance.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/testing-realm-responses.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/turbo-bridge.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 22
+    },
+    {
+      "path": "test/ui-calendar.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/ui-carousel.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-chart.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 10
+    },
+    {
+      "path": "test/ui-clipboard.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/ui-code-block.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-color-picker.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-combobox.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/ui-context-menu.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-countdown.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-data-table.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 19
+    },
+    {
+      "path": "test/ui-dialog.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/ui-disclosure.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/ui-editable.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-feed.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 20
+    },
+    {
+      "path": "test/ui-file-upload.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-form.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-host.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-hover-card.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-hover-card.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/ui-input-otp.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-json-viewer.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-log-viewer.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/ui-menu.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-menubar.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-message-scroller.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-multi-select.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/ui-number-field.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-pagination.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/ui-password-field.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-popover.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-questionnaire.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-range-calendar.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 7
+    },
+    {
+      "path": "test/ui-rating.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-resizable.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/ui-resizable.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "test/ui-search-field.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 8
+    },
+    {
+      "path": "test/ui-select.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 8
+    },
+    {
+      "path": "test/ui-select.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/ui-sidebar.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-sidebar.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-type-conversion",
+      "count": 1
+    },
+    {
+      "path": "test/ui-sortable.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 6
+    },
+    {
+      "path": "test/ui-stepper.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-tabs.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-tags-input.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-time-picker.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 5
+    },
+    {
+      "path": "test/ui-toast.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 4
+    },
+    {
+      "path": "test/ui-toggle.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-toolbar.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 2
+    },
+    {
+      "path": "test/ui-tooltip.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    },
+    {
+      "path": "test/ui-tooltip.test.ts",
+      "rule": "@typescript-eslint/no-unnecessary-condition",
+      "count": 1
+    },
+    {
+      "path": "test/ui-transfer-list.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 10
+    },
+    {
+      "path": "test/ui-tree.test.ts",
+      "rule": "@typescript-eslint/no-non-null-assertion",
+      "count": 3
+    }
+  ]
+}

@@ -770,166 +770,623 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
     removed: [...entry.removed],
   }));
 
-  async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
-    const url = new URL(request.url ?? "/", "http://localhost");
+  function handleHealth(request: IncomingMessage, response: ServerResponse): boolean {
+    if (!method(request, response, "GET")) return true;
+    const projects = projectStore.list({
+      groupBy: "none",
+      limit: 1,
+      offset: 0,
+      owner: "all",
+      query: "",
+      sorts: [],
+      status: "all",
+    }).total;
+    json(response, 200, {
+      components: 102,
+      database: "ready",
+      environment,
+      projects,
+      service: "jqstar",
+      status: "healthy",
+    });
+    return true;
+  }
 
-    if (url.pathname === "/health") {
-      if (!method(request, response, "GET")) return true;
-      const projects = projectStore.list({
-        groupBy: "none",
-        limit: 1,
-        offset: 0,
-        owner: "all",
-        query: "",
-        sorts: [],
-        status: "all",
-      }).total;
-      json(response, 200, {
-        components: 102,
-        database: "ready",
-        environment,
-        projects,
-        service: "jqstar",
-        status: "healthy",
-      });
+  function handleApiDemoOperations(request: IncomingMessage, response: ServerResponse): boolean {
+    if (!method(request, response, "GET")) return true;
+    operationsRevision += 1;
+    json(response, 200, {
+      components: 102,
+      latency: Math.max(48, 82 - operationsRevision * 3),
+      release: `v0.6.0-${environment}`,
+      requests: 12_840 + operationsRevision * 294,
+      revision: operationsRevision,
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+    });
+    return true;
+  }
+
+  function handleApiDemoRuntime(request: IncomingMessage, response: ServerResponse): boolean {
+    if (!method(request, response, "GET")) return true;
+    runtimeRevision += 1;
+    const timestamp = new Date();
+    const logs = runtimeLogs.map((entry, index) => ({
+      ...entry,
+      id: `snapshot-${runtimeRevision}-${index + 1}`,
+      timestamp: new Date(timestamp.valueOf() - (runtimeLogs.length - index) * 1_000).toISOString(),
+    }));
+    json(response, 200, {
+      capacity: Math.min(88, 64 + runtimeRevision * 3),
+      components: 102,
+      connection: "connected",
+      environment,
+      logs,
+      nextCheck: new Date(timestamp.valueOf() + 30_000).toISOString(),
+      region: "us-central",
+      revision: runtimeRevision,
+      runtime: {
+        process: "node-http",
+        registry: "source-owned",
+        transport: "datastar-sse",
+      },
+      service: "jqstar",
+      timestamp: timestamp.toISOString(),
+    });
+    return true;
+  }
+
+  async function handleApiDemoRuntimeStream(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "GET")) return true;
+    const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+    if (!read.success) {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end(read.error);
       return true;
     }
+    runtimeStreamRevision += 1;
+    const revision = runtimeStreamRevision;
+    const timestamp = Date.now();
+    const logs = [
+      {
+        id: `stream-${revision}-1`,
+        level: "info" as const,
+        message: `Datastar stream ${revision} opened.`,
+        source: "sse",
+        timestamp: new Date(timestamp).toISOString(),
+      },
+      {
+        id: `stream-${revision}-2`,
+        level: "debug" as const,
+        message: "jQuery Star enhanced the server-appended entry.",
+        source: "ui",
+        timestamp: new Date(timestamp + 1_000).toISOString(),
+      },
+      {
+        id: `stream-${revision}-3`,
+        level: "warn" as const,
+        message: "Hosting remains local until a public target is available.",
+        source: "deploy",
+        timestamp: new Date(timestamp + 2_000).toISOString(),
+      },
+    ];
+    const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
+      for (const entry of logs) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 90));
+        stream.patchElements(logEntryHtml(entry), {
+          selector: "#runtime-log-entries",
+          mode: "append",
+          eventId: entry.id,
+        });
+      }
+      stream.patchSignals(
+        JSON.stringify({
+          controlPlaneMessage: `Datastar stream ${revision} appended ${logs.length} log entries.`,
+        }),
+        { eventId: `stream-${revision}-complete` },
+      );
+    });
+    await sendWebResponse(sdkResponse, response);
+    return true;
+  }
 
-    if (url.pathname === "/api/demo/operations") {
-      if (!method(request, response, "GET")) return true;
-      operationsRevision += 1;
-      json(response, 200, {
-        components: 102,
-        latency: Math.max(48, 82 - operationsRevision * 3),
-        release: `v0.6.0-${environment}`,
-        requests: 12_840 + operationsRevision * 294,
-        revision: operationsRevision,
-        status: "healthy",
-        timestamp: new Date().toISOString(),
-      });
+  function handleApiDemoMetrics(request: IncomingMessage, response: ServerResponse): boolean {
+    if (!method(request, response, "GET")) return true;
+    metricsRevision += 1;
+    const offset = metricsRevision * 7;
+    json(response, 200, {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      message: `The ${environment} backend patched four table rows (revision ${metricsRevision}).`,
+      series: [
+        [248 + offset, 326 + offset, 391 + offset, 438 + offset],
+        [112 + offset, 218 + offset, 284 + offset, 347 + offset],
+      ],
+    });
+    return true;
+  }
+
+  function handleApiDemoFeed(
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL,
+  ): boolean {
+    if (!method(request, response, "GET")) return true;
+    const query = (url.searchParams.get("query") ?? "").trim().toLocaleLowerCase();
+    const requestedCursor = Number(url.searchParams.get("cursor") ?? 0);
+    const cursor = Number.isInteger(requestedCursor) && requestedCursor >= 0 ? requestedCursor : 0;
+    const matches = feedItems.filter((item) =>
+      `${item.title} ${item.description} ${item.meta}`.toLocaleLowerCase().includes(query),
+    );
+    const items = matches.slice(cursor, cursor + 3);
+    const nextCursor = cursor + items.length;
+    json(response, 200, {
+      cursor: String(nextCursor),
+      done: nextCursor >= matches.length,
+      items,
+      message: `${nextCursor} of ${matches.length} matching results loaded.`,
+      total: matches.length,
+    });
+    return true;
+  }
+
+  async function handleApiDemoProjects(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "GET")) return true;
+    const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+    if (!read.success) {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end(read.error);
       return true;
     }
-
-    if (url.pathname === "/api/demo/runtime") {
-      if (!method(request, response, "GET")) return true;
-      runtimeRevision += 1;
-      const timestamp = new Date();
-      const logs = runtimeLogs.map((entry, index) => ({
-        ...entry,
-        id: `snapshot-${runtimeRevision}-${index + 1}`,
-        timestamp: new Date(
-          timestamp.valueOf() - (runtimeLogs.length - index) * 1_000,
-        ).toISOString(),
-      }));
-      json(response, 200, {
-        capacity: Math.min(88, 64 + runtimeRevision * 3),
-        components: 102,
-        connection: "connected",
-        environment,
-        logs,
-        nextCheck: new Date(timestamp.valueOf() + 30_000).toISOString(),
-        region: "us-central",
-        revision: runtimeRevision,
-        runtime: {
-          process: "node-http",
-          registry: "source-owned",
-          transport: "datastar-sse",
+    const query = String(read.signals.projectBrowserQuery ?? "").trim();
+    const projectOwners = projectStore.owners();
+    const owner = projectOwners.includes(String(read.signals.projectBrowserOwner))
+      ? String(read.signals.projectBrowserOwner)
+      : "all";
+    const status =
+      projectStatuses.find((value) => value === read.signals.projectBrowserStatus) ?? "all";
+    const requestedPage = Number(read.signals.projectBrowserPage ?? 1);
+    const requestedPageSize = Number(read.signals.projectBrowserPageSize ?? 5);
+    const pageSize =
+      ([5, 10, 20, 50, 100, 200] as const).find((size) => size === requestedPageSize) ?? 5;
+    const sorts = projectSorts(read.signals);
+    const requestedGroupBy =
+      projectGroupKeys.find((candidate) => candidate === read.signals.projectBrowserGroupBy) ??
+      "none";
+    const mode = read.signals.projectBrowserMode === "virtual" ? "virtual" : "page";
+    const groupBy = mode === "virtual" ? "none" : requestedGroupBy;
+    const requestedWindowSize = Number(read.signals.projectBrowserWindowSize ?? 40);
+    const windowSize = Math.min(
+      Math.max(Number.isFinite(requestedWindowSize) ? Math.floor(requestedWindowSize) : 40, 20),
+      80,
+    );
+    const rawPage = Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1);
+    const requestedWindowStart = Number(read.signals.projectBrowserWindowStart ?? 0);
+    const rawWindowStart = Math.max(
+      Number.isFinite(requestedWindowStart) ? Math.floor(requestedWindowStart) : 0,
+      0,
+    );
+    const initialOffset = mode === "virtual" ? rawWindowStart : (rawPage - 1) * pageSize;
+    const initialLimit = mode === "virtual" ? windowSize : pageSize;
+    let result = projectStore.list({
+      groupBy,
+      limit: initialLimit,
+      offset: initialOffset,
+      owner,
+      query,
+      sorts,
+      status,
+    });
+    const pageCount = Math.max(1, Math.ceil(result.total / pageSize));
+    const page = Math.min(rawPage, pageCount);
+    const maximumWindowStart = Math.max(result.total - windowSize, 0);
+    const windowStart = Math.min(rawWindowStart, maximumWindowStart);
+    const offset = mode === "virtual" ? windowStart : (page - 1) * pageSize;
+    if (offset !== initialOffset) {
+      result = projectStore.list({
+        groupBy,
+        limit: initialLimit,
+        offset,
+        owner,
+        query,
+        sorts,
+        status,
+      });
+    }
+    const rangeStart = result.total === 0 ? 0 : offset + 1;
+    const rangeEnd = Math.min(offset + result.items.length, result.total);
+    const requestId = Math.max(
+      Number.isFinite(Number(read.signals.projectBrowserRequestId))
+        ? Math.floor(Number(read.signals.projectBrowserRequestId))
+        : 0,
+      0,
+    );
+    const groups = new Map(result.groups.map((group) => [group.key, group.count]));
+    projectBrowserRevision += 1;
+    const revision = projectBrowserRevision;
+    const sdkResponse = ServerSentEventGenerator.stream((stream) => {
+      stream.patchSignals(
+        JSON.stringify({
+          projectBrowserCount: result.total,
+          projectBrowserActiveFilters:
+            Number(Boolean(query)) + Number(owner !== "all") + Number(status !== "all"),
+          projectBrowserMessage:
+            result.total === 0
+              ? "No projects match the current query."
+              : `Showing ${rangeStart}–${rangeEnd} of ${result.total} matching projects.`,
+          projectBrowserDirection: sorts[0]?.direction ?? "none",
+          projectBrowserGroupBy: groupBy,
+          projectBrowserMode: mode,
+          projectBrowserOwner: owner,
+          projectBrowserPage: page,
+          projectBrowserPageSize: pageSize,
+          projectBrowserRangeEnd: rangeEnd,
+          projectBrowserRangeStart: rangeStart,
+          projectBrowserRequestId: requestId,
+          projectBrowserSort: sorts[0]?.key ?? "",
+          projectBrowserSorts: sorts,
+          projectBrowserStatus: status,
+          projectBrowserWindowSize: windowSize,
+          projectBrowserWindowStart: windowStart,
+        }),
+        { eventId: `project-browser-${revision}-signals` },
+      );
+      let rowElements = projectRowsHtml(result.items, projectOwners, groupBy, groups);
+      if (mode === "virtual" && windowStart > 0) {
+        rowElements = `<tr data-project-browser-spacer="top" aria-hidden="true" style="height:${windowStart * 52}px"><td colspan="5"></td></tr>${rowElements}`;
+      }
+      if (mode === "virtual" && rangeEnd < result.total) {
+        rowElements += `<tr data-project-browser-spacer="bottom" aria-hidden="true" style="height:${(result.total - rangeEnd) * 52}px"><td colspan="5"></td></tr>`;
+      }
+      stream.patchElements(
+        result.items.length
+          ? rowElements
+          : '<tr><td colspan="5" data-part="empty">No projects match the current search and filters.</td></tr>',
+        {
+          selector: "#project-browser-rows",
+          mode: "inner",
+          eventId: `project-browser-${revision}-rows`,
         },
-        service: "jqstar",
-        timestamp: timestamp.toISOString(),
-      });
+      );
+      const pagination = projectPaginationHtml(page, pageCount);
+      stream.patchElements(
+        mode === "virtual" ? pagination.replace("<nav ", "<nav hidden ") : pagination,
+        {
+          selector: "#project-browser-pagination",
+          mode: "outer",
+          eventId: `project-browser-${revision}-pagination`,
+        },
+      );
+    });
+    await sendWebResponse(sdkResponse, response);
+    return true;
+  }
+
+  async function handleApiDemoIncrement(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "POST")) return true;
+    const signals = await requestBody(request, maximum);
+    const current = typeof signals.serverCount === "number" ? signals.serverCount : 0;
+    json(response, 200, {
+      serverCount: current + 10,
+      serverMessage: "The JSON response patched these signals.",
+    });
+    return true;
+  }
+
+  async function handleApiDemoAccess(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (request.method !== "GET" && request.method !== "POST") {
+      response.setHeader("Allow", "GET, POST");
+      json(response, 405, { error: "Method must be GET or POST." });
       return true;
     }
-
-    if (url.pathname === "/api/demo/runtime/stream") {
-      if (!method(request, response, "GET")) return true;
-      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
-      if (!read.success) {
-        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(read.error);
+    const read =
+      request.method === "GET"
+        ? await ServerSentEventGenerator.readSignals(webRequest(request))
+        : { success: true as const, signals: await requestBody(request, maximum) };
+    if (!read.success) {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end(read.error);
+      return true;
+    }
+    const member = String(read.signals.accessManagerMember ?? "maya");
+    const memberRecord = accessMembers.find((candidate) => candidate.id === member);
+    if (!memberRecord) {
+      json(response, 422, { error: "Unknown access member." });
+      return true;
+    }
+    if (request.method === "POST") {
+      const requested = read.signals.accessManagerPermissions;
+      const allowed = new Set<string>(accessPermissionItems.map((permission) => permission.value));
+      if (
+        !Array.isArray(requested) ||
+        requested.some(
+          (permission) => typeof permission !== "string" || !allowed.has(permission),
+        ) ||
+        new Set(requested).size !== requested.length
+      ) {
+        json(response, 422, { error: "Access permissions must be unique catalog values." });
         return true;
       }
-      runtimeStreamRevision += 1;
-      const revision = runtimeStreamRevision;
-      const timestamp = Date.now();
-      const logs = [
-        {
-          id: `stream-${revision}-1`,
-          level: "info" as const,
-          message: `Datastar stream ${revision} opened.`,
-          source: "sse",
-          timestamp: new Date(timestamp).toISOString(),
-        },
-        {
-          id: `stream-${revision}-2`,
-          level: "debug" as const,
-          message: "jQuery Star enhanced the server-appended entry.",
-          source: "ui",
-          timestamp: new Date(timestamp + 1_000).toISOString(),
-        },
-        {
-          id: `stream-${revision}-3`,
-          level: "warn" as const,
-          message: "Hosting remains local until a public target is available.",
-          source: "deploy",
-          timestamp: new Date(timestamp + 2_000).toISOString(),
-        },
-      ];
-      const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
-        for (const entry of logs) {
-          await new Promise<void>((resolve) => setTimeout(resolve, 90));
-          stream.patchElements(logEntryHtml(entry), {
-            selector: "#runtime-log-entries",
-            mode: "append",
-            eventId: entry.id,
-          });
-        }
-        stream.patchSignals(
-          JSON.stringify({
-            controlPlaneMessage: `Datastar stream ${revision} appended ${logs.length} log entries.`,
-          }),
-          { eventId: `stream-${revision}-complete` },
-        );
+      const previous = accessAssignments.get(member) ?? [];
+      const permissions = requested as string[];
+      const previousSet = new Set(previous);
+      const nextSet = new Set(permissions);
+      accessAssignments.set(member, permissions);
+      accessAuditRevision += 1;
+      accessAuditEntries.unshift({
+        actor: "Current user",
+        added: permissions.filter((permission) => !previousSet.has(permission)),
+        id: `access-audit-${accessAuditRevision}`,
+        member,
+        permissions,
+        removed: previous.filter((permission) => !nextSet.has(permission)),
+        reordered:
+          previous.length === permissions.length &&
+          previous.every((permission) => nextSet.has(permission)) &&
+          previous.some((permission, index) => permissions[index] !== permission),
+        revision: accessAuditRevision,
+        timestamp: new Date().toISOString(),
       });
-      await sendWebResponse(sdkResponse, response);
-      return true;
+      if (accessAuditEntries.length > 100) accessAuditEntries.length = 100;
     }
-
-    if (url.pathname === "/api/demo/metrics") {
-      if (!method(request, response, "GET")) return true;
-      metricsRevision += 1;
-      const offset = metricsRevision * 7;
-      json(response, 200, {
-        labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-        message: `The ${environment} backend patched four table rows (revision ${metricsRevision}).`,
-        series: [
-          [248 + offset, 326 + offset, 391 + offset, 438 + offset],
-          [112 + offset, 218 + offset, 284 + offset, 347 + offset],
-        ],
+    const permissions = accessAssignments.get(member) ?? [];
+    accessRevision += 1;
+    const revision = accessRevision;
+    const saved = request.method === "POST";
+    const sdkResponse = ServerSentEventGenerator.stream((stream) => {
+      stream.patchElements(accessTransferHtml(permissions), {
+        selector: "#access-manager-permissions",
+        mode: "outer",
+        eventId: `access-${revision}-permissions`,
       });
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/feed") {
-      if (!method(request, response, "GET")) return true;
-      const query = (url.searchParams.get("query") ?? "").trim().toLocaleLowerCase();
-      const requestedCursor = Number(url.searchParams.get("cursor") ?? 0);
-      const cursor =
-        Number.isInteger(requestedCursor) && requestedCursor >= 0 ? requestedCursor : 0;
-      const matches = feedItems.filter((item) =>
-        `${item.title} ${item.description} ${item.meta}`.toLocaleLowerCase().includes(query),
+      stream.patchSignals(
+        JSON.stringify({
+          accessManagerCount: permissions.length,
+          accessManagerMember: member,
+          accessManagerMessage: saved
+            ? `${memberRecord.name} access saved at revision ${revision}.`
+            : `${memberRecord.name} access loaded from the backend.`,
+          accessManagerPermissions: permissions,
+        }),
+        { eventId: `access-${revision}-signals` },
       );
-      const items = matches.slice(cursor, cursor + 3);
-      const nextCursor = cursor + items.length;
-      json(response, 200, {
-        cursor: String(nextCursor),
-        done: nextCursor >= matches.length,
-        items,
-        message: `${nextCursor} of ${matches.length} matching results loaded.`,
-        total: matches.length,
+    });
+    await sendWebResponse(sdkResponse, response);
+    return true;
+  }
+
+  async function handleApiDemoAccessAudit(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "GET")) return true;
+    const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+    if (!read.success) {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end(read.error);
+      return true;
+    }
+    const requestedMember = String(read.signals.auditLogMember ?? "all");
+    const member =
+      requestedMember === "all" ||
+      accessMembers.some((candidate) => candidate.id === requestedMember)
+        ? requestedMember
+        : "all";
+    const query = String(read.signals.auditLogQuery ?? "")
+      .trim()
+      .toLocaleLowerCase();
+    const requestedPage = Number(read.signals.auditLogPage ?? 1);
+    const matches = accessAuditEntries.filter((entry) => {
+      if (member !== "all" && entry.member !== member) return false;
+      if (!query) return true;
+      const memberRecord = accessMembers.find((candidate) => candidate.id === entry.member)!;
+      const searchable = [
+        entry.actor,
+        memberRecord.name,
+        ...entry.permissions.map(accessPermissionLabel),
+        accessAuditPresentation(entry).summary,
+      ]
+        .join(" ")
+        .toLocaleLowerCase();
+      return searchable.includes(query);
+    });
+    const pageSize = 3;
+    const pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
+    const page = Math.min(
+      Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1),
+      pageCount,
+    );
+    const entries = matches.slice((page - 1) * pageSize, page * pageSize);
+    accessAuditStreamRevision += 1;
+    const streamRevision = accessAuditStreamRevision;
+    const sdkResponse = ServerSentEventGenerator.stream((stream) => {
+      stream.patchSignals(
+        JSON.stringify({
+          auditLogCount: matches.length,
+          auditLogMember: member,
+          auditLogMessage: `${matches.length} access event${matches.length === 1 ? "" : "s"}. Page ${page} of ${pageCount}.`,
+          auditLogPage: page,
+        }),
+        { eventId: `audit-log-${streamRevision}-signals` },
+      );
+      stream.patchElements(
+        entries.length
+          ? entries.map(accessAuditRowHtml).join("")
+          : '<tr><td colspan="5">No access events match these filters.</td></tr>',
+        {
+          selector: "#audit-log-rows",
+          mode: "inner",
+          eventId: `audit-log-${streamRevision}-rows`,
+        },
+      );
+      stream.patchElements(accessAuditPaginationHtml(page, pageCount), {
+        selector: "#audit-log-pagination",
+        mode: "outer",
+        eventId: `audit-log-${streamRevision}-pagination`,
+      });
+    });
+    await sendWebResponse(sdkResponse, response);
+    return true;
+  }
+
+  async function handleApiDemoProfile(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "POST")) return true;
+    const body = await requestBody(request, maximum);
+    const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
+    const email = typeof body.email === "string" ? body.email.trim() : "";
+    if (!displayName || !email || !email.includes("@")) {
+      json(response, 422, {
+        error: "Display name and a valid email address are required.",
       });
       return true;
     }
+    profileRevision += 1;
+    json(response, 200, {
+      displayName,
+      email,
+      environment,
+      revision: profileRevision,
+      updatedAt: new Date().toISOString(),
+    });
+    return true;
+  }
+
+  function handleApiDemoProfileInvite(request: IncomingMessage, response: ServerResponse): boolean {
+    if (!method(request, response, "POST")) return true;
+    inviteRevision += 1;
+    json(response, 200, {
+      inviteUrl: `https://jqstar.dev/invite/${environment}-${inviteRevision}`,
+      revision: inviteRevision,
+    });
+    return true;
+  }
+
+  async function handleApiDemoStream(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "GET")) return true;
+    const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+    if (!read.success) {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end(read.error);
+      return true;
+    }
+    const current = typeof read.signals.serverCount === "number" ? read.signals.serverCount : 0;
+    const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
+      stream.patchSignals(
+        JSON.stringify({
+          serverCount: current + 1,
+          serverMessage: "The official Datastar SDK patched this signal.",
+        }),
+        { eventId: "demo-signals", retryDuration: 2_000 },
+      );
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
+      stream.patchElements(
+        `<li>SDK-streamed HTML <button data-on:click="$(el).closest('li').fadeOut()">Fade it out</button></li>`,
+        { selector: "#server-feed", mode: "append", eventId: "demo-elements" },
+      );
+    });
+    await sendWebResponse(sdkResponse, response);
+    return true;
+  }
+
+  async function handleApiDemoAccount(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "POST")) return true;
+    const source = await requestText(request, maximum);
+    const taken = source.toLocaleLowerCase().includes("taken@example.com");
+    json(
+      response,
+      taken ? 422 : 200,
+      taken
+        ? {
+            errors: {
+              _form: "The server rejected one field. Your file selection was left intact.",
+              email: "That account already exists. Try another email.",
+            },
+          }
+        : { message: `The ${environment} backend accepted the multipart form.` },
+    );
+    return true;
+  }
+
+  async function handleApiDemoAutocomplete(
+    request: IncomingMessage,
+    response: ServerResponse,
+  ): Promise<boolean> {
+    if (!method(request, response, "GET")) return true;
+    const read = await ServerSentEventGenerator.readSignals(webRequest(request));
+    if (!read.success) {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end(read.error);
+      return true;
+    }
+    const query = String(read.signals.componentQuery ?? "")
+      .trim()
+      .toLocaleLowerCase();
+    const matches = componentSystems.filter(([, name]) => name.toLocaleLowerCase().includes(query));
+    const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
+      await new Promise<void>((resolve) => setTimeout(resolve, 120));
+      stream.patchSignals(JSON.stringify({ componentResultCount: matches.length }));
+      stream.patchElements(
+        matches.length
+          ? matches
+              .map(
+                ([value, name]) =>
+                  `<div data-part="option" data-value="${escapeHtml(value)}">${escapeHtml(name)}</div>`,
+              )
+              .join("") +
+              '<div data-part="loading" hidden>Searching the server…</div><div data-part="empty" hidden>No matching systems</div>'
+          : '<div data-part="loading" hidden>Searching the server…</div><div data-part="empty">No matching systems</div>',
+        { selector: "#technology-combobox-content", mode: "inner" },
+      );
+    });
+    await sendWebResponse(sdkResponse, response);
+    return true;
+  }
+
+  const routes = new Map<
+    string,
+    (request: IncomingMessage, response: ServerResponse, url: URL) => boolean | Promise<boolean>
+  >([
+    ["/health", handleHealth],
+    ["/api/demo/operations", handleApiDemoOperations],
+    ["/api/demo/runtime", handleApiDemoRuntime],
+    ["/api/demo/runtime/stream", handleApiDemoRuntimeStream],
+    ["/api/demo/metrics", handleApiDemoMetrics],
+    ["/api/demo/feed", handleApiDemoFeed],
+    ["/api/demo/projects", handleApiDemoProjects],
+    ["/api/demo/increment", handleApiDemoIncrement],
+    ["/api/demo/access", handleApiDemoAccess],
+    ["/api/demo/access/audit", handleApiDemoAccessAudit],
+    ["/api/demo/profile", handleApiDemoProfile],
+    ["/api/demo/profile/invite", handleApiDemoProfileInvite],
+    ["/api/demo/stream", handleApiDemoStream],
+    ["/api/demo/account", handleApiDemoAccount],
+    ["/api/demo/autocomplete", handleApiDemoAutocomplete],
+  ]);
+
+  async function route(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
+    const url = new URL(request.url ?? "/", "http://localhost");
+    const handler = routes.get(url.pathname);
+    if (handler) return handler(request, response, url);
 
     const projectMutation = /^\/api\/demo\/projects\/([^/]+)$/.exec(url.pathname);
     if (projectMutation) {
@@ -1006,382 +1463,6 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       return true;
     }
 
-    if (url.pathname === "/api/demo/projects") {
-      if (!method(request, response, "GET")) return true;
-      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
-      if (!read.success) {
-        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(read.error);
-        return true;
-      }
-      const query = String(read.signals.projectBrowserQuery ?? "").trim();
-      const projectOwners = projectStore.owners();
-      const owner = projectOwners.includes(String(read.signals.projectBrowserOwner))
-        ? String(read.signals.projectBrowserOwner)
-        : "all";
-      const status =
-        projectStatuses.find((value) => value === read.signals.projectBrowserStatus) ?? "all";
-      const requestedPage = Number(read.signals.projectBrowserPage ?? 1);
-      const requestedPageSize = Number(read.signals.projectBrowserPageSize ?? 5);
-      const pageSize =
-        ([5, 10, 20, 50, 100, 200] as const).find((size) => size === requestedPageSize) ?? 5;
-      const sorts = projectSorts(read.signals);
-      const requestedGroupBy =
-        projectGroupKeys.find((candidate) => candidate === read.signals.projectBrowserGroupBy) ??
-        "none";
-      const mode = read.signals.projectBrowserMode === "virtual" ? "virtual" : "page";
-      const groupBy = mode === "virtual" ? "none" : requestedGroupBy;
-      const requestedWindowSize = Number(read.signals.projectBrowserWindowSize ?? 40);
-      const windowSize = Math.min(
-        Math.max(Number.isFinite(requestedWindowSize) ? Math.floor(requestedWindowSize) : 40, 20),
-        80,
-      );
-      const rawPage = Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1);
-      const requestedWindowStart = Number(read.signals.projectBrowserWindowStart ?? 0);
-      const rawWindowStart = Math.max(
-        Number.isFinite(requestedWindowStart) ? Math.floor(requestedWindowStart) : 0,
-        0,
-      );
-      const initialOffset = mode === "virtual" ? rawWindowStart : (rawPage - 1) * pageSize;
-      const initialLimit = mode === "virtual" ? windowSize : pageSize;
-      let result = projectStore.list({
-        groupBy,
-        limit: initialLimit,
-        offset: initialOffset,
-        owner,
-        query,
-        sorts,
-        status,
-      });
-      const pageCount = Math.max(1, Math.ceil(result.total / pageSize));
-      const page = Math.min(rawPage, pageCount);
-      const maximumWindowStart = Math.max(result.total - windowSize, 0);
-      const windowStart = Math.min(rawWindowStart, maximumWindowStart);
-      const offset = mode === "virtual" ? windowStart : (page - 1) * pageSize;
-      if (offset !== initialOffset) {
-        result = projectStore.list({
-          groupBy,
-          limit: initialLimit,
-          offset,
-          owner,
-          query,
-          sorts,
-          status,
-        });
-      }
-      const rangeStart = result.total === 0 ? 0 : offset + 1;
-      const rangeEnd = Math.min(offset + result.items.length, result.total);
-      const requestId = Math.max(
-        Number.isFinite(Number(read.signals.projectBrowserRequestId))
-          ? Math.floor(Number(read.signals.projectBrowserRequestId))
-          : 0,
-        0,
-      );
-      const groups = new Map(result.groups.map((group) => [group.key, group.count]));
-      projectBrowserRevision += 1;
-      const revision = projectBrowserRevision;
-      const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
-        stream.patchSignals(
-          JSON.stringify({
-            projectBrowserCount: result.total,
-            projectBrowserActiveFilters:
-              Number(Boolean(query)) + Number(owner !== "all") + Number(status !== "all"),
-            projectBrowserMessage:
-              result.total === 0
-                ? "No projects match the current query."
-                : `Showing ${rangeStart}–${rangeEnd} of ${result.total} matching projects.`,
-            projectBrowserDirection: sorts[0]?.direction ?? "none",
-            projectBrowserGroupBy: groupBy,
-            projectBrowserMode: mode,
-            projectBrowserOwner: owner,
-            projectBrowserPage: page,
-            projectBrowserPageSize: pageSize,
-            projectBrowserRangeEnd: rangeEnd,
-            projectBrowserRangeStart: rangeStart,
-            projectBrowserRequestId: requestId,
-            projectBrowserSort: sorts[0]?.key ?? "",
-            projectBrowserSorts: sorts,
-            projectBrowserStatus: status,
-            projectBrowserWindowSize: windowSize,
-            projectBrowserWindowStart: windowStart,
-          }),
-          { eventId: `project-browser-${revision}-signals` },
-        );
-        let rowElements = projectRowsHtml(result.items, projectOwners, groupBy, groups);
-        if (mode === "virtual" && windowStart > 0) {
-          rowElements = `<tr data-project-browser-spacer="top" aria-hidden="true" style="height:${windowStart * 52}px"><td colspan="5"></td></tr>${rowElements}`;
-        }
-        if (mode === "virtual" && rangeEnd < result.total) {
-          rowElements += `<tr data-project-browser-spacer="bottom" aria-hidden="true" style="height:${(result.total - rangeEnd) * 52}px"><td colspan="5"></td></tr>`;
-        }
-        stream.patchElements(
-          result.items.length
-            ? rowElements
-            : '<tr><td colspan="5" data-part="empty">No projects match the current search and filters.</td></tr>',
-          {
-            selector: "#project-browser-rows",
-            mode: "inner",
-            eventId: `project-browser-${revision}-rows`,
-          },
-        );
-        const pagination = projectPaginationHtml(page, pageCount);
-        stream.patchElements(
-          mode === "virtual" ? pagination.replace("<nav ", "<nav hidden ") : pagination,
-          {
-            selector: "#project-browser-pagination",
-            mode: "outer",
-            eventId: `project-browser-${revision}-pagination`,
-          },
-        );
-      });
-      await sendWebResponse(sdkResponse, response);
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/increment") {
-      if (!method(request, response, "POST")) return true;
-      const signals = await requestBody(request, maximum);
-      const current = typeof signals.serverCount === "number" ? signals.serverCount : 0;
-      json(response, 200, {
-        serverCount: current + 10,
-        serverMessage: "The JSON response patched these signals.",
-      });
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/access") {
-      if (request.method !== "GET" && request.method !== "POST") {
-        response.setHeader("Allow", "GET, POST");
-        json(response, 405, { error: "Method must be GET or POST." });
-        return true;
-      }
-      const read =
-        request.method === "GET"
-          ? await ServerSentEventGenerator.readSignals(webRequest(request))
-          : { success: true as const, signals: await requestBody(request, maximum) };
-      if (!read.success) {
-        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(read.error);
-        return true;
-      }
-      const member = String(read.signals.accessManagerMember ?? "maya");
-      const memberRecord = accessMembers.find((candidate) => candidate.id === member);
-      if (!memberRecord) {
-        json(response, 422, { error: "Unknown access member." });
-        return true;
-      }
-      if (request.method === "POST") {
-        const requested = read.signals.accessManagerPermissions;
-        const allowed = new Set<string>(
-          accessPermissionItems.map((permission) => permission.value),
-        );
-        if (
-          !Array.isArray(requested) ||
-          requested.some(
-            (permission) => typeof permission !== "string" || !allowed.has(permission),
-          ) ||
-          new Set(requested).size !== requested.length
-        ) {
-          json(response, 422, { error: "Access permissions must be unique catalog values." });
-          return true;
-        }
-        const previous = accessAssignments.get(member) ?? [];
-        const permissions = requested as string[];
-        const previousSet = new Set(previous);
-        const nextSet = new Set(permissions);
-        accessAssignments.set(member, permissions);
-        accessAuditRevision += 1;
-        accessAuditEntries.unshift({
-          actor: "Current user",
-          added: permissions.filter((permission) => !previousSet.has(permission)),
-          id: `access-audit-${accessAuditRevision}`,
-          member,
-          permissions,
-          removed: previous.filter((permission) => !nextSet.has(permission)),
-          reordered:
-            previous.length === permissions.length &&
-            previous.every((permission) => nextSet.has(permission)) &&
-            previous.some((permission, index) => permissions[index] !== permission),
-          revision: accessAuditRevision,
-          timestamp: new Date().toISOString(),
-        });
-        if (accessAuditEntries.length > 100) accessAuditEntries.length = 100;
-      }
-      const permissions = accessAssignments.get(member) ?? [];
-      accessRevision += 1;
-      const revision = accessRevision;
-      const saved = request.method === "POST";
-      const sdkResponse = ServerSentEventGenerator.stream((stream) => {
-        stream.patchElements(accessTransferHtml(permissions), {
-          selector: "#access-manager-permissions",
-          mode: "outer",
-          eventId: `access-${revision}-permissions`,
-        });
-        stream.patchSignals(
-          JSON.stringify({
-            accessManagerCount: permissions.length,
-            accessManagerMember: member,
-            accessManagerMessage: saved
-              ? `${memberRecord.name} access saved at revision ${revision}.`
-              : `${memberRecord.name} access loaded from the backend.`,
-            accessManagerPermissions: permissions,
-          }),
-          { eventId: `access-${revision}-signals` },
-        );
-      });
-      await sendWebResponse(sdkResponse, response);
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/access/audit") {
-      if (!method(request, response, "GET")) return true;
-      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
-      if (!read.success) {
-        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(read.error);
-        return true;
-      }
-      const requestedMember = String(read.signals.auditLogMember ?? "all");
-      const member =
-        requestedMember === "all" ||
-        accessMembers.some((candidate) => candidate.id === requestedMember)
-          ? requestedMember
-          : "all";
-      const query = String(read.signals.auditLogQuery ?? "")
-        .trim()
-        .toLocaleLowerCase();
-      const requestedPage = Number(read.signals.auditLogPage ?? 1);
-      const matches = accessAuditEntries.filter((entry) => {
-        if (member !== "all" && entry.member !== member) return false;
-        if (!query) return true;
-        const memberRecord = accessMembers.find((candidate) => candidate.id === entry.member)!;
-        const searchable = [
-          entry.actor,
-          memberRecord.name,
-          ...entry.permissions.map(accessPermissionLabel),
-          accessAuditPresentation(entry).summary,
-        ]
-          .join(" ")
-          .toLocaleLowerCase();
-        return searchable.includes(query);
-      });
-      const pageSize = 3;
-      const pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
-      const page = Math.min(
-        Math.max(Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 1, 1),
-        pageCount,
-      );
-      const entries = matches.slice((page - 1) * pageSize, page * pageSize);
-      accessAuditStreamRevision += 1;
-      const streamRevision = accessAuditStreamRevision;
-      const sdkResponse = ServerSentEventGenerator.stream((stream) => {
-        stream.patchSignals(
-          JSON.stringify({
-            auditLogCount: matches.length,
-            auditLogMember: member,
-            auditLogMessage: `${matches.length} access event${matches.length === 1 ? "" : "s"}. Page ${page} of ${pageCount}.`,
-            auditLogPage: page,
-          }),
-          { eventId: `audit-log-${streamRevision}-signals` },
-        );
-        stream.patchElements(
-          entries.length
-            ? entries.map(accessAuditRowHtml).join("")
-            : '<tr><td colspan="5">No access events match these filters.</td></tr>',
-          {
-            selector: "#audit-log-rows",
-            mode: "inner",
-            eventId: `audit-log-${streamRevision}-rows`,
-          },
-        );
-        stream.patchElements(accessAuditPaginationHtml(page, pageCount), {
-          selector: "#audit-log-pagination",
-          mode: "outer",
-          eventId: `audit-log-${streamRevision}-pagination`,
-        });
-      });
-      await sendWebResponse(sdkResponse, response);
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/profile") {
-      if (!method(request, response, "POST")) return true;
-      const body = await requestBody(request, maximum);
-      const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
-      const email = typeof body.email === "string" ? body.email.trim() : "";
-      if (!displayName || !email || !email.includes("@")) {
-        json(response, 422, {
-          error: "Display name and a valid email address are required.",
-        });
-        return true;
-      }
-      profileRevision += 1;
-      json(response, 200, {
-        displayName,
-        email,
-        environment,
-        revision: profileRevision,
-        updatedAt: new Date().toISOString(),
-      });
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/profile/invite") {
-      if (!method(request, response, "POST")) return true;
-      inviteRevision += 1;
-      json(response, 200, {
-        inviteUrl: `https://jqstar.dev/invite/${environment}-${inviteRevision}`,
-        revision: inviteRevision,
-      });
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/stream") {
-      if (!method(request, response, "GET")) return true;
-      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
-      if (!read.success) {
-        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(read.error);
-        return true;
-      }
-      const current = typeof read.signals.serverCount === "number" ? read.signals.serverCount : 0;
-      const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
-        stream.patchSignals(
-          JSON.stringify({
-            serverCount: current + 1,
-            serverMessage: "The official Datastar SDK patched this signal.",
-          }),
-          { eventId: "demo-signals", retryDuration: 2_000 },
-        );
-        await new Promise<void>((resolve) => setTimeout(resolve, 300));
-        stream.patchElements(
-          `<li>SDK-streamed HTML <button data-on:click="$(el).closest('li').fadeOut()">Fade it out</button></li>`,
-          { selector: "#server-feed", mode: "append", eventId: "demo-elements" },
-        );
-      });
-      await sendWebResponse(sdkResponse, response);
-      return true;
-    }
-
-    if (url.pathname === "/api/demo/account") {
-      if (!method(request, response, "POST")) return true;
-      const source = await requestText(request, maximum);
-      const taken = source.toLocaleLowerCase().includes("taken@example.com");
-      json(
-        response,
-        taken ? 422 : 200,
-        taken
-          ? {
-              errors: {
-                _form: "The server rejected one field. Your file selection was left intact.",
-                email: "That account already exists. Try another email.",
-              },
-            }
-          : { message: `The ${environment} backend accepted the multipart form.` },
-      );
-      return true;
-    }
-
     const multipartMessages: Record<string, string> = {
       "/api/demo/project": "project submission",
       "/api/demo/preferences": "preferences submission",
@@ -1398,39 +1479,6 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       return true;
     }
 
-    if (url.pathname === "/api/demo/autocomplete") {
-      if (!method(request, response, "GET")) return true;
-      const read = await ServerSentEventGenerator.readSignals(webRequest(request));
-      if (!read.success) {
-        response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(read.error);
-        return true;
-      }
-      const query = String(read.signals.componentQuery ?? "")
-        .trim()
-        .toLocaleLowerCase();
-      const matches = componentSystems.filter(([, name]) =>
-        name.toLocaleLowerCase().includes(query),
-      );
-      const sdkResponse = ServerSentEventGenerator.stream(async (stream) => {
-        await new Promise<void>((resolve) => setTimeout(resolve, 120));
-        stream.patchSignals(JSON.stringify({ componentResultCount: matches.length }));
-        stream.patchElements(
-          matches.length
-            ? matches
-                .map(
-                  ([value, name]) =>
-                    `<div data-part="option" data-value="${escapeHtml(value)}">${escapeHtml(name)}</div>`,
-                )
-                .join("") +
-                '<div data-part="loading" hidden>Searching the server…</div><div data-part="empty" hidden>No matching systems</div>'
-            : '<div data-part="loading" hidden>Searching the server…</div><div data-part="empty">No matching systems</div>',
-          { selector: "#technology-combobox-content", mode: "inner" },
-        );
-      });
-      await sendWebResponse(sdkResponse, response);
-      return true;
-    }
     return false;
   }
 

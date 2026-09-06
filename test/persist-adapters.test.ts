@@ -130,7 +130,7 @@ it("checks custom shape, synchronous returns, metadata, error normalization, and
     const adapter = createCustomStorageAdapter({
       ...base,
       [method]: replacement,
-    } as StarPersistAdapter);
+    });
     expect(() => (adapter[method] as (...args: unknown[]) => unknown)("key", "value")).toThrow(
       "contract",
     );
@@ -147,7 +147,7 @@ it("checks custom shape, synchronous returns, metadata, error normalization, and
         throw new Error("private source");
       },
     });
-    expect(() => (adapter[method] as (...args: string[]) => unknown)("key", "value")).toThrow(code);
+    expect(() => adapter[method]("key", "value")).toThrow(code);
   }
   const cleanup = vi.fn(() => {
     throw new Error("cleanup source");

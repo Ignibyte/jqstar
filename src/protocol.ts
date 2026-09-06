@@ -245,7 +245,7 @@ function exactKeys(
   if (extra) throw validation(`${label} contains unsupported property ${extra}.`);
 }
 
-function recursivelyFreeze<Value>(value: Value, seen = new WeakSet<object>()): Value {
+function recursivelyFreeze<Value>(value: Value, seen = new WeakSet()): Value {
   if (!value || typeof value !== "object") return value;
   const object = value as object;
   if (seen.has(object)) return value;
@@ -941,8 +941,8 @@ export class ProtocolProfileRegistry {
     return () => {
       if (!active) return;
       active = false;
-      records!.delete(body);
-      if (records!.size === 0) this.bodies.delete(application);
+      records.delete(body);
+      if (records.size === 0) this.bodies.delete(application);
     };
   }
 

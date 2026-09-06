@@ -281,6 +281,13 @@ installer because its project config and component/block filtering are specific 
 catalog. The copied files are ordinary HTML fragments. Applications own and edit that markup while
 the `jquery-star` package supplies behavior and the compiled theme.
 
+For upgrades, `jqstar doctor --packages --cwd . --json` checks bounded local dependency metadata
+without running application code or contacting a registry. Use `--entrypoint jquery-star/core` to
+check an intended import. `jqstar doctor --upgrade-config --cwd . --json` prints a dry-run
+configuration plan; apply and rollback require explicit reviewed metadata. See
+[package diagnostics and upgrades](docs/UPGRADES.md) for exit codes, limits, unknown evidence,
+Migrate summaries, and recovery instructions. The ordinary registry `doctor` output is unchanged.
+
 ## Components and blocks
 
 The catalog contains 102 component recipes and seven composed blocks: Command Palette, Async Form,

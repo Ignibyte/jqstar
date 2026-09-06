@@ -183,11 +183,81 @@ dependency-cruiser, Knip, jscpd, Markdownlint, cspell, local links, licenses, Sh
 actionlint. Delivery adds executable sabotage for every dependency-cruiser and Semgrep rule plus
 gitleaks, Semgrep, npm audit, OSV-Scanner, and secret scans of both Git history and the worktree.
 
-The measured 1.0 static maxima are cognitive complexity 149 and total duplicated lines 2.99%. The
-duplication run measured 2.9812% and uses the committed token and line sensitivity in
-`quality/metrics.json`. Environment values can tighten these maxima and cannot raise them. CodeQL
-and dependency review remain hosted GitHub checks; they do not replace mandatory local security
-gates.
+Ticket 0052 lowers the cognitive-complexity ceiling from 149 to 65 and applies the same five SonarJS
+rules to TypeScript and JavaScript. The HTTP dispatcher falls from 145 to 30; the tokenizer falls
+from 107 to 63. Complexity 15 remains a review target, not a claim about every existing function.
+Total duplicated lines remain capped at 2.99%, with eight-line/70-token sensitivity. The metric gate
+compares ceilings and detector settings against the immutable delivery base. Environment values can
+tighten maxima and cannot raise them. CodeQL and dependency review remain hosted GitHub checks; they
+do not replace mandatory local security gates.
+
+## Current scope and remaining boundaries
+
+The 2026-09-06 review found actual invocation gaps: JavaScript lacked SonarJS, Node root
+configuration files were classified but omitted from ESLint, and authored example/fixture CSS was
+omitted from Stylelint. Those selectors now run in fast, delivery, and full audit. The standard
+tests evaluate effective configuration and execute invalid/corrected JavaScript and CSS examples.
+Historical coverage floors and package ceilings retain immutable-base negative controls. Coverage
+now uses the review base when supplied and local HEAD otherwise; missing commit identity or invalid
+historical data fails instead of skipping the comparison.
+
+| Category                           | Actual scope and control                                                                                                                                                 | Evidence and limits                                                                                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Types / PHPStan equivalent         | Four strict TypeScript projects cover runtime, server, registry, tests/examples and TS build configuration; unchecked indexes and exact optional properties are enabled. | Compiler matrix, installed TypeScript consumers, API reports. Dependency declaration internals use `skipLibCheck`; consumer contracts still compile.          |
+| Typed correctness                  | `strictTypeChecked`, floating/misused promise checks, unnecessary assertions/type arguments, and reviewed void/async rules.                                              | Effective-rule tests and zero-warning ESLint; the counted legacy inventory below remains explicit.                                                            |
+| JavaScript CLI/automation          | Recommended ESLint, all five SonarJS rules, architecture checks, process/effect canaries, and installed CLI consumers.                                                   | JavaScript `.mjs` files are not type-checked. Process conformance and syntax lint do not substitute for type analysis.                                        |
+| Maintainability / PHPMD equivalent | SonarJS cognitive complexity, identical conditions/branches, inverted booleans and nested switches; jscpd duplication.                                                   | Current ceiling 65, immutable-base metric/detector ratchets, positive/negative controls. A green ceiling is not proof that each function is easy to maintain. |
+| Formatting / PHPCS equivalent      | Prettier checks the repository; Stylelint covers authored runtime/site/fixture CSS; HTML validation covers site and registry.                                            | Exact selectors and invalid/corrected CSS controls. Two frozen research styles retain cosmetic notation exceptions described below.                           |
+| Architecture and unused code       | dependency-cruiser checks production layering/cycles/resolution/dev imports; Knip checks configured entries, dependencies, files and exports.                            | Executable rule sabotage and package graphs. Dynamic imports and generated outputs have named entry/fixture contracts.                                        |
+| Security and dependencies          | Semgrep, gitleaks history/worktree, npm audit, OSV, lock integrity, licenses; hosted CodeQL and dependency review.                                                       | Local delivery logs plus hosted statuses. Tool success does not prove absence of vulnerabilities.                                                             |
+| Behavior and coverage              | Non-empty Vitest suites, source census, V8 coverage floors, seeded fast-check properties.                                                                                | Runner/schema/fingerprint controls and immutable-base coverage ratchets; `.mjs` process code is classified as process-contract evidence.                      |
+| Browsers and accessibility         | Chromium, Firefox, WebKit, axe, keyboard/focus/lifecycle tests, CSP and installed consumers.                                                                             | Automated tests plus separately recorded manual charters; axe is not screen-reader user testing.                                                              |
+| Package and release                | API Extractor, publint, Are the Types Wrong, isolated consumers, graph/size budgets, reproducibility, receipts.                                                          | Exact tarball identities, historical ceilings, positive/negative evidence checks; publication remains a separate action.                                      |
+| Documentation and automation       | Markdownlint, cspell, local links, generated-content/schema checks, ShellCheck, actionlint, runner self-tests.                                                           | Current tree-bound logs. Link checking validates repository targets, not the future availability of every external page.                                      |
+
+Seven formerly blanket-disabled typed rules are now default errors. The exact-file
+[lint boundary inventory](../quality/lint-boundaries.json) records 306 existing file/rule
+allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 283
+selected TypeScript source/test files and requires observed counts to match the inventory. Reducing
+a count requires reducing its allowance. After this initial baseline, the immutable-base comparison
+rejects new allowances and increased counts. These are remaining reviewed categories of debt, not
+assertions that every occurrence is ideal or that unchanged counts prove an edit safe.
+
+| Counted rule                     | Existing occurrences | Reason for preserving current behavior pending individual review                                                 |
+| -------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `no-non-null-assertion`          | 1,068                | Indexed access, lifecycle/DOM preconditions, and fixtures; the assertions still need their stated preconditions. |
+| `no-unnecessary-condition`       | 132                  | Runtime checks for JavaScript callers and closure state beyond TypeScript's narrowing.                           |
+| `no-base-to-string`              | 84                   | Existing coercion and formatting contracts, including untyped values.                                            |
+| `no-unnecessary-type-conversion` | 22                   | Runtime coercion of signals and JavaScript inputs.                                                               |
+| `no-unnecessary-type-parameters` | 25                   | Existing public generic inference and caller-selected types.                                                     |
+| `no-dynamic-delete`              | 4                    | Owned mutable dictionaries; changes must preserve proxy/strict-mode semantics.                                   |
+| `no-this-alias`                  | 2                    | Existing jQuery callback receiver capture.                                                                       |
+
+Other remaining overrides have named boundaries in `eslint.config.js`:
+
+- TypeScript test/e2e files permit unsafe mock operations, misused spread, unbound methods, template
+  interpolation, and async functions whose purpose is to supply a Promise-shaped fixture. Strict
+  compiler, floating promises, and misused promises remain enforced there.
+- `src/directive.ts`, `src/idiomorph.d.ts`, `src/plugin.ts`, `src/stores/types.ts`, and
+  `src/types.ts` retain `void | cleanup` or `void | boolean` callback contracts. Elsewhere invalid
+  `void` types are rejected, with the documented `this: void` option enabled.
+- Persistence adapters, protocol preparation, stores, and the Turbo bridge test inspect return
+  values from nominally void callbacks to reject async JavaScript implementations. Their
+  `no-confusing-void-expression` exception preserves those guards. Other files enforce the rule
+  while allowing ordinary shorthand callbacks and void-returning functions.
+- `src/types.ts` preserves published overload spelling. The trusted expression compiler permits
+  implied evaluation, and the clipboard fallback permits its deprecated API, each in one named file.
+- The frozen resource-comparison fixture retains its erased `textContent` assertion; the exact-file
+  unnecessary-assertion exception preserves measurement hashes, and the non-null inventory still
+  counts it.
+- Frozen navigation measurement CSS retains existing blank-line layout. The frozen jQuery UI
+  migration CSS retains prefix media-query notation. Both files still reject invalid CSS semantics;
+  changing measurement bytes solely for style would invalidate the existing evidence.
+
+On 2026-09-06 the GitHub API confirmed strict required checks and administrator enforcement on
+`main`, with force pushes disabled. Required approving PR reviews are not configured. This review
+records that administrative limit without presenting local gates as independent human review.
+Mutation remains outside automatic commands and dependencies; ticket 0053 is a deferred plan.
 
 Dependency Review requires the repository Dependency Graph. For `Ignibyte/jqstar`, organization
 security configuration `270649` enables the graph only for this repository, leaves the existing

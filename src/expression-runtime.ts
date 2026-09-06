@@ -48,7 +48,7 @@ function callResult(
 export function isStarExpressionCallResult(value: unknown): value is StarExpressionCallResult {
   return (
     ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    expressionCallResults.has(value as object)
+    expressionCallResults.has(value)
   );
 }
 

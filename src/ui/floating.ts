@@ -52,14 +52,14 @@ export function prepareFloating(content: HTMLElement): void {
 }
 
 export function showFloating(content: HTMLElement): void {
-  if (supportsPopover(content)) (content as NativePopoverElement).showPopover();
+  if (supportsPopover(content)) content.showPopover();
   else content.hidden = false;
 }
 
 export function hideFloating(content: HTMLElement): void {
   if (supportsPopover(content)) {
     try {
-      (content as NativePopoverElement).hidePopover();
+      content.hidePopover();
     } catch {
       // A detached or already-hidden native popover needs no further work.
     }

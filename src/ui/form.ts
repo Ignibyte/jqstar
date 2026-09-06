@@ -397,7 +397,7 @@ export function createForms(registerAction: ActionRegistrar): FormCollection {
     ) {
       throw new Error("ui.form.clear-errors names must be a string or string array.");
     }
-    return api.clearErrors(form, names as string | string[] | undefined);
+    return api.clearErrors(form, names);
   });
   registerAction("ui.form.reset", (context) =>
     api.reset(controlledForm(context, context.args?.[0])),

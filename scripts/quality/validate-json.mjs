@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import { validateDoctorAuthority } from "./doctor-contract.mjs";
 import { qualityPaths, readJSON, repositoryRoot } from "./static-lib.mjs";
 
 export function createSchemaValidator(schema) {
@@ -44,6 +45,8 @@ async function main() {
     "schema/jquery-mobile-migration.schema.json",
   );
   await validateInstance("quality/release-contract.json", "schema/release-contract.schema.json");
+  await validateInstance("bin/doctor/compatibility.json", "schema/doctor-rules.schema.json");
+  await validateDoctorAuthority(await readJSON("bin/doctor/compatibility.json"));
   await validateInstance("quality/resource-strategy.json", "schema/resource-strategy.schema.json");
   await validateInstance(
     "quality/navigation-decision.json",
@@ -79,7 +82,7 @@ async function main() {
   const schemas = jsonFiles.filter((path) => path.endsWith(".schema.json"));
   for (const schema of schemas) createSchemaValidator(await readJSON(schema));
   process.stdout.write(
-    `JSON and schemas: ${jsonFiles.length} files parsed, ${11 + cspManifests.length} instances and ${schemas.length} schemas validated\n`,
+    `JSON and schemas: ${jsonFiles.length} files parsed, ${12 + cspManifests.length} instances and ${schemas.length} schemas validated\n`,
   );
 }
 

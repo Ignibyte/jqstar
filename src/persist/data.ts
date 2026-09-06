@@ -93,7 +93,7 @@ export function storageKey(namespace: string, store: string, explicit?: string):
 export function cloneData(input: unknown, methods = false, maxBytes = 1_048_576): unknown {
   let nodes = 0;
   let stringBytes = 0;
-  const active = new WeakSet<object>();
+  const active = new WeakSet();
   const visit = (value: unknown, depth: number): unknown => {
     if (typeof value === "string") {
       stringBytes += value.length;

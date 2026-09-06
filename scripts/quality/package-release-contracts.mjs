@@ -37,6 +37,8 @@ export const packageDocumentationPaths = Object.freeze([
   "docs/PERSISTENCE.md",
   "docs/SELF_HOSTING.md",
   "docs/STORES.md",
+  "docs/UPGRADES.md",
+  "docs/decisions/DEVTOOLS.md",
 ]);
 
 const notRunDetail = "check did not run";

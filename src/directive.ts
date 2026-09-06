@@ -258,7 +258,7 @@ function buildHelperRecords(
 function builtinDirective<Parsed>(directive: StarDirective<Parsed>): StarDirective<Parsed> {
   return Object.freeze({
     ...directive,
-    match: Object.freeze({ ...directive.match }) as StarDirectiveMatcher,
+    match: Object.freeze({ ...directive.match }),
     priority: directive.priority ?? 0,
   });
 }

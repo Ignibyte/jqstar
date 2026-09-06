@@ -398,7 +398,7 @@ export class Kernel {
       if (!(node instanceof ElementHost) || node.ownerDocument !== this.documentHost.document) {
         throw new Error(`${label} must belong to this jQuery Star kernel's Document.`);
       }
-      const element = node as Element;
+      const element = node;
       if (!root.contains(element)) {
         throw new Error(`${label} must be contained by the render root.`);
       }

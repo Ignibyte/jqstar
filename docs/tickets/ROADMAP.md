@@ -139,17 +139,29 @@ failures, host configuration/recovery, private-cache boundaries and reopening cr
 
 ## Release 1.4: inspection and upgrades
 
-| Ticket                                          | Outcome                                                                                       | Depends on                                                 |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [0030](0030-add-inspection-and-tracing.md)      | Serializable inspection plus bounded, redacted, production-off tracing and service adapters.  | 0010, 0017, 0019, 0020, 0023, and approved service work    |
-| [0031](0031-add-in-page-devtools.md)            | Conditional inspection UI after usage evidence and a recorded go decision.                    | 0030 plus usage go decision                                |
-| [0032](0032-add-package-upgrade-diagnostics.md) | Package doctor checks and dry-run configuration upgrades without changing registry ownership. | 0013, 0017                                                 |
-| [0033](0033-audit-full-library-program.md)      | Requirement-by-requirement audit of every completed and declined program track.               | 0019, 0020, 0023, 0030–0032, and approved conditional work |
+| Ticket                                          | Outcome                                                                                         | Depends on                                                 |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [0030](0030-add-inspection-and-tracing.md)      | Serializable inspection plus bounded, redacted, production-off tracing and service adapters.    | 0010, 0017, 0019, 0020, 0023, and approved service work    |
+| [0031](0031-add-in-page-devtools.md)            | Declined: both application investigations resolved through public inspection and browser tools. | 0030 plus usage go decision                                |
+| [0032](0032-add-package-upgrade-diagnostics.md) | Package doctor checks and dry-run configuration upgrades without changing registry ownership.   | 0013, 0017                                                 |
+| [0033](0033-audit-full-library-program.md)      | Requirement-by-requirement audit of every completed and declined program track.                 | 0019, 0020, 0023, 0030–0032, and approved conditional work |
 
 The unpublished candidate remains 1.1.0; the release headings describe the original sequence. Ticket
-0030 adds explicit inspection to that candidate. Ticket 0031 still requires two application
-investigations and a go/no-go decision; upgrade diagnostics and the final audit remain separate
-work.
+0030 adds explicit inspection to that candidate. Ticket 0031 is declined after two installed
+application investigations; public inspection and browser tools remain the supported workflow.
+Package diagnostics (0032) and the quality review (0052) are complete. The full program audit (0033)
+remains the final prerequisite before the separately deferred mutation audit.
+
+## Final quality review and deferred mutation audit
+
+| Ticket                                                 | Outcome                                                                                                                 | Depends on                                         |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| [0052](0052-audit-and-strengthen-quality-standards.md) | Review actual JavaScript quality scopes, rules, thresholds, and detectors; correct gaps before the final program audit. | Existing quality program                           |
+| [0053](0053-run-final-mutation-audit.md)               | Deferred final mutation audit; planning only until explicit later user authorization.                                   | 0031–0033, 0052, and later execution authorization |
+
+The user requested completion of 0031–0033 and the quality review while explicitly deferring the
+mutation run. Ticket 0033 includes 0052 as a prerequisite and records 0053 as planned follow-up
+assurance. It must not claim mutation evidence or require execution of 0053 to close.
 
 ## Dependency graph
 
@@ -184,7 +196,8 @@ work.
 
 completed service decisions + implementations -> 0030 -> [usage decision] -> 0031
 0013 + 0017 -> 0032
-completed tracks -> 0033
+completed tracks + 0052 -> 0033
+0031 + 0032 + 0033 + 0052 -> [later authorization] -> 0053
 ```
 
 ## Evidence required from every ticket

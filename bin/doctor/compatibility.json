@@ -1,0 +1,421 @@
+{
+  "schema": "jqstar-doctor-rules/1",
+  "reviewedAt": "2026-09-06",
+  "reviewAfter": "2027-03-03",
+  "reviewPolicy": "Recheck through a ticket when support, entries, configuration, plugin API, ecosystem facts, or parser formats change; expired rules emit a warning and are never fetched at runtime.",
+  "authority": [
+    {
+      "path": "quality/release-contract.json",
+      "pointer": "/support",
+      "sha256": "4f4edde89131fcc1b92b35c24384bac57a2c09f9d59eec3ba1c0641415f3c707"
+    },
+    {
+      "path": "quality/release-contract.json",
+      "pointer": "/stableEntries",
+      "sha256": "e0505aa3bdc3b8b6bc9e3b4db7219b44bdbe183dc4db32f4d50149d565036a49"
+    },
+    {
+      "path": "quality/release-contract.json",
+      "pointer": "/package/pluginApiVersion",
+      "sha256": "8e633b4f41f99d4c388915bc852f2143cf4e9f5eaad70c76a81d4f4aa629eec1"
+    },
+    {
+      "path": "quality/jquery-ecosystem.json",
+      "pointer": "",
+      "sha256": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718"
+    }
+  ],
+  "compatibility": {
+    "package": ">=1.0.0 <2",
+    "version": "1.1.0",
+    "pluginApi": "0.1.0",
+    "node": ">=24",
+    "npmForReleaseConstruction": ">=11",
+    "jquery": ">=4.0.0 <5",
+    "bridges": {
+      "turbo": ">=8.0.21 <8.1.0",
+      "htmx": ">=2.0.0 <2.1.0"
+    },
+    "configVersions": [0, 1],
+    "targetConfigVersion": 1,
+    "entrypoints": [
+      {
+        "subpath": ".",
+        "formats": ["esm", "commonjs", "umd"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./core",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./csp",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./ui",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./datastar",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./testing",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./datastar/testing",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./turbo",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./htmx",
+        "formats": ["esm", "commonjs"],
+        "since": "1.0.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./stores",
+        "formats": ["esm", "commonjs"],
+        "since": "1.1.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./persist",
+        "formats": ["esm", "commonjs"],
+        "since": "1.1.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./inspect",
+        "formats": ["esm", "commonjs"],
+        "since": "1.1.0",
+        "deprecated": false
+      },
+      {
+        "subpath": "./ui.css",
+        "formats": ["css"],
+        "since": "1.0.0",
+        "deprecated": false
+      }
+    ]
+  },
+  "lockfiles": {
+    "npm": [2, 3],
+    "pnpm": ["9.0"],
+    "yarnClassic": [1],
+    "yarnModern": [4, 5, 6, 7, 8]
+  },
+  "limits": {
+    "fileBytes": 2097152,
+    "totalBytes": 16777216,
+    "workspaces": 256,
+    "packages": 4096,
+    "diagnostics": 1024,
+    "scalarLength": 256,
+    "dataDepth": 32,
+    "workspaceDepth": 8,
+    "elapsedMs": 10000
+  },
+  "diagnostics": [
+    {
+      "code": "JQS_NODE_INCOMPATIBLE",
+      "severity": "error",
+      "summary": "Node does not satisfy the supported runtime range.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["node-version"],
+      "correction": "Run doctor and the application on a supported Node version.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_TOOLING_RANGE",
+      "severity": "warning",
+      "summary": "Declared npm version is outside the release-construction range.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["manifest"],
+      "correction": "Use the documented npm version when constructing a jQStar release; application package-manager choice remains yours.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_PACKAGE_VERSION",
+      "severity": "error",
+      "summary": "A resolved package version is outside the supported range.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["package-metadata"],
+      "correction": "Select a supported version for this consumer and verify its resolved installation with your package manager.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_PACKAGE_DUPLICATE",
+      "severity": "warning",
+      "summary": "Distinct package versions or installed copies were detected.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["package-metadata"],
+      "correction": "Review which application resolves each copy before choosing whether to deduplicate.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_PEER_INCOMPATIBLE",
+      "severity": "error",
+      "summary": "Declared peer compatibility excludes the detected package version.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["installed-metadata"],
+      "correction": "Choose mutually compatible peer versions and check the package placement used by this consumer.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_DECLARED_RANGE",
+      "severity": "warning",
+      "summary": "Declared package range does not intersect the supported range.",
+      "source": "MIGRATING_TO_1.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/MIGRATING_TO_1.md",
+      "evidenceInputs": ["manifest"],
+      "correction": "Review the declared range and intended supported version before editing your dependency manifest.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_ENTRYPOINT_UNAVAILABLE",
+      "severity": "error",
+      "summary": "Requested entrypoint or format is unavailable in the detected artifact.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["explicit-input"],
+      "correction": "Choose a documented entrypoint and format available in the installed package version.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_ENTRYPOINT_DEPRECATED",
+      "severity": "warning",
+      "summary": "Requested entrypoint is deprecated.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["explicit-input"],
+      "correction": "Follow the linked replacement guidance before the documented removal release.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_ENTRYPOINT_USE",
+      "severity": "info",
+      "summary": "The requested entrypoint and format are recorded as explicit input.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["explicit-input"],
+      "correction": "Confirm this explicit argument matches the import your application intends to use.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_PLUGIN_API",
+      "severity": "error",
+      "summary": "Declared plugin API range excludes this registrar version.",
+      "source": "README.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/README.md",
+      "evidenceInputs": ["plugin-metadata"],
+      "correction": "Install a plugin whose declared registrar range includes the supported plugin API version.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_CONFIG_VERSION",
+      "severity": "warning",
+      "summary": "A known configuration schema upgrade is available.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["config-metadata"],
+      "correction": "Run doctor --upgrade-config to review a configuration plan before explicit apply.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_CONFIG_UNSUPPORTED",
+      "severity": "error",
+      "summary": "Configuration uses an unsupported schema version.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["config-metadata"],
+      "correction": "Use a compatible doctor version or restore a known configuration schema; unknown migrations are not guessed.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_ARTIFACT_IDENTITY",
+      "severity": "error",
+      "summary": "Installed package metadata or entrypoint files disagree with the expected identity.",
+      "source": "docs/COMPATIBILITY.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/COMPATIBILITY.md",
+      "evidenceInputs": ["installed-metadata"],
+      "correction": "Review package provenance and installed metadata; restore the intended artifact using your normal package workflow.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_OWNERSHIP_MISMATCH",
+      "severity": "warning",
+      "summary": "Supplied registry ownership destinations disagree with current configuration.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["ownership-metadata"],
+      "correction": "Review the application-owned copy destinations and assertion without overwriting edited recipes.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_JQUERY_UI",
+      "severity": "warning",
+      "summary": "jQuery UI dependency metadata was detected; review the coexistence and migration guide.",
+      "source": "docs/JQUERY_UI_MIGRATION.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/JQUERY_UI_MIGRATION.md",
+      "evidenceInputs": ["package-metadata"],
+      "correction": "Follow the coexistence and component migration guide for the jQuery UI features your application uses.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_JQUERY_MOBILE",
+      "severity": "warning",
+      "summary": "jQuery Mobile dependency metadata was detected; migrate without loading its archived runtime.",
+      "source": "docs/JQUERY_MOBILE_MIGRATION.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/JQUERY_MOBILE_MIGRATION.md",
+      "evidenceInputs": ["package-metadata"],
+      "correction": "Use the no-runtime migration guide and native or supported bridge replacements for archived Mobile behavior.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_JQUERY_MIGRATE",
+      "severity": "info",
+      "summary": "jQuery Migrate dependency metadata was detected; use the opt-in staged workflow.",
+      "source": "docs/JQUERY_ECOSYSTEM.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/JQUERY_ECOSYSTEM.md",
+      "evidenceInputs": ["package-metadata"],
+      "correction": "Run the staged opt-in browser workflow, investigate warnings, then remove Migrate and retest.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_MIGRATE_SUMMARY",
+      "severity": "warning",
+      "summary": "A user-supplied Migrate warning category needs application review.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["user-summary"],
+      "correction": "Review the original application warnings in this category; counts do not authorize automatic rewrites.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_RUNTIME_UNKNOWN",
+      "severity": "unknown",
+      "summary": "Metadata cannot establish runtime CDN, import-map, bundle, or plugin behavior.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["unknown"],
+      "correction": "Exercise representative application pages to verify imports, runtime globals, and dynamically installed plugins.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_METADATA_UNKNOWN",
+      "severity": "unknown",
+      "summary": "Metadata format or resolution is unsupported or unavailable.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["unknown"],
+      "correction": "Select the workspace root and inspect unsupported or missing metadata manually.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_RESOLUTION_DRIFT",
+      "severity": "warning",
+      "summary": "Installed metadata differs from the selected lockfile resolution.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["installed-metadata"],
+      "correction": "Review whether installed packages or lockfile resolutions represent the intended application state.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_RULES_EXPIRED",
+      "severity": "warning",
+      "summary": "Compatibility rules have passed their review date.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["rules"],
+      "correction": "Review release notes and install a package with current compatibility rules; no rules are fetched by doctor.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_SCAN_TRUNCATED",
+      "severity": "warning",
+      "summary": "The scan stopped at a documented resource boundary; results are incomplete.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["limit"],
+      "correction": "Treat this report as incomplete; inspect omitted metadata or select an independently resolvable project root.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_INPUT_INVALID",
+      "severity": "error",
+      "summary": "Required input is malformed, unreadable, or outside the supported contract.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["input"],
+      "correction": "Check the indicated input against its schema, encoding, permissions, and documented supported format.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_PATH_UNSAFE",
+      "severity": "error",
+      "summary": "The selected path is outside the permitted filesystem boundary.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["input"],
+      "correction": "Select an existing project root and project-local regular files without traversal or escaping symlinks.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_MIGRATION_CONFLICT",
+      "severity": "error",
+      "summary": "Configuration or recovery metadata changed; no overwrite was authorized.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["config-metadata"],
+      "correction": "Retain recovery files, inspect current and backup hashes, and prepare a fresh plan only after resolving the conflict.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_MIGRATION_RECOVERY",
+      "severity": "error",
+      "summary": "A configuration operation failed; inspect the reported recovery paths.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["config-metadata"],
+      "correction": "Inspect current configuration and the reported backup/journal before retrying or rolling back.",
+      "reviewAfter": "2027-03-03"
+    },
+    {
+      "code": "JQS_INTERNAL_ERROR",
+      "severity": "error",
+      "summary": "The command could not complete its local operation.",
+      "source": "docs/UPGRADES.md",
+      "documentation": "https://github.com/Ignibyte/jqstar/blob/main/docs/UPGRADES.md",
+      "evidenceInputs": ["internal"],
+      "correction": "Retain the report, inspect local file permissions, and report the failure with a minimal non-sensitive reproduction.",
+      "reviewAfter": "2027-03-03"
+    }
+  ]
+}

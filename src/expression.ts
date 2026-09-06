@@ -1,4 +1,4 @@
-import type { ComputedRecord, StarContext, StateRecord } from "./types";
+import type { StarContext } from "./types";
 import type {
   StarExpressionEngine,
   StarExpressionError,
@@ -15,7 +15,7 @@ export type {
   StarValueEvaluator,
 } from "./expression-types";
 
-type ExpressionContext = StarContext<StateRecord, ComputedRecord>;
+type ExpressionContext = StarContext;
 
 const ACTION_EXPRESSION = /^@([A-Za-z_$][\w$.-]*)(?:\(([\s\S]*)\))?$/;
 

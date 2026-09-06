@@ -796,7 +796,7 @@ describe("CSP expression engine", () => {
       ) {
         return true;
       }
-      return Reflect.apply(originalHas, this, [value]) as boolean;
+      return Reflect.apply(originalHas, this, [value]);
     };
     const unlisted = ["'x'.unlisted()", "[].unlisted()", "evt.unlisted()"];
     try {

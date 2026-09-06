@@ -49,7 +49,7 @@ function install(registrar: StarPluginRegistrar): StarPersistFacade {
     string,
     { name: string; options: object; attachment: StarPersistAttachment }
   >();
-  const ownedAdapters = new WeakSet<object>();
+  const ownedAdapters = new WeakSet();
   let active = true;
   let attaching = false;
   let sequence = 0;

@@ -237,12 +237,20 @@ describe("stable release candidate contract", () => {
     }
   });
 
+  it("binds completed diagnostics and quality review to the release candidate", async () => {
+    const { contract } = await loadReleaseContract(root);
+    expect(contract.prerequisites.tickets).toEqual(
+      expect.arrayContaining(["0032", "0051", "0052"]),
+    );
+    expect(contract.policies).toContainEqual({ kind: "upgrades", path: "docs/UPGRADES.md" });
+  });
+
   it("audits every prerequisite ticket and criterion from current source", async () => {
     const { contract } = await loadReleaseContract(root);
     const audit = await auditPrerequisiteTickets(root, contract);
-    expect(audit.required).toBe(37);
-    expect(audit.audited).toBe(37);
-    expect(audit.criterionCount).toBeGreaterThan(37);
+    expect(audit.required).toBe(40);
+    expect(audit.audited).toBe(40);
+    expect(audit.criterionCount).toBeGreaterThan(40);
     expect(audit.tickets.map(({ id }) => id)).toEqual(contract.prerequisites.tickets);
     expect(audit.tickets.every(({ status }) => status === "done")).toBe(true);
     expect(

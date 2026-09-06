@@ -2,7 +2,17 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 import { existsSync } from "node:fs";
-import { access, mkdir, readFile, readdir, rename, stat, writeFile } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import { basename, dirname, join, resolve } from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import { chromium, firefox, webkit } from "@playwright/test";
@@ -837,6 +847,11 @@ try {
       "Packed package contains navigation research artifacts.",
     );
     assert(manifest.exports["./navigation"] === undefined, "Unapproved native navigation export.");
+    assert(manifest.exports["./devtools"] === undefined, "Unapproved DevTools export.");
+    assert(
+      pack.files.every(({ path }) => !/devtools|inspection-investigations/.test(path)),
+      "Packed package contains declined DevTools or inspection research artifacts.",
+    );
     assert(
       manifest.scripts?.prepack === "npm run build:self-hosted",
       "Packed prepack contract is missing.",
@@ -906,6 +921,12 @@ try {
       "dist/inspect.js.map",
       "schema/inspection.schema.json",
       "docs/INSPECTION.md",
+      "docs/UPGRADES.md",
+      "bin/doctor/index.mjs",
+      "bin/doctor/compatibility.json",
+      "bin/doctor/migrations.mjs",
+      "schema/doctor.schema.json",
+      "schema/doctor-rules.schema.json",
       "dist/index.d.cts",
       "dist/jquery-star.cjs",
       "dist/jquery-star.cjs.map",
@@ -2286,6 +2307,7 @@ QUnit.start();
       "better-sqlite",
       "jqstar source registry",
       "jqstar-csp-expression/1",
+      "jqstar-doctor-report/1",
       "jQuery UI",
       "Store transactions must be synchronous",
       "ui-widget",
@@ -2386,11 +2408,22 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       const asset = assets.find((file) => file.endsWith(".js"));
       assert(asset, `Vite produced no ${name} JavaScript asset.`);
       const bytes = await readFile(join(project, "dist/assets", asset));
+      const modules = JSON.parse(await readFile(join(project, "module-graph.json"), "utf8"));
+      for (const forbidden of [
+        "/bin/doctor/",
+        "/node_modules/semver/",
+        "/node_modules/yaml/",
+        "/node_modules/@yarnpkg/parsers/",
+      ])
+        assert(
+          !modules.some((id) => id.includes(forbidden)),
+          `${name} imports CLI-only module ${forbidden}.`,
+        );
       return {
         bytes: bytes.byteLength,
         brotliBytes: brotliCompressSync(bytes).byteLength,
         gzipBytes: gzipSync(bytes).byteLength,
-        modules: JSON.parse(await readFile(join(project, "module-graph.json"), "utf8")),
+        modules,
         source: bytes.toString("utf8"),
       };
     };
@@ -2739,6 +2772,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
         "jqstar-inspection-snapshot/1",
         "jqstar-inspection-trace/1",
         "jqstar.metadata/1",
+        "jqstar-doctor-report/1",
       ]) {
         assert(!source.includes(sentinel), `Unimported inspection retained ${sentinel}.`);
       }
@@ -2826,7 +2860,13 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
     const configuration = JSON.parse(await readFile(join(project, "jquery-star.json"), "utf8"));
     const copied = join(project, configuration.output, "button.html");
     await access(copied);
-    return copied.slice(project.length + 1);
+    for (const name of ["doctor-consumer.mjs", "doctor-effects-guard.mjs"])
+      await copyFile(join(root, "test/fixtures", name), join(consumer, name));
+    const { doctorConsumer } = await import(
+      pathToFileURL(join(consumer, "doctor-consumer.mjs")).href
+    );
+    const doctor = await doctorConsumer(cli, join(consumer, "doctor-project"));
+    return { copied: copied.slice(project.length + 1), doctor };
   });
 
   assertExactCheckSet(report.checks, packageCheckNames);

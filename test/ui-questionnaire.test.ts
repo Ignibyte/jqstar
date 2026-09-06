@@ -217,4 +217,27 @@ describe("jQuery Star Questionnaire", () => {
     $.star.ui.questionnaire.go(root(), "constraints");
     expect($.star.ui.questionnaire.value(root())).toBe("direction");
   });
+  it("applies named answers to native fields with explicit and implicit questionnaire roots", async () => {
+    const instance = $("#app").star("instance");
+    if (!instance) throw new Error("Application was not created.");
+    await instance.run("ui.questionnaire.answer", {
+      args: ["#build-brief", "direction", "component"],
+      element: root(),
+    });
+    expect(control("direction", "component").checked).toBe(true);
+    await instance.run("ui.questionnaire.answer", {
+      args: ["constraints", ["accessible", "server"]],
+      element: root(),
+    });
+    expect(new FormData(form()).getAll("constraints")).toEqual(["accessible", "server"]);
+    await instance.run("ui.questionnaire.answer", {
+      args: ["constraints", undefined],
+      element: root(),
+    });
+    expect(new FormData(form()).getAll("constraints")).toEqual([]);
+    await expect(
+      instance.run("ui.questionnaire.answer", { args: ["direction", 42], element: root() }),
+    ).rejects.toThrow("needs a string, string array, or undefined value");
+    expect(new FormData(form()).get("direction")).toBe("component");
+  });
 });
