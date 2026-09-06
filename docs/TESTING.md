@@ -516,3 +516,26 @@ identity change and terminal cleanup. Timing collection runs separately with fiv
 engine and strategy; it records origin reads and settled DOM latency, including browser HTTP cache
 differences. Measurement and scoring commands write the reviewed dataset only when passed
 `--record`.
+
+## Native navigation decision evidence
+
+Ticket 0023 compares ordinary documents with JavaScript disabled/enabled and the exact supported
+Turbo/htmx versions in Chromium, Firefox and WebKit. `quality/navigation-decision.json` freezes 28
+scenarios and indexes every failed, partial and passing raw archive. Canonical JSON validation
+checks compressed/decoded hashes, closed fields and exact summaries. The final comparison contains
+30 rows and 840 flows; configured candidates pass all applicable assertions and terminal ownership
+checks. Research code remains outside production imports and packed files.
+
+`npm run research:navigation:measure -- --record` uses one locally packed installed artifact and
+refuses changed fixture inputs without an explicit `--amend` reason. The measurement baselines run
+before enhanced candidates. `node scripts/score-navigation-decision.mjs` verifies the complete
+matrix and reproduces ratings, weight sensitivity and optional-scenario exclusions. Raw package
+costs and graphs live in `quality/evidence/navigation-costs.json`; unbuilt native estimates have
+null byte/execution measurements.
+
+The normal `e2e/navigation-decision.spec.ts` suite reuses the driver for nine regression scenarios
+across all six candidates, plus axe on ordinary/error documents for each JavaScript candidate. The
+complete matrix and supplemental launch-policy probe remain decision evidence rather than being
+silently replaced by this smaller regression set. The decision documents the rapid Turbo history,
+pre-header browser write retry, older htmx private-entry and handled Firefox pageerror boundaries.
+No manual assistive-technology, browser-chrome or cache-performance claim follows from these tests.

@@ -1,0 +1,2496 @@
+{
+  "schema": "jqstar-navigation-decision/1",
+  "status": "decided",
+  "contract": {
+    "revision": 1,
+    "frozenBeforeMeasurements": true,
+    "libraryVersion": "1.1.0",
+    "librarySourceCommit": "0450261",
+    "sourceUseCases": [
+      "public server-rendered documentation",
+      "ticket-0039 project editor",
+      "ticket-0040 list/detail/search/edit"
+    ],
+    "application": {
+      "origin": "one ephemeral same-origin HTTP fixture",
+      "basePath": "/navigation",
+      "candidateSelection": "fixture-only context cookie selects startup asset; application HTML and response bodies are identical",
+      "responses": "complete HTML documents, including all region routes; method/status/body and version semantics do not vary by candidate",
+      "state": "isolated fixture session, revision initially 1; exact successful-control checks become booleans, never retained form values",
+      "delaysMs": {
+        "slow": 900,
+        "fast": 30,
+        "writeLossObservation": 300
+      },
+      "markup": "native links, GET and multipart POST forms, required controls, alternate submitters, nested data-jqs roots, native collapsible details, unique permanent root, activity turbo-frame with htmx target/select attributes, long-page anchor and error summary",
+      "headPolicy": "ordinary routes share assets; changed-head/script and download/non-HTML links have explicit native opt-out markers for both hosts",
+      "privatePolicy": "private no-store responses, htmx history embargo and Turbo no-cache; no implicit prefetch in configured integrations"
+    },
+    "candidates": [
+      {
+        "id": "browser-nojs",
+        "host": "browser",
+        "version": null,
+        "javascript": false
+      },
+      {
+        "id": "browser",
+        "host": "browser",
+        "version": null,
+        "javascript": true
+      },
+      {
+        "id": "turbo-8.0.21",
+        "host": "turbo",
+        "version": "8.0.21",
+        "javascript": true
+      },
+      {
+        "id": "turbo-8.0.23",
+        "host": "turbo",
+        "version": "8.0.23",
+        "javascript": true
+      },
+      {
+        "id": "htmx-2.0.0",
+        "host": "htmx",
+        "version": "2.0.0",
+        "javascript": true
+      },
+      {
+        "id": "htmx-2.0.10",
+        "host": "htmx",
+        "version": "2.0.10",
+        "javascript": true
+      }
+    ],
+    "browsers": ["chromium", "firefox", "webkit"],
+    "scenarios": [
+      {
+        "id": "NAV-01",
+        "key": "direct",
+        "description": "Direct document, landmarks, title, nested roots and native disclosure",
+        "applicability": "all",
+        "assertions": ["canonicalDocument", "accessibleLandmarks", "nativeDisclosure", "ownedRoots"]
+      },
+      {
+        "id": "NAV-02",
+        "key": "visit",
+        "description": "Ordinary link and query visit",
+        "applicability": "all",
+        "assertions": [
+          "canonicalURL",
+          "canonicalTitle",
+          "oneRead",
+          "zeroWrites",
+          "canonicalDocument"
+        ]
+      },
+      {
+        "id": "NAV-03",
+        "key": "local-anchor",
+        "description": "Local anchor",
+        "applicability": "all",
+        "assertions": ["zeroReads", "zeroWrites", "anchorVisible"]
+      },
+      {
+        "id": "NAV-04",
+        "key": "remote-anchor",
+        "description": "Cross-document anchor on a long page",
+        "applicability": "all",
+        "assertions": ["oneRead", "anchorVisible", "canonicalURL"]
+      },
+      {
+        "id": "NAV-05",
+        "key": "history",
+        "description": "Back, forward and reload",
+        "applicability": "all",
+        "assertions": ["canonicalHistory", "restoredScroll", "reloadIsGET", "cacheFacts"]
+      },
+      {
+        "id": "NAV-06",
+        "key": "eligibility",
+        "description": "Target-blank and modified clicks",
+        "applicability": "all",
+        "assertions": ["browserOwnedTarget", "unchangedOriginalDocument", "zeroWrites"]
+      },
+      {
+        "id": "NAV-07",
+        "key": "redirect",
+        "description": "Redirected read",
+        "applicability": "all",
+        "assertions": ["twoReads", "canonicalURL", "canonicalTitle", "canonicalDocument"]
+      },
+      {
+        "id": "NAV-08",
+        "key": "http-errors",
+        "description": "404 and 500 error documents",
+        "applicability": "all",
+        "assertions": ["authoritativeStatus", "visibleError", "accessibleError", "zeroWrites"]
+      },
+      {
+        "id": "NAV-09",
+        "key": "content-types",
+        "description": "Download and non-HTML native boundaries",
+        "applicability": "all",
+        "assertions": ["downloadReceived", "nonHTMLReceived", "zeroWrites"]
+      },
+      {
+        "id": "NAV-10",
+        "key": "head",
+        "description": "Changed head, stylesheet and script through explicit document boundary",
+        "applicability": "all",
+        "assertions": ["canonicalHead", "canonicalStyle", "canonicalScript", "fullDocumentBoundary"]
+      },
+      {
+        "id": "NAV-11",
+        "key": "get-form",
+        "description": "GET search and successful-control/submitter semantics",
+        "applicability": "all",
+        "assertions": ["canonicalQuery", "submitterIncluded", "disabledExcluded", "zeroWrites"]
+      },
+      {
+        "id": "NAV-12",
+        "key": "validation",
+        "description": "Native required-field validation",
+        "applicability": "all",
+        "assertions": ["zeroDispatch", "invalidFocus"]
+      },
+      {
+        "id": "NAV-13",
+        "key": "write",
+        "description": "Versioned multipart write followed by 303 and reload",
+        "applicability": "all",
+        "assertions": [
+          "oneWrite",
+          "multipartFile",
+          "submitterIncluded",
+          "disabledExcluded",
+          "revisionAdvanced",
+          "redirectIsGET",
+          "reloadIsGET"
+        ]
+      },
+      {
+        "id": "NAV-14",
+        "key": "preview",
+        "description": "Alternative submitter preview",
+        "applicability": "all",
+        "assertions": ["previewSubmitter", "zeroCommittedWrites", "authoritativePreview"]
+      },
+      {
+        "id": "NAV-15",
+        "key": "server-validation",
+        "description": "422 validation and 409 conflict",
+        "applicability": "all",
+        "assertions": [
+          "authoritativeStatus",
+          "revisionUnchanged",
+          "visibleError",
+          "accessibleError"
+        ]
+      },
+      {
+        "id": "NAV-16",
+        "key": "write-loss",
+        "description": "Lost response after dispatched write",
+        "applicability": "all",
+        "assertions": ["oneWrite", "noAutomaticReplay", "visibleRecovery"]
+      },
+      {
+        "id": "NAV-17",
+        "key": "region",
+        "description": "Addressable activity region with full-document fallback",
+        "applicability": "all",
+        "assertions": [
+          "canonicalRegion",
+          "unrelatedContentRetainedWhenEnhanced",
+          "regionAsDocumentWithoutEnhancement"
+        ]
+      },
+      {
+        "id": "NAV-18",
+        "key": "region-mismatch",
+        "description": "Missing matching region and explicit recovery",
+        "applicability": "all",
+        "assertions": ["noWrongTargetCommit", "visibleRecovery", "canonicalFallback"]
+      },
+      {
+        "id": "NAV-19",
+        "key": "supersession",
+        "description": "Slow read superseded by fast read",
+        "applicability": "all",
+        "assertions": ["lastIntentWins", "noStaleCommit", "requestCancellationFacts", "zeroWrites"]
+      },
+      {
+        "id": "NAV-20",
+        "key": "cancel-intent",
+        "description": "Prevented navigation intent",
+        "applicability": "javascript",
+        "assertions": ["zeroDispatch", "outgoingRootsRemainLive"]
+      },
+      {
+        "id": "NAV-21",
+        "key": "network-error",
+        "description": "Read network failure",
+        "applicability": "all",
+        "assertions": ["visibleRecovery", "zeroWrites", "outgoingRootsRemainLiveWithoutMutation"]
+      },
+      {
+        "id": "NAV-22",
+        "key": "no-content",
+        "description": "204 response",
+        "applicability": "all",
+        "assertions": ["zeroMutation", "zeroWrites", "unchangedDocument"]
+      },
+      {
+        "id": "NAV-23",
+        "key": "preservation",
+        "description": "Explicit permanent root identity and state",
+        "applicability": "all",
+        "assertions": ["preservedIdentityWhenEnhanced", "canonicalServerStateForFullDocument"]
+      },
+      {
+        "id": "NAV-24",
+        "key": "lifecycle",
+        "description": "Repeated visits, enhancement barriers and terminal disposal",
+        "applicability": "javascript",
+        "assertions": [
+          "noDuplicateApplications",
+          "orderedBridgePhases",
+          "createdReleasedLiveReconcile",
+          "zeroFailedDisposal",
+          "zeroRemainingDisposal"
+        ]
+      },
+      {
+        "id": "NAV-25",
+        "key": "progress",
+        "description": "Delayed visit progress, keyboard continuity and settled state",
+        "applicability": "all",
+        "assertions": ["visibleProgress", "keyboardContinuity", "settledBusyState"]
+      },
+      {
+        "id": "NAV-26",
+        "key": "private-cache",
+        "description": "Private/history cache embargo",
+        "applicability": "all",
+        "assertions": ["privateResponsePolicy", "restorationRequestFacts", "noPrivateWebStorage"]
+      },
+      {
+        "id": "NAV-27",
+        "key": "prefetch",
+        "description": "Incidental hover without explicit prefetch intent",
+        "applicability": "all",
+        "assertions": ["zeroIncidentalRequests", "zeroWrites"]
+      },
+      {
+        "id": "NAV-28",
+        "key": "accessibility",
+        "description": "Keyboard, reduced motion, forced colors and zoom/reflow",
+        "applicability": "all",
+        "assertions": [
+          "keyboardDisclosure",
+          "visibleFocus",
+          "noHorizontalOverflow",
+          "accessibleError"
+        ]
+      }
+    ],
+    "semanticEvents": [
+      "request-started",
+      "request-completed",
+      "request-aborted",
+      "write-accepted",
+      "application-created",
+      "application-released",
+      "document-ready",
+      "document-disposed",
+      "render-prepared",
+      "render-removing",
+      "render-externally-mutated",
+      "render-enhancing",
+      "render-committed",
+      "render-canceled",
+      "render-failed",
+      "barrier-settled",
+      "focus-observed",
+      "scroll-observed",
+      "progress-observed",
+      "history-observed"
+    ],
+    "partialOrders": [
+      ["request-started", "request-completed"],
+      [
+        "render-prepared",
+        "render-removing",
+        "render-externally-mutated",
+        "render-enhancing",
+        "render-committed",
+        "barrier-settled"
+      ]
+    ],
+    "weights": {
+      "browserSemantics": 25,
+      "demonstratedBenefit": 20,
+      "serverAuthority": 15,
+      "lifecycleSafety": 10,
+      "accessibility": 10,
+      "integrationCost": 10,
+      "maintenanceRisk": 10
+    },
+    "hardGates": [
+      "correctness",
+      "no-write-replay",
+      "no-javascript",
+      "ownership-cleanup",
+      "server-authority",
+      "accessible-focus-and-errors"
+    ],
+    "decisionRules": {
+      "nativeApproval": "Concrete unresolved gaps in both supported bridges or a documented segment unable to use either; measurable benefit; preserved hard gates; lower long-term cost than existing hosts or a bounded utility. Hypothetical parity earns no benefit.",
+      "gapLadder": [
+        "documented-host-configuration",
+        "current-jqstar-bridge",
+        "host-specific-correction",
+        "bounded-host-neutral-utility",
+        "native-concept"
+      ],
+      "scoring": "0–5 anchored ratings per category; weighted total out of 100 only for candidates eligible under hard gates. Unsupported or unbuilt behavior gets no credit. Preserve raw default and configured results separately.",
+      "sensitivity": [
+        "vary each weight by plus/minus 25 percent then renormalize",
+        "zero unconfirmed demand benefit",
+        "oldest/newest supported versions separately",
+        "exclude optional forms",
+        "exclude optional regions",
+        "exclude optional prefetch"
+      ],
+      "review": "Separate same-session evidence audit and automated independent calculation; do not claim another human or agent reviewed."
+    },
+    "measurementRules": {
+      "package": "one exact locally packed jQStar tarball installed in an isolated consumer for every candidate; original exact published hosts and lock integrity; no source aliases or direct repository dist serving",
+      "fixtureFreeze": "hash shared server, HTML, driver, instrumentation and startup/config files before first browser baseline; amendments retain rationale and rerun affected candidates",
+      "runs": "one complete three-browser matrix per declared default/configured integration revision; deterministic repeated-visit/cancellation flows are in the driver; runtime timing is descriptive and never a lone correctness assertion",
+      "raw": "preserve actual requests, semantic event extras, failed/default runs, applicability, browser/package identities, source digests, disposal facts and raw/gzip/install graph costs",
+      "costs": "separate host distributions, installed consumer, common jQStar/UI cost and research instrumentation; record markup/config/server/API/source/test/docs support and annual maintenance ranges; unbuilt native byte cost stays unmeasured",
+      "baseline": "any applicable no-JavaScript baseline failure blocks decision completion; enhanced assertions cannot weaken the baseline",
+      "normalGate": "same driver supplies a bounded browser regression subset; schema/contract tests bind complete recorded comparison to exact research/runtime identities; changed frozen inputs require a full new measurement",
+      "redaction": "only fixed route/role/event/category identifiers, booleans and counts; no arbitrary URL/query/headers/cookies/form/file/body/HTML/state/error/DOM values"
+    },
+    "sliceTickets": {
+      "documents": ["0024", "0025", "0026"],
+      "forms": ["0027"],
+      "regions": ["0028"],
+      "prefetch": ["0029"]
+    }
+  },
+  "demand": {
+    "observedAt": "2026-09-05",
+    "repository": "Ignibyte/jqstar",
+    "issues": {
+      "command": "gh issue list --repo Ignibyte/jqstar --state all --limit 100 --json number,title,state,createdAt,updatedAt,url",
+      "count": 0
+    },
+    "discussions": {
+      "enabled": false,
+      "count": 0
+    },
+    "interpretation": "No public repository issue/discussion demand was available. Existing site and migration flows are documented use cases; this is not evidence about all possible users."
+  },
+  "fixtureIdentity": {
+    "sha256": "5dec4403d832234c2888317b13e311770ead2f4e3c40a6c8e06fcfbab4ea37cc",
+    "files": [
+      {
+        "path": "package-lock.json",
+        "sha256": "ecf2d0bd4d12bc66227997ea2a669912f30e6d42a8ca4ceeb3a54ada5ba2f21a"
+      },
+      {
+        "path": "package.json",
+        "sha256": "8efce747c61d24bfb501ab16765cf6c5db5e3545f9ae3d067d235d3ce79324db"
+      },
+      {
+        "path": "scripts/build-types.mjs",
+        "sha256": "f8e0dee59dbf52c29686c6de9706136530ac3153431a74c2cfd9f89cbb71734d"
+      },
+      {
+        "path": "scripts/measure-navigation-decision.mjs",
+        "sha256": "a88857c9db18d5d293d4a9799115ad8b89179970c33de619d440135ae8b650ce"
+      },
+      {
+        "path": "scripts/prepare-navigation-decision.mjs",
+        "sha256": "05d22e13a6a93a0bc482f2c5f8f60c4826ea33d254ce6b74daeb6ce64b2c5e4d"
+      },
+      {
+        "path": "scripts/quality/navigation-evidence.mjs",
+        "sha256": "3e943f1e43b22bcdf922c88a5ec0f57db3559ad8b3234c897d24fff331fd2284"
+      },
+      {
+        "path": "src/compatibility.ts",
+        "sha256": "3b19fed680293fcce3ba9674b1b57737a667d5bb5393caed6e98aa56f048b27b"
+      },
+      {
+        "path": "src/core.ts",
+        "sha256": "102eb8bb1aa9e4e8a99ac5d3a3660d0a5a992bffec0b9578f0c95928cac8da47"
+      },
+      {
+        "path": "src/csp.ts",
+        "sha256": "7874346899493db62d8d49d51d3c959df4389259ff9f1d0c038f96421dbd4193"
+      },
+      {
+        "path": "src/csp/ast.ts",
+        "sha256": "febe8aba4639663123493505b699059a6264b114d0835b4f0f655ccd87b24480"
+      },
+      {
+        "path": "src/csp/contract.ts",
+        "sha256": "52b8cb4d3ebee18fe277a5a95c9d04b557ce614549e4fe68267c3697df25bd06"
+      },
+      {
+        "path": "src/csp/diagnostics.ts",
+        "sha256": "c16e8c261610e7ab54d4f3233cdf76dbd996ef1a28ffa7a9fbd500915f40bfc0"
+      },
+      {
+        "path": "src/csp/engine.ts",
+        "sha256": "c6c7f4f7d8ba8207fd206be95e6ec5b9870d17c62a512819ce283c86ac366046"
+      },
+      {
+        "path": "src/csp/evaluator.ts",
+        "sha256": "2e43b18b20ed18042aea22d01a539fc4cf340ae3d82bd79d4455391cc59710b2"
+      },
+      {
+        "path": "src/csp/parser.ts",
+        "sha256": "4eab17119f44abc5f7c39ef567e5b5a536bd6b730df64d65b1311b711c23904c"
+      },
+      {
+        "path": "src/csp/tokenizer.ts",
+        "sha256": "0f4c18f28f165079de68b27ff0f8fa560d49c9793fc54b132ea177b0b61e1e6d"
+      },
+      {
+        "path": "src/datastar.ts",
+        "sha256": "68c9515089ceec4e96b046c7e2f7402529f71305d91787232867102ea31d9fcc"
+      },
+      {
+        "path": "src/datastar/testing.ts",
+        "sha256": "d12ca34a61bd713de810547d2b1cbff22c237d680f6d764bcabcc20b4df7266b"
+      },
+      {
+        "path": "src/declarative.ts",
+        "sha256": "ed5f593e40e55c3f8a4e2ed20b8ca7a6d26305fda600dbdd083eef40772d8282"
+      },
+      {
+        "path": "src/directive.ts",
+        "sha256": "c424219fd03505ff22f01463db4cdbf47942f0370735edee98adec34bab84234"
+      },
+      {
+        "path": "src/disposal.ts",
+        "sha256": "38944005ff0890aab84776443bc9125090995633f692615c70a4e1684fb46267"
+      },
+      {
+        "path": "src/dom.ts",
+        "sha256": "bfef6b61960f8695e5ea13a71fd7cde11240df180758a60c9cc5a0979e248385"
+      },
+      {
+        "path": "src/errors.ts",
+        "sha256": "96f0dab2e816c2d617f1065e98e5198900da4922c982539d9f4e23c5bb7b7e12"
+      },
+      {
+        "path": "src/expression-runtime.ts",
+        "sha256": "8f030391c8174db17df908fddf93df4796ac562f9f1a15b2d5a956ebbab2bb0e"
+      },
+      {
+        "path": "src/expression-types.ts",
+        "sha256": "487820a8d3f52d86d685c15c8004fdfaa46ad15dbf87bb1c854eefa8f29308b7"
+      },
+      {
+        "path": "src/expression.ts",
+        "sha256": "d47cb81c03e04df1f5955f9c095f142c8f15abca75c1bccdfad853bdc72ae9af"
+      },
+      {
+        "path": "src/fetch.ts",
+        "sha256": "b7cd32804a28e92d9a8a83792c57a423b94bfea1f5b085b05daa231e7b71d2b3"
+      },
+      {
+        "path": "src/htmx.ts",
+        "sha256": "37bd0384c0cb4ebbaac447bef04b8fe6f8e1b434de4dc29600bc12638ef63aa5"
+      },
+      {
+        "path": "src/idiomorph.d.ts",
+        "sha256": "9d270532f2618eabad64d82afb60c444de919c63c80be5a6faefbfeafa5f7bd2"
+      },
+      {
+        "path": "src/index.ts",
+        "sha256": "e0627804503858419c8a2d725a6cb128fa097e278c58c42eb8a98a51690a7682"
+      },
+      {
+        "path": "src/kernel.ts",
+        "sha256": "d83c2bf2673cb8e55668170333aa7551d47b446afccf906df3baf4d461c9b351"
+      },
+      {
+        "path": "src/observation.ts",
+        "sha256": "de54889b70af5a8ba9c42b1efca64c348f8169ac0ae63851e1313c28cd8a0466"
+      },
+      {
+        "path": "src/patch.ts",
+        "sha256": "c6f793c89e2857bf215bde4e9b9ff740260c5a77fe2a339edc2cf302d16a4bfe"
+      },
+      {
+        "path": "src/persist.ts",
+        "sha256": "f26c52ab3f041e2e843394c658b700332939b51f1cd16068ce7419f2ea2a7c58"
+      },
+      {
+        "path": "src/persist/adapters.ts",
+        "sha256": "6cb5ec7671bac65334556c2326963d230f8bdce93d40d6c2530252454aa41f87"
+      },
+      {
+        "path": "src/persist/attachment.ts",
+        "sha256": "12560e089d43fe08146ca0fe180379cf521d1c00af21926a7a1f81b4a7362bf1"
+      },
+      {
+        "path": "src/persist/codec.ts",
+        "sha256": "07315ec85ae5b1856a79158ea215a9b4ef4a31f7800c4a8925adfc8519054f1b"
+      },
+      {
+        "path": "src/persist/data.ts",
+        "sha256": "ae2b3fadc86aa73b53c2961e1f7f1c2215321d379e7b7051d53757738ba75d6b"
+      },
+      {
+        "path": "src/persist/envelope.ts",
+        "sha256": "1eefd6aaf9ea8ca01a16f690760c1bf338f2ab7c3dc1badfd2fcea395df2197f"
+      },
+      {
+        "path": "src/persist/types.ts",
+        "sha256": "ad5212e9439336848dbe110aa74f9f3f935b6e78d8388d4955fa490f6ee70bc3"
+      },
+      {
+        "path": "src/plugin.ts",
+        "sha256": "b619de20ea5a92b6a797c0c18a72d04c1bca5c2aa21aaa4fcfbdc7447a111831"
+      },
+      {
+        "path": "src/protocol-datastar.ts",
+        "sha256": "1c6559e882ed7f066cbacc59f75a0a07d2936d7ce42ecf331ffe78996d754a37"
+      },
+      {
+        "path": "src/protocol-generic.ts",
+        "sha256": "2660250790c91193c9b359bdf1abd0c4ce71fbc1a946df18a34589a2fda0f844"
+      },
+      {
+        "path": "src/protocol.ts",
+        "sha256": "deedc0a03998233a2721958ca647f6d06c35b49d7eef714b0372bdfde8f424ef"
+      },
+      {
+        "path": "src/reactivity.ts",
+        "sha256": "63ccbc63f9604012b41b1d488c697ff8b71c4a96716488c4bac8c7ce19a76be4"
+      },
+      {
+        "path": "src/realm-state.ts",
+        "sha256": "7dedec166955bbb93278e05612d9856ac22d2dc31e4a0c70e41cc45307f06cfa"
+      },
+      {
+        "path": "src/registry.ts",
+        "sha256": "1ec045fd2684bfa11f392793027e89a72d94b05f58e6be7c6aa373a16cbd9cf3"
+      },
+      {
+        "path": "src/render-adapter.ts",
+        "sha256": "780f853e2728ec9a2e08a9aa0e08be44396f6fceb919c3639784498b916e0b53"
+      },
+      {
+        "path": "src/request-middleware.ts",
+        "sha256": "c6ece03b1528e87246bc586f512ca64774945040d19cd163b3eb1538da71abfd"
+      },
+      {
+        "path": "src/runtime.ts",
+        "sha256": "5d59a455d6a424999a85470fc0771cbf5bbd759fbf7147c0548b3b663137f876"
+      },
+      {
+        "path": "src/sse.ts",
+        "sha256": "9a0459ba1553e58e85d3451ecb7be73e318a09b0a723ab16d382568b4a097986"
+      },
+      {
+        "path": "src/stores.ts",
+        "sha256": "5e4cc455422e747dd043d9887b74d189f36d7e73349ae82f1f2aff0d4528648a"
+      },
+      {
+        "path": "src/stores/types.ts",
+        "sha256": "5ee9b1ba1075a940cfe6d24cf44d05997bbde89a8fc100c55e4c8dc8676172ef"
+      },
+      {
+        "path": "src/testing/conformance.ts",
+        "sha256": "94b20bb8dc69bc40f7e5a9251f6179341f4af10fefff71d5748049afb9b68e29"
+      },
+      {
+        "path": "src/testing/errors.ts",
+        "sha256": "868bc9e155d9f0c56aacb6f8a3d0bd914a171b6685b3e2f5bed844d95f8b68b7"
+      },
+      {
+        "path": "src/testing/harness.ts",
+        "sha256": "77804df9498c9dbf4b5c2e71505535c8eb9a5389424748d1859440a43ca55ed6"
+      },
+      {
+        "path": "src/testing/index.ts",
+        "sha256": "25993ac4b2c6f9c5ecd3adcee158e887d9237b3baf9e6a772e5d3e0d10620592"
+      },
+      {
+        "path": "src/testing/realm.ts",
+        "sha256": "e9a03085035aeab68743341be25dd7f125639636fd7b4a15e30905aec21d7288"
+      },
+      {
+        "path": "src/testing/responses.ts",
+        "sha256": "b923838ac709bbc05b0e7f04821cc4893c3c2506668dca0b0a3b5a70992bd6c8"
+      },
+      {
+        "path": "src/testing/types.ts",
+        "sha256": "8134a232bca3df11e6dd1bfb0aa27b838b262d0b553aa081993a178bf41e18ca"
+      },
+      {
+        "path": "src/trusted-runtime.ts",
+        "sha256": "0c77847275c9f6efebf1848751f16e15ae30b319f0816ce56911588c4f7872ed"
+      },
+      {
+        "path": "src/turbo.ts",
+        "sha256": "dcb8c4feace6129d45aa566c87f50e31201a7d9d6ab500432f23219bfc10e5d6"
+      },
+      {
+        "path": "src/types.ts",
+        "sha256": "3a0dd4de8eec038f084c42a53faaf1714e25e9405491acda8f466173e4496450"
+      },
+      {
+        "path": "src/ui.ts",
+        "sha256": "ffd04001a39c0f3580aeef13bffb6d9542d06bd66dcc418faa6dc3a2d7f25314"
+      },
+      {
+        "path": "src/ui/calendar.ts",
+        "sha256": "38db1c83fb2bbb0dea8d3edf34da20dd2ea0fcca68c2ca5524de00003c3f7a39"
+      },
+      {
+        "path": "src/ui/carousel.ts",
+        "sha256": "9bda0cb6e128d73e6da34fadeb1f62c649e2a4e7ca612a22b0e19803a733138c"
+      },
+      {
+        "path": "src/ui/chart.ts",
+        "sha256": "fa9d4c2f5f555a590fec9b234b6a3524e31e39c60dd0aa6e46512badbfc8e5cc"
+      },
+      {
+        "path": "src/ui/clipboard-write.ts",
+        "sha256": "fa8ae7f7081c9eda89299d291f62888c894ce7632d05af2dbc29be448ef1e5eb"
+      },
+      {
+        "path": "src/ui/clipboard.ts",
+        "sha256": "0515e40abdc37d55193fb9edbd4d61fad1f846d5d9d10d3ac087d334cf662518"
+      },
+      {
+        "path": "src/ui/code-block.ts",
+        "sha256": "a397421d06f3d303a7af9c6b7983a3090f88c963d7be24e183f83a2aa703fdaf"
+      },
+      {
+        "path": "src/ui/color-picker.ts",
+        "sha256": "00c9f6ac3709e6b7ca5a09a9918906d2757576b7f87731c07a2cf32456a40100"
+      },
+      {
+        "path": "src/ui/combobox.ts",
+        "sha256": "4e0f2e47f746f585e4af498e3dd13e5047349da578d030d4df8e14738035bbd7"
+      },
+      {
+        "path": "src/ui/countdown.ts",
+        "sha256": "8ba1c0399ae769e9c80cd2fd786ff1144769f730ce4d7d63041f301459c2e2c9"
+      },
+      {
+        "path": "src/ui/data-table.ts",
+        "sha256": "65b45885a412de43f739b9eb4253283bbeb2edaf5fdc627e9e3329f1177bca66"
+      },
+      {
+        "path": "src/ui/disclosure.ts",
+        "sha256": "441e32abe2ccc29a0d4f8e3e6a7018e53fded6f5d17d9878a4b1935b58bc228f"
+      },
+      {
+        "path": "src/ui/editable.ts",
+        "sha256": "ff7b45299aef6cd299f15c92a25f84fb85dc8c37845721a9bbdea40c439d4e8c"
+      },
+      {
+        "path": "src/ui/feed.ts",
+        "sha256": "4412b05a85bbf4232891f89045594cead500d7bc369dbef1a45c7746264af7fa"
+      },
+      {
+        "path": "src/ui/file-upload.ts",
+        "sha256": "2f6d42dc8f040c69a3118e64ee70af25ff8629c2dc6a1eefef3269ca4175698c"
+      },
+      {
+        "path": "src/ui/floating.ts",
+        "sha256": "e365163ffdbaf454506e5cae12ea877d4519dd498e5ef005f497e6f9b805148e"
+      },
+      {
+        "path": "src/ui/form.ts",
+        "sha256": "a4f0bbb59a3ffdf3d21f3a64862fe854777b214e17133df9060e1d302571ce0f"
+      },
+      {
+        "path": "src/ui/hover-card.ts",
+        "sha256": "c5683f7a2161973c41a23d7777fb54d59d3c67fabbb34aaf9009ef8ce4599ac2"
+      },
+      {
+        "path": "src/ui/index.ts",
+        "sha256": "3693483ba353db4ffbf27eec435cd17fc2f389517f158f7f1db43ccb4235d5ed"
+      },
+      {
+        "path": "src/ui/input-otp.ts",
+        "sha256": "2a3aa91db1ab6d4aa8c67b95388197a6bdff8e00fe01a465eabfb047ff642a06"
+      },
+      {
+        "path": "src/ui/json-viewer.ts",
+        "sha256": "82235725dd0e5e89a75b83050f42e0c00da4e8398a70f1fb68683ed0854d92e4"
+      },
+      {
+        "path": "src/ui/log-viewer.ts",
+        "sha256": "485be4a53c33491cd343fd8bc68a458df9390809ce75ddd69cdb528beec8fa62"
+      },
+      {
+        "path": "src/ui/menu.ts",
+        "sha256": "284b620dd2d1450f97abc1919d364bf59490b98edcd2e79122c0bdcbc7f08ba0"
+      },
+      {
+        "path": "src/ui/menubar.ts",
+        "sha256": "ee034287539fb0e5f84c02916fe6eb1e6abb02aa1e99deee543b1bff5fc68bdb"
+      },
+      {
+        "path": "src/ui/message-scroller.ts",
+        "sha256": "877b6437951accc610cccea5b2f310cf818b1150e8d9de7b295ac0af227c36eb"
+      },
+      {
+        "path": "src/ui/multi-select.ts",
+        "sha256": "7467a25e6bc090626200e4b1250ed9e3b98533e1a0b4e1af060aaff4e710a110"
+      },
+      {
+        "path": "src/ui/number-field.ts",
+        "sha256": "1a7e4e6c81ccbe265d995c73c5cb8cea43f8787724c6bc33bccfcc497ec7f176"
+      },
+      {
+        "path": "src/ui/pagination.ts",
+        "sha256": "a30e417f3fe4fc06679dd5bcde9a5597266fbf5ffc413bd44ed34764dfa1e25b"
+      },
+      {
+        "path": "src/ui/password-field.ts",
+        "sha256": "257f361b6ff11c38a96e55e271a9ecd618b2873f41e075cb16d25773c31abc7e"
+      },
+      {
+        "path": "src/ui/popover.ts",
+        "sha256": "a02d470ec2d9d5d976e344c8d83018a1df2e9c5b08ab26cde2f3ac65bd4c06c5"
+      },
+      {
+        "path": "src/ui/questionnaire.ts",
+        "sha256": "9e2c18460ad8d9170d275813c4423381ce55ba985fd28c9d111257aceccc5ea7"
+      },
+      {
+        "path": "src/ui/rating.ts",
+        "sha256": "afb43a83e2d3f1bdbfd1aa7eb4604f9279d5a6284288f570501fb94fa4569ead"
+      },
+      {
+        "path": "src/ui/resizable.ts",
+        "sha256": "881b085f16cbde4a554ff4c180993012d2e990fd5f3df204ba5f20663967792c"
+      },
+      {
+        "path": "src/ui/search-field.ts",
+        "sha256": "6044110989f9e07f95a412740085616c45dee8e2d6922ebed689c2dbb3f5d53a"
+      },
+      {
+        "path": "src/ui/select.ts",
+        "sha256": "5795afe3ecdf2a0b06fcced8c208d1688b862d96b70df4bb23a2a88f3847442d"
+      },
+      {
+        "path": "src/ui/sidebar.ts",
+        "sha256": "3f6f3081f2365cd0a50f231cc659e879ab0872775c14fa4e1f69df3152aa74e4"
+      },
+      {
+        "path": "src/ui/sortable.ts",
+        "sha256": "e6f39b30abfc09dc648b368a3809283a421b37404a85d75268b1c75af756cabf"
+      },
+      {
+        "path": "src/ui/stepper.ts",
+        "sha256": "4ebb9a2d89d3fdeb94c9710fac87188acc767036140a9952a288a539b86ab32d"
+      },
+      {
+        "path": "src/ui/tabs.ts",
+        "sha256": "97123605b0ec03eed8d3bb83bc481525338a3702f19c197a6d3bce9b7418cc73"
+      },
+      {
+        "path": "src/ui/tags-input.ts",
+        "sha256": "7a6f2015326985c48dc6be2a8487b61eb5c54935487360a634237b21f1c0ef42"
+      },
+      {
+        "path": "src/ui/theme.css",
+        "sha256": "9149c89c5e637d4a52d5400be5737e930d7b3b5511c9503ce4753245cb27fc7f"
+      },
+      {
+        "path": "src/ui/time-picker.ts",
+        "sha256": "eb0a3c374d299aaf880d70d31a6dd2b457649266c2af9e468c6ff05be9de4b44"
+      },
+      {
+        "path": "src/ui/toast.ts",
+        "sha256": "e3a19b8810b831ef83bb03b2cbf141af7b74df0c63291dad7bf3d6c78389fec9"
+      },
+      {
+        "path": "src/ui/toggle.ts",
+        "sha256": "82d7bfb843dfda567ddc14c171f367e09b27e52093a27f64e7cbcc13b676573f"
+      },
+      {
+        "path": "src/ui/toolbar.ts",
+        "sha256": "09c532cdcd1318ee5e38b7be71fd7659bd6c8148099be76e5c25009b60f89b00"
+      },
+      {
+        "path": "src/ui/tooltip.ts",
+        "sha256": "3803a297e97cf957500edb871533a3a5569641ffef5441d0f739402893016a79"
+      },
+      {
+        "path": "src/ui/transfer-list.ts",
+        "sha256": "86a6cbee253c0a305d5d0917db3df2c6c3cf65843f4cb8ff836fa9d2a990c064"
+      },
+      {
+        "path": "src/ui/tree.ts",
+        "sha256": "994b554d5144d2d76bb393e0ef497835aeaeb574646ec609049f2a2adf442d82"
+      },
+      {
+        "path": "src/version.ts",
+        "sha256": "b2726ca4bc77c60bd4a7cb8b7f56568dd8715252499fa80085d9091f79eeb246"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/bootstrap.js",
+        "sha256": "505a4e37c60e46ed31ace6cd396bd679d8363f354d2d404b87467aa996a1296e"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/driver.d.mts",
+        "sha256": "75dac32ad78dfc045e352a61bf440b7c461a3a6e5f4f7d56f7c09b3083b91fc4"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/driver.mjs",
+        "sha256": "b6173d72015e5e525d5a08312fbf902724d18d41ff54fa205f05b33df4e2a93c"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/host-corrections.js",
+        "sha256": "05488160bfeb808971f311809ebb20e6b0db4506cb4c3cd93b267d1193a3e226"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/html.mjs",
+        "sha256": "169a9725d6467301c0d73e302c31ec691d232ac140a6f482f0dde7abe2e3e040"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/server.d.mts",
+        "sha256": "57cb56a5ed79f268fa8344ff32dd6cb2570d1213c0f6d2d085e484b20aa01622"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/server.mjs",
+        "sha256": "ff2bf0e4143a4decc0f874f79d46206c0b87bce366eee386103edcc5889ebf27"
+      },
+      {
+        "path": "test/fixtures/navigation-decision/style.css",
+        "sha256": "b098fffb6b040d0bf0a45a64029c93c1af06ed922ee06d4a8114c6e267d2b87c"
+      },
+      {
+        "path": "vite.config.ts",
+        "sha256": "dfb69c69e299882685218bc0c8bd457ee076083c9bc6603303a4ac49a4b38a06"
+      }
+    ]
+  },
+  "measurements": [
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T22-39-13.801Z-8819",
+      "createdAt": "2026-09-05T22:39:13.801Z",
+      "status": "fail",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "0c7ac9bcfdb764a8f6b7b47bf9e4095406a6364851d1fc3f8e9246f90e9c04f3",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 1,
+      "flowCount": 25,
+      "failedFlowCount": 3,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T22-39-13.801Z-8819.json.gz",
+        "sha256": "e159854dd889af0e09a5683147fa09c6f85e4183c4173e2e5e14f2a4220ffdf6",
+        "decodedSha256": "2844fde3a18ae3c7a88fc3c9fab816814caed14961b8f871d36c456926e035f6",
+        "bytes": 3821,
+        "decodedBytes": 44003
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T22-42-19.830Z-10711",
+      "createdAt": "2026-09-05T22:42:19.830Z",
+      "status": "fail",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "668f65f7f2bb30e1e2619696019647e7e24e9906941ed513210ad2346831ff73",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 3,
+      "flowCount": 84,
+      "failedFlowCount": 5,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T22-42-19.830Z-10711.json.gz",
+        "sha256": "cd8a17a66e714760415590e8786a851233234804c71577eb732c178be65846ec",
+        "decodedSha256": "0a52421f750babbe3b9d26ba7d03e0b6e38586962ef681e33d08c764ebfbc249",
+        "bytes": 7660,
+        "decodedBytes": 127703
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T22-44-28.087Z-12549",
+      "createdAt": "2026-09-05T22:44:28.087Z",
+      "status": "fail",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "39578e13a3a0c6344d25aca8f75ef8e81fec4831c54ca13f0173addd5479b381",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 3,
+      "flowCount": 84,
+      "failedFlowCount": 3,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T22-44-28.087Z-12549.json.gz",
+        "sha256": "b9ce0e099c087246952c90ab648f355ab097f33b14449be87abe59f24ee3f8de",
+        "decodedSha256": "26c6d231a6a029475a35db950642ac73386993dad051162cca192b76c9194cb4",
+        "bytes": 7665,
+        "decodedBytes": 127705
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T22-45-42.873Z-14119",
+      "createdAt": "2026-09-05T22:45:42.873Z",
+      "status": "fail",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "e3ae1a83ca13fcd5b3a6482afc5a0302a25071dc0fe98e673358318b56dbc9ea",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 30,
+      "flowCount": 840,
+      "failedFlowCount": 122,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T22-45-42.873Z-14119.json.gz",
+        "sha256": "e36ceda81f9e1a4deb2a2870c9fee3d5da311af5ae974bfb0f1924835b7c8567",
+        "decodedSha256": "36a71020f26aebb867a33f28686ce3e8553203a9c6d56b8737a047bd1c1c6154",
+        "bytes": 300330,
+        "decodedBytes": 5970396
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T22-55-40.907Z-18510",
+      "createdAt": "2026-09-05T22:55:40.907Z",
+      "status": "fail",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "482afa9eca85c4d91b7bd9d869c452624b046cc802130d64e8d4d2f1c4b12f13",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 17,
+      "flowCount": 458,
+      "failedFlowCount": 49,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T22-55-40.907Z-18510.json.gz",
+        "sha256": "d4549ead13a0f78034798a71c6cbce8203152ce46de3d2a1e762fd7f34cfb110",
+        "decodedSha256": "99cb748418e9ead1d6a6810690d48043514abfd6b5c25bf8beca7c3d958bd584",
+        "bytes": 163711,
+        "decodedBytes": 3219028
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T23-00-43.667Z-21370",
+      "createdAt": "2026-09-05T23:00:43.667Z",
+      "status": "fail",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "f42d7aa1407f98a0346690e04038f2a89eb50acf10f00385f4725cfb82c084db",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 30,
+      "flowCount": 840,
+      "failedFlowCount": 75,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T23-00-43.667Z-21370.json.gz",
+        "sha256": "e4e24505ef20b243656f329804e5b64a4dbe3312635d3b5128106456555dffdf",
+        "decodedSha256": "8caef063d44c05c653532b30f7a0a3bf28d131cde0ce47a0137ad7da45d89135",
+        "bytes": 307332,
+        "decodedBytes": 6075502
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T23-10-23.339Z-25701",
+      "createdAt": "2026-09-05T23:10:23.339Z",
+      "status": "pass",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "9eb83e356b013cbbd854dbbdd16f6500d5f816c3d51fa1a6eaeb37e3e19fe745",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 30,
+      "flowCount": 840,
+      "failedFlowCount": 72,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T23-10-23.339Z-25701.json.gz",
+        "sha256": "d5326fce5cdfc3cb5b8d17b4f7d182e5be5a8d28bb8c702f0805a50c923e4b7c",
+        "decodedSha256": "9a5630418a1037ab574a5bedde16c7b3f088653c60ae2e5e3dfa2970e040a270",
+        "bytes": 309257,
+        "decodedBytes": 6100879
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "private-link-entry-2026-09-05T23-14-59.788Z-28627",
+      "createdAt": "2026-09-05T23:14:59.788Z",
+      "status": "partial",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "9eb83e356b013cbbd854dbbdd16f6500d5f816c3d51fa1a6eaeb37e3e19fe745",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 18,
+      "flowCount": 18,
+      "failedFlowCount": 3,
+      "raw": {
+        "path": "quality/evidence/navigation/private-link-entry-2026-09-05T23-14-59.788Z-28627.json.gz",
+        "sha256": "0f13f2ecfbb22c3995f8627b9f4453aa6672016cab3187f504e2928257d4c63e",
+        "decodedSha256": "bbc4ef5e7f9212c922adc6c7fd26dfda2ba7467af38251fc770dae1c613739de",
+        "bytes": 11582,
+        "decodedBytes": 243330
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "2026-09-05T23-18-54.986Z-29717",
+      "createdAt": "2026-09-05T23:18:54.986Z",
+      "status": "pass",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "5dec4403d832234c2888317b13e311770ead2f4e3c40a6c8e06fcfbab4ea37cc",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 30,
+      "flowCount": 840,
+      "failedFlowCount": 72,
+      "raw": {
+        "path": "quality/evidence/navigation/2026-09-05T23-18-54.986Z-29717.json.gz",
+        "sha256": "0f459d9975e7bcec6f0fb6ba64e1fbe4a3d073f6b678ae0b6ed8984502fabfe4",
+        "decodedSha256": "2ff0e8f875b1b87baf27c29ad1787d131029861d088f83725d750f915d6b7073",
+        "bytes": 331950,
+        "decodedBytes": 6525695
+      }
+    },
+    {
+      "schema": "jqstar-navigation-measurement-reference/1",
+      "runId": "chromium-cache-sensitivity-2026-09-05T23-25-19.015Z-33241",
+      "createdAt": "2026-09-05T23:25:19.015Z",
+      "status": "partial",
+      "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+      "fixtureSha256": "5dec4403d832234c2888317b13e311770ead2f4e3c40a6c8e06fcfbab4ea37cc",
+      "artifactSha256": "664ce25e7434a0e0bf0d91baa5679848d8d0b9dae94cdba3fec7afd021caf33e",
+      "candidateRows": 6,
+      "flowCount": 24,
+      "failedFlowCount": 0,
+      "raw": {
+        "path": "quality/evidence/navigation/chromium-cache-sensitivity-2026-09-05T23-25-19.015Z-33241.json.gz",
+        "sha256": "95373f7638842d5c18d0b9db58df36000399c76f5500bf206c137a5bf379e04f",
+        "decodedSha256": "6e413bb687a1f03d9881e20e55a7af59d5bdb180784c011b8b830a49337120c5",
+        "bytes": 28491,
+        "decodedBytes": 477165
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "NAV-GAP-1",
+      "scenarioIds": ["NAV-03"],
+      "candidates": ["turbo-8.0.21", "turbo-8.0.23"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/default/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/default/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/default/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/default/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/default/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/default/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-03",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-03"
+      ],
+      "consequence": "Default Turbo issues an extra document read for the tested local hash link.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "minor",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "resolved",
+          "evidence": "Use the documented data-turbo=false native boundary on same-document anchors; apply it to incoming bodies through the public before-render hook."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Use the documented data-turbo=false native boundary on same-document anchors; apply it to incoming bodies through the public before-render hook."
+    },
+    {
+      "id": "NAV-GAP-2",
+      "scenarioIds": ["NAV-08", "NAV-15"],
+      "candidates": ["htmx-2.0.0", "htmx-2.0.10"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/default/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/default/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/default/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/default/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/default/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/default/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/default/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/default/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/default/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/default/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/default/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/default/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-15",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-08",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-15"
+      ],
+      "consequence": "Default no-swap status policy leaves the full server error/validation document undisplayed.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "resolved",
+          "evidence": "Configure htmx responseHandling to render this application's full error documents, leaving 204 unswapped. Native autofocus/aria error semantics then pass all three engines."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Configure htmx responseHandling to render this application's full error documents, leaving 204 unswapped. Native autofocus/aria error semantics then pass all three engines."
+    },
+    {
+      "id": "NAV-GAP-3",
+      "scenarioIds": ["NAV-16", "NAV-21"],
+      "candidates": ["turbo-8.0.21", "turbo-8.0.23", "htmx-2.0.0", "htmx-2.0.10"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/default/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/default/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-21",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-21"
+      ],
+      "consequence": "Transport failure or an accepted write with a lost response lacks application-visible recovery under host defaults; some Turbo errors remain unhandled.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "unresolved",
+          "evidence": "Host defaults/configuration alone did not satisfy the fixed workflow; reproduced traces identify the remaining consequence."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unresolved",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "resolved",
+          "evidence": "Application-owned public transport/submit handlers expose recovery and clear busy state without resending writes. Only the exact previously handled Error object is suppressed. Server revision protection remains mandatory."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Application-owned public transport/submit handlers expose recovery and clear busy state without resending writes. Only the exact previously handled Error object is suppressed. Server revision protection remains mandatory."
+    },
+    {
+      "id": "NAV-GAP-4",
+      "scenarioIds": ["NAV-18"],
+      "candidates": ["turbo-8.0.21", "turbo-8.0.23", "htmx-2.0.0", "htmx-2.0.10"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/default/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-18",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-18"
+      ],
+      "consequence": "A response lacking the requested activity region cannot silently clear or target unrelated content.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "unresolved",
+          "evidence": "Host defaults/configuration alone did not satisfy the fixed workflow; reproduced traces identify the remaining consequence."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unresolved",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "resolved",
+          "evidence": "Turbo frame-missing invokes the public full-document visit on the response; htmx beforeSwap checks the exact region and uses same-origin GET document fallback when absent. Writes never use that fallback."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Turbo frame-missing invokes the public full-document visit on the response; htmx beforeSwap checks the exact region and uses same-origin GET document fallback when absent. Writes never use that fallback."
+    },
+    {
+      "id": "NAV-GAP-5",
+      "scenarioIds": ["NAV-22"],
+      "candidates": ["turbo-8.0.21", "turbo-8.0.23"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/default/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/default/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/default/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/default/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/default/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/default/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-22",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-22"
+      ],
+      "consequence": "The tested Turbo 204 visit reports an error and does not preserve the required unchanged-document behavior.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "resolved",
+          "evidence": "The known 204 destination explicitly uses native navigation, which leaves the document unchanged. This is a route policy boundary, not a universal inference from unknown response content."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "The known 204 destination explicitly uses native navigation, which leaves the document unchanged. This is a route policy boundary, not a universal inference from unknown response content."
+    },
+    {
+      "id": "NAV-GAP-6",
+      "scenarioIds": ["NAV-25"],
+      "candidates": ["htmx-2.0.0", "htmx-2.0.10"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/default/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/default/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/default/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/default/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/default/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/default/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-25",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-25"
+      ],
+      "consequence": "Default htmx indicator placement does not reveal this application's status region while the request is pending.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "minor",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "resolved",
+          "evidence": "Configure hx-indicator=body and the matching visible status CSS; keyboard usability and terminal busy clearing pass."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Configure hx-indicator=body and the matching visible status CSS; keyboard usability and terminal busy clearing pass."
+    },
+    {
+      "id": "NAV-GAP-7",
+      "scenarioIds": ["NAV-27"],
+      "candidates": ["turbo-8.0.21", "turbo-8.0.23"],
+      "traces": [
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/default/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/default/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/default/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/default/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/default/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/default/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-27",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-27"
+      ],
+      "consequence": "Turbo's default hover prefetch performs incidental reads against the application's explicit-intent policy.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "resolved",
+          "evidence": "Cancel the documented turbo:before-prefetch event with an owned listener. This survives full incoming head replacement."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Cancel the documented turbo:before-prefetch event with an owned listener. This survives full incoming head replacement."
+    },
+    {
+      "id": "NAV-GAP-8",
+      "scenarioIds": ["NAV-05"],
+      "candidates": ["turbo-8.0.21", "turbo-8.0.23"],
+      "traces": [
+        "2026-09-05T23-00-43.667Z-21370/chromium/turbo-8.0.21/configured/NAV-05",
+        "2026-09-05T23-00-43.667Z-21370/chromium/turbo-8.0.23/default/NAV-05",
+        "2026-09-05T23-00-43.667Z-21370/chromium/turbo-8.0.23/configured/NAV-05",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.21/configured/NAV-05",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.21/configured/NAV-05",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.21/configured/NAV-05",
+        "2026-09-05T23-18-54.986Z-29717/chromium/turbo-8.0.23/configured/NAV-05",
+        "2026-09-05T23-18-54.986Z-29717/firefox/turbo-8.0.23/configured/NAV-05",
+        "2026-09-05T23-18-54.986Z-29717/webkit/turbo-8.0.23/configured/NAV-05"
+      ],
+      "consequence": "Rapid programmatic Back before a completed visit's final native scroll event can overwrite the restored position.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "unresolved",
+          "evidence": "Host defaults/configuration alone did not satisfy the fixed workflow; reproduced traces identify the remaining consequence."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unresolved",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unresolved",
+          "evidence": "Retain the limitation; the shared driver waits one painted frame after host settlement before its next history intent. Ordinary browser navigation remains the supported option for a product requiring unpainted programmatic history transitions. There is no evidence that both hosts require a new engine."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "The rapid unpainted-history limitation remains. Ordinary browser navigation and htmx pass the supported workflow; no shared host gap or excluded product segment justifies generic/native ownership."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "The rapid unpainted-history limitation remains. Ordinary browser navigation and htmx pass the supported workflow; no shared host gap or excluded product segment justifies generic/native ownership."
+        }
+      ],
+      "resolution": "Retain the limitation; the shared driver waits one painted frame after host settlement before its next history intent. Ordinary browser navigation remains the supported option for a product requiring unpainted programmatic history transitions. There is no evidence that both hosts require a new engine."
+    },
+    {
+      "id": "NAV-GAP-9",
+      "scenarioIds": ["NAV-26"],
+      "candidates": ["htmx-2.0.0", "htmx-2.0.10"],
+      "traces": [
+        "private-link-entry-2026-09-05T23-14-59.788Z-28627/chromium/htmx-2.0.0/configured/NAV-26",
+        "private-link-entry-2026-09-05T23-14-59.788Z-28627/firefox/htmx-2.0.0/configured/NAV-26",
+        "private-link-entry-2026-09-05T23-14-59.788Z-28627/webkit/htmx-2.0.0/configured/NAV-26",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.0/configured/NAV-26",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.0/configured/NAV-26",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.0/configured/NAV-26",
+        "2026-09-05T23-18-54.986Z-29717/chromium/htmx-2.0.10/configured/NAV-26",
+        "2026-09-05T23-18-54.986Z-29717/firefox/htmx-2.0.10/configured/NAV-26",
+        "2026-09-05T23-18-54.986Z-29717/webkit/htmx-2.0.10/configured/NAV-26"
+      ],
+      "consequence": "htmx 2.0.0's boosted private entry retained the fixed private marker when the history embargo existed only on the outer body.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "resolved",
+          "evidence": "Put hx-history=false on private content that actually swaps, as well as the full-page body. Expanded direct and linked entry, leave and Back pass both versions in all engines without private WebStorage data."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "The current installed bridge manages lifecycle, not host request/history/form policy; its default and configured traces are retained separately."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "An earlier bounded option resolves the observed workflow; adding generic runtime ownership has no demonstrated benefit."
+        }
+      ],
+      "resolution": "Put hx-history=false on private content that actually swaps, as well as the full-page body. Expanded direct and linked entry, leave and Back pass both versions in all engines without private WebStorage data."
+    },
+    {
+      "id": "NAV-GAP-10",
+      "scenarioIds": ["NAV-16"],
+      "candidates": ["browser-nojs", "browser"],
+      "traces": [
+        "2026-09-05T22-39-13.801Z-8819/chromium/browser-nojs/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/browser-nojs/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/browser-nojs/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/browser-nojs/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/chromium/browser/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/firefox/browser/configured/NAV-16",
+        "2026-09-05T23-18-54.986Z-29717/webkit/browser/configured/NAV-16"
+      ],
+      "consequence": "The original pre-header socket loss let the browser retry an accepted POST; the server revision guard prevented a second commit.",
+      "frequency": "Repeated fixed workflow at exact supported versions/engines listed in traces; public repository demand query returned zero issues and disabled discussions. This is observed integration need, not a usage-rate estimate.",
+      "demandSource": "Public docs/editor workflow; completed migration tickets 0039/0040; 2026-09-05 read-only repository query.",
+      "severity": "material",
+      "attempts": [
+        {
+          "rung": "documented-host-configuration",
+          "result": "unnecessary",
+          "evidence": "Keep server-side version/idempotency protection. The final lost-response test acknowledges response headers before truncation and proves no added client replay at that boundary. No client engine can promise that every underlying transport or user will never retry."
+        },
+        {
+          "rung": "current-jqstar-bridge",
+          "result": "unnecessary",
+          "evidence": "Keep server-side version/idempotency protection. The final lost-response test acknowledges response headers before truncation and proves no added client replay at that boundary. No client engine can promise that every underlying transport or user will never retry."
+        },
+        {
+          "rung": "host-specific-correction",
+          "result": "unnecessary",
+          "evidence": "Keep server-side version/idempotency protection. The final lost-response test acknowledges response headers before truncation and proves no added client replay at that boundary. No client engine can promise that every underlying transport or user will never retry."
+        },
+        {
+          "rung": "bounded-host-neutral-utility",
+          "result": "unnecessary",
+          "evidence": "Keep server-side version/idempotency protection. The final lost-response test acknowledges response headers before truncation and proves no added client replay at that boundary. No client engine can promise that every underlying transport or user will never retry."
+        },
+        {
+          "rung": "native-concept",
+          "result": "not-approved",
+          "evidence": "Keep server-side version/idempotency protection. The final lost-response test acknowledges response headers before truncation and proves no added client replay at that boundary. No client engine can promise that every underlying transport or user will never retry."
+        }
+      ],
+      "resolution": "Keep server-side version/idempotency protection. The final lost-response test acknowledges response headers before truncation and proves no added client replay at that boundary. No client engine can promise that every underlying transport or user will never retry."
+    }
+  ],
+  "costs": [
+    {
+      "source": "quality/evidence/navigation-costs.json; SHA-256 5be6898be8cdc4baed6576bd02b65a9acd0c5aa5f6918c9dcb0d134c44ff66b2",
+      "advisories": [
+        "Isolated consumer npm audit at measurement time: zero known advisories in nine installed dependencies; not a guarantee against undisclosed issues."
+      ],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [
+        "test/navigation-decision-server.test.mjs",
+        "test/navigation-decision-contract.test.mjs",
+        "test/navigation-host-corrections.test.mjs",
+        "e2e/navigation-decision.spec.ts",
+        "test/fixtures/navigation-decision/driver.mjs"
+      ],
+      "documentationFiles": [
+        "docs/decisions/NATIVE_NAVIGATION.md",
+        "docs/INTEROPERABILITY.md",
+        "example/docs/interoperability/index.html"
+      ],
+      "id": "browser-nojs",
+      "measurementKind": "measured",
+      "rawBytes": 0,
+      "gzipBytes": 0,
+      "packedBytes": 0,
+      "unpackedBytes": 0,
+      "browserExecutions": 78,
+      "modules": [],
+      "dependencies": [],
+      "licenses": [],
+      "markup": [
+        "Native links, semantic headings/landmarks, details/summary, successful named form controls, labelled status/error regions."
+      ],
+      "configuration": ["No JavaScript requested or executed."],
+      "publicConcepts": ["Native URL/history/form/HTTP behavior"],
+      "sourceFiles": [],
+      "maintenanceHours": {
+        "low": 4,
+        "high": 12
+      },
+      "basis": "Byte fields are uninstrumented installed core+UI+host bundles, including jQuery. Packed/install fields count the jQStar artifact plus selected host only; separate dependency inventory records jQuery and transitive install cost without counting unused host aliases. Annual engineering estimate assumes two supported-version review cycles plus three-browser regression, documentation and incident allowance. Host hooks remain application-owned research examples, not shipped API.",
+      "uncertainty": "Support hours are judgment ranges, not measured labor or service commitments. Browser/AT behavior outside the fixed workflow and future upstream changes are unknown. No-JavaScript zero bytes means actual script traffic, not the unused generated research bundle. The package contains modules this particular bundle does not execute."
+    },
+    {
+      "source": "quality/evidence/navigation-costs.json; SHA-256 5be6898be8cdc4baed6576bd02b65a9acd0c5aa5f6918c9dcb0d134c44ff66b2",
+      "advisories": [
+        "Isolated consumer npm audit at measurement time: zero known advisories in nine installed dependencies; not a guarantee against undisclosed issues."
+      ],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [
+        "test/navigation-decision-server.test.mjs",
+        "test/navigation-decision-contract.test.mjs",
+        "test/navigation-host-corrections.test.mjs",
+        "e2e/navigation-decision.spec.ts",
+        "test/fixtures/navigation-decision/driver.mjs"
+      ],
+      "documentationFiles": [
+        "docs/decisions/NATIVE_NAVIGATION.md",
+        "docs/INTEROPERABILITY.md",
+        "example/docs/interoperability/index.html"
+      ],
+      "id": "browser",
+      "measurementKind": "measured",
+      "rawBytes": 513327,
+      "gzipBytes": 134335,
+      "packedBytes": 3063823,
+      "unpackedBytes": 10715438,
+      "browserExecutions": 84,
+      "modules": [
+        ".git/jqstar/navigation-decision/consumer/cost-browser.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/render-adapter-BrGLPAYr.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/ui.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery/dist-module/jquery.module.js"
+      ],
+      "dependencies": [
+        "jquery-star@1.1.0",
+        "jquery@4.0.0",
+        "@starfederation/datastar-sdk@^1.0.0 (package dependency; graph records actual inclusion)",
+        "idiomorph@^0.7.4 (package dependency; graph records actual inclusion)",
+        "json5@^2.2.3 (package dependency; graph records actual inclusion)"
+      ],
+      "licenses": ["MIT", "0BSD"],
+      "markup": [
+        "Native links, semantic headings/landmarks, details/summary, successful named form controls, labelled status/error regions."
+      ],
+      "configuration": ["Explicit installed core and UI boot; ordinary document navigation."],
+      "publicConcepts": ["Core/UI installation", "Native URL/history/form/HTTP behavior"],
+      "sourceFiles": ["src/core.ts", "src/ui/index.ts"],
+      "maintenanceHours": {
+        "low": 12,
+        "high": 36
+      },
+      "basis": "Byte fields are uninstrumented installed core+UI+host bundles, including jQuery. Packed/install fields count the jQStar artifact plus selected host only; separate dependency inventory records jQuery and transitive install cost without counting unused host aliases. Annual engineering estimate assumes two supported-version review cycles plus three-browser regression, documentation and incident allowance. Host hooks remain application-owned research examples, not shipped API.",
+      "uncertainty": "Support hours are judgment ranges, not measured labor or service commitments. Browser/AT behavior outside the fixed workflow and future upstream changes are unknown. No-JavaScript zero bytes means actual script traffic, not the unused generated research bundle. The package contains modules this particular bundle does not execute."
+    },
+    {
+      "source": "quality/evidence/navigation-costs.json; SHA-256 5be6898be8cdc4baed6576bd02b65a9acd0c5aa5f6918c9dcb0d134c44ff66b2",
+      "advisories": [
+        "Isolated consumer npm audit at measurement time: zero known advisories in nine installed dependencies; not a guarantee against undisclosed issues."
+      ],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [
+        "test/navigation-decision-server.test.mjs",
+        "test/navigation-decision-contract.test.mjs",
+        "test/navigation-host-corrections.test.mjs",
+        "e2e/navigation-decision.spec.ts",
+        "test/fixtures/navigation-decision/driver.mjs"
+      ],
+      "documentationFiles": [
+        "docs/decisions/NATIVE_NAVIGATION.md",
+        "docs/INTEROPERABILITY.md",
+        "example/docs/interoperability/index.html"
+      ],
+      "id": "turbo-8.0.21",
+      "measurementKind": "measured",
+      "rawBytes": 616098,
+      "gzipBytes": 162049,
+      "packedBytes": 3155858,
+      "unpackedBytes": 11138883,
+      "browserExecutions": 168,
+      "modules": [
+        ".git/jqstar/navigation-decision/consumer/cost-turbo-8.0.21.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/render-adapter-BrGLPAYr.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/turbo.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/ui.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery/dist-module/jquery.module.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/turbo-8-0-21/dist/turbo.es2017-esm.js"
+      ],
+      "dependencies": [
+        "jquery-star@1.1.0",
+        "jquery@4.0.0",
+        "@starfederation/datastar-sdk@^1.0.0 (package dependency; graph records actual inclusion)",
+        "idiomorph@^0.7.4 (package dependency; graph records actual inclusion)",
+        "json5@^2.2.3 (package dependency; graph records actual inclusion)",
+        "@hotwired/turbo@8.0.21; sha512-fJTv3JnzFHeDxBb23esZSOhT4r142xf5o3lKMFMvzPC6AllkqbBKk5Yb31UZhtIsKQCwmO/pUQrtTUlYl5CHAQ=="
+      ],
+      "licenses": ["MIT", "0BSD"],
+      "markup": [
+        "Native links, semantic headings/landmarks, details/summary, successful named form controls, labelled status/error regions.",
+        "The same comparison HTML contains both hosts' explicit target, preservation, history and opt-out attributes. Host-specific configuration is an integration cost."
+      ],
+      "configuration": [
+        "Explicit public bridge/version installation; native opt-outs for local anchors, 204, changed head/script and non-HTML destinations.",
+        "Public prefetch cancellation; exact-error-identity recovery handlers; missing-frame full-document visit; nonredirected write recovery; owned listeners."
+      ],
+      "publicConcepts": [
+        "Core/UI installation",
+        "turbo host and pinned public bridge",
+        "Public render ownership/barrier",
+        "Host-specific navigation policy and failure recovery"
+      ],
+      "sourceFiles": [
+        "src/core.ts",
+        "src/ui/index.ts",
+        "src/turbo.ts",
+        "src/render-adapter.ts",
+        "test/fixtures/navigation-decision/host-corrections.js"
+      ],
+      "maintenanceHours": {
+        "low": 40,
+        "high": 100
+      },
+      "basis": "Byte fields are uninstrumented installed core+UI+host bundles, including jQuery. Packed/install fields count the jQStar artifact plus selected host only; separate dependency inventory records jQuery and transitive install cost without counting unused host aliases. Annual engineering estimate assumes two supported-version review cycles plus three-browser regression, documentation and incident allowance. Host hooks remain application-owned research examples, not shipped API.",
+      "uncertainty": "Support hours are judgment ranges, not measured labor or service commitments. Browser/AT behavior outside the fixed workflow and future upstream changes are unknown. No-JavaScript zero bytes means actual script traffic, not the unused generated research bundle. The package contains modules this particular bundle does not execute."
+    },
+    {
+      "source": "quality/evidence/navigation-costs.json; SHA-256 5be6898be8cdc4baed6576bd02b65a9acd0c5aa5f6918c9dcb0d134c44ff66b2",
+      "advisories": [
+        "Isolated consumer npm audit at measurement time: zero known advisories in nine installed dependencies; not a guarantee against undisclosed issues."
+      ],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [
+        "test/navigation-decision-server.test.mjs",
+        "test/navigation-decision-contract.test.mjs",
+        "test/navigation-host-corrections.test.mjs",
+        "e2e/navigation-decision.spec.ts",
+        "test/fixtures/navigation-decision/driver.mjs"
+      ],
+      "documentationFiles": [
+        "docs/decisions/NATIVE_NAVIGATION.md",
+        "docs/INTEROPERABILITY.md",
+        "example/docs/interoperability/index.html"
+      ],
+      "id": "turbo-8.0.23",
+      "measurementKind": "measured",
+      "rawBytes": 616098,
+      "gzipBytes": 162050,
+      "packedBytes": 3155917,
+      "unpackedBytes": 11139084,
+      "browserExecutions": 168,
+      "modules": [
+        ".git/jqstar/navigation-decision/consumer/cost-turbo-8.0.23.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/render-adapter-BrGLPAYr.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/turbo.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/ui.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery/dist-module/jquery.module.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/turbo-8-0-23/dist/turbo.es2017-esm.js"
+      ],
+      "dependencies": [
+        "jquery-star@1.1.0",
+        "jquery@4.0.0",
+        "@starfederation/datastar-sdk@^1.0.0 (package dependency; graph records actual inclusion)",
+        "idiomorph@^0.7.4 (package dependency; graph records actual inclusion)",
+        "json5@^2.2.3 (package dependency; graph records actual inclusion)",
+        "@hotwired/turbo@8.0.23; sha512-GZ7cijxEZ6Ig71u7rD6LHaRv/wcE/hNsc+nEfiWOkLNqUgLOwo5MNGWOy5ZV9ZUDSiQx1no7YxjTNnT4O6//cQ=="
+      ],
+      "licenses": ["MIT", "0BSD"],
+      "markup": [
+        "Native links, semantic headings/landmarks, details/summary, successful named form controls, labelled status/error regions.",
+        "The same comparison HTML contains both hosts' explicit target, preservation, history and opt-out attributes. Host-specific configuration is an integration cost."
+      ],
+      "configuration": [
+        "Explicit public bridge/version installation; native opt-outs for local anchors, 204, changed head/script and non-HTML destinations.",
+        "Public prefetch cancellation; exact-error-identity recovery handlers; missing-frame full-document visit; nonredirected write recovery; owned listeners."
+      ],
+      "publicConcepts": [
+        "Core/UI installation",
+        "turbo host and pinned public bridge",
+        "Public render ownership/barrier",
+        "Host-specific navigation policy and failure recovery"
+      ],
+      "sourceFiles": [
+        "src/core.ts",
+        "src/ui/index.ts",
+        "src/turbo.ts",
+        "src/render-adapter.ts",
+        "test/fixtures/navigation-decision/host-corrections.js"
+      ],
+      "maintenanceHours": {
+        "low": 40,
+        "high": 100
+      },
+      "basis": "Byte fields are uninstrumented installed core+UI+host bundles, including jQuery. Packed/install fields count the jQStar artifact plus selected host only; separate dependency inventory records jQuery and transitive install cost without counting unused host aliases. Annual engineering estimate assumes two supported-version review cycles plus three-browser regression, documentation and incident allowance. Host hooks remain application-owned research examples, not shipped API.",
+      "uncertainty": "Support hours are judgment ranges, not measured labor or service commitments. Browser/AT behavior outside the fixed workflow and future upstream changes are unknown. No-JavaScript zero bytes means actual script traffic, not the unused generated research bundle. The package contains modules this particular bundle does not execute."
+    },
+    {
+      "source": "quality/evidence/navigation-costs.json; SHA-256 5be6898be8cdc4baed6576bd02b65a9acd0c5aa5f6918c9dcb0d134c44ff66b2",
+      "advisories": [
+        "Isolated consumer npm audit at measurement time: zero known advisories in nine installed dependencies; not a guarantee against undisclosed issues."
+      ],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [
+        "test/navigation-decision-server.test.mjs",
+        "test/navigation-decision-contract.test.mjs",
+        "test/navigation-host-corrections.test.mjs",
+        "e2e/navigation-decision.spec.ts",
+        "test/fixtures/navigation-decision/driver.mjs"
+      ],
+      "documentationFiles": [
+        "docs/decisions/NATIVE_NAVIGATION.md",
+        "docs/INTEROPERABILITY.md",
+        "example/docs/interoperability/index.html"
+      ],
+      "id": "htmx-2.0.0",
+      "measurementKind": "measured",
+      "rawBytes": 592177,
+      "gzipBytes": 156549,
+      "packedBytes": 3250030,
+      "unpackedBytes": 11465689,
+      "browserExecutions": 168,
+      "modules": [
+        ".git/jqstar/navigation-decision/consumer/cost-htmx-2.0.0.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/htmx-2-0-0/dist/htmx.esm.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/htmx.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/render-adapter-BrGLPAYr.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/ui.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery/dist-module/jquery.module.js"
+      ],
+      "dependencies": [
+        "jquery-star@1.1.0",
+        "jquery@4.0.0",
+        "@starfederation/datastar-sdk@^1.0.0 (package dependency; graph records actual inclusion)",
+        "idiomorph@^0.7.4 (package dependency; graph records actual inclusion)",
+        "json5@^2.2.3 (package dependency; graph records actual inclusion)",
+        "htmx.org@2.0.0; sha512-N0r1VjrqeCpig0mTi2/sooDZBeQlp1RBohnWQ/ufqc7ICaI0yjs04fNGhawm6+/HWhJFlcXn8MqOjWI9QGG2lQ=="
+      ],
+      "licenses": ["MIT", "0BSD"],
+      "markup": [
+        "Native links, semantic headings/landmarks, details/summary, successful named form controls, labelled status/error regions.",
+        "The same comparison HTML contains both hosts' explicit target, preservation, history and opt-out attributes. Host-specific configuration is an integration cost."
+      ],
+      "configuration": [
+        "Explicit public bridge/version installation; responseHandling swaps full 2xx/3xx/4xx/5xx error documents except 204.",
+        "hx-boost, hx-sync=body:replace, hx-push-url for GET forms, hx-select/target for activity; native head/non-HTML opt-outs.",
+        "Body indicator and visible transport-error recovery; exact missing-region GET fallback; hx-history=false on the private content that swaps."
+      ],
+      "publicConcepts": [
+        "Core/UI installation",
+        "htmx host and pinned public bridge",
+        "Public render ownership/barrier",
+        "Host-specific navigation policy and failure recovery"
+      ],
+      "sourceFiles": [
+        "src/core.ts",
+        "src/ui/index.ts",
+        "src/htmx.ts",
+        "src/render-adapter.ts",
+        "test/fixtures/navigation-decision/host-corrections.js"
+      ],
+      "maintenanceHours": {
+        "low": 48,
+        "high": 120
+      },
+      "basis": "Byte fields are uninstrumented installed core+UI+host bundles, including jQuery. Packed/install fields count the jQStar artifact plus selected host only; separate dependency inventory records jQuery and transitive install cost without counting unused host aliases. Annual engineering estimate assumes two supported-version review cycles plus three-browser regression, documentation and incident allowance. Host hooks remain application-owned research examples, not shipped API.",
+      "uncertainty": "Support hours are judgment ranges, not measured labor or service commitments. Browser/AT behavior outside the fixed workflow and future upstream changes are unknown. No-JavaScript zero bytes means actual script traffic, not the unused generated research bundle. The package contains modules this particular bundle does not execute."
+    },
+    {
+      "source": "quality/evidence/navigation-costs.json; SHA-256 5be6898be8cdc4baed6576bd02b65a9acd0c5aa5f6918c9dcb0d134c44ff66b2",
+      "advisories": [
+        "Isolated consumer npm audit at measurement time: zero known advisories in nine installed dependencies; not a guarantee against undisclosed issues."
+      ],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [
+        "test/navigation-decision-server.test.mjs",
+        "test/navigation-decision-contract.test.mjs",
+        "test/navigation-host-corrections.test.mjs",
+        "e2e/navigation-decision.spec.ts",
+        "test/fixtures/navigation-decision/driver.mjs"
+      ],
+      "documentationFiles": [
+        "docs/decisions/NATIVE_NAVIGATION.md",
+        "docs/INTEROPERABILITY.md",
+        "example/docs/interoperability/index.html"
+      ],
+      "id": "htmx-2.0.10",
+      "measurementKind": "measured",
+      "rawBytes": 594771,
+      "gzipBytes": 157433,
+      "packedBytes": 3277295,
+      "unpackedBytes": 11599379,
+      "browserExecutions": 168,
+      "modules": [
+        ".git/jqstar/navigation-decision/consumer/cost-htmx-2.0.10.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/htmx-2-0-10/dist/htmx.esm.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/htmx.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/render-adapter-BrGLPAYr.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery-star/dist/ui.js",
+        ".git/jqstar/navigation-decision/consumer/node_modules/jquery/dist-module/jquery.module.js"
+      ],
+      "dependencies": [
+        "jquery-star@1.1.0",
+        "jquery@4.0.0",
+        "@starfederation/datastar-sdk@^1.0.0 (package dependency; graph records actual inclusion)",
+        "idiomorph@^0.7.4 (package dependency; graph records actual inclusion)",
+        "json5@^2.2.3 (package dependency; graph records actual inclusion)",
+        "htmx.org@2.0.10; sha512-kdeJe7ZVwaS6QMz/ebBIVtZdpwen6L0OQ5GOhPV9MKBb196TCZeZu4yA7ZIQsaLKv7EpXz+So7KSXNuHXhj7Cw=="
+      ],
+      "licenses": ["MIT", "0BSD"],
+      "markup": [
+        "Native links, semantic headings/landmarks, details/summary, successful named form controls, labelled status/error regions.",
+        "The same comparison HTML contains both hosts' explicit target, preservation, history and opt-out attributes. Host-specific configuration is an integration cost."
+      ],
+      "configuration": [
+        "Explicit public bridge/version installation; responseHandling swaps full 2xx/3xx/4xx/5xx error documents except 204.",
+        "hx-boost, hx-sync=body:replace, hx-push-url for GET forms, hx-select/target for activity; native head/non-HTML opt-outs.",
+        "Body indicator and visible transport-error recovery; exact missing-region GET fallback; hx-history=false on the private content that swaps."
+      ],
+      "publicConcepts": [
+        "Core/UI installation",
+        "htmx host and pinned public bridge",
+        "Public render ownership/barrier",
+        "Host-specific navigation policy and failure recovery"
+      ],
+      "sourceFiles": [
+        "src/core.ts",
+        "src/ui/index.ts",
+        "src/htmx.ts",
+        "src/render-adapter.ts",
+        "test/fixtures/navigation-decision/host-corrections.js"
+      ],
+      "maintenanceHours": {
+        "low": 48,
+        "high": 120
+      },
+      "basis": "Byte fields are uninstrumented installed core+UI+host bundles, including jQuery. Packed/install fields count the jQStar artifact plus selected host only; separate dependency inventory records jQuery and transitive install cost without counting unused host aliases. Annual engineering estimate assumes two supported-version review cycles plus three-browser regression, documentation and incident allowance. Host hooks remain application-owned research examples, not shipped API.",
+      "uncertainty": "Support hours are judgment ranges, not measured labor or service commitments. Browser/AT behavior outside the fixed workflow and future upstream changes are unknown. No-JavaScript zero bytes means actual script traffic, not the unused generated research bundle. The package contains modules this particular bundle does not execute."
+    },
+    {
+      "source": "Conditional tickets 0024–0029; no implementation or byte measurement exists.",
+      "advisories": [],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [],
+      "documentationFiles": [],
+      "id": "native-documents",
+      "measurementKind": "unbuilt-estimate",
+      "rawBytes": null,
+      "gzipBytes": null,
+      "packedBytes": null,
+      "unpackedBytes": null,
+      "browserExecutions": null,
+      "modules": [],
+      "dependencies": [],
+      "licenses": [],
+      "markup": [],
+      "configuration": [],
+      "publicConcepts": ["native-documents"],
+      "sourceFiles": [],
+      "maintenanceHours": {
+        "low": 160,
+        "high": 400
+      },
+      "basis": "First implementation estimate 320–800 hours; eligibility, final response policy, head/script handling, permanent roots, history/scroll/focus, progress and cancellation would all need a new public contract and three-engine proof.",
+      "uncertainty": "Order-of-magnitude engineering judgment; annual hours are incremental per slice, not quotes. Size/dependencies/files/licenses/security behavior remain unknown and receive no measured score. No product segment unable to use either supported host was evidenced."
+    },
+    {
+      "source": "Conditional tickets 0024–0029; no implementation or byte measurement exists.",
+      "advisories": [],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [],
+      "documentationFiles": [],
+      "id": "native-forms",
+      "measurementKind": "unbuilt-estimate",
+      "rawBytes": null,
+      "gzipBytes": null,
+      "packedBytes": null,
+      "unpackedBytes": null,
+      "browserExecutions": null,
+      "modules": [],
+      "dependencies": [],
+      "licenses": [],
+      "markup": [],
+      "configuration": [],
+      "publicConcepts": ["native-forms"],
+      "sourceFiles": [],
+      "maintenanceHours": {
+        "low": 120,
+        "high": 300
+      },
+      "basis": "Incremental first implementation estimate 160–400 hours; native successful controls, multipart/files, submitter intent, constraints, status/redirects and uncertain-write recovery need exhaustive proof.",
+      "uncertainty": "Order-of-magnitude engineering judgment; annual hours are incremental per slice, not quotes. Size/dependencies/files/licenses/security behavior remain unknown and receive no measured score. No product segment unable to use either supported host was evidenced."
+    },
+    {
+      "source": "Conditional tickets 0024–0029; no implementation or byte measurement exists.",
+      "advisories": [],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [],
+      "documentationFiles": [],
+      "id": "native-regions",
+      "measurementKind": "unbuilt-estimate",
+      "rawBytes": null,
+      "gzipBytes": null,
+      "packedBytes": null,
+      "unpackedBytes": null,
+      "browserExecutions": null,
+      "modules": [],
+      "dependencies": [],
+      "licenses": [],
+      "markup": [],
+      "configuration": [],
+      "publicConcepts": ["native-regions"],
+      "sourceFiles": [],
+      "maintenanceHours": {
+        "low": 60,
+        "high": 160
+      },
+      "basis": "Incremental first implementation estimate 80–200 hours; exact matching, targeting, full-document fallback, nested ownership and response safety need a new contract.",
+      "uncertainty": "Order-of-magnitude engineering judgment; annual hours are incremental per slice, not quotes. Size/dependencies/files/licenses/security behavior remain unknown and receive no measured score. No product segment unable to use either supported host was evidenced."
+    },
+    {
+      "source": "Conditional tickets 0024–0029; no implementation or byte measurement exists.",
+      "advisories": [],
+      "serverProtocol": [
+        "Complete HTML documents and native forms; canonical validation/conflict status; successful writes redirect with 303; version guard protects accepted writes.",
+        "Server owns routes, authorization, CSRF, output escaping, cache policy and head/script trust. Lost acknowledged responses never authorize a client write replay."
+      ],
+      "testFiles": [],
+      "documentationFiles": [],
+      "id": "native-prefetch",
+      "measurementKind": "unbuilt-estimate",
+      "rawBytes": null,
+      "gzipBytes": null,
+      "packedBytes": null,
+      "unpackedBytes": null,
+      "browserExecutions": null,
+      "modules": [],
+      "dependencies": [],
+      "licenses": [],
+      "markup": [],
+      "configuration": [],
+      "publicConcepts": ["native-prefetch"],
+      "sourceFiles": [],
+      "maintenanceHours": {
+        "low": 100,
+        "high": 260
+      },
+      "basis": "Incremental first implementation estimate 120–320 hours; explicit intent, bounded cache, HTTP/private-data policy, invalidation, cancellation and security maintenance need a new contract.",
+      "uncertainty": "Order-of-magnitude engineering judgment; annual hours are incremental per slice, not quotes. Size/dependencies/files/licenses/security behavior remain unknown and receive no measured score. No product segment unable to use either supported host was evidenced."
+    }
+  ],
+  "decision": {
+    "outcome": "browser-and-bridges",
+    "reason": "Keep native browser navigation as the baseline and explicitly installed Turbo/htmx bridges for enhanced needs. The configured fixed workflow passes with public host policy and bounded application hooks. The remaining rapid-history limitation is not shared by both hosts; no documented product segment excludes both. Native candidates have no passing implementation or measured advantage and fail the frozen approval rule. No generic utility is approved.",
+    "scores": [
+      {
+        "candidate": "browser-nojs",
+        "eligible": true,
+        "ratings": {
+          "browserSemantics": 5,
+          "demonstratedBenefit": 2,
+          "serverAuthority": 5,
+          "lifecycleSafety": 5,
+          "accessibility": 4,
+          "integrationCost": 5,
+          "maintenanceRisk": 5
+        },
+        "total": 86,
+        "evidence": [
+          "2026-09-05T23-18-54.986Z-29717: all configured applicable flows pass in Chromium/Firefox/WebKit; native-only applicability remains explicit.",
+          "Benefit ratings: 2 native documents/forms, 3 adds live local UI, 4 also preserves local identity and targets regions. No credit for unconfirmed demand.",
+          "Semantics/lifecycle: 5 ordinary tested browser contracts, 4 host configuration/fallback/corrections. Accessibility 4 is scoped browser/axe evidence without a manual assistive-technology audit.",
+          "Cost: 5 no script, 4 existing core/UI, 3 extra host/configuration. Maintenance: 5 browser baseline, 4 core/UI application integration, 3 pinned host event/version coupling. Ratings are judgment anchors, not timing claims.",
+          "quality/evidence/navigation-costs.json"
+        ]
+      },
+      {
+        "candidate": "browser",
+        "eligible": true,
+        "ratings": {
+          "browserSemantics": 5,
+          "demonstratedBenefit": 3,
+          "serverAuthority": 5,
+          "lifecycleSafety": 5,
+          "accessibility": 4,
+          "integrationCost": 4,
+          "maintenanceRisk": 4
+        },
+        "total": 86,
+        "evidence": [
+          "2026-09-05T23-18-54.986Z-29717: all configured applicable flows pass in Chromium/Firefox/WebKit; native-only applicability remains explicit.",
+          "Benefit ratings: 2 native documents/forms, 3 adds live local UI, 4 also preserves local identity and targets regions. No credit for unconfirmed demand.",
+          "Semantics/lifecycle: 5 ordinary tested browser contracts, 4 host configuration/fallback/corrections. Accessibility 4 is scoped browser/axe evidence without a manual assistive-technology audit.",
+          "Cost: 5 no script, 4 existing core/UI, 3 extra host/configuration. Maintenance: 5 browser baseline, 4 core/UI application integration, 3 pinned host event/version coupling. Ratings are judgment anchors, not timing claims.",
+          "quality/evidence/navigation-costs.json"
+        ]
+      },
+      {
+        "candidate": "turbo-8.0.21",
+        "eligible": true,
+        "ratings": {
+          "browserSemantics": 4,
+          "demonstratedBenefit": 4,
+          "serverAuthority": 5,
+          "lifecycleSafety": 4,
+          "accessibility": 4,
+          "integrationCost": 3,
+          "maintenanceRisk": 3
+        },
+        "total": 79,
+        "evidence": [
+          "2026-09-05T23-18-54.986Z-29717: all configured applicable flows pass in Chromium/Firefox/WebKit; native-only applicability remains explicit.",
+          "Benefit ratings: 2 native documents/forms, 3 adds live local UI, 4 also preserves local identity and targets regions. No credit for unconfirmed demand.",
+          "Semantics/lifecycle: 5 ordinary tested browser contracts, 4 host configuration/fallback/corrections. Accessibility 4 is scoped browser/axe evidence without a manual assistive-technology audit.",
+          "Cost: 5 no script, 4 existing core/UI, 3 extra host/configuration. Maintenance: 5 browser baseline, 4 core/UI application integration, 3 pinned host event/version coupling. Ratings are judgment anchors, not timing claims.",
+          "quality/evidence/navigation-costs.json"
+        ]
+      },
+      {
+        "candidate": "turbo-8.0.23",
+        "eligible": true,
+        "ratings": {
+          "browserSemantics": 4,
+          "demonstratedBenefit": 4,
+          "serverAuthority": 5,
+          "lifecycleSafety": 4,
+          "accessibility": 4,
+          "integrationCost": 3,
+          "maintenanceRisk": 3
+        },
+        "total": 79,
+        "evidence": [
+          "2026-09-05T23-18-54.986Z-29717: all configured applicable flows pass in Chromium/Firefox/WebKit; native-only applicability remains explicit.",
+          "Benefit ratings: 2 native documents/forms, 3 adds live local UI, 4 also preserves local identity and targets regions. No credit for unconfirmed demand.",
+          "Semantics/lifecycle: 5 ordinary tested browser contracts, 4 host configuration/fallback/corrections. Accessibility 4 is scoped browser/axe evidence without a manual assistive-technology audit.",
+          "Cost: 5 no script, 4 existing core/UI, 3 extra host/configuration. Maintenance: 5 browser baseline, 4 core/UI application integration, 3 pinned host event/version coupling. Ratings are judgment anchors, not timing claims.",
+          "quality/evidence/navigation-costs.json"
+        ]
+      },
+      {
+        "candidate": "htmx-2.0.0",
+        "eligible": true,
+        "ratings": {
+          "browserSemantics": 4,
+          "demonstratedBenefit": 4,
+          "serverAuthority": 5,
+          "lifecycleSafety": 4,
+          "accessibility": 4,
+          "integrationCost": 3,
+          "maintenanceRisk": 3
+        },
+        "total": 79,
+        "evidence": [
+          "2026-09-05T23-18-54.986Z-29717: all configured applicable flows pass in Chromium/Firefox/WebKit; native-only applicability remains explicit.",
+          "Benefit ratings: 2 native documents/forms, 3 adds live local UI, 4 also preserves local identity and targets regions. No credit for unconfirmed demand.",
+          "Semantics/lifecycle: 5 ordinary tested browser contracts, 4 host configuration/fallback/corrections. Accessibility 4 is scoped browser/axe evidence without a manual assistive-technology audit.",
+          "Cost: 5 no script, 4 existing core/UI, 3 extra host/configuration. Maintenance: 5 browser baseline, 4 core/UI application integration, 3 pinned host event/version coupling. Ratings are judgment anchors, not timing claims.",
+          "quality/evidence/navigation-costs.json"
+        ]
+      },
+      {
+        "candidate": "htmx-2.0.10",
+        "eligible": true,
+        "ratings": {
+          "browserSemantics": 4,
+          "demonstratedBenefit": 4,
+          "serverAuthority": 5,
+          "lifecycleSafety": 4,
+          "accessibility": 4,
+          "integrationCost": 3,
+          "maintenanceRisk": 3
+        },
+        "total": 79,
+        "evidence": [
+          "2026-09-05T23-18-54.986Z-29717: all configured applicable flows pass in Chromium/Firefox/WebKit; native-only applicability remains explicit.",
+          "Benefit ratings: 2 native documents/forms, 3 adds live local UI, 4 also preserves local identity and targets regions. No credit for unconfirmed demand.",
+          "Semantics/lifecycle: 5 ordinary tested browser contracts, 4 host configuration/fallback/corrections. Accessibility 4 is scoped browser/axe evidence without a manual assistive-technology audit.",
+          "Cost: 5 no script, 4 existing core/UI, 3 extra host/configuration. Maintenance: 5 browser baseline, 4 core/UI application integration, 3 pinned host event/version coupling. Ratings are judgment anchors, not timing claims.",
+          "quality/evidence/navigation-costs.json"
+        ]
+      },
+      {
+        "candidate": "native-documents",
+        "eligible": false,
+        "ratings": {
+          "browserSemantics": 0,
+          "demonstratedBenefit": 0,
+          "serverAuthority": 0,
+          "lifecycleSafety": 0,
+          "accessibility": 0,
+          "integrationCost": 0,
+          "maintenanceRisk": 0
+        },
+        "total": null,
+        "evidence": [
+          "Unbuilt; no passing hard-gate measurement, unresolved gap in both hosts, excluded product segment, or measured lower long-term cost. Future behavior earns no points."
+        ]
+      },
+      {
+        "candidate": "native-forms",
+        "eligible": false,
+        "ratings": {
+          "browserSemantics": 0,
+          "demonstratedBenefit": 0,
+          "serverAuthority": 0,
+          "lifecycleSafety": 0,
+          "accessibility": 0,
+          "integrationCost": 0,
+          "maintenanceRisk": 0
+        },
+        "total": null,
+        "evidence": [
+          "Unbuilt; no passing hard-gate measurement, unresolved gap in both hosts, excluded product segment, or measured lower long-term cost. Future behavior earns no points."
+        ]
+      },
+      {
+        "candidate": "native-regions",
+        "eligible": false,
+        "ratings": {
+          "browserSemantics": 0,
+          "demonstratedBenefit": 0,
+          "serverAuthority": 0,
+          "lifecycleSafety": 0,
+          "accessibility": 0,
+          "integrationCost": 0,
+          "maintenanceRisk": 0
+        },
+        "total": null,
+        "evidence": [
+          "Unbuilt; no passing hard-gate measurement, unresolved gap in both hosts, excluded product segment, or measured lower long-term cost. Future behavior earns no points."
+        ]
+      },
+      {
+        "candidate": "native-prefetch",
+        "eligible": false,
+        "ratings": {
+          "browserSemantics": 0,
+          "demonstratedBenefit": 0,
+          "serverAuthority": 0,
+          "lifecycleSafety": 0,
+          "accessibility": 0,
+          "integrationCost": 0,
+          "maintenanceRisk": 0
+        },
+        "total": null,
+        "evidence": [
+          "Unbuilt; no passing hard-gate measurement, unresolved gap in both hosts, excluded product segment, or measured lower long-term cost. Future behavior earns no points."
+        ]
+      }
+    ],
+    "sensitivity": [
+      {
+        "name": "weights-plus-minus-25-percent",
+        "result": "{\"trials\":2187,\"strictWins\":{\"browser-nojs\":891,\"browser\":891,\"turbo-8.0.21\":0,\"turbo-8.0.23\":0,\"htmx-2.0.0\":0,\"htmx-2.0.10\":0,\"native-documents\":0,\"native-forms\":0,\"native-regions\":0,\"native-prefetch\":0},\"ties\":405}",
+        "outcomeChanged": false
+      },
+      {
+        "name": "missing-demand",
+        "result": "Unconfirmed repository demand already contributes zero. Setting demonstratedBenefit to zero for every candidate as an additional conservative stress case still selects browser-and-bridges; unbuilt native candidates remain ineligible.",
+        "outcomeChanged": false
+      },
+      {
+        "name": "oldest-newest-supported-versions",
+        "result": "Both Turbo and htmx boundary versions pass every configured workflow; nominal ratings are identical within each host. The older htmx private-entry difference requires the same subtree embargo used for both versions. Supported ranges are unchanged.",
+        "outcomeChanged": false
+      },
+      {
+        "name": "exclude-forms",
+        "result": "Removing the frozen forms scenario slice leaves passing configured browser/host subsets. It removes optional ownership cost and benefit; it cannot create measured native eligibility or a gap in both hosts. No native slice activates.",
+        "outcomeChanged": false
+      },
+      {
+        "name": "exclude-regions",
+        "result": "Removing the frozen regions scenario slice leaves passing configured browser/host subsets. It removes optional ownership cost and benefit; it cannot create measured native eligibility or a gap in both hosts. No native slice activates.",
+        "outcomeChanged": false
+      },
+      {
+        "name": "exclude-prefetch",
+        "result": "Removing the frozen prefetch scenario slice leaves passing configured browser/host subsets. It removes optional ownership cost and benefit; it cannot create measured native eligibility or a gap in both hosts. No native slice activates.",
+        "outcomeChanged": false
+      },
+      {
+        "name": "browser-cache-launch-policy",
+        "result": "Separate Chromium run removes Playwright's back-forward-cache disabling flag. This checks launch-policy sensitivity, not a cache speed or confirmed persisted-page restoration claim. Full documents are no-store in this fixture.",
+        "outcomeChanged": false
+      }
+    ],
+    "children": [
+      {
+        "id": "0024",
+        "status": "declined",
+        "reason": "The documents slice has no demonstrated need for native jQStar ownership after the comparison and correction ladder.",
+        "contract": "Native links remain the baseline; an explicitly installed Turbo or htmx host owns eligible GET visits, cancellation and fallback."
+      },
+      {
+        "id": "0025",
+        "status": "declined",
+        "reason": "The documents slice has no demonstrated need for native jQStar ownership after the comparison and correction ladder.",
+        "contract": "The chosen host owns document/head/script policy; jQStar's public render bridge owns application teardown/preservation/enhancement. Use native boundaries for changed head/script policy."
+      },
+      {
+        "id": "0026",
+        "status": "declined",
+        "reason": "The documents slice has no demonstrated need for native jQStar ownership after the comparison and correction ladder.",
+        "contract": "Native browser or the installed host owns URL/history/focus/scroll/busy behavior. Preserve the documented rapid programmatic-history limitation and explicit recovery UI."
+      },
+      {
+        "id": "0027",
+        "status": "declined",
+        "reason": "The forms slice has no demonstrated need for native jQStar ownership after the comparison and correction ladder.",
+        "contract": "Use native method/action/encoding/submitter/constraints; host enhancement must render canonical validation and 303 success. Never resend an uncertain dispatched write; the server guards versions/idempotency."
+      },
+      {
+        "id": "0028",
+        "status": "declined",
+        "reason": "The regions slice has no demonstrated need for native jQStar ownership after the comparison and correction ladder.",
+        "contract": "Use existing SDK server patches or explicitly targeted host regions. Match the response region exactly; a missing read region uses a useful complete-document fallback."
+      },
+      {
+        "id": "0029",
+        "status": "declined",
+        "reason": "The prefetch slice has no demonstrated need for native jQStar ownership after the comparison and correction ladder.",
+        "contract": "No native cache. Disable incidental host prefetch unless an application explicitly approves it; private content carries host cache embargoes on the swapped subtree plus server HTTP policy."
+      }
+    ],
+    "utilityTickets": [],
+    "review": [
+      "Separate same-session review, not another human or agent: checked identical HTML/driver, installed artifact identity, schema/redaction, default/configured separation, public lifecycle hooks, method-aware no-write-replay, head/native boundaries, exact region fallback and private subtree embargo.",
+      "Bias review retained original browser retransmission, raw handled Firefox pageerrors, rapid Turbo programmatic-history limitation, failed privacy probe and every failed/partial comparison. One painted frame is a disclosed interaction boundary, not evidence that the earlier race is fixed.",
+      "Arithmetic is reproduced with the exported JavaScript scorer and independently calculated Python weight sweep; review findings and the comparison are documented in NATIVE_NAVIGATION.md."
+    ],
+    "unknowns": [
+      "No public issue demand was available; unobserved applications can have different constraints.",
+      "No manual screen-reader or browser-chrome audit, production latency claim, or confirmed browser BFCache restoration benchmark was performed.",
+      "Host corrections and the response-handling policy are application-specific; the bridge does not implement them automatically.",
+      "No-store/private fixture behavior does not establish all production browser/HTTP cache combinations.",
+      "Annual support/build estimates are engineering ranges; future host releases and undisclosed security issues are unknown."
+    ],
+    "revisitTriggers": [
+      "A reproducible workflow fails both supported hosts after documented configuration and bounded public corrections, or a concrete product segment cannot use either.",
+      "A measured bounded utility demonstrably reduces recurring application integration cost; create and Plan-validate its own ticket before implementation.",
+      "New supported host versions change correctness, security, package cost or ownership behavior enough to alter this fixed comparison.",
+      "A native slice demonstrates all hard gates, user-visible benefit and lower long-term cost against the updated browser/host baseline."
+    ]
+  },
+  "contractSha256": "ca1c33a3b7d25e737401b3424ddeba6508564fc683878649e9d6e1abf762411c",
+  "amendments": [
+    {
+      "createdAt": "2026-09-05T22:41:51.809Z",
+      "previousSha256": "0c7ac9bcfdb764a8f6b7b47bf9e4095406a6364851d1fc3f8e9246f90e9c04f3",
+      "nextSha256": "668f65f7f2bb30e1e2619696019647e7e24e9906941ed513210ad2346831ff73",
+      "reason": "Correct the no-JavaScript style probe, preserve overlapping pointer input, bound each flow, and test response loss after acknowledgement while retaining the pre-header browser retransmission evidence."
+    },
+    {
+      "createdAt": "2026-09-05T22:44:00.003Z",
+      "previousSha256": "668f65f7f2bb30e1e2619696019647e7e24e9906941ed513210ad2346831ff73",
+      "nextSha256": "39578e13a3a0c6344d25aca8f75ef8e81fec4831c54ca13f0173addd5479b381",
+      "reason": "Wait for native autofocus without weakening its target; observe destination keyboard usability after commit because Chromium suspends evaluations during pending native navigation and WebKit has platform-specific link tabbing."
+    },
+    {
+      "createdAt": "2026-09-05T22:45:14.515Z",
+      "previousSha256": "39578e13a3a0c6344d25aca8f75ef8e81fec4831c54ca13f0173addd5479b381",
+      "nextSha256": "e3ae1a83ca13fcd5b3a6482afc5a0302a25071dc0fe98e673358318b56dbc9ea",
+      "reason": "Initialize the destination search input before real keyboard typing so keyboard continuity does not assume the caret position of a prefilled native control."
+    },
+    {
+      "createdAt": "2026-09-05T22:55:12.775Z",
+      "previousSha256": "e3ae1a83ca13fcd5b3a6482afc5a0302a25071dc0fe98e673358318b56dbc9ea",
+      "nextSha256": "482afa9eca85c4d91b7bd9d869c452624b046cc802130d64e8d4d2f1c4b12f13",
+      "reason": "Integrate public host configuration and narrowly scoped correction hooks; wait for host completion after enhancement; retain Firefox raw pageerror counts while measuring uncaught errors separately after event handling."
+    },
+    {
+      "createdAt": "2026-09-05T23:00:15.346Z",
+      "previousSha256": "482afa9eca85c4d91b7bd9d869c452624b046cc802130d64e8d4d2f1c4b12f13",
+      "nextSha256": "f42d7aa1407f98a0346690e04038f2a89eb50acf10f00385f4725cfb82c084db",
+      "reason": "Preserve GET forms, register uncaught-error observation after known handlers, wait for actual scroll observation before history input, and label both disabled controls identified by axe."
+    },
+    {
+      "createdAt": "2026-09-05T23:09:54.982Z",
+      "previousSha256": "f42d7aa1407f98a0346690e04038f2a89eb50acf10f00385f4725cfb82c084db",
+      "nextSha256": "9eb83e356b013cbbd854dbbdd16f6500d5f816c3d51fa1a6eaeb37e3e19fe745",
+      "reason": "Complete shared readiness after one browser frame so native scroll observers settle before the next intent; retain rapid-history limitations and store every raw result in lossless hash-verified archives."
+    },
+    {
+      "createdAt": "2026-09-05T23:18:26.820Z",
+      "previousSha256": "9eb83e356b013cbbd854dbbdd16f6500d5f816c3d51fa1a6eaeb37e3e19fe745",
+      "nextSha256": "5dec4403d832234c2888317b13e311770ead2f4e3c40a6c8e06fcfbab4ea37cc",
+      "reason": "Exercise both direct and linked private-page entry; place the htmx history embargo on the private content that actually swaps after the supplemental oldest-version probe exposed retained private fixture markup."
+    }
+  ]
+}

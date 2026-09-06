@@ -6,6 +6,7 @@ const interoperabilityPort = Number(process.env.JQS_INTEROP_PORT ?? 4175);
 const jqueryUiMigrationPort = Number(process.env.JQS_JQUERY_UI_MIGRATION_PORT ?? 4176);
 const jqueryMobileMigrationPort = Number(process.env.JQS_JQUERY_MOBILE_MIGRATION_PORT ?? 4177);
 const resourceStrategyPort = Number(process.env.JQS_RESOURCE_STRATEGY_PORT ?? 4178);
+const navigationDecisionPort = Number(process.env.JQS_NAVIGATION_DECISION_PORT ?? 4179);
 const artifactDirectory = resolve(
   process.env.JQS_PLAYWRIGHT_ARTIFACT_DIRECTORY ?? ".git/jqstar/standalone/playwright",
 );
@@ -141,6 +142,12 @@ export default defineConfig({
       command:
         "node scripts/prepare-resource-strategy.mjs && node e2e/fixtures/resource-strategy-server.mjs",
       url: `http://127.0.0.1:${resourceStrategyPort}/health`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command:
+        "node scripts/prepare-navigation-decision.mjs && node e2e/fixtures/navigation-decision-server.mjs",
+      url: `http://127.0.0.1:${navigationDecisionPort}/health`,
       reuseExistingServer: !process.env.CI,
     },
   ],

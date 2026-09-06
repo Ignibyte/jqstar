@@ -204,6 +204,11 @@ matcher, lease, and capability contracts; and typed errors. `core`, `ui`, `datas
 `persist` are stable in 1.1. Source-only modules and undeclared package subpaths remain internal
 until a later ticket publishes and tests them.
 
+The [navigation decision](decisions/NATIVE_NAVIGATION.md) keeps ordinary documents and optional
+Turbo/htmx enhancement. No native navigation entry, forms engine, region manager or prefetch cache
+is approved. Host configuration, accessible recovery and private-page cache policy remain explicit
+application responsibilities; jQStar's bridges manage application lifecycle around host mutations.
+
 The supported document host is an ordinary HTML document, including an explicitly supplied
 same-origin frame document, with one live jQStar kernel and one canonical jQuery instance. A second
 kernel or package copy cannot claim the same live document; terminal disposal releases the claim.

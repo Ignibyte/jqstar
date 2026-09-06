@@ -899,6 +899,19 @@ both ship now.
 One ownership seam: the host sends requests and mutates the DOM. A bridge
 uses createRenderAdapter() only to release outgoing jQStar roots, preserve
 exact approved identities, enhance incoming roots, and await the barrier.
+Choose navigation ownership
+Start with useful complete HTML documents and native links and forms. Add Turbo or htmx when
+enhanced visits or targeted regions help your application. jQStar supplies the lifecycle
+bridge; a native jQStar navigation package is not part of the framework.
+Configure the host's error rendering and show visible recovery after a network failure. Keep
+server validation and write protection, and never automatically resend an uncertain write.
+Private pages need both server cache policy and host snapshot controls: put
+hx-history="false" on the private content that swaps, or use Turbo's no-cache
+metadata. Test direct entry, enhanced entry, leaving and Back.
+Use native document boundaries for downloads, changed head or script policy and destinations
+that require browser behavior. Review the
+navigation decision and supported patterns
+for the measured limits, including rapid programmatic history changes.
 Tested version boundaries
 Host
 Approved evidence range

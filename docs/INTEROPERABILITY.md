@@ -10,6 +10,36 @@ mutation. A bridge uses only `jquery-star/core` and `jquery-star/testing` to rel
 and enhance explicit incoming roots at a documented seam. Private state and observer-based disposal
 are off limits.
 
+## Navigation policy and recovery
+
+The [navigation comparison](decisions/NATIVE_NAVIGATION.md) retains native browser behavior and
+these optional bridges. It does not approve `jquery-star/navigation` or a new utility package. The
+bridge does not configure the host's forms, error rendering, cache or recovery policy.
+
+For the measured full-document workflow:
+
+- Keep native boundaries for non-HTML/download destinations, changed head/script policy and known
+  204 responses. Turbo local anchors can use `data-turbo="false"` when incidental reads are
+  unwanted.
+- Return accessible complete validation/error documents and 303 after successful writes. htmx
+  applications rendering those error documents configure `responseHandling` explicitly. Show a
+  visible transport-error recovery state; never automatically resend an uncertain write. Servers
+  retain authorization, CSRF, validation and version/idempotency protection.
+- Match a requested region before replacing it. A missing read region can use the host's public
+  complete-document fallback; a write must not be sent again. Official-SDK patches remain the
+  server-driven region path.
+- Disable incidental prefetch unless the application approves it. Host DOM snapshots need explicit
+  private-page policy alongside HTTP headers. Put `hx-history="false"` on the private subtree that
+  swaps, and use Turbo's documented no-cache metadata. Test direct and enhanced entry, leaving, Back
+  and storage; an HTTP `no-store` header alone does not configure a host snapshot cache.
+- Host navigation and jQStar enhancement have different completion boundaries. The measured Turbo
+  workflow waits one painted frame before its next history action; an earlier rapid programmatic
+  Back can race a late native scroll event. Use browser navigation or verify the exact host workflow
+  when that interaction is required.
+
+The decision links the exact research policies and retained traces. Those application hooks are not
+installed by the bridge. They do not expand the supported versions or host seams below.
+
 ## Shared lifecycle
 
 The hosts keep separate event maps and share this state machine:

@@ -105,6 +105,12 @@
       "validators": ["json-schema", "lockfile", "source-policy"]
     },
     {
+      "id": "navigation-evidence-archives",
+      "match": "^quality/evidence/navigation/[^/]+\\.json\\.gz$",
+      "required": true,
+      "validators": ["json-schema", "package-contract"]
+    },
+    {
       "id": "yaml-configuration",
       "match": "\\.ya?ml$",
       "required": false,

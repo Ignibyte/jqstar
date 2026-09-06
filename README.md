@@ -1187,6 +1187,12 @@ installer. Importing the entry has no installation or DOM-scanning side effect.
 
 ## External navigation bridges
 
+Ordinary browser navigation remains the baseline. The
+[measured navigation decision](docs/decisions/NATIVE_NAVIGATION.md) retains optional Turbo/htmx
+enhancement and declines a native jQStar navigation package. Applications own host configuration,
+visible failure recovery, private-cache policy and server write protection; the bridges supply the
+lifecycle seam described below.
+
 `createRenderAdapter()` from `jquery-star/core` releases outgoing applications and enhances incoming
 roots around a host-owned mutation. Requests, history, focus, and DOM changes remain host-owned.
 

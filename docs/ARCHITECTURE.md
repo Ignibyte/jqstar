@@ -150,6 +150,12 @@ and bounded redacted observations, and both leave the host in control of every r
 They follow the exact manifest in `quality/external-bridge-contract.json`. Core, root, UI, Datastar,
 CSP, and testing entries remain free of Turbo and htmx code.
 
+The [navigation decision](decisions/NATIVE_NAVIGATION.md) retains that ownership split and declines
+native documents, forms, regions and prefetch. Its installed comparison uses useful complete HTML
+with and without JavaScript. Application-owned host configuration and public recovery hooks stay
+outside the generic runtime. A server revision/idempotency guard protects writes even when an
+underlying browser transport retries; a lost response never authorizes application replay.
+
 ## Plugin transactions
 
 `src/plugin.ts` owns the public plugin API version, stable version-range checks, manifest graph,

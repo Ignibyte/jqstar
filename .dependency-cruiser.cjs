@@ -2,6 +2,12 @@
 module.exports = {
   forbidden: [
     {
+      name: "no-shipped-navigation-research",
+      severity: "error",
+      from: { path: "^(src|server|registry|example|bin)/" },
+      to: { path: "^test/fixtures/navigation-decision/" },
+    },
+    {
       name: "no-shipped-resource-research",
       severity: "error",
       from: { path: "^(src|server|registry|example|bin)/" },

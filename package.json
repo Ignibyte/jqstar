@@ -202,6 +202,7 @@
     "!schema/release-candidate.schema.json",
     "!schema/release-contract.schema.json",
     "!schema/resource-strategy.schema.json",
+    "!schema/navigation-decision.schema.json",
     "server-dist",
     "docs/PERSISTENCE.md"
   ],
@@ -248,6 +249,8 @@
     "registry:list": "node ./bin/jqstar.mjs list",
     "research:resources:measure": "node scripts/measure-resource-strategy.mjs",
     "research:resources:score": "node scripts/score-resource-strategy.mjs",
+    "research:navigation:prepare": "node scripts/prepare-navigation-decision.mjs",
+    "research:navigation:measure": "node scripts/measure-navigation-decision.mjs",
     "research:resources:prepare": "node scripts/prepare-resource-strategy.mjs",
     "release:candidate": "node scripts/release/candidate.mjs",
     "release:handoff": "node scripts/release/handoff.mjs",

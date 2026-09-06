@@ -122,19 +122,20 @@ the frozen inconclusive rule, browser cache differences and evidence required to
 
 ## Release 1.3: native navigation decision
 
-| Ticket                                           | Outcome                                                                                       | Depends on                      |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------- |
-| [0023](0023-decide-native-navigation.md)         | Cross-browser fixture, interoperability gap report, and go/no-go decision.                    | 0017, 0036, 0037                |
-| [0024](0024-intercept-get-document-visits.md)    | Conditional opt-in same-origin GET eligibility, fetch, cancellation, and safe fallback.       | 0023 approves native navigation |
-| [0025](0025-commit-documents-and-head.md)        | Conditional application-aware body commits, permanent roots, and explicit head/script policy. | 0024                            |
-| [0026](0026-restore-history-focus-and-scroll.md) | Conditional history ordering, restoration, focus, scroll, busy state, and accessibility.      | 0025                            |
-| [0027](0027-enhance-native-forms.md)             | Conditional validation, submitter semantics, encodings, redirects, and no write replay.       | 0026                            |
-| [0028](0028-add-navigation-regions.md)           | Conditional matching regions, targeting, lazy loading, fallback, and cleanup.                 | 0026, 0027                      |
-| [0029](0029-add-bounded-prefetch-cache.md)       | Conditional bounded memory cache with eligibility and HTTP cache controls.                    | 0026, 0028                      |
+| Ticket                                           | Outcome                                                                             | Depends on                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------- |
+| [0023](0023-decide-native-navigation.md)         | Measured browser/bridge decision; no native navigation or generic utility approved. | 0017, 0036, 0037                |
+| [0024](0024-intercept-get-document-visits.md)    | Declined by 0023: native browser or explicit host GET visits.                       | 0023 approves native navigation |
+| [0025](0025-commit-documents-and-head.md)        | Declined by 0023: host commits and public jQStar render ownership.                  | 0024                            |
+| [0026](0026-restore-history-focus-and-scroll.md) | Declined by 0023: browser/host history, focus, scroll and recovery.                 | 0025                            |
+| [0027](0027-enhance-native-forms.md)             | Declined by 0023: native/host forms with server write protection.                   | 0026                            |
+| [0028](0028-add-navigation-regions.md)           | Declined by 0023: SDK patches or explicit host regions.                             | 0026, 0027                      |
+| [0029](0029-add-bounded-prefetch-cache.md)       | Declined by 0023: explicit host prefetch/private-cache policy.                      | 0026, 0028                      |
 
-Release gate: ticket 0023 may close the track without a native engine. If implemented, navigation is
-optional, defines no routes, passes Chromium/Firefox/WebKit, and preserves JavaScript-disabled
-behavior.
+Ticket 0023 closes the track with browser navigation and existing optional bridges. The
+[decision](../decisions/NATIVE_NAVIGATION.md) records the complete installed comparison, retained
+failures, host configuration/recovery, private-cache boundaries and reopening criteria. Each of
+0024–0029 has its own declined disposition; no utility or native package is activated.
 
 ## Release 1.4: inspection and upgrades
 

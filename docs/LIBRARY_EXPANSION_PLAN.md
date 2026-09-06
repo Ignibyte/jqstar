@@ -545,6 +545,11 @@ Persistent offline queues remain deferred.
 
 ### Native navigation decision and implementation
 
+Ticket 0023 selected browser navigation plus the existing optional Turbo/htmx bridges. The
+[measured decision](decisions/NATIVE_NAVIGATION.md) declines tickets 0024–0029 and records public
+configuration/recovery patterns, the rapid Turbo programmatic-history limitation, privacy evidence
+and reopening criteria. The conditional design below remains history; it is not an available API.
+
 Conditional `jquery-star/navigation` work begins only after lifecycle transactions, the
 render-commit barrier, the browser matrix, installed-package proof, and Turbo/htmx bridges exist.
 

@@ -254,10 +254,13 @@ describe("jQuery Mobile migration authority", () => {
       expect(path).toBeDefined();
       expect(readFileSync(path!, "utf8")).toMatch(/^status: done$/mu);
     }
-    const nativeTicket = filesBelow(resolve(repositoryRoot, "docs/tickets")).find((candidate) =>
-      candidate.includes("/0023-"),
+    const navigationDecision: unknown = JSON.parse(
+      readFileSync(resolve(repositoryRoot, "quality/navigation-decision.json"), "utf8"),
     );
-    expect(readFileSync(nativeTicket!, "utf8")).toMatch(/^status: planned$/mu);
+    expect(navigationDecision).toMatchObject({
+      status: "decided",
+      decision: { outcome: "browser-and-bridges", utilityTickets: [] },
+    });
   });
 
   it("uses two application inventories and records the no-runtime outcome", () => {

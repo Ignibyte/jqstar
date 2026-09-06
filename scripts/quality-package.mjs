@@ -807,6 +807,11 @@ try {
       "Packed package contains resource research artifacts.",
     );
     assert(
+      pack.files.every(({ path }) => !path.includes("navigation-decision")),
+      "Packed package contains navigation research artifacts.",
+    );
+    assert(manifest.exports["./navigation"] === undefined, "Unapproved native navigation export.");
+    assert(
       manifest.scripts?.prepack === "npm run build:self-hosted",
       "Packed prepack contract is missing.",
     );
@@ -2209,6 +2214,7 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
     ]) {
       assert(
         !coreModules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2272,6 +2278,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
       "/dist/datastar-testing",
       "/dist/htmx",
       "/dist/turbo",
@@ -2305,6 +2312,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
       "/dist/csp",
       "/dist/htmx",
       "/dist/turbo",
@@ -2346,6 +2354,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
     ]) {
       assert(
         !cspBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2382,6 +2391,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
     ]) {
       assert(
         !turboBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2411,6 +2421,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
     ]) {
       assert(
         !storesBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
@@ -2484,6 +2495,7 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
       "node_modules/jquery-mobile",
       "node_modules/@tanstack/query-core",
       "/test/fixtures/resource-strategy/",
+      "/test/fixtures/navigation-decision/",
     ]) {
       assert(
         !htmxBundle.modules.some((moduleId) => moduleId.includes(forbidden)),
