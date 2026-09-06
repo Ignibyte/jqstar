@@ -17,17 +17,37 @@ uncommitted changes can produce this inventory, but it cannot provide the final 
 manifest. Repeating the same inventory refuses to overwrite its previous files.
 
 Evidence adapters in `scripts/program-audit/` check named executed unit assertions, browser tests,
-generated properties, static gates, installed-package checks, and exact source excerpts. They reject
-missing or duplicate selectors, required skips, browser retries, expected failures, stale source
-identities, different toolchains, and execution outside the frozen audit interval. A green aggregate
-result cannot replace a named executed assertion.
+generated properties, static gates, installed-package and release checks, and exact source excerpts.
+They reject missing or duplicate selectors, required skips, browser retries, expected failures,
+stale source identities, different toolchains, and execution outside the frozen audit interval. A
+green aggregate result cannot replace a named executed assertion.
+
+Release citations require all seven named checks to pass. They bind two independent installs and
+builds to the frozen tarball digest, file count, tool versions and historical comparison commit,
+with zero generated-output changes. SBOM, licenses, packed-site results and provenance records must
+also agree. A `release` requirement cannot be satisfied by a `package` citation or documentation.
+Provenance eligibility records a capability and does not authorize publication. The final execution
+index must bind the parent release gate's interval because its individual checks have no timestamps.
+Final orchestration will use the release command's existing `JQS_QUALITY_FORCE_ALL=1` setting for
+both quality modes. Ordinary conditional skips remain valid delivery history but cannot satisfy the
+final audit's required gate roster.
 
 `createReportLoader()` verifies report byte counts and SHA-256 digests against explicit references,
 then validates the JSON against schema bytes identified by the frozen input inventory. It returns
-immutable data. Eight report kinds use existing producer schemas; internal Vitest and Playwright
+immutable data. Nine report kinds use existing producer schemas; internal Vitest and Playwright
 schemas validate the upstream fields consumed by the adapters. A valid schema does not mean tests
 passed: named execution checks still reject unsuccessful or incomplete runs. Connecting the loader
 to the final immutable manifest, execution index, and reviewed mappings remains unfinished.
+
+Navigation evidence uses the frozen decision schema's raw measurement definition. A decision
+document or the ordinary nine-scenario browser subset cannot satisfy that contract. The adapter
+requires all 840 flow records across thirty candidate/configuration/browser rows and every named
+assertion. All 498 applicable configured flows must pass; six declared no-JavaScript exclusions
+remain exclusions. Host-default failures stay recorded as observations. Artifact, fixture,
+dependency, bundle and tool identities must match the frozen expectations, and successful flows must
+show complete cleanup. Navigation selectors are literal JSON arrays containing the candidate,
+browser and scenario ID, and select only configured executed passes. The final read-only executor
+and parent execution interval still need integration.
 
 Browser selectors may use a unique spec title or a JSON array containing every parent suite title
 followed by the spec title. The latter distinguishes equal titles in separate groups. Missing or

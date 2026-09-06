@@ -364,6 +364,60 @@ Planned files: `scripts/program-audit/reports.mjs`, the evidence/mapping adapter
 report schemas, maintained loader/selector tests, `docs/PROGRAM_AUDIT.md`, and this ledger. No
 runtime, package export, quality threshold, or mutation behavior changes under this integration.
 
+### Release evidence integration, 2026-09-06
+
+Promote the isolated release adapter into `scripts/program-audit/release.mjs`. Require all seven
+named release checks, the exact frozen tarball digest and file count, two independent installs and
+builds, zero generated-output changes, and the frozen historical comparison commit. Match Node, npm,
+TypeScript, Playwright and all browser versions to the predeclared environment. Require SBOM,
+license, packed-site and consistent provenance evidence. Provenance eligibility is a recorded
+capability, not permission to publish.
+
+Add a distinct `release` evidence kind to the mapping schema and validator so package or
+documentation citations cannot replace reproducibility proof. Maintained synthetic controls must
+reject stale identities, different toolchains/artifacts/bases, incomplete checks, shared dependency
+installs, changed outputs and incomplete packed-site results. Bind the fixture to the real producer
+schema. The existing hash-bound loader supplies schema-valid immutable reports; final
+execution-index integration must additionally bind the release gate's interval because individual
+release checks do not carry timestamps. This step does not claim final acceptance or begin the final
+evidence run.
+
+Planned files: the new release adapter and focused test, mapping validator/schema,
+`docs/PROGRAM_AUDIT.md`, and this ticket. No runtime or package changes are required.
+
+Final orchestration will reuse the existing `JQS_QUALITY_FORCE_ALL=1` CLI setting from
+`scripts/release/candidate.mjs` for both full-audit and delivery. The frozen expected gate roster
+still requires every gate to execute successfully. Ordinary delivery reports with legitimate
+conditional skips remain historical compatibility references, not final program acceptance.
+
+### Complete navigation evidence integration, 2026-09-06
+
+The standard navigation browser suite selects nine of the frozen contract's 28 scenarios. Promote
+the reviewed raw-measurement adapter into `scripts/program-audit/navigation.mjs` so that smaller
+suite cannot satisfy the full decision contract. Require all thirty candidate/configuration/browser
+rows and every named scenario assertion. All 498 applicable configured flows must pass; only the six
+declared no-JavaScript NAV-20/NAV-24 exclusions may be unexecuted. Preserve host-default failures as
+observations of configurations the decision does not recommend.
+
+Bind the raw report to the frozen contract, fixture inputs, exact artifact, dependency lock,
+prepared bundle graphs and browser/tool versions. Require successful configured-flow disposal, zero
+unhandled script errors and no script requests in no-JavaScript flows. Literal selectors use
+`[candidate, browser, scenario]` and accept only configured executed passes. Add a distinct
+`navigation` mapping kind so ordinary browser or documentation citations cannot replace it.
+
+Extend the existing report loader with the frozen navigation schema's raw `measurement` definition.
+The decision document itself must not validate as execution evidence. Existing file, JSON size,
+depth, node and immutable-read limits remain unchanged. Historical full-report compatibility and
+negative controls precede integration; maintained tests must retain that distinction from final
+candidate proof. The final execution index must bind the parent interval because raw measurements
+record only their creation time. A read-only full-driver executor and final manifest integration
+remain required; do not use the measurement CLI that rewrites the tracked decision dataset.
+
+Planned files: the navigation adapter and focused test, report loader and its test, mapping
+validator/schema, `docs/PROGRAM_AUDIT.md`, and this ticket. Repair the historical 0020 command table
+by keeping its rows inside the existing table, then verify the formatter preserves the repair. This
+changes audit tooling and documentation only.
+
 ### Planned files
 
 - Program-audit generator, evidence adapters, schemas, immutable manifest/report types, and bounded
@@ -394,6 +448,10 @@ runtime, package export, quality threshold, or mutation behavior changes under t
 | `scripts/program-audit/claims.mjs`                             | Extract authored Markdown and HTML claim candidates before evidence selection; preserve code examples and duplicate occurrences.                                  |
 | `scripts/program-audit/inventory.mjs`                          | Produce a schema-valid review inventory outside the artifact, with complete source inputs and an explicit unresolved-work list.                                   |
 | `scripts/program-audit/reports.mjs`                            | Validate frozen report/schema identities and bounded JSON, then return immutable data for named execution checks.                                                 |
+| `scripts/program-audit/release.mjs`                            | Require complete release checks for the frozen artifact, independent builds, historical comparison, toolchain and supporting evidence.                            |
+| `scripts/program-audit/navigation.mjs`                         | Validate the full raw navigation matrix, exact configured assertions and identity, explicit exclusions, and terminal cleanup.                                     |
+| `test/program-audit-navigation.test.mjs`                       | Keep historical full-report compatibility and negative controls for identity, completeness, assertions, cleanup and stronger evidence requirements.               |
+| `test/program-audit-release.test.mjs`                          | Reject incomplete, stale, inconsistent or weaker release evidence; bind synthetic report and mapping controls to the maintained schemas.                          |
 | `quality/program-audit/{vitest,playwright}-report.schema.json` | Validate the upstream report fields consumed by the adapters without treating a valid schema as a passing test run.                                               |
 | `test/program-audit-reports.test.mjs`                          | Exercise digest/size/schema mismatch, unsafe files, private error handling, structural limits, immutable results, and unsuccessful executions.                    |
 | `quality/program-audit/inputs.json` and internal schemas       | Fix the 53-ticket roster, 613 requirement count, 74 claim source files, 22 baseline inputs, and closed inventory/mapping structures.                              |
@@ -401,6 +459,17 @@ runtime, package export, quality threshold, or mutation behavior changes under t
 | `test/property/program-audit.property.test.mjs`                | Generated roster/order/wrapping and duplicate claim occurrence controls using the existing property runner.                                                       |
 | `docs/PROGRAM_AUDIT.md` and `docs/README.md`                   | Explain the internal commands, evidence boundaries, and remaining integration/manual review work.                                                                 |
 | This ticket                                                    | Keep the baseline, design, changed files, verification results, and unresolved acceptance work current.                                                           |
+
+The mapping validator and `quality/program-audit/mappings.schema.json` now distinguish release
+evidence from installed-package evidence. `docs/PROGRAM_AUDIT.md` records that distinction and the
+remaining parent-gate interval integration.
+
+Navigation now has a separate evidence kind in the same mapping validator/schema. The report loader
+selects the raw measurement definition from the frozen producer schema, with an explicit test
+rejecting the decision document as execution proof. File and JSON limits are unchanged.
+
+Formatting repair in `docs/tickets/0020-prove-resource-strategy.md` restores two historical Test
+command rows to valid Markdown without changing their evidence or the completed decision.
 
 Additional audit fixture maintenance: `test/release-candidate-contract.test.mjs` now verifies the
 existing readiness rejection when an owner is reopened, allowing its corrective unit tests to run.
@@ -423,6 +492,37 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 
 ## Test
 
+The navigation integration passes 64 focused audit tests and ESLint, including 36 navigation
+controls and a raw-schema loader check. Plan validation passed before these changes. The retained
+historical report contains thirty rows, 840 flows, 498 configured passes, six declared no-JavaScript
+exclusions and 72 host-default failures. These checks establish adapter behavior and producer
+compatibility, not current-candidate navigation acceptance. The 0020 historical command rows now
+remain separate table rows after formatting.
+
+The preceding release-adapter delivery `2026-09-06T13-19-02-124Z-92160` passed all twelve executed
+gates, 1,262 unit tests, 484 browser cases, thirteen package checks and seven release checks. The
+unchanged 0044 detector was conditionally skipped. Its tarball remains
+`a79bb89456c89c08f847d89153a03d3a99f38e35cf750d77999319b7b63a63eb`. Fresh fast and delivery
+verification must cover the navigation integration and corrected ledger before commit.
+
+Planning mappings now cover 434 requirements with 3,796 exact citations. Fourteen additional CSP
+implementation rows pass their schema and selector compatibility probes. The remaining 179
+requirements, all claim review and final execution/manual evidence remain required.
+
+Release integration fast run `2026-09-06T13-16-07-075Z-79212` passes all six gates and 1,262 unit
+tests. Code validation accepted that exact report. The maintained release adapter also accepts all
+seven named checks in retained delivery `2026-09-06T12-56-58-360Z-43424`; this establishes producer
+compatibility without relabeling historical evidence as a final audit. Full delivery remains
+required for the current integration and ledger.
+
+The preceding delivery passed 1,256 unit tests, 484 browser cases, 13 package checks and seven
+release checks, followed by owner 0052's Test validation. Its six corrected files are committed and
+pushed as `c5c7797`. Hosted full audit `34035393474` is running against that exact commit; 0052
+remains testing. Owner 0020 is done. Planning mappings now cover 378 requirements with 3,114 exact
+citations, including sixteen stable-release rows whose schema and selector probes pass. Remaining
+requirements, claim review, manifest/index integration, complete current navigation proof and both
+manual accessibility records are still required.
+
 Delivery `2026-09-06T06-34-06-391Z-92532` passed all 13 gates before the report-loader integration
 and was committed as `c3b957e`. This verifies the prior auditor implementation and owner
 corrections; it is not the final program verdict. The loader prototype accepted eleven real report
@@ -434,6 +534,8 @@ required for these changes.
 | Command                                                  | Result                                      | Evidence                                                                                                                                                                                                   |
 | -------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Plan validator for 0033 before maintained implementation | Pass                                        | Activation design and immutable prerequisite baseline recorded before Code.                                                                                                                                |
+| Release integration Plan validator                       | Pass                                        | Seven-check release contract, separate evidence kind and remaining parent-gate integration recorded before implementation.                                                                                 |
+| Focused audit tests and ESLint after release integration | Pass, 27 cases                              | Six new release controls join the 21 existing audit controls; the release fixture validates against the producer schema. This is auditor verification, not final program acceptance.                       |
 | Focused Vitest audit tests                               | Pass, 18 cases                              | Requirement/mapping/manual checks; named report adapters; file boundaries; actual full repository inventory; two generated property cases. These are auditor controls, not final program acceptance proof. |
 | Focused ESLint                                           | Initial failure corrected; subsequent pass  | Replaced a control-character regular expression with explicit character-code checks. No rule or scope was weakened.                                                                                        |
 | `npm run check` for this audit implementation            | Interrupted after a reproduced owner defect | Run `2026-09-06T05-06-50-063Z-47835` passed unit, coverage, and static checks before SIGINT. It has no delivery receipt. Ticket 0002 must be corrected first.                                              |

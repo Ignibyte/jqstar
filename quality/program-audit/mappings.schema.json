@@ -26,13 +26,15 @@
             "property",
             "browser",
             "package",
+            "release",
+            "navigation",
             "static",
             "decision",
             "manual"
           ]
         },
         "minItems": 1,
-        "maxItems": 9,
+        "maxItems": 11,
         "uniqueItems": true
       },
       "evidence": {
@@ -54,6 +56,8 @@
                 "property",
                 "browser",
                 "package",
+                "release",
+                "navigation",
                 "static",
                 "decision",
                 "manual"

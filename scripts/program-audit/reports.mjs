@@ -11,6 +11,7 @@ export const reportSchemas = Object.freeze({
   package: "schema/package-report.schema.json",
   release: "schema/release-report.schema.json",
   browser: "schema/browser-report.schema.json",
+  navigation: "schema/navigation-decision.schema.json",
   detector: "schema/quality-0044-self-test-report.schema.json",
   vitest: "quality/program-audit/vitest-report.schema.json",
   playwright: "quality/program-audit/playwright-report.schema.json",
@@ -61,7 +62,12 @@ export async function createReportLoader(root, schemas) {
   for (const [kind, path] of Object.entries(reportSchemas)) {
     assert(schemas[kind].path === path, "Unexpected report schema path");
     const file = await readReferenced(root, schemas[kind]);
-    validators.set(kind, createSchemaValidator(JSON.parse(file.source)));
+    const document = JSON.parse(file.source);
+    const schema =
+      kind === "navigation"
+        ? { $schema: document.$schema, $defs: document.$defs, $ref: "#/$defs/measurement" }
+        : document;
+    validators.set(kind, createSchemaValidator(schema));
   }
   return async (kind, expected) => {
     assert(validators.has(kind), "Unknown evidence report kind");

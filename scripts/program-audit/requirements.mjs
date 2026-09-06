@@ -145,6 +145,8 @@ const strengths = {
   property: new Set(["property"]),
   browser: new Set(["browser"]),
   package: new Set(["package"]),
+  release: new Set(["release"]),
+  navigation: new Set(["navigation"]),
   static: new Set(["static"]),
   decision: new Set(["decision"]),
   manual: new Set(["manual"]),

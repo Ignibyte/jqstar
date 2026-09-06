@@ -7,6 +7,7 @@ import { it } from "vitest";
 import { sha256 } from "../scripts/program-audit/contracts.mjs";
 import { selectVitest } from "../scripts/program-audit/evidence.mjs";
 import { createReportLoader, reportSchemas } from "../scripts/program-audit/reports.mjs";
+import { readNavigationMeasurement } from "../scripts/quality/navigation-evidence.mjs";
 const start = Date.parse("2026-09-06T00:00:00.000Z");
 function unit() {
   return {
@@ -62,6 +63,27 @@ it("loads only hash-bound schema-valid report bytes and freezes every returned o
     assert.throws(() => {
       report.data.testResults[0].assertionResults[0].status = "pending";
     }, TypeError);
+  }));
+it("loads raw navigation executions and refuses the decision document as execution evidence", async () =>
+  fixture(async ({ load, put }) => {
+    const decision = JSON.parse(await readFile("quality/navigation-decision.json", "utf8"));
+    const schema = JSON.parse(await readFile("schema/navigation-decision.schema.json", "utf8"));
+    // This immutable historical archive proves producer compatibility, not current acceptance.
+    const reference = decision.measurements.find(
+      ({ runId }) => runId === "2026-09-05T23-18-54.986Z-29717",
+    );
+    const raw = await readNavigationMeasurement(reference, schema);
+    const loaded = await load(
+      "navigation",
+      await put("evidence/navigation.json", JSON.stringify(raw)),
+    );
+    assert.equal(loaded.data.schema, "jqstar-navigation-measurement/1");
+    assert.equal(loaded.data.candidates.length, 30);
+    assert(Object.isFrozen(loaded.data.candidates[0].flows[0].assertions));
+    await assert.rejects(
+      load("navigation", await put("evidence/decision.json", JSON.stringify(decision))),
+      /fails its frozen schema/u,
+    );
   }));
 it("rejects missing, altered, miscounted, symbolic-link and unknown report references", async () =>
   fixture(async ({ root, load, put }) => {

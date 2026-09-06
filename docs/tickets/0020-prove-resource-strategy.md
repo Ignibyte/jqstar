@@ -414,12 +414,8 @@ Historical implementation evidence:
 | `npm run ticket:validate -- --phase test --ticket docs/tickets/0020-prove-resource-strategy.md --report .git/jqstar/latest-report.json` | Pass                                   | Test closure bound to the current passing delivery report and receipt before documenting.                                                                                                                                                                 |
 | `git diff --check`                                                                                                                      | Pass                                   | No whitespace errors in the completed implementation and guidance.                                                                                                                                                                                        |
 | Final delivery attempt `2026-09-05T20-49-00-053Z-58005`                                                                                 | Interrupted, corrected                 | Stopped at startup to remove a stale pending-verification label in the decision document. The earlier complete delivery passed; the corrected terminal tree is verified by the final receipt.                                                             |
-
-| Corrected full delivery `2026-09-06T12-30-22-478Z-89670` | Pass | Twelve executed gates pass with
-1,254 unit tests and 484 browser cases. The unchanged 0044 detector is conditionally skipped, not
-counted as a pass. Resource source digests, package and release checks pass. | | Corrected Test
-phase before commit `e6a57ca` | Pass | Validator accepted the exact delivery report and current
-receipt before the corrected source was committed and pushed. |
+| Corrected full delivery `2026-09-06T12-30-22-478Z-89670`                                                                                | Pass                                   | Twelve executed gates pass with 1,254 unit tests and 484 browser cases. The unchanged 0044 detector is conditionally skipped, not counted as a pass. Resource source digests, package and release checks pass.                                            |
+| Corrected Test phase before commit `e6a57ca`                                                                                            | Pass                                   | Validator accepted the exact delivery report and current receipt before the corrected source was committed and pushed.                                                                                                                                    |
 
 ### Inspection ledger
 
