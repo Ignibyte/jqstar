@@ -27,7 +27,8 @@
       "./testing": "stable",
       "./turbo": "stable",
       "./ui": "stable",
-      "./persist": "stable"
+      "./persist": "stable",
+      "./inspect": "stable"
     }
   },
   "engines": {
@@ -163,6 +164,16 @@
         "types": "./dist/persist.d.cts",
         "default": "./dist/persist.cjs"
       }
+    },
+    "./inspect": {
+      "import": {
+        "types": "./dist/inspect.d.ts",
+        "default": "./dist/inspect.js"
+      },
+      "require": {
+        "types": "./dist/inspect.d.cts",
+        "default": "./dist/inspect.cjs"
+      }
     }
   },
   "bin": {
@@ -204,7 +215,8 @@
     "!schema/resource-strategy.schema.json",
     "!schema/navigation-decision.schema.json",
     "server-dist",
-    "docs/PERSISTENCE.md"
+    "docs/PERSISTENCE.md",
+    "docs/INSPECTION.md"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:js && npm run build:css",

@@ -55,8 +55,8 @@ application with `$(root).star(definition)` or boot declarative markup with `$.s
 The package exports:
 
 - an auto-installing compatibility root plus stable, side-effect-free `core`, `ui`, `datastar`,
-  `csp`, `testing`, `datastar/testing`, `htmx`, `stores`, `persist`, and `turbo` entries; only the
-  root composes runtime plugins and publishes a UMD global
+  `csp`, `testing`, `datastar/testing`, `htmx`, `stores`, `persist`, `inspect`, and `turbo` entries;
+  only the root composes runtime plugins and publishes a UMD global
 - application lifecycle and typed definitions
 - the trusted expression-engine factory, installer capability, structured failures, and cache
   controls; explicit core installation selects the engine before document ownership
@@ -171,8 +171,8 @@ fixtures define the approved inputs for the shipped Turbo and htmx bridges.
 ## Release shape
 
 The npm package exposes the compatibility root as ESM, CommonJS, and UMD; modular
-core/UI/CSP/Datastar/testing/htmx/stores/persistence/Turbo entries as ESM and CommonJS; matched
-declarations and source maps; explicit compiled UI CSS; the CLI; registry sources; schema;
+core/UI/CSP/Datastar/testing/htmx/stores/persistence/inspection/Turbo entries as ESM and CommonJS;
+matched declarations and source maps; explicit compiled UI CSS; the CLI; registry sources; schema;
 deployment examples; the public guides linked from the package README; the static agent corpus and
 guide; and one deterministic Brotli archive of the self-hosted website. The server uses that archive
 only when loose deployment files are absent; local development and GitHub Pages retain ordinary
@@ -180,12 +180,13 @@ nested HTML routes. Repository brain, quality, accessibility-release, and ticket
 source-repository material. Node 24 or newer is required.
 
 Version `1.0.0` is the first stable platform contract and `1.1.0` adds optional shared stores and
-selected-preference persistence. `package.json` is the runtime version source;
-`quality/release-contract.json` records the stable entries and candidate policy. Candidate tooling
-under `scripts/release/` binds two reproducible tarball builds, installed consumers, complete
-quality runs, prerequisite evidence, and a non-publishing handoff to one clean committed source
-tree. Generated receipts live below `.git/jqstar/releases/` and are never package inputs. Tagging,
-pushing, publishing, signing, and release creation require separate explicit authorization.
+selected-preference persistence plus explicit bounded inspection. `package.json` is the runtime
+version source; `quality/release-contract.json` records the stable entries and candidate policy.
+Candidate tooling under `scripts/release/` binds two reproducible tarball builds, installed
+consumers, complete quality runs, prerequisite evidence, and a non-publishing handoff to one clean
+committed source tree. Generated receipts live below `.git/jqstar/releases/` and are never package
+inputs. Tagging, pushing, publishing, signing, and release creation require separate explicit
+authorization.
 
 ## Compatibility policy
 
@@ -200,9 +201,9 @@ including transactional directive, helper, request-middleware, protocol-profile,
 operation-observer registration. The root entry also publishes kernel and application operation
 subscriptions; request descriptor, outcome, and middleware contracts; protocol request/response,
 matcher, lease, and capability contracts; and typed errors. `core`, `ui`, `datastar`, `csp`,
-`testing`, `datastar/testing`, `htmx`, and `turbo` are stable 1.0 package contracts. `stores` and
-`persist` are stable in 1.1. Source-only modules and undeclared package subpaths remain internal
-until a later ticket publishes and tests them.
+`testing`, `datastar/testing`, `htmx`, and `turbo` are stable 1.0 package contracts. `stores`,
+`persist`, and `inspect` are stable in 1.1. Source-only modules and undeclared package subpaths
+remain internal until a later ticket publishes and tests them.
 
 The [navigation decision](decisions/NATIVE_NAVIGATION.md) keeps ordinary documents and optional
 Turbo/htmx enhancement. No native navigation entry, forms engine, region manager or prefetch cache

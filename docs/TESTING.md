@@ -539,3 +539,18 @@ complete matrix and supplemental launch-policy probe remain decision evidence ra
 silently replaced by this smaller regression set. The decision documents the rapid Turbo history,
 pre-header browser write retry, older htmx private-entry and handled Firefox pageerror boundaries.
 No manual assistive-technology, browser-chrome or cache-performance claim follows from these tests.
+
+## Inspection evidence
+
+`test/inspection.test.ts` checks post-boot attachment, default-off ownership, shared leases, closed
+schemas, service inventories, policy expiry/revocation, transactional metadata and contained cleanup
+failures. `test/inspection-redaction.test.ts` exercises hostile data and 50,000 observations.
+`test/property/inspection.property.test.ts` generates retention, disclosure and expiry sequences
+under the standard seeded replay contract.
+
+`test/fixtures/inspection-conformance.mjs` runs against source and exact installed ESM/CommonJS,
+QUnit and Chromium/Firefox/WebKit artifacts. It includes six official plugins, four count summaries,
+200 actions, both bridge observation kinds and terminal cleanup. Bridge host doubles exercise their
+public lifecycle events; the existing real-host bridge suites retain transport/lifecycle coverage.
+Installed graph checks measure inspector-only, core plus inspector and CSP plus inspector bundles,
+reject trusted code in the CSP composition, and reject inspection sentinels in unrelated consumers.

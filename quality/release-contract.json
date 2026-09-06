@@ -10,11 +10,7 @@
     "pluginApiVersion": "0.1.0",
     "cspGrammarVersion": "jqstar-csp-expression/1"
   },
-  "source": {
-    "ticket": "0019",
-    "expectedBranch": "feat/shared-stores",
-    "expectedTag": "v1.1.0"
-  },
+  "source": { "ticket": "0030", "expectedBranch": "feat/shared-stores", "expectedTag": "v1.1.0" },
   "stableEntries": [
     {
       "id": "root",
@@ -94,6 +90,13 @@
       "composition": ["persist"]
     },
     {
+      "id": "inspect",
+      "subpath": "./inspect",
+      "formats": ["esm", "commonjs"],
+      "install": "explicit",
+      "composition": ["inspect"]
+    },
+    {
       "id": "ui-css",
       "subpath": "./ui.css",
       "formats": ["css"],
@@ -109,10 +112,7 @@
     "moduleFormats": ["browser-module", "commonjs", "esm", "umd"],
     "documents": ["ordinary-html-document", "same-origin-frame-document"],
     "unsupportedDocuments": ["shadow-root-application"],
-    "bridges": {
-      "turbo": ">=8.0.21 <8.1.0",
-      "htmx": ">=2.0.0 <2.1.0"
-    }
+    "bridges": { "turbo": ">=8.0.21 <8.1.0", "htmx": ">=2.0.0 <2.1.0" }
   },
   "policies": [
     { "kind": "compatibility", "path": "docs/COMPATIBILITY.md" },
@@ -131,7 +131,8 @@
     { "kind": "jquery-mobile-migration", "path": "docs/JQUERY_MOBILE_MIGRATION.md" },
     { "kind": "self-hosting", "path": "docs/SELF_HOSTING.md" },
     { "kind": "stores", "path": "docs/STORES.md" },
-    { "kind": "persistence", "path": "docs/PERSISTENCE.md" }
+    { "kind": "persistence", "path": "docs/PERSISTENCE.md" },
+    { "kind": "inspection", "path": "docs/INSPECTION.md" }
   ],
   "prerequisites": {
     "requiredStatus": "done",
@@ -156,6 +157,7 @@
       "0017",
       "0018",
       "0019",
+      "0030",
       "0034",
       "0035",
       "0036",
@@ -223,7 +225,6 @@
     "native-navigation",
     "navigation-regions",
     "prefetch-cache",
-    "inspection",
     "devtools",
     "upgrade-diagnostics"
   ],

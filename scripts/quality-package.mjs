@@ -88,6 +88,7 @@ const cspPolicy =
 async function serveBrowserProof(installedPackage, consumer, identity) {
   const files = new Map([
     ["/axe.js", resolve("node_modules/axe-core/axe.min.js")],
+    ["/inspection-conformance.mjs", resolve("test/fixtures/inspection-conformance.mjs")],
     ["/csp", resolve("e2e/fixtures/csp-proof/index.html")],
     ["/csp-app.js", resolve("e2e/fixtures/csp-proof/app.js")],
     ["/csp-bootstrap.js", resolve("e2e/fixtures/csp-proof/bootstrap.js")],
@@ -253,6 +254,28 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
             const core = await runCoreConformance(createHarness);
             const plugin = await runPluginConformance({ createHarness, plugin: createExternalPlugin(), failingPlugin: createFailingExternalPlugin(), cleanupFailingPlugin: createCleanupFailingExternalPlugin() });
             document.querySelector("#result").textContent = core.passed + ":" + plugin.passed;
+          });
+        </script>`);
+      return;
+    }
+    if (url.pathname === "/inspect") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      response.end(`<!doctype html><title>Inspection package proof</title><button id="proof">Inspect</button><output id="result"></output>
+        <script type="importmap">{"imports":{"jquery":"/jquery-module.js"}}</script>
+        <script type="module">
+          import $ from "jquery";
+          import * as core from "/core.js";
+          import * as inspect from "/inspect.js";
+          import * as ui from "/ui.js";
+          import * as datastar from "/datastar.js";
+          import * as stores from "/stores.js";
+          import * as persist from "/persist.js";
+          import * as turbo from "/turbo.js";
+          import * as htmx from "/htmx.js";
+          import { inspectionConformance } from "/inspection-conformance.mjs";
+          document.querySelector("#proof").addEventListener("click", async () => {
+            const result = await inspectionConformance($, window, { core, inspect, ui, datastar, stores, persist, turbo, htmx });
+            document.querySelector("#result").textContent = [result.plugins, result.services, result.actions, result.bridgeKinds, result.failures].join(":");
           });
         </script>`);
       return;
@@ -449,6 +472,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
           ["/testing", "3:3"],
           ["/stores", "missing:2,5:local:0:true"],
           ["/persist", "5:7:0:true"],
+          ["/inspect", "6:4:200:2:0"],
         ]) {
           await page.goto(`http://127.0.0.1:${address.port}${path}`);
           await page.locator("#proof").click();
@@ -641,7 +665,7 @@ async function serveBrowserProof(installedPackage, consumer, identity) {
     }
     return {
       subject: "installed-tarball",
-      consumers: ["module", "umd", "testing", "stores", "persist", "csp"],
+      consumers: ["module", "umd", "testing", "stores", "persist", "inspect", "csp"],
       lifecycle: "boot-and-dispose",
       engines,
       csp: {
@@ -754,7 +778,8 @@ try {
           turboPackageBudget.packedBytes +
           htmxPackageBudget.packedBytes +
           storesPackageBudget.packedBytes +
-          budgets.persistPackage.packedBytes,
+          budgets.persistPackage.packedBytes +
+          budgets.inspectPackage.packedBytes,
       `Packed bytes ${pack.size} exceed the base and optional-entry allowances.`,
     );
     assert(
@@ -764,7 +789,8 @@ try {
           turboPackageBudget.unpackedBytes +
           htmxPackageBudget.unpackedBytes +
           storesPackageBudget.unpackedBytes +
-          budgets.persistPackage.unpackedBytes,
+          budgets.persistPackage.unpackedBytes +
+          budgets.inspectPackage.unpackedBytes,
       `Unpacked bytes ${pack.unpackedSize} exceed the base and optional-entry allowances.`,
     );
     assert(
@@ -872,6 +898,14 @@ try {
       "dist/htmx.d.ts",
       "dist/htmx.js",
       "dist/htmx.js.map",
+      "dist/inspect.cjs",
+      "dist/inspect.d.cts",
+      "dist/inspect.d.ts",
+      "dist/inspect.js",
+      "dist/inspect.cjs.map",
+      "dist/inspect.js.map",
+      "schema/inspection.schema.json",
+      "docs/INSPECTION.md",
       "dist/index.d.cts",
       "dist/jquery-star.cjs",
       "dist/jquery-star.cjs.map",
@@ -947,7 +981,17 @@ try {
       manifest.exports?.["."]?.require?.types === "./dist/index.d.cts",
       "Root CommonJS type export is wrong.",
     );
-    for (const entry of ["core", "csp", "ui", "datastar", "htmx", "stores", "persist", "turbo"]) {
+    for (const entry of [
+      "core",
+      "csp",
+      "ui",
+      "datastar",
+      "htmx",
+      "stores",
+      "persist",
+      "inspect",
+      "turbo",
+    ]) {
       const exported = manifest.exports?.[`./${entry}`];
       assert(exported?.import?.default === `./dist/${entry}.js`, `${entry} ESM export is wrong.`);
       assert(
@@ -1015,6 +1059,7 @@ try {
       "./htmx",
       "./stores",
       "./persist",
+      "./inspect",
       "./turbo",
       "./datastar/testing",
     ]);
@@ -1440,6 +1485,50 @@ if ($.ui !== undefined || $.widget !== undefined) throw new Error("CommonJS UI p
     });
 
     await writeFile(
+      join(consumer, "inspection-conformance.mjs"),
+      await readFile("test/fixtures/inspection-conformance.mjs", "utf8"),
+    );
+    for (const format of ["esm", "commonjs"]) {
+      const imports = ["core", "inspect", "ui", "datastar", "stores", "persist", "turbo", "htmx"];
+      const declarations = imports
+        .map(
+          (entry) =>
+            `const ${entry} = ${format === "esm" ? "await import" : "require"}("jquery-star/${entry}");`,
+        )
+        .join("\n");
+      const program = `${globals}
+const { createRequire } = await import("node:module");
+const require = createRequire(import.meta.url);
+const { default: $ } = await import("jquery");
+${declarations}
+const inspectAgain = ${format === "esm" ? 'require("jquery-star/inspect")' : 'await import("jquery-star/inspect")'};
+const { inspectionConformance } = await import("./inspection-conformance.mjs");
+if ($.star !== undefined) throw new Error("Inspection import installed a kernel");
+const result = await inspectionConformance($, window, { core, inspect, inspectAgain, ui, datastar, stores, persist, turbo, htmx });
+if (result.failures !== 0) throw new Error("Installed inspection conformance failed");
+dom.window.close();
+`;
+      await writeFile(join(consumer, `inspection-${format}.mjs`), program);
+      command(`installed inspection ${format}`, process.execPath, [`inspection-${format}.mjs`], {
+        cwd: consumer,
+      });
+    }
+    await writeFile(
+      join(consumer, "inspection-inert.mjs"),
+      `
+const { createRequire } = await import("node:module");
+const require = createRequire(import.meta.url);
+if (typeof window !== "undefined" || typeof document !== "undefined") throw new Error("Inert proof has an ambient DOM");
+await import("jquery-star/inspect");
+require("jquery-star/inspect");
+if (Object.hasOwn(globalThis, Symbol.for("jqstar.metadata/1"))) throw new Error("Inspection import created a collector registry");
+`,
+    );
+    command("inert inspection import and require", process.execPath, ["inspection-inert.mjs"], {
+      cwd: consumer,
+    });
+
+    await writeFile(
       join(consumer, "testing-esm.mjs"),
       `${globals}
 const { default: $ } = await import("jquery");
@@ -1773,6 +1862,7 @@ import { createHtmxBridge, type StarHtmxBridge, type StarHtmxCapability } from "
 import { defineStore, storesPlugin, type StarStoresFacade } from "jquery-star/stores";
 import { createFieldCodec, persistPlugin, type StarPersistAttachment, type StarPersistFacade } from "jquery-star/persist";
 import { createTurboBridge, type StarTurboBridge, type StarTurboCapability } from "jquery-star/turbo";
+import { attachInspector, type StarInspector, type StarInspectionSnapshot } from "jquery-star/inspect";
 type ArbitraryJQueryHasStar = JQueryStatic extends { star: unknown } ? true : false;
 const arbitraryJQueryHasStar: ArbitraryJQueryHasStar = false;
 const installed: StarInstalledJQuery = installStarCore($);
@@ -1783,6 +1873,11 @@ const persisted: StarPersistFacade = core.use(persistPlugin);
 const persistence: StarPersistAttachment = persisted.attach("session", Object.freeze({ namespace: "types", version: 1,
   codec: createFieldCodec<typeof shared>([{ path: "count", validate: (value) => typeof value === "number" }]) }));
 void persistence.status();
+const inspector: StarInspector = attachInspector(installed);
+inspector.enableTrace({ maxEntries: 10, maxBytes: 2048, kinds: ["action"] });
+const snapshot: StarInspectionSnapshot = inspector.snapshot();
+void snapshot.sequence;
+void inspector.exportTrace().records;
 const renderAdapter: StarRenderAdapter = createRenderAdapter(installed);
 const renderTransaction: StarRenderTransaction = renderAdapter.begin(document.documentElement);
 const datastar = core.use(datastarPlugin);
@@ -1816,6 +1911,38 @@ void [arbitraryJQueryHasStar, datastar.id, ui.enhance, htmx.observations, turbo.
         `TypeScript modular ${resolution}`,
         npx,
         ["--no-install", "tsc", "-p", configurationFile],
+        { cwd: consumer },
+      );
+    }
+    await writeFile(
+      join(consumer, "inspection-invalid.mts"),
+      `import type { StarInspector } from "jquery-star/inspect";
+declare const inspector: StarInspector;
+inspector.snapshot().sequence = 0;
+inspector.denyField("body");
+`,
+    );
+    for (const resolution of ["NodeNext", "Bundler"]) {
+      const configurationFile = `tsconfig.inspection-negative-${resolution.toLowerCase()}.json`;
+      await writeFile(
+        join(consumer, configurationFile),
+        JSON.stringify({
+          compilerOptions: {
+            lib: ["DOM", "ES2022"],
+            module: resolution === "NodeNext" ? "NodeNext" : "ESNext",
+            moduleResolution: resolution,
+            noEmit: true,
+            strict: true,
+            target: "ES2022",
+          },
+          files: ["inspection-invalid.mts"],
+        }),
+      );
+      expectedFailure(
+        `Inspection negative types ${resolution}`,
+        npx,
+        ["--no-install", "tsc", "-p", configurationFile],
+        ["TS2540", "TS2345"],
         { cwd: consumer },
       );
     }
@@ -1949,6 +2076,11 @@ installed.star.dispose();
         "typescript-testing-bundler",
         "typescript-csp-nodenext",
         "typescript-csp-bundler",
+        "inspection-esm",
+        "inspection-commonjs",
+        "inspection-inert",
+        "typescript-inspection-negative-nodenext",
+        "typescript-inspection-negative-bundler",
       ],
       peerDependencies: {
         htmxRange: htmxPeer,
@@ -2082,12 +2214,18 @@ QUnit.test("installed persistence hydrates and flushes selected preferences", (a
   assert.true(attachment.dispose().ok);
   adapter.dispose();
 });
+QUnit.test("installed inspection remains bounded and public", async (assert) => {
+  const { inspectionConformance } = await import("./inspection-conformance.mjs");
+  const entries = Object.fromEntries(["core", "inspect", "ui", "datastar", "stores", "persist", "turbo", "htmx"].map((name) => [name, require("jquery-star/" + name)]));
+  const result = await inspectionConformance(require("jquery"), window, entries);
+  assert.deepEqual(result, { plugins: 6, services: 4, actions: 200, bridgeKinds: 2, failures: 0 });
+});
 QUnit.on("runEnd", ({ testCounts }) => { if (testCounts.failed) process.exitCode = 1; });
 QUnit.start();
 `,
     );
     command("QUnit installed consumer", process.execPath, ["qunit.cjs"], { cwd: consumer });
-    return "4 installed-package extension, testing, CSP, and persistence tests";
+    return "5 installed-package extension, testing, CSP, persistence, and inspection tests";
   });
 
   await record("browser-consumers", async () => {
@@ -2232,7 +2370,7 @@ export default { plugins: [{ name: "jqstar-module-graph", generateBundle(_option
       await writeFile(
         join(project, "vite.config.mjs"),
         `import { writeFileSync } from "node:fs";
-export default { build: { modulePreload: { polyfill: false }, rollupOptions: { external: ${name === "csp" ? '["jquery"]' : "[]"} } }, plugins: [{ name: "jqstar-${name}-graph", generateBundle(_options, bundle) {
+export default { build: { modulePreload: { polyfill: false }, rollupOptions: { external: ${name === "csp" || name === "csp-inspect" ? '["jquery"]' : "[]"} } }, plugins: [{ name: "jqstar-${name}-graph", generateBundle(_options, bundle) {
   const modules = Object.values(bundle).filter((entry) => entry.type === "chunk").flatMap((entry) => Object.keys(entry.modules));
   writeFileSync(new URL("./module-graph.json", import.meta.url), JSON.stringify(modules, null, 2));
 } }] };
@@ -2502,7 +2640,111 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
         `Installed htmx graph contains ${forbidden}.`,
       );
     }
+    const inspectionGraphs = { unimported: "absent" };
+    for (const [name, budgetKey, program] of [
+      [
+        "inspect",
+        "inspect",
+        'import { attachInspector } from "jquery-star/inspect"; window.__inspect = attachInspector;',
+      ],
+      [
+        "core-inspect",
+        "coreInspect",
+        'import $ from "jquery"; import { installStarCore } from "jquery-star/core"; import { attachInspector } from "jquery-star/inspect"; window.__inspect = () => attachInspector(installStarCore($));',
+      ],
+      [
+        "csp-inspect",
+        "cspInspect",
+        'import $ from "jquery"; import { installStarCSP } from "jquery-star/csp"; import { attachInspector } from "jquery-star/inspect"; window.__inspect = () => attachInspector(installStarCSP($));',
+      ],
+    ]) {
+      const graph = await buildOptionalGraph(name, program + "\n");
+      const rawLimit = budgets.consumerBundles[`${budgetKey}ImportBytes`];
+      const gzipLimit = budgets.consumerBundles[`${budgetKey}ImportGzipBytes`];
+      assert(graph.bytes <= rawLimit, `${name} is ${graph.bytes} bytes; budget is ${rawLimit}.`);
+      assert(
+        graph.gzipBytes <= gzipLimit,
+        `${name} is ${graph.gzipBytes} gzip bytes; budget is ${gzipLimit}.`,
+      );
+      assert(
+        graph.source.includes("jqstar-inspection-snapshot/1"),
+        `${name} lost its inspection implementation.`,
+      );
+      for (const forbidden of [
+        "/dist/ui",
+        "/dist/datastar",
+        "/dist/testing",
+        "/dist/stores",
+        "/dist/persist",
+        "/dist/turbo",
+        "/dist/htmx",
+        "/registry/",
+        "/server-dist/",
+      ]) {
+        assert(
+          !graph.modules.some((id) => id.includes(forbidden)),
+          `${name} imports ${forbidden}.`,
+        );
+      }
+      if (name !== "core-inspect") {
+        assert(
+          !graph.modules.some(
+            (id) => id.includes("/dist/render-adapter-") || id.includes("/dist/core"),
+          ),
+          `${name} imports the trusted runtime.`,
+        );
+        assert(
+          cspCodeViolations(graph.source).length === 0,
+          `${name} contains dynamic code construction.`,
+        );
+      }
+      if (name === "inspect") {
+        assert(
+          !graph.modules.some(
+            (id) => id.includes("/dist/csp") || id.includes("node_modules/jquery/"),
+          ),
+          "Standalone inspection imports a runtime or jQuery.",
+        );
+      }
+      inspectionGraphs[name] = {
+        bytes: graph.bytes,
+        gzipBytes: graph.gzipBytes,
+        budget: rawLimit,
+        gzipBudget: gzipLimit,
+        modules: graph.modules.length,
+      };
+    }
+    const uiOnly = await buildOptionalGraph(
+      "ui-only",
+      'import { uiPlugin } from "jquery-star/ui"; window.__ui = uiPlugin;\n',
+    );
+    const datastarOnly = await buildOptionalGraph(
+      "datastar-only",
+      'import { datastarPlugin } from "jquery-star/datastar"; window.__datastar = datastarPlugin;\n',
+    );
+    for (const source of [
+      bundledSource,
+      coreSource.toString("utf8"),
+      uiOnly.source,
+      datastarOnly.source,
+      cspBundle.source,
+      testingBundle.source,
+      datastarTestingBundle.source,
+      storesBundle.source,
+      persistBundle.source,
+      turboBundle.source,
+      htmxBundle.source,
+    ]) {
+      for (const sentinel of [
+        "jqstar-inspection-snapshot/1",
+        "jqstar-inspection-trace/1",
+        "jqstar.metadata/1",
+      ]) {
+        assert(!source.includes(sentinel), `Unimported inspection retained ${sentinel}.`);
+      }
+    }
     return {
+      inspection: inspectionGraphs,
       root: { bytes, budget: budgets.consumerBundles.rootImportBytes },
       core: {
         bytes: coreBytes,

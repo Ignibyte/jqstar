@@ -430,3 +430,16 @@ respects the existing initiating-application patch boundary. A store shares sele
 block owns the request and subscription lifecycle. Initial HTML, native navigation and versioned
 form submissions remain usable without JavaScript. Successful writes trigger canonical refresh. No
 new runtime service, export or global facade is part of this decision.
+
+## Inspection metadata
+
+`$.star.metadata()` supplies safe inventory visitation, public operation observation, resource
+ownership and final disposal notification. It exposes no private kernel collection. Plugin metadata
+registrations stage and commit with the existing plugin transaction. UI and Datastar use the public
+plugin inventory; stores, persistence and bridges supply frozen aggregate count views.
+
+The optional `jquery-star/inspect` entry turns that capability into bounded data documents. A lazy
+weak registry keyed by the installed `$.star` shares one adapter and collector across module copies.
+The core does not import the adapter or collector. Each caller holds an independent lease; only the
+trace controller can change bounds and policy. Capture projects approved scalar fields before
+retention, and read/export makes immutable copies. See [INSPECTION.md](INSPECTION.md).

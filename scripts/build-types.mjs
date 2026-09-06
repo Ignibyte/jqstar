@@ -116,6 +116,11 @@ const entrypoints = [
     config: "config/api-extractor.persist.json",
     declaration: "dist/persist.d.ts",
   },
+  {
+    name: "inspect",
+    config: "config/api-extractor.inspect.json",
+    declaration: "dist/inspect.d.ts",
+  },
   { name: "turbo", config: "config/api-extractor.turbo.json", declaration: "dist/turbo.d.ts" },
   {
     name: "datastar-testing",

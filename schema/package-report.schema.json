@@ -5,11 +5,7 @@
   "required": ["schema", "runId", "mode", "status", "package", "checks", "futureContracts"],
   "properties": {
     "schema": { "const": "jqstar-package-quality/1" },
-    "runId": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
-      "maxLength": 160
-    },
+    "runId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$", "maxLength": 160 },
     "mode": { "const": "package" },
     "status": { "enum": ["pass", "fail", "error"] },
     "package": {
@@ -49,10 +45,7 @@
       ],
       "items": false
     },
-    "futureContracts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/futureContract" }
-    }
+    "futureContracts": { "type": "array", "items": { "$ref": "#/$defs/futureContract" } }
   },
   "allOf": [
     {
@@ -76,10 +69,7 @@
               }
             }
           },
-          "futureContracts": {
-            "type": "array",
-            "maxItems": 0
-          }
+          "futureContracts": { "type": "array", "maxItems": 0 }
         }
       }
     },
@@ -169,13 +159,8 @@
           "properties": { "name": { "const": "package-budgets" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
-              "then": {
-                "properties": { "detail": { "$ref": "#/$defs/packageBudgetEvidence" } }
-              }
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+              "then": { "properties": { "detail": { "$ref": "#/$defs/packageBudgetEvidence" } } }
             }
           ]
         }
@@ -189,13 +174,8 @@
           "properties": { "name": { "const": "exports-and-files" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
-              "then": {
-                "properties": { "detail": { "$ref": "#/$defs/exportsAndFilesEvidence" } }
-              }
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+              "then": { "properties": { "detail": { "$ref": "#/$defs/exportsAndFilesEvidence" } } }
             }
           ]
         }
@@ -216,10 +196,7 @@
     "refreshPackageSubjectCheck": {
       "allOf": [
         { "$ref": "#/$defs/check" },
-        {
-          "type": "object",
-          "properties": { "name": { "const": "refresh-package-subject" } }
-        }
+        { "type": "object", "properties": { "name": { "const": "refresh-package-subject" } } }
       ]
     },
     "installedConsumerCheck": {
@@ -230,10 +207,7 @@
           "properties": { "name": { "const": "installed-consumer" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
               "then": {
                 "properties": { "detail": { "$ref": "#/$defs/installedConsumerEvidence" } }
               }
@@ -256,15 +230,10 @@
           "properties": { "name": { "const": "browser-consumers" } },
           "allOf": [
             {
-              "if": {
-                "type": "object",
-                "properties": { "status": { "const": "pass" } }
-              },
+              "if": { "type": "object", "properties": { "status": { "const": "pass" } } },
               "then": {
                 "type": "object",
-                "properties": {
-                  "detail": { "$ref": "#/$defs/browserConsumerEvidence" }
-                }
+                "properties": { "detail": { "$ref": "#/$defs/browserConsumerEvidence" } }
               }
             }
           ]
@@ -279,13 +248,8 @@
           "properties": { "name": { "const": "bundle-sentinel" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
-              "then": {
-                "properties": { "detail": { "$ref": "#/$defs/bundleSentinelEvidence" } }
-              }
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+              "then": { "properties": { "detail": { "$ref": "#/$defs/bundleSentinelEvidence" } } }
             }
           ]
         }
@@ -302,7 +266,9 @@
       "required": ["subject", "consumers", "lifecycle", "engines", "csp"],
       "properties": {
         "subject": { "const": "installed-tarball" },
-        "consumers": { "const": ["module", "umd", "testing", "stores", "persist", "csp"] },
+        "consumers": {
+          "const": ["module", "umd", "testing", "stores", "persist", "inspect", "csp"]
+        },
         "lifecycle": { "const": "boot-and-dispose" },
         "engines": {
           "type": "array",
@@ -342,7 +308,12 @@
             "typescript-testing-nodenext",
             "typescript-testing-bundler",
             "typescript-csp-nodenext",
-            "typescript-csp-bundler"
+            "typescript-csp-bundler",
+            "inspection-esm",
+            "inspection-commonjs",
+            "inspection-inert",
+            "typescript-inspection-negative-nodenext",
+            "typescript-inspection-negative-bundler"
           ]
         },
         "peerDependencies": {
@@ -442,8 +413,8 @@
       "properties": {
         "exports": {
           "type": "array",
-          "minItems": 12,
-          "maxItems": 12,
+          "minItems": 13,
+          "maxItems": 13,
           "prefixItems": [
             { "const": "." },
             { "const": "./core" },
@@ -456,20 +427,22 @@
             { "const": "./turbo" },
             { "const": "./datastar/testing" },
             { "const": "./ui.css" },
-            { "const": "./persist" }
+            { "const": "./persist" },
+            { "const": "./inspect" }
           ],
           "items": false
         },
         "version": { "type": "string", "minLength": 1 },
         "documentation": {
           "type": "array",
-          "minItems": 11,
-          "maxItems": 11,
+          "minItems": 12,
+          "maxItems": 12,
           "prefixItems": [
             { "const": "docs/BACKEND.md" },
             { "const": "docs/COMPATIBILITY.md" },
             { "const": "docs/COMPONENT_ARCHITECTURE.md" },
             { "const": "docs/CSP_EXPRESSIONS.md" },
+            { "const": "docs/INSPECTION.md" },
             { "const": "docs/INTEROPERABILITY.md" },
             { "const": "docs/JQUERY_ECOSYSTEM.md" },
             { "const": "docs/JQUERY_MOBILE_MIGRATION.md" },
@@ -494,7 +467,8 @@
         "htmx",
         "turbo",
         "stores",
-        "persist"
+        "persist",
+        "inspection"
       ],
       "properties": {
         "root": {
@@ -659,6 +633,17 @@
             "unrelatedOptionalModules": { "const": "absent" }
           },
           "additionalProperties": false
+        },
+        "inspection": {
+          "type": "object",
+          "required": ["inspect", "core-inspect", "csp-inspect", "unimported"],
+          "properties": {
+            "inspect": { "$ref": "#/$defs/inspectionGraphEvidence" },
+            "core-inspect": { "$ref": "#/$defs/inspectionGraphEvidence" },
+            "csp-inspect": { "$ref": "#/$defs/inspectionGraphEvidence" },
+            "unimported": { "const": "absent" }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -807,7 +792,19 @@
       },
       "additionalProperties": false
     },
-    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "inspectionGraphEvidence": {
+      "type": "object",
+      "required": ["bytes", "gzipBytes", "budget", "gzipBudget", "modules"],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "gzipBytes": { "type": "integer", "minimum": 1 },
+        "budget": { "type": "integer", "minimum": 1 },
+        "gzipBudget": { "type": "integer", "minimum": 1 },
+        "modules": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

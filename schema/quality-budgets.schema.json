@@ -14,7 +14,8 @@
     "consumerBundles",
     "browser",
     "generatedOutputs",
-    "persistPackage"
+    "persistPackage",
+    "inspectPackage"
   ],
   "properties": {
     "$schema": { "const": "jqstar-quality-budgets/1" },
@@ -94,7 +95,13 @@
         "turboImportBytes",
         "turboImportGzipBytes",
         "persistImportBytes",
-        "persistImportGzipBytes"
+        "persistImportGzipBytes",
+        "inspectImportBytes",
+        "inspectImportGzipBytes",
+        "coreInspectImportBytes",
+        "coreInspectImportGzipBytes",
+        "cspInspectImportBytes",
+        "cspInspectImportGzipBytes"
       ],
       "properties": {
         "coreImportBytes": { "$ref": "#/$defs/positiveBudget" },
@@ -114,7 +121,13 @@
         "turboImportBytes": { "$ref": "#/$defs/positiveBudget" },
         "turboImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
         "persistImportBytes": { "$ref": "#/$defs/positiveBudget" },
-        "persistImportGzipBytes": { "$ref": "#/$defs/positiveBudget" }
+        "persistImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "inspectImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "inspectImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "coreInspectImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "coreInspectImportGzipBytes": { "$ref": "#/$defs/positiveBudget" },
+        "cspInspectImportBytes": { "$ref": "#/$defs/positiveBudget" },
+        "cspInspectImportGzipBytes": { "$ref": "#/$defs/positiveBudget" }
       },
       "additionalProperties": false
     },
@@ -143,12 +156,19 @@
     "generatedOutputs": {
       "type": "object",
       "required": ["changedFiles"],
-      "properties": {
-        "changedFiles": { "$ref": "#/$defs/nonnegativeBudget" }
-      },
+      "properties": { "changedFiles": { "$ref": "#/$defs/nonnegativeBudget" } },
       "additionalProperties": false
     },
     "persistPackage": {
+      "type": "object",
+      "required": ["packedBytes", "unpackedBytes"],
+      "properties": {
+        "packedBytes": { "$ref": "#/$defs/positiveBudget" },
+        "unpackedBytes": { "$ref": "#/$defs/positiveBudget" }
+      },
+      "additionalProperties": false
+    },
+    "inspectPackage": {
       "type": "object",
       "required": ["packedBytes", "unpackedBytes"],
       "properties": {

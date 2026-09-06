@@ -1,3 +1,4 @@
+import { registerServiceMetadata } from "./service-metadata";
 import {
   defineOfficialPlugin,
   STAR_PLUGIN_API_VERSION,
@@ -52,6 +53,21 @@ function install(registrar: StarPluginRegistrar): StarPersistFacade {
   let active = true;
   let attaching = false;
   let sequence = 0;
+  registerServiceMetadata(registrar, "core.persist", "attachments", () => {
+    const counts = {
+      installed: Number(active),
+      attachments: records.size,
+      pending: 0,
+      disabled: 0,
+      disposed: 0,
+    };
+    for (const { attachment } of records.values()) {
+      const { outcome } = attachment.status();
+      if (outcome === "pending" || outcome === "disabled" || outcome === "disposed")
+        counts[outcome]++;
+    }
+    return counts;
+  });
   registrar.cleanup(() => {
     active = false;
     const errors: StarPersistError[] = [];

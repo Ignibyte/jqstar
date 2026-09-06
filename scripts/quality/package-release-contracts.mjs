@@ -29,6 +29,7 @@ export const packageDocumentationPaths = Object.freeze([
   "docs/COMPATIBILITY.md",
   "docs/COMPONENT_ARCHITECTURE.md",
   "docs/CSP_EXPRESSIONS.md",
+  "docs/INSPECTION.md",
   "docs/INTEROPERABILITY.md",
   "docs/JQUERY_ECOSYSTEM.md",
   "docs/JQUERY_MOBILE_MIGRATION.md",

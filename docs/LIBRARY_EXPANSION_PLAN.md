@@ -585,10 +585,12 @@ credentialed responses by default.
 
 ## Diagnostics and later tooling
 
-After store/persistence and resource/navigation decisions are terminal, `jquery-star/inspect` adds a
-bounded, redacted trace buffer and serializers for every published official service. Trace metadata
-is off by default in production. Request headers, bodies, state values, errors, and HTML are
-redacted unless a user explicitly enables them.
+Ticket 0030 adds `jquery-star/inspect` to the unpublished 1.1 candidate after the service decisions
+became terminal. The version headings above remain the original sequencing plan. Inspection has
+immutable snapshots and a bounded trace, disabled by default in every environment. Each official
+service has a counts serializer or documented no-serializer disposition. Headers, bodies, state
+values, arbitrary errors and HTML are always excluded. Only bounded action/store identifiers can
+receive explicit, expiring retention/export permission. See [INSPECTION.md](INSPECTION.md).
 
 The stable inspection API returns serializable summaries. It never returns mutable kernel,
 application, store, resource, or navigation internals.

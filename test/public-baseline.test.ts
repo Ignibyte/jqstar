@@ -94,6 +94,17 @@ function readJSON<T>(path: string): T {
   return JSON.parse(readText(path)) as T;
 }
 
+// Ticket 0030 adds these names without rewriting the historical baseline artifact.
+const inspectionTypes = [
+  "StarKernelMetadataAccess",
+  "StarMetadataBoundary",
+  "StarMetadataCountKey",
+  "StarPluginMetadataVisitor",
+  "StarServiceMetadataRegistration",
+  "StarServiceMetadataSummary",
+  "StarServiceMetadataView",
+];
+
 const baseline = readJSON<PublicBaseline>("quality/public-baseline.json");
 const release = readJSON<ReleaseContract>("quality/release-contract.json");
 const manifest = readJSON<PackageManifest>("package.json");
@@ -135,8 +146,12 @@ describe("public 0.1 baseline", () => {
     expect(typeof $.star).toBe("object");
     expect(Object.keys(publicRuntime).sort()).toEqual(baseline.runtime.rootExports);
     expect(exportedNames(false)).toEqual(baseline.runtime.rootExports);
-    expect(exportedNames(true)).toEqual(baseline.runtime.typeExports);
-    expect(Object.keys($.star).sort()).toEqual(baseline.runtime.starStaticMembers);
+    expect(exportedNames(true)).toEqual(
+      [...baseline.runtime.typeExports, ...inspectionTypes].sort(),
+    );
+    expect(Object.keys($.star).sort()).toEqual(
+      [...baseline.runtime.starStaticMembers, "metadata"].sort(),
+    );
     expect(Object.keys($.star.ui).sort()).toEqual(baseline.runtime.uiMembers);
     expect(kernelForDocument(document)?.actions.names()).toEqual(
       baseline.runtime.registeredActions,
@@ -151,7 +166,7 @@ describe("public 0.1 baseline", () => {
 
   it("binds every declared type to the reviewed API report", () => {
     const report = readText(baseline.evidence.apiReport);
-    for (const name of baseline.runtime.typeExports) {
+    for (const name of [...baseline.runtime.typeExports, ...inspectionTypes]) {
       expect(report, `API report is missing ${name}`).toMatch(
         new RegExp(`(?:interface|type) ${name.replaceAll("$", "\\$")}\\b`),
       );
@@ -182,7 +197,9 @@ describe("public 0.1 baseline", () => {
 
   it("matches the published package, support matrix, and measured budget envelope", () => {
     expect(manifest.version).toBe(release.version);
-    expect(Object.keys(manifest.exports).sort()).toEqual(baseline.package.exports);
+    expect(Object.keys(manifest.exports).sort()).toEqual(
+      [...baseline.package.exports, "./inspect"].sort(),
+    );
     expect(manifest.peerDependencies.jquery).toBe(baseline.support.jquery);
     expect(manifest.engines.node).toBe(baseline.support.node);
     expect(baseline.package.observedArtifact.files).toBeLessThanOrEqual(budgets.package.files);

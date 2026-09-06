@@ -1,3 +1,12 @@
+export type {
+  StarKernelMetadataAccess,
+  StarPluginMetadataVisitor,
+  StarMetadataCountKey,
+  StarMetadataBoundary,
+  StarServiceMetadataView,
+  StarServiceMetadataSummary,
+  StarServiceMetadataRegistration,
+} from "./metadata-types";
 import jQuery from "jquery";
 import { installStar } from "./compatibility";
 

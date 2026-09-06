@@ -1,3 +1,12 @@
+export type {
+  StarKernelMetadataAccess,
+  StarPluginMetadataVisitor,
+  StarMetadataCountKey,
+  StarMetadataBoundary,
+  StarServiceMetadataView,
+  StarServiceMetadataSummary,
+  StarServiceMetadataRegistration,
+} from "./metadata-types";
 export { installStarCore } from "./trusted-runtime";
 export type { StarCoreInstallOptions } from "./trusted-runtime";
 export { createRenderAdapter, StarRenderTransactionError } from "./render-adapter";

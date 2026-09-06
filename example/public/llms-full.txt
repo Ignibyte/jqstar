@@ -178,7 +178,8 @@ stable API , review the
 finite CSP expression contract , coordinate roots with
 shared stores , verify an
 external plugin , use the
-testing harness , follow the
+testing harness , diagnose ownership with
+inspection and tracing , follow the
 1.0 migration guide , or open the
 complete Component Lab .
 
@@ -189,8 +190,9 @@ Source: example/docs/compatibility/index.html
 
 Compatibility
 jQStar 1.1 preserves the stable root and modular runtime entries and adds optional shared
-stores. The testing harnesses, CSP runtime, and Turbo and htmx bridges are tested from the
-packed tarball, not from repository-only imports.
+stores, selected-preference persistence, and explicit inspection. The testing harnesses, CSP
+runtime, and Turbo and htmx bridges are tested from the packed tarball, not from
+repository-only imports.
 Stable package entries
 Entry
 Formats
@@ -225,6 +227,12 @@ Explicit bridge
 jquery-star/stores
 ESM, CommonJS
 Explicit plugin
+jquery-star/persist
+ESM, CommonJS
+Explicit plugin over stores
+jquery-star/inspect
+ESM, CommonJS
+Explicit attachment; tracing disabled by default
 jquery-star/ui.css
 CSS
 Optional stylesheet
@@ -341,6 +349,13 @@ Application responsibilities
 Configure CSP, Trusted Types, allowed origins, and third-party scripts for the site.
 jQStar coordinates browser behavior; it is not an authorization layer, HTML sanitizer,
 secrets store, or network policy.
+Inspection privacy
+jquery-star/inspect is explicitly attached and tracing starts disabled.
+Snapshots and bounded traces exclude URLs, headers, bodies, HTML, DOM, application/store
+values and arbitrary errors. Only bounded action/store identifiers can receive explicit,
+expiring retention/export permission. Revocation removes affected retained records. Export
+returns data to the caller and performs no network or file write. See
+inspection and tracing for the public entry.
 Expression engines
 The compatibility root evaluates application-authored JavaScript and therefore needs a CSP
 policy that permits dynamic evaluation. The explicit jquery-star/csp entry uses
@@ -560,6 +575,25 @@ directive and UI enhancement, and the resulting reactive work. Use it before rea
 inserted by an HTML or Datastar patch. $.star.version reports the installed
 runtime version, and $.star.clearExpressionCache() clears the current
 expression engine's cache.
+Inspection and tracing
+Attach jquery-star/inspect to an installed kernel, including after application
+startup. Its snapshots contain immutable ownership and service counts. Tracing is disabled
+by default and requires explicit entry and UTF-8 byte limits.
+```
+import { attachInspector } from "jquery-star/inspect";
+const inspector = attachInspector($);
+const snapshot = inspector.snapshot();
+inspector.enableTrace({ maxEntries: 100, maxBytes: 32768 });
+const trace = inspector.exportTrace();
+inspector.dispose();
+```
+Repeated attachments share one collector with independent leases. The first lease to enable
+tracing controls its settings; releasing it clears trace data and disclosure policies.
+Exports omit URLs, headers, bodies, DOM, application values and arbitrary errors. The
+generic $.star.metadata() capability supplies safe inventory, observation and
+lifecycle ownership. Read the
+complete inspection contract
+for filters, sampling, limits, service summaries and expiring field permissions.
 Terminal disposal
 $.star.dispose() permanently closes one document installation, attempts every
 owned cleanup, releases its document and expression-engine claims, and returns a frozen

@@ -689,6 +689,8 @@ export interface StarCoreStatic {
     // (undocumented)
     get<State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(url: string, options?: BackendActionOptions<State, Computed>): StarAction<State, Computed>;
     // (undocumented)
+    metadata(): StarKernelMetadataAccess;
+    // (undocumented)
     nextUpdate(): Promise<void>;
     // (undocumented)
     observeOperations(observer: StarOperationObserver, options?: StarOperationSubscriptionOptions): StarOperationUnsubscribe;
@@ -1120,6 +1122,27 @@ export interface StarJSONViewerStatic {
 }
 
 // @public (undocumented)
+export interface StarKernelMetadataAccess {
+    // (undocumented)
+    inventory(application: (owner: StarOperationOwner) => void, resource: (kind: StarPluginResourceKind) => void): readonly [
+    applications: number,
+    enhancements: number,
+    tasks: number,
+    profiles: number,
+    bodies: number,
+    middleware: number
+    ];
+    // (undocumented)
+    observe(observer: StarOperationObserver): () => void;
+    // (undocumented)
+    onDisposed(observer: (report: StarDisposalReport) => void): () => void;
+    // (undocumented)
+    own(kind: StarPluginResourceKind, cleanup: () => void): () => void;
+    // (undocumented)
+    plugins(visit: StarPluginMetadataVisitor): void;
+}
+
+// @public (undocumented)
 export interface StarLogViewerStatic {
     // (undocumented)
     append(target: LogViewerTarget, entry: LogEntryInput): HTMLElement;
@@ -1172,6 +1195,12 @@ export interface StarMessageScrollerStatic {
     // (undocumented)
     unread(target: MessageScrollerTarget): number;
 }
+
+// @public (undocumented)
+export type StarMetadataBoundary = "capabilities" | "service-resources" | "attachments" | "bridge";
+
+// @public (undocumented)
+export type StarMetadataCountKey = "installed" | "capabilities" | "records" | "subscriptions" | "effects" | "tasks" | "attachments" | "pending" | "disabled" | "disposed" | "renders" | "observers" | "waiters" | "history" | "requests" | "listeners";
 
 // @public (undocumented)
 export interface StarMultiSelectStatic {
@@ -1331,6 +1360,9 @@ export interface StarPluginDocumentHost {
 export type StarPluginFacade<Plugin extends StarPlugin> = Plugin extends StarPlugin<infer Facade> ? Facade : never;
 
 // @public (undocumented)
+export type StarPluginMetadataVisitor = (name: string, version: string, service: StarServiceMetadataRegistration | undefined) => void;
+
+// @public (undocumented)
 export interface StarPluginRegistrar {
     // (undocumented)
     action<State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(name: string, action: StarAction<State, Computed>): void;
@@ -1350,6 +1382,8 @@ export interface StarPluginRegistrar {
     readonly documentHost: StarPluginDocumentHost;
     // (undocumented)
     helper<Value>(name: string, value: Value): void;
+    // (undocumented)
+    metadata?(registration: StarServiceMetadataRegistration): void;
     // (undocumented)
     observeOperations(observer: StarOperationObserver, options?: StarOperationSubscriptionOptions): void;
     // (undocumented)
@@ -1850,6 +1884,34 @@ export interface StarSelectStatic {
     toggle(target: SelectTarget): HTMLElement;
     // (undocumented)
     value(target: SelectTarget): string;
+}
+
+// @public (undocumented)
+export interface StarServiceMetadataRegistration {
+    // (undocumented)
+    readonly namespace: string;
+    // (undocumented)
+    observe?(this: void, observer: (event: unknown) => void): () => void;
+    // (undocumented)
+    readonly schema: "jqstar-service-counts/1";
+    // (undocumented)
+    serialize(this: void, view: StarServiceMetadataView): unknown;
+    // (undocumented)
+    view(this: void): StarServiceMetadataView;
+}
+
+// @public (undocumented)
+export interface StarServiceMetadataSummary extends StarServiceMetadataView {
+    // (undocumented)
+    readonly schema: "jqstar-service-counts/1";
+}
+
+// @public (undocumented)
+export interface StarServiceMetadataView {
+    // (undocumented)
+    readonly boundary: StarMetadataBoundary;
+    // (undocumented)
+    readonly counts: Readonly<Partial<Record<StarMetadataCountKey, number>>>;
 }
 
 // @public (undocumented)

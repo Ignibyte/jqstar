@@ -30,6 +30,8 @@ The package has two public layers:
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,
   transactions, subscriptions, lifecycle, and authority boundaries.
+- [INSPECTION.md](INSPECTION.md): explicit snapshots, bounded tracing, disclosure policy, service
+  summaries, leases, and cleanup.
 - [PERSISTENCE.md](PERSISTENCE.md): selected browser preferences, synchronous hydration, codecs,
   migrations, recovery, revision ordering, storage adapters, and disposal.
 - [decisions/RESOURCE_STRATEGY.md](decisions/RESOURCE_STRATEGY.md): measured server-patch decision,
@@ -74,6 +76,7 @@ The package has two public layers:
 | Testing adapters | `src/testing/`, `src/datastar/testing.ts`           | Explicit-realm harness, fixtures, and runner-neutral conformance.                  |
 | Declarative mode | `src/declarative.ts`                                | Compiles `data-*` attributes into application behavior.                            |
 | Expressions      | `src/expression.ts`, `src/csp/`, `src/csp.ts`       | Keeps trusted JavaScript as the root default and publishes the finite CSP profile. |
+| Inspection       | `src/inspect/`, `src/metadata-adapter.ts`           | Explicit bounded snapshots and traces over public kernel metadata.                 |
 | Persistence      | `src/persist.ts`, `src/persist/`                    | Optional synchronous selected-preference storage and recovery.                     |
 | Shared stores    | `src/stores.ts`, `src/stores/`                      | Optional per-kernel reactive coordination with owned setup and disposal.           |
 | Reactivity       | `src/reactivity.ts`                                 | Owned effects, dependency tracking, and contained microtask scheduling.            |

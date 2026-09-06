@@ -1,3 +1,4 @@
+import type { StarPluginMetadataVisitor, StarServiceMetadataRegistration } from "./metadata-types";
 import { attempt, throwCollectedErrors } from "./errors";
 import {
   createDirectiveRegistry,
@@ -61,6 +62,7 @@ export type StarPluginApplicationHook = (application: StarInstance) => void | St
 
 export interface StarPluginRegistrar {
   readonly documentHost: StarPluginDocumentHost;
+  metadata?(registration: StarServiceMetadataRegistration): void;
   dependency<Facade = unknown>(name: string): Facade;
   assertBeforeApplications(): void;
   action<State extends StateRecord = StateRecord, Computed extends ComputedRecord = ComputedRecord>(
@@ -100,6 +102,7 @@ interface StableVersion {
 }
 
 interface InstalledPlugin {
+  readonly metadata: StarServiceMetadataRegistration | undefined;
   readonly applicationHooks: readonly StarPluginApplicationHook[];
   readonly cleanups: readonly StarPluginCleanup[];
   readonly facade: unknown;
@@ -125,6 +128,7 @@ export interface PluginHost {
   facade(name: string): unknown;
   lock(): void;
   names(): readonly string[];
+  metadata(visit: StarPluginMetadataVisitor): void;
   use<Facade>(plugin: StarPlugin<Facade>): Facade;
   useMany<const Plugins extends readonly StarPlugin[]>(
     plugins: Plugins,
@@ -373,6 +377,7 @@ function stagePlugin(
   dependency: (name: string) => unknown,
   assertBeforeApplications: () => void,
 ): StagedPlugin {
+  let metadata: StarServiceMetadataRegistration | undefined;
   const pluginName = plugin.name;
   const version = plugin.version;
   const official = officialPlugins.has(plugin);
@@ -443,6 +448,27 @@ function stagePlugin(
   };
   const registrar = Object.freeze<StarPluginRegistrar>({
     documentHost: stagedHost,
+    metadata(registration) {
+      assertActive();
+      const { namespace, schema, view, serialize, observe } = registration ?? {};
+      if (
+        metadata ||
+        namespace !== pluginName ||
+        schema !== "jqstar-service-counts/1" ||
+        typeof view !== "function" ||
+        typeof serialize !== "function" ||
+        (observe !== undefined && typeof observe !== "function")
+      ) {
+        throw new Error("Invalid metadata.");
+      }
+      metadata = Object.freeze({
+        namespace,
+        schema,
+        view,
+        serialize,
+        ...(observe ? { observe } : {}),
+      });
+    },
     dependency<Facade>(name: string): Facade {
       if (!declaredDependencies.includes(name)) {
         throw pluginError(pluginName, "needs a declared dependency");
@@ -508,6 +534,7 @@ function stagePlugin(
       throw pluginError(pluginName, "returned an asynchronous facade");
     }
     return {
+      metadata,
       activations,
       actions,
       applicationHooks,
@@ -721,6 +748,9 @@ export function createPluginHost(
     useMany,
     facade: (name) => installed.get(name)?.facade,
     names: () => installationOrder.map((record) => record.name),
+    metadata(visit) {
+      for (const record of installationOrder) visit(record.name, record.version, record.metadata);
+    },
     lock: () => {
       locked = true;
     },

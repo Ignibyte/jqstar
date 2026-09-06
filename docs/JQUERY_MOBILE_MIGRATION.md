@@ -279,7 +279,7 @@ maintenance evidence, not a code-quality score.
 | Responsive styles       |     214 lines |
 | Browser specification   |     274 lines |
 | jQuery asset            | 255,967 bytes |
-| jQStar UMD asset        | 464,183 bytes |
+| jQStar UMD asset        | 464,868 bytes |
 | Application asset       |   3,680 bytes |
 | Style asset             |   3,393 bytes |
 | Modern runtime packages |             2 |

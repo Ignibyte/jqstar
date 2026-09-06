@@ -149,6 +149,31 @@ $.star.ui.toast.show({
         expression engine's cache.
       </p>
 
+      <h2 id="inspection">Inspection and tracing</h2>
+      <p>
+        Attach <code>jquery-star/inspect</code> to an installed kernel, including after application
+        startup. Its snapshots contain immutable ownership and service counts. Tracing is disabled
+        by default and requires explicit entry and UTF-8 byte limits.
+      </p>
+      <pre><code>import { attachInspector } from "jquery-star/inspect";
+
+const inspector = attachInspector($);
+const snapshot = inspector.snapshot();
+inspector.enableTrace({ maxEntries: 100, maxBytes: 32768 });
+const trace = inspector.exportTrace();
+inspector.dispose();</code></pre>
+      <p>
+        Repeated attachments share one collector with independent leases. The first lease to enable
+        tracing controls its settings; releasing it clears trace data and disclosure policies.
+        Exports omit URLs, headers, bodies, DOM, application values and arbitrary errors. The
+        generic <code>$.star.metadata()</code> capability supplies safe inventory, observation and
+        lifecycle ownership. Read the
+        <a href="https://github.com/Ignibyte/jqstar/blob/main/docs/INSPECTION.md"
+          >complete inspection contract</a
+        >
+        for filters, sampling, limits, service summaries and expiring field permissions.
+      </p>
+
       <h2>Terminal disposal</h2>
       <p>
         <code>$.star.dispose()</code> permanently closes one document installation, attempts every

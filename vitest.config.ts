@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: /^jquery-star$/, replacement: resolve("src/index.ts") },
+      { find: /^jquery-star\/inspect$/, replacement: resolve("src/inspect/index.ts") },
       { find: /^jquery-star\/core$/, replacement: resolve("src/core.ts") },
       { find: /^jquery-star\/csp$/, replacement: resolve("src/csp.ts") },
       {

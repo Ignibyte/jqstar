@@ -49,7 +49,9 @@
     "dist/ui.js": 318464,
     "dist/jquery-star-ui.css": 169984,
     "dist/persist.js": 16384,
-    "dist/persist.cjs": 16384
+    "dist/persist.cjs": 16384,
+    "dist/inspect.js": 24576,
+    "dist/inspect.cjs": 24576
   },
   "consumerBundles": {
     "coreImportBytes": 197632,
@@ -69,7 +71,13 @@
     "turboImportBytes": 220000,
     "turboImportGzipBytes": 70000,
     "persistImportBytes": 245760,
-    "persistImportGzipBytes": 78000
+    "persistImportGzipBytes": 78000,
+    "inspectImportBytes": 24576,
+    "inspectImportGzipBytes": 8192,
+    "coreInspectImportBytes": 229376,
+    "coreInspectImportGzipBytes": 73728,
+    "cspInspectImportBytes": 180224,
+    "cspInspectImportGzipBytes": 54000
   },
   "browser": {
     "domNodes": 2300,
@@ -86,5 +94,9 @@
   "persistPackage": {
     "packedBytes": 64000,
     "unpackedBytes": 240000
+  },
+  "inspectPackage": {
+    "packedBytes": 96000,
+    "unpackedBytes": 384000
   }
 }

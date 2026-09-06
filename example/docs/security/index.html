@@ -58,6 +58,16 @@
         secrets store, or network policy.
       </p>
 
+      <h2>Inspection privacy</h2>
+      <p>
+        <code>jquery-star/inspect</code> is explicitly attached and tracing starts disabled.
+        Snapshots and bounded traces exclude URLs, headers, bodies, HTML, DOM, application/store
+        values and arbitrary errors. Only bounded action/store identifiers can receive explicit,
+        expiring retention/export permission. Revocation removes affected retained records. Export
+        returns data to the caller and performs no network or file write. See
+        <a href="%BASE_URL%docs/api/#inspection">inspection and tracing</a> for the public entry.
+      </p>
+
       <h2>Expression engines</h2>
       <p>
         The compatibility root evaluates application-authored JavaScript and therefore needs a CSP

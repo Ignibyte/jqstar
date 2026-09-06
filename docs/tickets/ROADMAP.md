@@ -146,6 +146,11 @@ failures, host configuration/recovery, private-cache boundaries and reopening cr
 | [0032](0032-add-package-upgrade-diagnostics.md) | Package doctor checks and dry-run configuration upgrades without changing registry ownership. | 0013, 0017                                                 |
 | [0033](0033-audit-full-library-program.md)      | Requirement-by-requirement audit of every completed and declined program track.               | 0019, 0020, 0023, 0030–0032, and approved conditional work |
 
+The unpublished candidate remains 1.1.0; the release headings describe the original sequence. Ticket
+0030 adds explicit inspection to that candidate. Ticket 0031 still requires two application
+investigations and a go/no-go decision; upgrade diagnostics and the final audit remain separate
+work.
+
 ## Dependency graph
 
 ```text

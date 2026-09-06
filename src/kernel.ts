@@ -1,3 +1,4 @@
+import type { StarKernelMetadataAccess } from "./metadata-types";
 import type { StarExpressionEngine } from "./expression-types";
 import { attempt, throwCollectedErrors } from "./errors";
 import {
@@ -138,6 +139,7 @@ export class Kernel {
   private readonly activePreservedRoots = new Map<Element, number>();
   private readonly enhancementErrors: unknown[] = [];
   private readonly resources = new Set<ResourceRecord>();
+  private metadataFinalizers: Set<(report: StarDisposalReport) => void> | undefined;
   private applicationId = 0;
   private trackedApplicationId = 0;
   private renderOperationId = 0;
@@ -570,6 +572,35 @@ export class Kernel {
     throwCollectedErrors(errors, "jQuery Star enhancement failed.");
   }
 
+  metadata(): StarKernelMetadataAccess {
+    return Object.freeze<StarKernelMetadataAccess>({
+      inventory: (application, resource) => {
+        this.assertActive("read metadata");
+        for (const record of this.applications.values())
+          application(this.observations.ownerFor(record.application));
+        for (const record of this.resources) resource(record.kind);
+        return Object.freeze([
+          this.applications.size,
+          this.pendingEnhancements.size,
+          this.pendingTasks.size,
+          this.protocols.snapshot().length,
+          this.protocols.activeBodyCount(),
+          this.requestMiddleware.snapshot().length,
+        ]);
+      },
+      plugins: (visit) => this.plugins.metadata(visit),
+      observe: (observer) => this.observeOperations(observer),
+      own: (kind, cleanup) => this.own(kind, "metadata", cleanup),
+      onDisposed: (observer) => {
+        this.assertActive("observe disposal");
+        (this.metadataFinalizers ??= new Set()).add(observer);
+        return () => {
+          this.metadataFinalizers?.delete(observer);
+        };
+      },
+    });
+  }
+
   resourceSummary(): readonly KernelResourceSummary[] {
     return [...this.resources].map(({ kind, owner }) => ({ kind, owner }));
   }
@@ -655,6 +686,15 @@ export class Kernel {
       }
     });
     this.disposalInProgress = false;
+    const finalizers = this.metadataFinalizers;
+    this.metadataFinalizers = undefined;
+    finalizers?.forEach((notify) => {
+      try {
+        notify(controller.report);
+      } catch {
+        /* Observations cannot alter settled cleanup. */
+      }
+    });
     if (errors.length > 0) {
       this.disposalError = new StarDisposalError(errors, controller.report);
       throw this.disposalError;

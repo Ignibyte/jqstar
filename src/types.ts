@@ -1,3 +1,4 @@
+import type { StarKernelMetadataAccess } from "./metadata-types";
 import type { StarPlugin, StarPluginFacade } from "./plugin";
 import type { StarStoresScope } from "./stores/types";
 import type { StarExpressionHelperScope } from "./directive";
@@ -820,6 +821,7 @@ export interface StarUIStatic {
 }
 
 export interface StarCoreStatic {
+  metadata(): StarKernelMetadataAccess;
   readonly version: string;
   dispose(): StarDisposalReport;
   use<Facade>(plugin: StarPlugin<Facade>): Facade;

@@ -20,8 +20,9 @@
       <h1>Compatibility</h1>
       <p class="docs-lede">
         jQStar 1.1 preserves the stable root and modular runtime entries and adds optional shared
-        stores. The testing harnesses, CSP runtime, and Turbo and htmx bridges are tested from the
-        packed tarball, not from repository-only imports.
+        stores, selected-preference persistence, and explicit inspection. The testing harnesses, CSP
+        runtime, and Turbo and htmx bridges are tested from the packed tarball, not from
+        repository-only imports.
       </p>
 
       <h2>Stable package entries</h2>
@@ -83,6 +84,16 @@
             <th scope="row"><code>jquery-star/stores</code></th>
             <td>ESM, CommonJS</td>
             <td>Explicit plugin</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/persist</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit plugin over stores</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>jquery-star/inspect</code></th>
+            <td>ESM, CommonJS</td>
+            <td>Explicit attachment; tracing disabled by default</td>
           </tr>
           <tr>
             <th scope="row"><code>jquery-star/ui.css</code></th>

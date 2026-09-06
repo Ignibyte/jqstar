@@ -1,3 +1,4 @@
+import { countServiceResources, registerServiceMetadata } from "./service-metadata";
 import {
   defineOfficialPlugin,
   STAR_PLUGIN_API_VERSION,
@@ -400,7 +401,7 @@ export function defineStore<Store extends object>(
 }
 
 function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
-  const host = registrar.documentHost.services!;
+  const { host, counts: resourceCounts } = countServiceResources(registrar.documentHost.services!);
   const records = new Map<string, StoreRecord>();
   const definitionNames = new WeakMap<object, string>();
   const namespaceTarget = reactive(Object.create(null) as Record<string, StarStoreObject>);
@@ -408,6 +409,11 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
   let recordId = 0;
   let operationId = 0;
   let subscriptionId = 0;
+  registerServiceMetadata(registrar, "core.stores", "service-resources", () => ({
+    installed: Number(active),
+    records: records.size,
+    ...resourceCounts,
+  }));
 
   const namespace = new Proxy(namespaceTarget, {
     get(target, key) {
@@ -628,22 +634,36 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
         if (!isThenable(result)) throw new TypeError("Store tasks must return a promise.");
         const owner = `${record.id}:task`;
         let settled = false;
+        resourceCounts.tasks++;
+        const decrease = once(() => {
+          resourceCounts.tasks--;
+        });
         const monitored = Promise.resolve(result).then(
           (value) => {
+            decrease();
             settled = true;
             observe(record.name, "task", owner, "completed");
             return value;
           },
           (error: unknown) => {
+            decrease();
             settled = true;
             observe(record.name, "task", owner, "failed");
             throw error;
           },
         );
-        const owned = host.task!(owner, monitored, () => undefined);
+        let owned: () => void;
+        try {
+          owned = host.task!(owner, monitored, () => undefined);
+        } catch (error) {
+          decrease();
+          void monitored.catch(() => undefined);
+          throw error;
+        }
         return addRelease(
           record,
           once(() => {
+            decrease();
             owned();
             if (!settled) observe(record.name, "task", owner, "cancelled");
           }),

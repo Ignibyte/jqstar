@@ -45,6 +45,7 @@ const gates = [
     "bin",
     "scripts",
     "quality",
+    "config/**/*.ts",
     "*.config.ts",
     "--max-warnings=0",
   ]),

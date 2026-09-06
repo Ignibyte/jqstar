@@ -661,6 +661,7 @@ export function installStarRuntime(
 
   const star: StarCoreStatic = {
     version: STAR_VERSION,
+    metadata: () => kernel.metadata(),
     dispose() {
       try {
         return kernel.dispose();

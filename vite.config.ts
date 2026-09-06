@@ -1,3 +1,4 @@
+import { runtimePropertyMangle } from "./config/runtime-private-properties";
 import { defineConfig } from "vite";
 import { resolve } from "node:path";
 
@@ -12,6 +13,7 @@ export default defineConfig({
         htmx: resolve(__dirname, "src/htmx.ts"),
         stores: resolve(__dirname, "src/stores.ts"),
         persist: resolve(__dirname, "src/persist.ts"),
+        inspect: resolve(__dirname, "src/inspect/index.ts"),
         testing: resolve(__dirname, "src/testing/index.ts"),
         turbo: resolve(__dirname, "src/turbo.ts"),
         "datastar-testing": resolve(__dirname, "src/datastar/testing.ts"),
@@ -21,6 +23,7 @@ export default defineConfig({
     },
     minify: "terser",
     terserOptions: {
+      mangle: runtimePropertyMangle,
       compress: {
         passes: 5,
       },

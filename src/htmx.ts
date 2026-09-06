@@ -1,3 +1,4 @@
+import { registerServiceMetadata } from "./service-metadata";
 import { createRenderAdapter, type StarRenderTransaction } from "./render-adapter";
 import {
   defineOfficialPlugin,
@@ -471,6 +472,18 @@ class HtmxBridgeController implements StarHtmxBridge {
     this.#documentHost = documentHost;
     this.#onError = onError ?? ((error) => documentHost.window.reportError?.(error));
     this.#installListeners();
+  }
+
+  metadataCounts() {
+    return {
+      installed: Number(!this.#disposed),
+      renders: this.#active.size,
+      observers: this.#observers.size,
+      waiters: this.#idleWaiters.size,
+      listeners: this.#listeners.length,
+      history: this.#history.size,
+      requests: this.#requests.size,
+    };
   }
 
   #installListeners(): void {
@@ -1336,6 +1349,13 @@ export function createHtmxBridge(options: StarHtmxBridgeOptions): Readonly<StarH
     apiVersion: `^${STAR_PLUGIN_API_VERSION}`,
     install(registrar) {
       const bridge = new HtmxBridgeController($, htmx, version, registrar.documentHost, onError);
+      registerServiceMetadata(
+        registrar,
+        "core.htmx",
+        "bridge",
+        () => bridge.metadataCounts(),
+        (observer) => bridge.observe(observer),
+      );
       registrar.cleanup(() => {
         void bridge.dispose();
       });

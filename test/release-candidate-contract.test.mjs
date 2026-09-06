@@ -218,7 +218,7 @@ describe("stable release candidate contract", () => {
       contract.stableEntries.map(({ subpath }) => subpath).toSorted(),
     );
     expect(new Set(Object.values(manifest.jqstar.entrypoints))).toEqual(new Set(["stable"]));
-    expect(new Set(contract.stableEntries.map(({ id }) => id)).size).toBe(12);
+    expect(new Set(contract.stableEntries.map(({ id }) => id)).size).toBe(13);
     expect(new Set(contract.policies.map(({ kind }) => kind)).size).toBe(contract.policies.length);
     for (const policy of contract.policies) {
       await expect(readFile(resolve(root, policy.path), "utf8"), policy.path).resolves.not.toBe("");
@@ -229,6 +229,7 @@ describe("stable release candidate contract", () => {
     for (const [entry, ticket, policy] of [
       ["./stores", "0018", "docs/STORES.md"],
       ["./persist", "0019", "docs/PERSISTENCE.md"],
+      ["./inspect", "0030", "docs/INSPECTION.md"],
     ]) {
       expect(manifest.exports[entry]).toBeDefined();
       expect(contract.prerequisites.tickets).toContain(ticket);
@@ -239,9 +240,9 @@ describe("stable release candidate contract", () => {
   it("audits every prerequisite ticket and criterion from current source", async () => {
     const { contract } = await loadReleaseContract(root);
     const audit = await auditPrerequisiteTickets(root, contract);
-    expect(audit.required).toBe(36);
-    expect(audit.audited).toBe(36);
-    expect(audit.criterionCount).toBeGreaterThan(36);
+    expect(audit.required).toBe(37);
+    expect(audit.audited).toBe(37);
+    expect(audit.criterionCount).toBeGreaterThan(37);
     expect(audit.tickets.map(({ id }) => id)).toEqual(contract.prerequisites.tickets);
     expect(audit.tickets.every(({ status }) => status === "done")).toBe(true);
     expect(

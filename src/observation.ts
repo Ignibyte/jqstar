@@ -665,7 +665,7 @@ export class OperationHub {
     return `operation-${++this.operationId}`;
   }
 
-  private ownerFor(application: StarInstance): StarOperationOwner {
+  ownerFor(application: StarInstance): StarOperationOwner {
     const owner = this.applications.get(application)?.owner;
     if (!owner) throw new Error("This jQStar application is not owned by the active kernel.");
     return owner;

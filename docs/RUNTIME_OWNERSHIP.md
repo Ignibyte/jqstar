@@ -224,3 +224,17 @@ and load canonical server output; the fixture proves this with full navigation.
 
 Browser evidence measures actual timeout/interval residue alongside public disposal reports. The
 native research cache also rejects timer allocation from a retained lease after disposal.
+
+## Inspection ownership
+
+`src/kernel-metadata.ts` owns bounded inventory projection, opaque kernel identity and shared
+attachment slots. The registry in `src/metadata-adapter.ts` is created on explicit attachment and
+uses weak keys for installed kernels. The generic kernel capability is cleared at final disposal.
+Terminal handles retain only numeric category totals and a scalar sequence, with no kernel,
+application, serializer, DOM or original disposal report.
+
+`src/inspect/collector.ts` owns client leases, selected subscriptions, trace data and one earliest
+policy-expiry timer. Default-off attachment owns no observer, trace array or timer. Releasing the
+controller clears data and policies; final lease release removes the collector. Kernel disposal
+closes every client and releases all resources even when a callback throws. Cleanup failures are
+counted once; the terminal public report records failed owned collector cleanup.

@@ -1,3 +1,4 @@
+import { runtimePropertyMangle } from "./config/runtime-private-properties";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
@@ -11,6 +12,7 @@ export default defineConfig({
     },
     minify: "terser",
     terserOptions: {
+      mangle: runtimePropertyMangle,
       compress: {
         passes: 2,
       },

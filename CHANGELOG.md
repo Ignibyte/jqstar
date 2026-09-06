@@ -5,6 +5,16 @@ or GitHub release claim.
 
 ## 1.1.0 - Unreleased
 
+### Inspection and tracing
+
+- Add explicit `jquery-star/inspect` ESM/CommonJS attachment with immutable, versioned snapshots,
+  shared collectors and independent client leases. Tracing is disabled by default.
+- Bound retained traces by exact UTF-8 JSON bytes and entries, with filters, deterministic sampling,
+  counters, export, and expiring policies for two permitted identifier fields.
+- Add generic public kernel metadata and transactional service count registrations. Stores,
+  persistence and bridges supply aggregate summaries; UI and Datastar use the plugin inventory.
+- Keep application values, URLs, headers, bodies, DOM and arbitrary errors out of inspection data.
+
 ### Server data guidance
 
 - Document one registry coordinator and SDK response for related application regions, with native

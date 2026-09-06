@@ -123,3 +123,15 @@ If a published release is unsafe, prefer a corrected release and npm deprecation
 Deprecation preserves existing dependency graphs while warning new installations. Changing an npm
 dist-tag, deprecating a version, editing a GitHub release, creating a tag, or publishing a fix is an
 external write and requires explicit authorization under [RELEASING.md](RELEASING.md).
+
+## Inspection disclosure boundary
+
+`jquery-star/inspect` is opt-in and tracing is disabled by default. Snapshot and trace data exclude
+URLs, headers, bodies, markup, DOM, application/store values and arbitrary error detail. Service
+serializers receive frozen approved count metadata and cannot extend its closed grammar. They are
+trusted plugin code; inspection contains their output failures but does not sandbox execution.
+
+Only bounded action/store identifier fields support explicit expiring retention/export policies.
+Revocation purges affected retained records; reads withhold expired records before delayed timer
+cleanup. Every trace has fixed entry and UTF-8 byte bounds. Inspection performs no transport or file
+write. See [the inspection contract](docs/INSPECTION.md) for limits and caller responsibilities.

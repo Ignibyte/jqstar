@@ -62,6 +62,7 @@ function packageReport() {
       "./datastar/testing",
       "./ui.css",
       "./persist",
+      "./inspect",
     ],
     version: "1.0.0",
     documentation: [...packageDocumentationPaths],
@@ -86,6 +87,11 @@ function packageReport() {
       "typescript-testing-bundler",
       "typescript-csp-nodenext",
       "typescript-csp-bundler",
+      "inspection-esm",
+      "inspection-commonjs",
+      "inspection-inert",
+      "typescript-inspection-negative-nodenext",
+      "typescript-inspection-negative-bundler",
     ],
     peerDependencies: {
       htmxRange: ">=2.0.0 <2.1.0",
@@ -99,7 +105,7 @@ function packageReport() {
   };
   checks[10].detail = {
     subject: "installed-tarball",
-    consumers: ["module", "umd", "testing", "stores", "persist", "csp"],
+    consumers: ["module", "umd", "testing", "stores", "persist", "inspect", "csp"],
     lifecycle: "boot-and-dispose",
     engines: ["chromium", "firefox", "webkit"].map((name) => ({
       name,
@@ -133,6 +139,15 @@ function packageReport() {
     },
   };
   checks[11].detail = {
+    inspection: {
+      unimported: "absent",
+      ...Object.fromEntries(
+        ["inspect", "core-inspect", "csp-inspect"].map((name) => [
+          name,
+          { bytes: 1, gzipBytes: 1, budget: 1, gzipBudget: 1, modules: 1 },
+        ]),
+      ),
+    },
     root: { bytes: 1, budget: 1 },
     core: {
       bytes: 1,

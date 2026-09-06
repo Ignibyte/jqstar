@@ -84,9 +84,9 @@ The UMD build installs itself on the global `jQuery` object, so a script-tag bui
 
 The root entry remains the compatibility path: importing it installs the complete core, Datastar
 profile, and UI plugin. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`,
-and `turbo` subpaths are stable from 1.0; the optional `stores` and `persist` subpaths are stable in
-1.1. They are explicit and side-effect-free, so importing them does not touch a document or jQuery
-instance:
+and `turbo` subpaths are stable from 1.0; the optional `stores`, `persist`, and `inspect` subpaths
+are stable in 1.1. They are explicit and side-effect-free, so importing them does not touch a
+document or jQuery instance:
 
 ```ts
 import $ from "jquery";
@@ -111,19 +111,20 @@ Add UI and its CSS only when the component controllers are needed. Installing th
 `installed.star.ui`; it never claims `$.ui`, `$.widget`, jQuery UI identity, or a Widget Factory
 contract.
 
-| Entry                          | Formats                 | Import behavior                                        |
-| ------------------------------ | ----------------------- | ------------------------------------------------------ |
-| `jquery-star`                  | ESM, CommonJS, root UMD | Auto-installs core + Datastar + UI                     |
-| `jquery-star/core`             | ESM, CommonJS           | No side effect; call `installStarCore($)`              |
-| `jquery-star/datastar`         | ESM, CommonJS           | No side effect; install `datastarPlugin`               |
-| `jquery-star/ui`               | ESM, CommonJS           | No side effect; install `uiPlugin`                     |
-| `jquery-star/testing`          | ESM, CommonJS           | No side effect; caller supplies DOM, jQuery, runner    |
-| `jquery-star/datastar/testing` | ESM, CommonJS           | No side effect; official-SDK Datastar test fixtures    |
-| `jquery-star/htmx`             | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
-| `jquery-star/persist`          | ESM, CommonJS           | No side effect; install `persistPlugin` after stores   |
-| `jquery-star/stores`           | ESM, CommonJS           | No side effect; install `storesPlugin`                 |
-| `jquery-star/turbo`            | ESM, CommonJS           | No side effect; install an explicitly versioned bridge |
-| `jquery-star/ui.css`           | CSS                     | Explicit stylesheet import; never injected by JS       |
+| Entry                          | Formats                 | Import behavior                                              |
+| ------------------------------ | ----------------------- | ------------------------------------------------------------ |
+| `jquery-star`                  | ESM, CommonJS, root UMD | Auto-installs core + Datastar + UI                           |
+| `jquery-star/core`             | ESM, CommonJS           | No side effect; call `installStarCore($)`                    |
+| `jquery-star/datastar`         | ESM, CommonJS           | No side effect; install `datastarPlugin`                     |
+| `jquery-star/ui`               | ESM, CommonJS           | No side effect; install `uiPlugin`                           |
+| `jquery-star/testing`          | ESM, CommonJS           | No side effect; caller supplies DOM, jQuery, runner          |
+| `jquery-star/datastar/testing` | ESM, CommonJS           | No side effect; official-SDK Datastar test fixtures          |
+| `jquery-star/htmx`             | ESM, CommonJS           | No side effect; install an explicitly versioned bridge       |
+| `jquery-star/inspect`          | ESM, CommonJS           | No side effect; call `attachInspector($)` after installation |
+| `jquery-star/persist`          | ESM, CommonJS           | No side effect; install `persistPlugin` after stores         |
+| `jquery-star/stores`           | ESM, CommonJS           | No side effect; install `storesPlugin`                       |
+| `jquery-star/turbo`            | ESM, CommonJS           | No side effect; install an explicitly versioned bridge       |
+| `jquery-star/ui.css`           | CSS                     | Explicit stylesheet import; never injected by JS             |
 
 Only the composed root has a UMD/script-tag build. Every JavaScript entry has matched ESM and
 CommonJS declarations and source maps.
@@ -132,6 +133,10 @@ Shared stores are per-document client coordination, not persistence or server au
 continues to mean an application-local signal; shared expressions use `stores.name`. See the
 [shared stores guide](docs/STORES.md) for the data contract, transactions, setup ownership, CSP
 semantics, and security boundaries.
+
+Use [`jquery-star/inspect`](docs/INSPECTION.md) for immutable ownership and service snapshots.
+Tracing is explicitly enabled, bounded by entries and bytes, and excludes application values, URLs,
+headers, bodies and errors. Attachment works after boot and each caller owns a separate lease.
 
 Use [`jquery-star/persist`](docs/PERSISTENCE.md) to save explicitly selected browser preferences.
 Attach it before applications start so the first UI effect sees hydrated state. It supports memory,
@@ -229,8 +234,8 @@ by `npm run test:public-baseline` plus the installed-package gate.
 The recorded 0.1 root surface is the compatibility baseline for 1.0. A stable 1.x item receives at
 least one minor release of deprecation notice before removal unless a security issue makes continued
 support unsafe. The `core`, `ui`, `datastar`, `csp`, `testing`, `datastar/testing`, `htmx`, and
-`turbo` subpaths are stable 1.0 contracts; `stores` and `persist` are stable in 1.1. Private source
-imports and undeclared subpaths receive no compatibility promise. See
+`turbo` subpaths are stable 1.0 contracts; `stores`, `persist`, and `inspect` are stable in 1.1.
+Private source imports and undeclared subpaths receive no compatibility promise. See
 [the compatibility policy](docs/COMPATIBILITY.md) and [the 1.0 migration guide](MIGRATING_TO_1.md).
 
 ## Source registry

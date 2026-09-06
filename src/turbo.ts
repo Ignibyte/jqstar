@@ -1,3 +1,4 @@
+import { registerServiceMetadata } from "./service-metadata";
 import { createRenderAdapter, type StarRenderTransaction } from "./render-adapter";
 import {
   defineOfficialPlugin,
@@ -252,6 +253,16 @@ class TurboBridgeController implements StarTurboBridge {
     this.#documentHost = documentHost;
     this.#onError = onError ?? ((error) => documentHost.window.reportError?.(error));
     this.#installListeners();
+  }
+
+  metadataCounts() {
+    return {
+      installed: Number(!this.#disposed),
+      renders: this.#active.size,
+      observers: this.#observers.size,
+      waiters: this.#idleWaiters.size,
+      listeners: this.#listeners.length,
+    };
   }
 
   #installListeners(): void {
@@ -642,6 +653,13 @@ export function createTurboBridge(options: StarTurboBridgeOptions): Readonly<Sta
     apiVersion: `^${STAR_PLUGIN_API_VERSION}`,
     install(registrar) {
       const bridge = new TurboBridgeController($, version, registrar.documentHost, onError);
+      registerServiceMetadata(
+        registrar,
+        "core.turbo",
+        "bridge",
+        () => bridge.metadataCounts(),
+        (observer) => bridge.observe(observer),
+      );
       registrar.cleanup(() => {
         void bridge.dispose();
       });
