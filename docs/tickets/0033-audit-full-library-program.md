@@ -418,6 +418,31 @@ validator/schema, `docs/PROGRAM_AUDIT.md`, and this ticket. Repair the historica
 by keeping its rows inside the existing table, then verify the formatter preserves the repair. This
 changes audit tooling and documentation only.
 
+### Installed browser identity and newly reproduced CSP gaps, 2026-09-06
+
+Require the package adapter to compare both installed-consumer browser rosters and exact versions
+against an independently frozen three-browser manifest. A schema-valid report with changed browser
+versions must fail, including when every named package check still reports a pass. The prepared
+integration passes ten focused tests, thirteen historical selectors, and nine schema-valid negative
+controls. Historical compatibility is not final acceptance. Planned files are the package evidence
+adapter, its existing tests, this ticket, and `docs/PROGRAM_AUDIT.md`.
+
+The actual strict-policy fixture exposed three additional gaps. Its enlarged native input causes
+horizontal overflow in Chromium, Firefox, and WebKit; its native link/form destinations return 404;
+and `$double` stays empty with `CSP_CAPABILITY_ACCESSOR` because declarative computed signals are
+implemented as getters that the evaluator refuses. The package proof checked ordinary signals but
+never asserted this computed output or captured `jquery-star:error` events. General browser profiles
+cannot substitute for executing the CSP fixture in those profiles.
+
+Reopen 0034 for the evaluator/declarative integration and 0035 for installed computed/error checks,
+real native navigation/submission, and conditional accessibility proof. Preserve accessor refusal
+for application data and require a narrowly owned computed capability; the precise integration must
+be verified before implementation. The current package, size, grammar, security, and manual evidence
+requirements remain in force. Final program acceptance waits for both owners to close again.
+Diagnostic records under `.git/jqstar/program-audit/csp-ac08-review/` bind the historical installed
+`cb9a2c52039fdb5c6e0f564b0fe6299f69c3c2739f53b5c2e0eb4c8548ca2a6c` artifact and are not final
+candidate evidence.
+
 ### Planned files
 
 - Program-audit generator, evidence adapters, schemas, immutable manifest/report types, and bounded
@@ -464,6 +489,11 @@ The mapping validator and `quality/program-audit/mappings.schema.json` now disti
 evidence from installed-package evidence. `docs/PROGRAM_AUDIT.md` records that distinction and the
 remaining parent-gate interval integration.
 
+The package adapter now requires an independently frozen browser-version roster and checks both
+general and CSP installed consumers against it. Its focused tests reject missing or duplicate
+engines, failures, wrong versions, and incomplete expected identities without echoing version
+canaries. `docs/PROGRAM_AUDIT.md` records this boundary.
+
 Navigation now has a separate evidence kind in the same mapping validator/schema. The report loader
 selects the raw measurement definition from the frozen producer schema, with an explicit test
 rejecting the decision document as execution proof. File and JSON limits are unchanged.
@@ -492,6 +522,24 @@ orchestration remain unfinished. No current criterion has been relabeled complet
 
 ## Test
 
+Fast run `2026-09-06T14-29-51-928Z-12176` passed unit and all other selected checks but failed on
+one unrecognized word in the new 0035 prose. Reworded that sentence without a dictionary or rule
+change; repeat fast verification before Code validation and delivery.
+
+The maintained package browser-identity integration passes seventeen focused audit/release-contract
+tests and ESLint. The real historical package report passes all thirteen selectors; nine
+schema-valid identity controls are refused. Nineteen historical mapping probes pass after adding
+explicit expected versions and refreshing one reviewed documentation excerpt for the newly recorded
+repetition budget. These remain compatibility checks, not final semantic acceptance. Plan validation
+passed for 0033 and the reopened 0034/0035 correction records.
+
+Quality-correction delivery `2026-09-06T14-07-22-596Z-50023` passes all thirteen gates, 1,313 unit
+tests, 484 browser cases, thirteen package checks and seven release checks. Owner 0052 Test
+validation and exact receipt verification passed before commit `09d6109`, which is pushed. Hosted
+full audit `34039155609` is running against that exact commit. The preceding c5 hosted run
+`34035393474` ended with only its repeated-browser gate failing; its randomized property gate
+passed. The newer run includes the repetition budget and recorded property fixes.
+
 Navigation/release integration delivery `2026-09-06T13-39-35-777Z-50559` passes all twelve executed
 gates, 1,299 unit tests, 484 browser cases, thirteen package checks and seven release checks. The
 unchanged 0044 detector was conditionally skipped. The matching receipt verified the exact worktree
@@ -515,9 +563,11 @@ unchanged 0044 detector was conditionally skipped. Its tarball remains
 `a79bb89456c89c08f847d89153a03d3a99f38e35cf750d77999319b7b63a63eb`. Fresh fast and delivery
 verification must cover the navigation integration and corrected ledger before commit.
 
-Planning mappings now cover 434 requirements with 3,796 exact citations. Fourteen additional CSP
-implementation rows pass their schema and selector compatibility probes. The remaining 179
-requirements, all claim review and final execution/manual evidence remain required.
+Planning mappings now cover 460 requirements with 4,065 exact citations. The latest 26 migration
+criteria add 269 citations; eight references explicitly await real manual accessibility records. The
+remaining 153 requirements, semantic claim review and final execution/manual evidence remain
+required. Selector compatibility does not establish that a criterion is fully exercised, as the CSP
+computed and accessibility findings demonstrate.
 
 Release integration fast run `2026-09-06T13-16-07-075Z-79212` passes all six gates and 1,262 unit
 tests. Code validation accepted that exact report. The maintained release adapter also accepts all

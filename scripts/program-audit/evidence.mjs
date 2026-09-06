@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { isAbsolute, relative } from "node:path";
-import { safeRelativePath, sameKeys, sha256, timestamp } from "./contracts.mjs";
+import { closedObject, safeRelativePath, sameKeys, sha256, timestamp } from "./contracts.mjs";
 
 function one(values, predicate) {
   const matches = values.filter(predicate);
@@ -234,6 +234,31 @@ export function selectPackage(report, selector, context) {
       installed.detail.csp.tarballDigest === context.artifact.sha256,
     "Package evidence does not prove the exact installed tarball",
   );
+  const names = ["chromium", "firefox", "webkit"];
+  closedObject(context.browserVersions, names, "Frozen installed browser versions");
+  assert(
+    names.every(
+      (name) =>
+        typeof context.browserVersions[name] === "string" &&
+        context.browserVersions[name].length > 0,
+    ),
+    "Frozen installed browser version is missing",
+  );
+  for (const engines of [installed.detail.engines, installed.detail.csp.engines]) {
+    assert(Array.isArray(engines), "Installed browser evidence is missing");
+    sameKeys(
+      engines.map(({ name }) => name),
+      names,
+      "Installed browser evidence",
+    );
+    assert(
+      engines.every(
+        ({ name, version, status }) =>
+          status === "pass" && version === context.browserVersions[name],
+      ),
+      "Installed browser version differs from the frozen manifest",
+    );
+  }
   const check = one(report.checks, ({ name }) => name === selector);
   assert(check.status === "pass", "Named package check did not pass");
   return { selector, status: "pass" };

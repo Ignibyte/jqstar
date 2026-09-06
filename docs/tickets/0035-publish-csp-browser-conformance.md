@@ -1,9 +1,9 @@
 ---
 id: 0035
 title: Publish and prove the CSP runtime
-status: done
+status: planned
 created: 2026-08-30
-updated: 2026-09-02
+updated: 2026-09-06
 ---
 
 # 0035: Publish and prove the CSP runtime
@@ -184,11 +184,11 @@ expression-bearing HTML as trusted markup, and the resolved engine ownership/dis
       securitypolicyviolation events/reports, page/console errors, dynamic-code canary successes, or
       missing instrumentation. The report binds browser/header/source/tarball/bundle/corpus
       identity.
-- [x] [AC-07] Real-policy browser cases cover behavior/declarative roots, state/computed, actions/
+- [ ] [AC-07] Real-policy browser cases cover behavior/declarative roots, state/computed, actions/
       helpers, generic and official-SDK Datastar requests/patches, supported UI/jQuery,
       async/cancel/ error, replacement, repeated enhancement, and exact-once disposal with public
       observations.
-- [x] [AC-08] Native/no-JavaScript behavior and keyboard, focus, ARIA, screen-reader,
+- [ ] [AC-08] Native/no-JavaScript behavior and keyboard, focus, ARIA, screen-reader,
       reduced-motion, forced-color, zoom/reflow, and axe checks remain equivalent for the CSP proof
       interactions in all supported engines.
 - [x] [AC-09] Root/core/UI/Datastar/testing/bridge graphs that omit CSP contain no tokenizer/parser/
@@ -201,7 +201,7 @@ expression-bearing HTML as trusted markup, and the resolved engine ownership/dis
       limits, diagnostics, parity/migration/unsupported cases, server policy responsibility,
       extension requirements, and versioning. Every CSP description says no dynamic code
       construction, trusted markup/extensions required, and not a sandbox.
-- [x] [AC-12] Tarball/package/API/type/format/version, graph/size/reproducibility, shared
+- [ ] [AC-12] Tarball/package/API/type/format/version, graph/size/reproducibility, shared
       conformance, adversarial/static/security, three-browser/accessibility, npm run check, ticket
       phase validation, and git diff --check pass without mutation testing.
 
@@ -271,6 +271,44 @@ modules; real-browser policy execution remains the final source-to-code authorit
   trusted compiler in CSP consumers.
 - Run focused/fast/coverage/property/static/security/browser/package/release/check/ticket/diff gates
   without mutation testing.
+
+### Reopened by program audit: installed proof coverage, 2026-09-06
+
+Return to Plan after direct inspection and strict-policy browser diagnostics contradicted AC-07 and
+AC-08. The installed fixture contains a computed output that remains empty with
+`CSP_CAPABILITY_ACCESSOR`; owner 0034 must correct that integration first. This proof must assert
+initial and updated computed values and record unexpected `jquery-star:error` events in addition to
+page/console errors, so handled runtime failures cannot silently pass.
+
+The native input overflows a 640-pixel viewport with 200% root text and 200% zoom: document widths
+are 744, 962, and 951 pixels in Chromium, Firefox, and WebKit. An isolated stylesheet correction
+using border-box sizing, a container-relative maximum input width, and text wrapping reduces all
+three to 640 pixels. The existing no-JavaScript check only inspects the href and whether the input
+is editable; actual native link navigation returns 404, and the form destination also has no route.
+General browser-profile results cited by the old acceptance row do not execute this strict-CSP
+fixture.
+
+Retain the before/after diagnostics in `.git/jqstar/program-audit/csp-ac08-review/`. They use the
+verified historical installed `cb9a2c52039fdb5c6e0f564b0fe6299f69c3c2739f53b5c2e0eb4c8548ca2a6c`
+tarball, not a final candidate. The proposed full conditional helper currently refuses the blank
+computed output; do not suppress that assertion to obtain a passing acceptance result.
+
+After 0034 closes, add direct reduced-motion, forced-color, and zoom/reflow profiles to every
+installed CSP browser proof. Each must verify profile activation, keyboard/tab/focus/ARIA behavior,
+computed state, native form naming, axe, unchanged response policy, unexpected runtime errors and
+complete disposal. Add real native link and GET form endpoints and exercise navigation/submission
+with JavaScript disabled, asserting successful destinations, submitted values, policy headers and
+zero script requests. Bound and schema-validate the complete profile roster and observations;
+missing profiles or weakened checks must fail. Preserve the current strict policy, grammar, canary,
+outer process bound and all existing cases.
+
+Planned files: `scripts/quality-package.mjs`, a focused CSP accessibility helper, the proof
+fixture's app/stylesheet, `schema/package-report.schema.json`, package-report and meaningful
+detector controls, `docs/TESTING.md`, `docs/CSP_EXPRESSIONS.md`, affected accessibility charter
+guidance, and this ticket. Real screen-reader records covering the CSP interactions remain required;
+automated keyboard/axe results cannot satisfy them. Record the focused before/after checks, package
+proof, fast/full quality reports and all phase validators. No publication or mutation execution is
+included.
 
 ### Planned files
 
@@ -389,25 +427,30 @@ modules; real-browser policy execution remains the final source-to-code authorit
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                                                                 |
-| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| AC-01     | Pass   | Activation evidence pins the upstream package, API, grammar, corpus, threat, engine, graph, and budget identities. `npm run test:csp-contract` preserves every corpus count and records the reviewed inventory-only digest advance.                                      |
-| AC-02     | Pass   | `src/csp.ts`, the package export map, matched declarations, CSP API report, `test/csp-entrypoint.test.ts`, and the installed ESM/CommonJS consumers prove explicit transactional installation without import-time effects.                                               |
-| AC-03     | Pass   | `scripts/quality/csp-graph.mjs`, detector canaries, and the package report prove parsed source and emitted CSP graphs contain no trusted compiler or dynamic code construction.                                                                                          |
-| AC-04     | Pass   | CSP engine, contract, QUnit, installed ESM/CommonJS corpus, and package-browser tests pass accepted, denied, adversarial, migration, and assigned shared-conformance cases without trusted fallback.                                                                     |
-| AC-05     | Pass   | `e2e/fixtures/csp-proof/server.mjs` and the package CSP report bind the exact response policy across 18 document, asset, redirect, and error responses per browser with early event and report capture.                                                                  |
-| AC-06     | Pass   | The green package report records Chromium 151.0.7922.34, Firefox 153.0, and WebKit 26.5 with zero unexpected policy events or reports, 23 operations, and exact source, tarball, bundle, and corpus digests.                                                             |
-| AC-07     | Pass   | `e2e/fixtures/csp-proof/app.js` exercises declarative and behavior roots, signals, computed values, actions, helpers, generic and Datastar traffic, UI, cancellation, errors, replacement, enhancement, and disposal.                                                    |
-| AC-08     | Pass   | Package and browser-quality reports cover native no-JavaScript behavior, keyboard and focus behavior, ARIA, axe, reduced motion, forced colors, touch targets, zoom, and reflow across the supported projects.                                                           |
-| AC-09     | Pass   | The package graph census and additive budgets prove every non-CSP entry omits the finite engine, the CSP entry omits the trusted compiler, and raw/minified/gzip/Brotli/package ceilings pass without relaxing a prior limit.                                            |
-| AC-10     | Pass   | `test/csp-entrypoint.test.ts`, `test/modular-entrypoints.test.ts`, `test/runtime-install.test.ts`, and the proof disposal report cover isolated engine selection, incompatible replacement, construction rollback, and exact-once cleanup with zero remaining resources. |
-| AC-11     | Pass   | The public, project-brain, website, agent, threat, and approved security documents publish the exact grammar, selection, limits, diagnostics, migration, policy ownership, trusted-input requirement, and non-sandbox boundary.                                          |
-| AC-12     | Pass   | Delivery run `2026-09-02T23-38-07-650Z-85855` passed all 12 lanes. The Test checkpoint accepted its receipt, and the final `npm run check`, Document checkpoint, and `git diff --check` close the current-state audit.                                                   |
+| Criterion | Result  | Evidence                                                                                                                                                                                                                                                                 |
+| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-01     | Pass    | Activation evidence pins the upstream package, API, grammar, corpus, threat, engine, graph, and budget identities. `npm run test:csp-contract` preserves every corpus count and records the reviewed inventory-only digest advance.                                      |
+| AC-02     | Pass    | `src/csp.ts`, the package export map, matched declarations, CSP API report, `test/csp-entrypoint.test.ts`, and the installed ESM/CommonJS consumers prove explicit transactional installation without import-time effects.                                               |
+| AC-03     | Pass    | `scripts/quality/csp-graph.mjs`, detector canaries, and the package report prove parsed source and emitted CSP graphs contain no trusted compiler or dynamic code construction.                                                                                          |
+| AC-04     | Pass    | CSP engine, contract, QUnit, installed ESM/CommonJS corpus, and package-browser tests pass accepted, denied, adversarial, migration, and assigned shared-conformance cases without trusted fallback.                                                                     |
+| AC-05     | Pass    | `e2e/fixtures/csp-proof/server.mjs` and the package CSP report bind the exact response policy across 18 document, asset, redirect, and error responses per browser with early event and report capture.                                                                  |
+| AC-06     | Pass    | The green package report records Chromium 151.0.7922.34, Firefox 153.0, and WebKit 26.5 with zero unexpected policy events or reports, 23 operations, and exact source, tarball, bundle, and corpus digests.                                                             |
+| AC-07     | Pending | Reopened on 2026-09-06; direct computed, native, conditional accessibility and required manual proof remain outstanding.                                                                                                                                                 |
+| AC-08     | Pending | Reopened on 2026-09-06; direct computed, native, conditional accessibility and required manual proof remain outstanding.                                                                                                                                                 |
+| AC-09     | Pass    | The package graph census and additive budgets prove every non-CSP entry omits the finite engine, the CSP entry omits the trusted compiler, and raw/minified/gzip/Brotli/package ceilings pass without relaxing a prior limit.                                            |
+| AC-10     | Pass    | `test/csp-entrypoint.test.ts`, `test/modular-entrypoints.test.ts`, `test/runtime-install.test.ts`, and the proof disposal report cover isolated engine selection, incompatible replacement, construction rollback, and exact-once cleanup with zero remaining resources. |
+| AC-11     | Pass    | The public, project-brain, website, agent, threat, and approved security documents publish the exact grammar, selection, limits, diagnostics, migration, policy ownership, trusted-input requirement, and non-sandbox boundary.                                          |
+| AC-12     | Pending | Reopened on 2026-09-06; direct computed, native, conditional accessibility and required manual proof remain outstanding.                                                                                                                                                 |
 
 ### Completion audit
+
+The historical closure below is superseded by the 2026-09-06 reopening decision. Current completion
+is pending the corrective implementation, direct evidence, and phase validation.
+
+### Historical completion audit (2026-09-02)
 
 The public surface, package topology, generated inventory, API baseline, strict-policy proof,
 budgets, documentation, and ticket evidence agree on the final CSP contract and artifact identity.
 No unresolved findings or required follow-up remain in this ticket.
 
-Status: Complete
+Historical status: Complete

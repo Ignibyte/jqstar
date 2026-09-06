@@ -31,6 +31,35 @@ const context = {
   mode: "delivery",
 };
 const artifact = { filename: "jquery-star-1.1.0.tgz", sha256: "a".repeat(64), bytes: 123 };
+const browserVersions = Object.freeze({
+  chromium: "synthetic-c",
+  firefox: "synthetic-f",
+  webkit: "synthetic-w",
+});
+function packageFixture() {
+  const engines = () =>
+    Object.entries(browserVersions).map(([name, version]) => ({ name, version, status: "pass" }));
+  return {
+    schema: "jqstar-package-quality/1",
+    runId: context.runId,
+    mode: "package",
+    status: "pass",
+    package: { filename: artifact.filename, packedBytes: artifact.bytes },
+    checks: [
+      {
+        name: "browser-consumers",
+        status: "pass",
+        detail: {
+          subject: "installed-tarball",
+          engines: engines(),
+          csp: { tarballDigest: artifact.sha256, engines: engines() },
+        },
+      },
+      { name: "copy-in-registry", status: "pass" },
+    ],
+  };
+}
+
 const gate = () => ({
   id: "unit",
   status: "pass",
@@ -336,24 +365,11 @@ describe("program audit report adapters", () => {
     assert.equal(selectStatic(staticReport, "unit", context).status, "pass");
     staticReport.gates[0].exitCode = 1;
     assert.throws(() => selectStatic(staticReport, "unit", context));
-    const packageReport = {
-      schema: "jqstar-package-quality/1",
-      ...contextWithoutTimes(),
-      mode: "package",
-      status: "pass",
-      package: { filename: artifact.filename, packedBytes: artifact.bytes },
-      checks: [
-        {
-          name: "browser-consumers",
-          status: "pass",
-          detail: { subject: "installed-tarball", csp: { tarballDigest: artifact.sha256 } },
-        },
-        { name: "copy-in-registry", status: "pass" },
-      ],
-    };
+    const packageReport = packageFixture();
     const packageSchema = JSON.parse(await readFile("schema/package-report.schema.json", "utf8"));
     assert.equal(packageReport.schema, packageSchema.properties.schema.const);
-    const verify = (r) => selectPackage(r, "copy-in-registry", { ...context, artifact });
+    const verify = (r) =>
+      selectPackage(r, "copy-in-registry", { ...context, artifact, browserVersions });
     assert.equal(verify(packageReport).status, "pass");
     packageReport.checks[0].detail.csp.tarballDigest = "f".repeat(64);
     assert.throws(() => verify(packageReport));
@@ -365,6 +381,53 @@ describe("program audit report adapters", () => {
         "delivery",
       ),
     );
+  });
+
+  it.each(["general", "csp"])(
+    "binds %s installed browser evidence to the frozen versions",
+    (set) => {
+      const select = (report) =>
+        selectPackage(report, "copy-in-registry", { ...context, artifact, browserVersions });
+      const list = (report) =>
+        set === "general" ? report.checks[0].detail.engines : report.checks[0].detail.csp.engines;
+      assert.equal(select(packageFixture()).status, "pass");
+      for (const name of Object.keys(browserVersions)) {
+        const changed = packageFixture();
+        list(changed).find((engine) => engine.name === name).version = "private-version-canary";
+        assert.throws(
+          () => select(changed),
+          (error) =>
+            error.message.includes("differs from the frozen manifest") &&
+            !error.message.includes("private-version-canary"),
+        );
+      }
+      rejectChanges(packageFixture, select, [
+        (report) => list(report).pop(),
+        (report) => list(report).push({ ...list(report)[0] }),
+        (report) => {
+          list(report)[0].status = "fail";
+        },
+      ]);
+    },
+  );
+
+  it("requires a complete independent installed browser version roster", () => {
+    for (const versions of [
+      undefined,
+      null,
+      {},
+      { ...browserVersions, chromium: "" },
+      { ...browserVersions, webkit: 26 },
+      { ...browserVersions, unknown: "1" },
+    ]) {
+      assert.throws(() =>
+        selectPackage(packageFixture(), "copy-in-registry", {
+          ...context,
+          artifact,
+          browserVersions: versions,
+        }),
+      );
+    }
   });
 
   it("rejects stale or ambiguous source excerpts without reflecting source contents", () => {

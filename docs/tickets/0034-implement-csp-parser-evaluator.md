@@ -1,9 +1,9 @@
 ---
 id: 0034
 title: Implement the CSP parser and evaluator
-status: done
+status: planned
 created: 2026-08-30
-updated: 2026-09-02
+updated: 2026-09-06
 ---
 
 # 0034: Implement the CSP parser and evaluator
@@ -169,7 +169,7 @@ Activation evidence recorded on 2026-09-02:
 - [x] [AC-03] Malformed, trailing, unsupported, invalid-escape, one-past-limit, and denied syntax
       fails at the frozen first diagnostic without recovery, partial AST reuse, evaluation, state/
       DOM/action side effect, stack overflow, or retained failed source.
-- [x] [AC-04] The engine matches every exact-parity and CSP-specific shared conformance assignment
+- [ ] [AC-04] The engine matches every exact-parity and CSP-specific shared conformance assignment
       for signals, events, args, state/computed, actions/helpers, generic/Datastar requests,
       patches, async, short circuiting, errors, jQuery, and lifecycle; migration/unsupported cases
       remain rejected with their documented result.
@@ -203,7 +203,7 @@ Activation evidence recorded on 2026-09-02:
 - [x] [AC-13] Deterministic unit/property/model corpus runs across explicit Node/jsdom and real
       browser realms, including foreign-realm objects/jQuery, and public testing
       conformance/disposal reports prove no private-runtime assertion.
-- [x] [AC-14] Focused, coverage/property/static/security, browser as needed, npm run check, ticket
+- [ ] [AC-14] Focused, coverage/property/static/security, browser as needed, npm run check, ticket
       phase validation, and git diff --check pass without mutation testing; no package/public CSP
       claim ships until ticket 0035.
 
@@ -288,6 +288,33 @@ the manifests before evaluator code can compile or tests can run.
   only cases mapped to parity, and inspect public disposal reports.
 - Run focused/fast/coverage/property/static/security/check/ticket/diff gates without mutation
   testing.
+
+### Reopened by program audit: declarative computed signals, 2026-09-06
+
+Return to Plan because the installed CSP fixture's `data-computed:double="$count * 2"` produces an
+empty `$double` output and a `CSP_CAPABILITY_ACCESSOR` event in Chromium 151.0.7922.34, Firefox
+153.0, and WebKit 26.5. The same outcome occurs in baseline, reduced-motion, forced-color and reflow
+profiles. The diagnostic verified all 91 installed dist files against historical tarball
+`cb9a2c52039fdb5c6e0f564b0fe6299f69c3c2739f53b5c2e0eb4c8548ca2a6c`; current source shows the same
+cause: `initializeComputed()` defines a getter on state, while `readState()` accepts only own data
+descriptors. The existing conformance fixture supplies computed data directly and misses this real
+declarative path. Evidence: `.git/jqstar/program-audit/csp-ac08-review/computed-before.json`.
+
+Correct the internal integration so a live application's own declarative computed signal is readable
+and reactive through the documented syntax. Preserve refusal of arbitrary user accessors,
+foreign/copied getters, writes to computed state, and stale/disposed ownership. Do not broadly allow
+accessor reads or change the frozen grammar. Before Code, verify a bounded ownership design using
+the existing application expression-runtime binding, including replacement/restoration cleanup and
+separate applications; measure its effect on unchanged core/CSP size budgets. This design review is
+still required. If the frozen contract requires a semantic change, return that decision to 0015.
+
+Planned files are `src/csp/evaluator.ts`, the necessary internal expression-runtime/declarative
+ownership seam, focused CSP and declarative integration tests, affected internal/public contract
+wording, and this ticket. Owner 0035 adds direct installed computed assertions and runtime-error
+capture. Require failing-before/passing-after regression proof, hostile getter side-effect controls,
+reactive updates and complete cleanup, then focused conformance/corpus checks, coverage, package
+budgets, all three strict-policy browsers, `quality:fast`, `npm run check`, and phase validation.
+Mutation testing remains excluded.
 
 ### Planned files
 
@@ -422,24 +449,29 @@ the manifests before evaluator code can compile or tests can run.
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                                                                                                                                                                                        | Result |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| AC-01 | `src/csp/contract.ts`, the six schema-validated fixtures, and `npm run test:csp-contract` pin `jqstar-csp-expression/1` at digest `e80f3071…34e6`; the vocabulary test compares every token, production, node, diagnostic, limit, and method bidirectionally.                                   | Pass   |
-| AC-02 | `src/csp/tokenizer.ts`, `src/csp/parser.ts`, `test/csp-tokenizer.test.ts`, and `test/csp-parser.test.ts` exercise every accepted production/precedence assignment, both entry modes, frozen null-prototype nodes, and exact UTF-16 spans.                                                       | Pass   |
-| AC-03 | All 57 denied and 46 adversarial vectors reach their frozen first diagnostic. Parser/engine tests assert no accessor, thenable, action, state, or DOM side effect and prove failed sources are not cached.                                                                                      | Pass   |
-| AC-04 | `test/csp-engine.test.ts` executes all 34 accepted cases and the exact-parity/CSP-equivalent assignments, including signals, context data, actions/helpers, jQuery, async settlement, lifecycle, requests through registered actions, and documented migration rejections.                      | Pass   |
-| AC-05 | Tagged evaluator transitions use own descriptors and normalized safe keys. Inspection regressions prove functions/conversion hooks cannot enter jQuery overloads, accessors cannot become l-values, and foreign/live values cannot acquire DOM or jQuery authority.                             | Pass   |
-| AC-06 | The complete adversarial dynamic-code, reflection, prototype, accessor/proxy, cross-realm, and callable-escalation corpus passes without exposing ambient authority or private thrown values. Source-policy and runtime canaries independently enforce the boundary.                            | Pass   |
-| AC-07 | Accepted operator/state cases plus `test/property/csp.property.test.ts` prove deterministic order, short circuiting, assignment/update results, finite arithmetic, equality, absence, method results, and normalized failures with seed `430043`.                                               | Pass   |
-| AC-08 | `src/expression-runtime.ts` and `src/observation.ts` brand raw results before assimilation and expose only existing operation liveness. Focused tests prove no public `then` read, exactly-once completion/failure, cancellation propagation, disposal rejection, and no late statement effect. | Pass   |
-| AC-09 | At-limit and one-above corpus pairs cover all ten limits. Parser/property tests bound malformed input and recursion; engine tests prove step/async/collection limits plus deterministic 128-entry/262,144-byte LRU eviction and uncached failures.                                              | Pass   |
-| AC-10 | `src/csp/engine.ts` caches only immutable context-free programs by grammar/digest/entry/source/location, clears them on disposal, and rejects retained evaluators. Weak application bindings release on destroy, and kernel tests prove a disposed engine identity cannot be reclaimed.         | Pass   |
-| AC-11 | Corpus and focused diagnostic tests verify every frozen code/phase/span, location offsets, bounded excerpts, cycles/proxies/cross-realm/cancellation/disposal behavior, and omission of live values, causes, stacks, network data, and hostile messages.                                        | Pass   |
-| AC-12 | The source-policy graph forbids the trusted compiler from `src/csp/`; static self-tests and evaluator canaries reject `eval`, `Function`, dynamic import, WebAssembly code generation, and string timers. All delivery static/security lanes pass.                                              | Pass   |
-| AC-13 | Node/jsdom corpus, property, kernel, public testing-conformance/disposal suites, and `e2e/csp-engine.spec.ts` cover explicit realms. The private engine passes Chromium, Firefox, and WebKit with foreign plain data accepted and foreign DOM/jQuery rejected.                                  | Pass   |
-| AC-14 | Focused tests, contract, type, coverage, property, static/security, package, release, self-hosted, browser, detector, ticket-phase, and whitespace gates pass. Final `npm run check` covers all 12 delivery lanes; no CSP export or public browser claim is present before ticket 0035.         | Pass   |
+| ID    | Evidence                                                                                                                                                                                                                                                                                        | Result  |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| AC-01 | `src/csp/contract.ts`, the six schema-validated fixtures, and `npm run test:csp-contract` pin `jqstar-csp-expression/1` at digest `e80f3071…34e6`; the vocabulary test compares every token, production, node, diagnostic, limit, and method bidirectionally.                                   | Pass    |
+| AC-02 | `src/csp/tokenizer.ts`, `src/csp/parser.ts`, `test/csp-tokenizer.test.ts`, and `test/csp-parser.test.ts` exercise every accepted production/precedence assignment, both entry modes, frozen null-prototype nodes, and exact UTF-16 spans.                                                       | Pass    |
+| AC-03 | All 57 denied and 46 adversarial vectors reach their frozen first diagnostic. Parser/engine tests assert no accessor, thenable, action, state, or DOM side effect and prove failed sources are not cached.                                                                                      | Pass    |
+| AC-04 | Pending correction and current proof described in the 2026-09-06 reopening decision. Historical results below do not close this finding.                                                                                                                                                        | Pending |
+| AC-05 | Tagged evaluator transitions use own descriptors and normalized safe keys. Inspection regressions prove functions/conversion hooks cannot enter jQuery overloads, accessors cannot become l-values, and foreign/live values cannot acquire DOM or jQuery authority.                             | Pass    |
+| AC-06 | The complete adversarial dynamic-code, reflection, prototype, accessor/proxy, cross-realm, and callable-escalation corpus passes without exposing ambient authority or private thrown values. Source-policy and runtime canaries independently enforce the boundary.                            | Pass    |
+| AC-07 | Accepted operator/state cases plus `test/property/csp.property.test.ts` prove deterministic order, short circuiting, assignment/update results, finite arithmetic, equality, absence, method results, and normalized failures with seed `430043`.                                               | Pass    |
+| AC-08 | `src/expression-runtime.ts` and `src/observation.ts` brand raw results before assimilation and expose only existing operation liveness. Focused tests prove no public `then` read, exactly-once completion/failure, cancellation propagation, disposal rejection, and no late statement effect. | Pass    |
+| AC-09 | At-limit and one-above corpus pairs cover all ten limits. Parser/property tests bound malformed input and recursion; engine tests prove step/async/collection limits plus deterministic 128-entry/262,144-byte LRU eviction and uncached failures.                                              | Pass    |
+| AC-10 | `src/csp/engine.ts` caches only immutable context-free programs by grammar/digest/entry/source/location, clears them on disposal, and rejects retained evaluators. Weak application bindings release on destroy, and kernel tests prove a disposed engine identity cannot be reclaimed.         | Pass    |
+| AC-11 | Corpus and focused diagnostic tests verify every frozen code/phase/span, location offsets, bounded excerpts, cycles/proxies/cross-realm/cancellation/disposal behavior, and omission of live values, causes, stacks, network data, and hostile messages.                                        | Pass    |
+| AC-12 | The source-policy graph forbids the trusted compiler from `src/csp/`; static self-tests and evaluator canaries reject `eval`, `Function`, dynamic import, WebAssembly code generation, and string timers. All delivery static/security lanes pass.                                              | Pass    |
+| AC-13 | Node/jsdom corpus, property, kernel, public testing-conformance/disposal suites, and `e2e/csp-engine.spec.ts` cover explicit realms. The private engine passes Chromium, Firefox, and WebKit with foreign plain data accepted and foreign DOM/jQuery rejected.                                  | Pass    |
+| AC-14 | Pending correction and current proof described in the 2026-09-06 reopening decision. Historical results below do not close this finding.                                                                                                                                                        | Pending |
 
 ### Completion audit
+
+The historical closure below is superseded by the 2026-09-06 reopening decision. Current completion
+is pending the corrective implementation, direct evidence, and phase validation.
+
+### Historical completion audit (2026-09-02)
 
 The current tree contains the exact parser, immutable AST, closed evaluator, diagnostics, bounded
 cache, raw action/helper provenance seam, helper leaf records, application binding, cancellation
@@ -458,4 +490,4 @@ The final audit includes the owner-approved `SECURITY.md`, affected brain docume
 first-baseline package costs, exact ticket ledgers, whitespace inspection, phase validation, and a
 current-tree `npm run check` covering all 12 enforced delivery lanes without mutation testing.
 
-Status: Complete
+Historical status: Complete

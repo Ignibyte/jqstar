@@ -1,7 +1,9 @@
 # Program audit evidence
 
 Ticket [0033](tickets/0033-audit-full-library-program.md) is in progress. No complete program-audit
-verdict exists yet. Ticket 0053 remains a separately authorized future mutation audit.
+verdict exists yet. Tickets 0034 and 0035 are reopened for a reproduced declarative computed failure
+and gaps in the installed CSP accessibility/native proof. Ticket 0053 remains a separately
+authorized future mutation audit.
 
 Run `node scripts/program-audit/inventory.mjs` to create a review inventory under
 `.git/jqstar/program-audit/inventories/<digest>/`. The command records all 53 tickets, validates the
@@ -20,7 +22,9 @@ Evidence adapters in `scripts/program-audit/` check named executed unit assertio
 generated properties, static gates, installed-package and release checks, and exact source excerpts.
 They reject missing or duplicate selectors, required skips, browser retries, expected failures,
 stale source identities, different toolchains, and execution outside the frozen audit interval. A
-green aggregate result cannot replace a named executed assertion.
+green aggregate result cannot replace a named executed assertion. Installed-package citations also
+require the exact Chromium, Firefox and WebKit versions from the independently frozen manifest for
+both general and CSP consumers; schema-valid version substitutions fail.
 
 Release citations require all seven named checks to pass. They bind two independent installs and
 builds to the frozen tarball digest, file count, tool versions and historical comparison commit,
