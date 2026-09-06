@@ -636,6 +636,17 @@ silently replaced by this smaller regression set. The decision documents the rap
 pre-header browser write retry, older htmx private-entry and handled Firefox pageerror boundaries.
 No manual assistive-technology, browser-chrome or cache-performance claim follows from these tests.
 
+For current program-audit navigation evidence, use
+`node scripts/program-audit/run-navigation.mjs --artifact <ordinary prepared tarball>` after the
+separate preparation command. It runs all 840 flows against verified installed assets and retains
+host-default observations and declared no-JavaScript exclusions. A frozen manifest and independent
+parent process record bind the raw result to the source, tools, artifact and execution interval.
+`test/program-audit-navigation-execution.test.mjs` checks stale preparation, lock and graph
+substitutions, complete row selection, browser cleanup, interrupted processes and exclusive
+immutable recording. The existing navigation adapter tests continue to check every assertion and
+cleanup contract. Neither the component result nor its synthetic unit fixtures replace the two real
+assistive-technology charters or the complete final program audit.
+
 ## Inspection evidence
 
 Ticket 0031's `test/inspection-decision.test.mjs` validates two controlled installed registry

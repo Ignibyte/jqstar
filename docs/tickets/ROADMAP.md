@@ -155,9 +155,9 @@ The unpublished candidate remains 1.1.0; the release headings describe the origi
 0030 adds explicit inspection to that candidate. Ticket 0031 is declined after two installed
 application investigations; public inspection and browser tools remain the supported workflow.
 Package diagnostics (0032) and the quality review (0052) are complete. The full program audit (0033)
-waits for real accessibility evidence in 0035/0039, the reopened 0044 detector process-result fix,
-the 0017 private-reporting setting correction, and its complete evidence review. The 0051
-candidate-copy correction passes complete delivery. Mutation testing remains separately deferred.
+waits for real accessibility evidence in 0035/0039, the 0017 private-reporting setting correction,
+and its complete evidence review. The 0044 detector process-result and 0051 candidate-copy
+corrections pass complete delivery. Mutation testing remains separately deferred.
 
 ## Final quality review and deferred mutation audit
 

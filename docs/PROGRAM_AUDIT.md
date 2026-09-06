@@ -104,8 +104,31 @@ assertion. All 498 applicable configured flows must pass; six declared no-JavaSc
 remain exclusions. Host-default failures stay recorded as observations. Artifact, fixture,
 dependency, bundle and tool identities must match the frozen expectations, and successful flows must
 show complete cleanup. Navigation selectors are literal JSON arrays containing the candidate,
-browser and scenario ID, and select only configured executed passes. The final read-only executor
-and parent execution interval still need integration.
+browser and scenario ID, and select only configured executed passes. The read-only component
+executor below now supplies its own frozen inputs and supervised parent interval. Binding that
+component index into the complete program manifest and acceptance matrix remains required.
+
+Run the full navigation component after preparing the installed candidates separately:
+
+```sh
+node scripts/prepare-navigation-decision.mjs --force
+node scripts/program-audit/run-navigation.mjs \
+  --artifact .git/jqstar/navigation-decision/jquery-star-1.1.0.tgz
+```
+
+The audit executor only reads the prepared build, ordinary tarball and digest-named alias, root
+lock, fixture inputs and six installed bundles. It refuses stale preparation rather than rebuilding
+it. It records actual browser versions and every source/schema/artifact identity before a fixed
+child command executes all thirty rows. The child serves a verified temporary asset snapshot,
+preserves host-default failures and closes browsers/server before removing its owned snapshot. The
+parent checks the actual process outcome, input stability, raw schema and complete navigation
+selector.
+
+Immutable manifests, individual completed rows, logs, raw results and the process/index records live
+under `.git/jqstar/program-audit/navigation-executions/`. A failure retains diagnostics and cannot
+produce a passing execution index. The command does not update `quality/navigation-decision.json`.
+Its result is a navigation component result, not the complete program verdict. A mutable development
+workspace is recorded explicitly; final program acceptance still requires a clean frozen candidate.
 
 Browser selectors may use a unique spec title or a JSON array containing every parent suite title
 followed by the spec title. The latter distinguishes equal titles in separate groups. Missing or
