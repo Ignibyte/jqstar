@@ -209,7 +209,10 @@ export function createResponseController(
     }
     if (fixture.kind === "abort") {
       return await new Promise<Response>((_resolve, reject) => {
-        const fail = (): void => reject(abortError());
+        const fail = (): void => {
+          request.signal.removeEventListener("abort", fail);
+          reject(abortError());
+        };
         request.signal.addEventListener("abort", fail, { once: true });
         pending.get(id)!.cancel = fail;
       });
@@ -217,13 +220,21 @@ export function createResponseController(
 
     validateDelay(fixture.delayMs);
     return await new Promise<Response>((resolve, reject) => {
+      let canceled = false;
       const timer = (options.window ?? globalThis).setTimeout(() => {
+        if (canceled) return;
         request.signal.removeEventListener("abort", cancel);
         void settleFixture(fixture.response, request, id).then(resolve, reject);
       }, fixture.delayMs);
       const cancel = (): void => {
-        (options.window ?? globalThis).clearTimeout(timer);
-        reject(abortError());
+        if (canceled) return;
+        canceled = true;
+        request.signal.removeEventListener("abort", cancel);
+        try {
+          (options.window ?? globalThis).clearTimeout(timer);
+        } finally {
+          reject(abortError());
+        }
       };
       request.signal.addEventListener("abort", cancel, { once: true });
       pending.get(id)!.cancel = cancel;

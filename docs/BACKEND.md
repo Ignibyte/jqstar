@@ -53,6 +53,11 @@ terminal `completed`, `cancelled`, or `failed` phase. Cancellation reasons are `
 `cleanup`, `external`, or `aborted`. A request invoked by an observed action includes that action's
 ID as `parentId`.
 
+A caller-supplied `AbortController` can serve multiple requests. Each request retains its own root
+ownership until settlement, so one request completing or failing cannot remove a pending sibling
+from application or kernel cleanup. Root teardown aborts controllers with active requests. Separate
+controllers on independent roots remain independent; sharing a controller also shares cancellation.
+
 Request observations contain the method, URL origin and path, attempt, and applicable status or
 progress counts. They omit the query, fragment, headers, payload, credentials, response body, stream
 chunks, state, DOM, and every live browser object. Paths and normalized error messages can still

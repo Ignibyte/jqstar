@@ -1350,18 +1350,18 @@ and prefix matchers are rejected instead of being resolved by priority. The opti
 priority from `-1000` through `1000` orders different matched attributes on one element; authored
 attribute order breaks ties.
 
-`parse()` runs before `mount()` or `update()`. These callbacks are synchronous and receive the raw
-and parsed attribute, DOM and jQuery elements, the application context, selected expression engine,
-committed helper scope, and `cleanup()`, `effect()`, `report()`, and `task()` capabilities. A
-directive has one active record per element and attribute. Attribute changes call `update()` when
-provided or clean and remount otherwise. Cleanup runs in reverse order for attribute/subtree
-removal, `data-ignore`, patch replacement, application destruction, failed setup, and kernel
-disposal.
+`parse()` precedes synchronous `mount()`/`update()`, which receive raw/parsed attributes, DOM/jQuery
+elements, application context, the expression engine, helpers, and `cleanup()`, `effect()`,
+`report()` and `task()`. Each element/attribute has one active record. Changes call `update()` or
+clean and remount. Provisional cleanup is owned before mount; cleanup runs in reverse for
+attribute/subtree removal, `data-ignore`, patch replacement, destruction, failed setup and kernel
+disposal. Owner destruction stops new work and runs returned cleanup. Effects stop if their initial
+callback releases the owner; built-in model bindings then skip input-listener setup.
 
-`task()` is for finite promise-like work. It supplies an `AbortSignal`, participates in
-`$.star.whenEnhanced()`, reports rejection while active, and aborts or detaches when the directive
-is released. A plugin must still own timers, listeners, requests, or promises it creates outside
-these capabilities.
+`task()` supplies an `AbortSignal` for finite promise-like work and joins `$.star.whenEnhanced()`.
+Active rejection is reported. Failed registration or owner release aborts and detaches the task;
+late rejections are handled. Plugins must own timers, listeners, requests and promises created
+outside these capabilities.
 
 Helpers use dotted JavaScript identifier paths below the plugin namespace, such as
 `acme.audit.label`. Their namespace containers are frozen, registered values are not recursively
@@ -1685,9 +1685,9 @@ Common request options:
   These two options are jQStar extensions.
 - `retry` is `auto`, `error`, `always`, or `never`. `auto` retries network failures. The defaults
   are 10 retries, a 1-second first wait, a multiplier of 2, and a 30-second maximum wait.
-- `requestCancellation: 'auto'` cancels an older matching request from the same element. `cleanup`
-  also cancels when that directive or element is removed. `disabled` allows overlap. An
-  `AbortController` gives the caller direct control.
+- `requestCancellation: 'auto'` cancels matching older element requests; `cleanup` also cancels on
+  removal. `disabled` allows overlap. A caller `AbortController` may serve several requests; root
+  teardown cancels all still active, even after a shared-controller sibling settles.
 - `target` and `mode` override the HTML response headers.
 
 The Datastar profile emits `datastar-fetch` and `jquery-star:fetch`; the generic profile emits only
@@ -1909,3 +1909,19 @@ plus the related JSON and HTML response headers. It is not a copy of the full Da
 runtime. It does not support the SDK’s `executeScript()` helper and rejects `text/javascript`
 responses instead of executing server-supplied code. A hidden page delays a new GET until it is
 visible, but an already-open stream is not closed and reopened automatically.
+
+### Behavior application cleanup
+
+If a behavior binding or mount callback destroys its application, setup stops acquiring effects,
+handlers, mounts and its observer. Cleanup returned by a mount after its subtree or application has
+been released runs immediately. Application and kernel destruction also release mounts whose nodes
+were detached before the mutation observer could process their removal. Cleanup errors remain
+visible to the caller, and repeated destruction does not run completed cleanup again.
+
+Declarative application and kernel destruction also release attribute cleanup for nodes detached
+before observer delivery. Their directive callbacks, event listeners and model bindings are released
+even when another cleanup callback throws. Removing one subtree leaves live siblings active.
+
+Each core and plugin conformance case disposes its harness after completion or an early failure. A
+failure before explicit disposal preserves the original error and any distinct cleanup error. The
+existing expected-disposal-failure and repeated-disposal checks remain part of the cases.

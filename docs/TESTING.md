@@ -281,8 +281,20 @@ protection. `test/directive-application.test.ts` covers priority, helper resolut
 mount/update/remount, invalid capability use, owned effects/tasks, direct and Idiomorph replacement,
 failure aggregation, and exact-once cleanup. `test/property/plugin.property.test.ts` generates caret
 boundaries, dependency chains/cycles, matcher overlaps, and helper-path overlaps under the recorded
-seed/replay contract. Changed-line coverage requires every executable plugin, directive, kernel,
-registry, and runtime branch introduced by the ticket.
+seed/replay contract. Changed executable lines and functions require 100% coverage in plugin,
+directive, kernel, registry and runtime code; aggregate branch floors remain separate.
+
+Directive rollback regressions use public core/plugin/application calls for failed task factories,
+destruction during mount/update/effect/task callbacks, registered and returned cleanup, stopped
+descendant enhancement, retained capabilities and late rejection after kernel disposal. An explicit
+test capability wrapper also destroys the owner while kernel task registration returns, verifying
+detachment, error preservation and an empty task barrier even when the returned release throws.
+
+The same public plugin/application fixture checks built-in `data-effect`, `data-show` and model
+binding initialization. If an initial expression or native model-write handler destroys its owner,
+subsequent state changes cannot rerun the effect and native input cannot update destroyed state.
+Active controls retain ordinary reactivity and input handling; the registered `data-text` control
+uses the existing directive cleanup path.
 
 Package quality resolves the plugin API value and public plugin/directive/helper types from ESM,
 CommonJS, QUnit, NodeNext, and Bundler consumers. Those consumers register a helper and directive,
@@ -320,6 +332,12 @@ across retry, reuse of the validated URL/header/private body, distinct short-cir
 failure terminals, pending/error cleanup, application-owned abort, blocked late dispatch, and kernel
 disposal. `test/plugin.test.ts` covers atomic publication and reverse cleanup; `test/fetch.test.ts`
 retains URL-encoded, multipart, and completed-response retry compatibility.
+
+`test/request-lifecycle.test.ts` exercises public core applications in both modes. It proves shared
+controller cleanup after a sibling succeeds or fails, application/kernel teardown, caller abort and
+independent roots with distinct controllers. `test/runtime.test.ts` checks debounce ownership after
+replacement, firing, reentrant scheduling and destruction, including release before action
+execution.
 
 `test/property/request-middleware.property.test.ts` generates acyclic constraint graphs and
 descriptor edit/short-circuit sequences under the normal seed/replay contract. Every generated edge
@@ -450,14 +468,21 @@ carries a JSON-safe diagnostic containing rounds, elapsed time, and only owned
 operation/request/task IDs and stable owners. Do not put state, markup, headers, bodies, callbacks,
 or DOM nodes into task owners.
 
+When enhancement or response settlement rejects during deadline waiting, the harness preserves an
+existing Error object. Other rejection values are wrapped in an Error with the original cause.
+
 `createResponseController()` consumes exact FIFO expectations with no passthrough. Unit and
 installed-package cases cover JSON, HTML, empty, HTTP error, network error, delay, retry, abort,
 method/URL/header/body capture, mismatch, unexpected calls, leftover expectations, setup failure,
 and exact fetch descriptor restoration. Explicit release and controller disposal report a failed
-removal of an originally absent `fetch` property; disposal still attempts every other target.
-`jquery-star/datastar/testing` remains separate and uses the official SDK for valid success, ordered
-multi-event, chunked, retry, failure, and abort streams; only fixed inert malformed bytes are
-written directly.
+removal of an originally absent `fetch` property; disposal still attempts every other target. Abort
+and delayed fixtures remove their own signal listeners on cancellation, including controller
+disposal, without aborting caller signals or removing caller listeners. A failed timer cancellation
+still rejects the request with `AbortError`, prevents later fixture delivery and reports the timer
+failure after attempting sibling cleanup. Native signal inspection and nested-delay regressions
+cover those ownership paths. `jquery-star/datastar/testing` remains separate and uses the official
+SDK for valid success, ordered multi-event, chunked, retry, failure, and abort streams; only fixed
+inert malformed bytes are written directly.
 
 `runCoreConformance()` and `runPluginConformance()` own runner-neutral named cases and immutable
 reports. The latter covers repeated facade identity, exercise/use, failed-install rollback,
@@ -681,3 +706,19 @@ QUnit and Chromium/Firefox/WebKit artifacts. It includes six official plugins, f
 public lifecycle events; the existing real-host bridge suites retain transport/lifecycle coverage.
 Installed graph checks measure inspector-only, core plus inspector and CSP plus inspector bundles,
 reject trusted code in the CSP composition, and reject inspection sentinels in unrelated consumers.
+
+## Detached declarative cleanup
+
+`test/declarative-detached.test.ts` removes owned nodes and destroys their application or kernel
+before observer delivery. It checks normal and throwing directive cleanup, native and jQuery
+listeners, model input, repeated destruction and a live sibling after scoped patch removal. The four
+teardown cases fail against the prior source; the scoped sibling control already passes.
+
+## Conformance case cleanup
+
+`test/conformance-cleanup.test.ts` checks task failure with normal and throwing cleanup in each core
+case, plus early failure in the optional cleanup-plugin case. All cases share harness ownership and
+release it after completion or early failure. A distinct cleanup failure is retained with the
+original work error; terminal error identity and expected plugin-cleanup results remain intact.
+Passing core/plugin controls retain their existing named results. The caller owns the DOM realm
+supplied by the harness factory.

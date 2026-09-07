@@ -227,7 +227,7 @@
     "build:css": "tailwindcss -i ./src/ui/theme.css -o ./dist/jquery-star-ui.css --minify",
     "build:demo": "npm run build:agent-content && vite build --config vite.demo.config.ts",
     "build:pages": "JQS_SITE_BASE=/jqstar/ JQS_STATIC_DEMO=true npm run build:demo && node scripts/smoke-pages.mjs",
-    "build:js": "vite build && vite build --config vite.csp.config.ts && vite build --config vite.umd.config.ts && node scripts/build-types.mjs",
+    "build:js": "vite build && vite build --config vite.umd.config.ts && node scripts/build-types.mjs",
     "build:self-hosted": "npm run build && npm run build:demo && npm run build:server && node scripts/bundle-site.mjs",
     "build:server": "vite build --config vite.server.config.ts",
     "check": "npm run quality:delivery",

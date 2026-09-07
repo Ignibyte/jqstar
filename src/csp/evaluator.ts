@@ -80,6 +80,23 @@ const stringMethods = new Set<string>(CSP_METHODS.string);
 const arrayMethods = new Set<string>(CSP_METHODS.array);
 const eventMethods = new Set<string>(CSP_METHODS.event);
 const jqueryMethods = new Set<string>(CSP_METHODS.jquery);
+const literalJQueryMethods: ReadonlySet<string> = new Set([
+  "addClass",
+  "attr",
+  "children",
+  "closest",
+  "css",
+  "filter",
+  "find",
+  "hasClass",
+  "html",
+  "is",
+  "not",
+  "prop",
+  "removeClass",
+  "siblings",
+  "toggleClass",
+]);
 const jqueryMethodArity: Readonly<Record<JQueryMethod, readonly [number, number]>> = Object.freeze({
   addClass: [1, 1],
   attr: [1, 2],
@@ -1078,26 +1095,7 @@ class EvaluationFrame {
       this.fail("CSP_CAPABILITY_CALL", node.span);
     }
     const literalFirst = literalString(node.arguments[0]);
-    const requiresLiteral = new Set([
-      "addClass",
-      "attr",
-      "children",
-      "closest",
-      "css",
-      "filter",
-      "find",
-      "hasClass",
-      "is",
-      "not",
-      "prop",
-      "removeClass",
-      "siblings",
-      "toggleClass",
-    ]);
-    if (requiresLiteral.has(name) && node.arguments.length > 0 && literalFirst === undefined) {
-      this.fail("CSP_CAPABILITY_VALUE", node.span);
-    }
-    if (name === "html" && node.arguments.length > 0 && literalFirst === undefined) {
+    if (literalJQueryMethods.has(name) && node.arguments.length > 0 && literalFirst === undefined) {
       this.fail("CSP_CAPABILITY_VALUE", node.span);
     }
   }

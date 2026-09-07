@@ -1,3 +1,4 @@
+import { isPlainRecord } from "./value-checks";
 import { patchElements, patchSignals } from "./patch";
 import {
   beginRequestOperation,
@@ -49,13 +50,7 @@ type RequestTerminal =
     };
 
 const activeByElement = new WeakMap<Element, Map<string, ActiveRequest>>();
-const activeByRoot = new WeakMap<Element, Set<AbortController>>();
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
-}
+const activeByRoot = new WeakMap<Element, Map<AbortController, number>>();
 
 function matches(pattern: RegExp | undefined, value: string, fallback: boolean): boolean {
   if (!pattern) return fallback;
@@ -74,7 +69,7 @@ function filteredSignals(
     const path = parentPath ? `${parentPath}.${key}` : key;
     if (matches(filter.exclude, path, key.startsWith("_"))) continue;
 
-    if (isPlainObject(value)) {
+    if (isPlainRecord(value)) {
       const nested = filteredSignals(value, filter, path);
       if (Object.keys(nested).length > 0) result[key] = nested;
       continue;
@@ -93,7 +88,7 @@ function writePath(target: object, path: string, value: unknown): void {
 
   let parent = target as Record<string, unknown>;
   for (const key of keys) {
-    if (!isPlainObject(parent[key])) parent[key] = {};
+    if (!isPlainRecord(parent[key])) parent[key] = {};
     parent = parent[key] as Record<string, unknown>;
   }
   parent[finalKey] = value;
@@ -203,10 +198,10 @@ function controllerFor(
 
   let rootRequests = activeByRoot.get(context.root);
   if (!rootRequests) {
-    rootRequests = new Set();
+    rootRequests = new Map();
     activeByRoot.set(context.root, rootRequests);
   }
-  rootRequests.add(controller);
+  rootRequests.set(controller, (rootRequests.get(controller) ?? 0) + 1);
   return controller;
 }
 
@@ -214,7 +209,13 @@ function releaseController(context: StarContext, key: string, controller: AbortC
   const element = context.element ?? context.root;
   const requests = activeByElement.get(element);
   if (requests?.get(key)?.controller === controller) requests.delete(key);
-  activeByRoot.get(context.root)?.delete(controller);
+  const rootRequests = activeByRoot.get(context.root);
+  const count = rootRequests?.get(controller);
+  if (count !== undefined) {
+    if (count > 1) rootRequests?.set(controller, count - 1);
+    else rootRequests?.delete(controller);
+    if (rootRequests?.size === 0) activeByRoot.delete(context.root);
+  }
 }
 
 export function cancelElementRequests(element: Element): void {
@@ -231,7 +232,7 @@ export function cancelElementRequests(element: Element): void {
 export function cancelRequests(root: Element): void {
   const requests = activeByRoot.get(root);
   if (!requests) return;
-  for (const controller of requests) controller.abort("cleanup");
+  for (const controller of requests.keys()) controller.abort("cleanup");
   requests.clear();
   activeByRoot.delete(root);
 }
@@ -586,7 +587,7 @@ export function dynamicBackendAction(method: BackendMethod): StarAction {
     if (typeof url !== "string" || url.trim() === "") {
       throw new Error(`@${method.toLowerCase()} requires a URL.`);
     }
-    if (!isPlainObject(options)) throw new Error("Backend action options must be an object.");
+    if (!isPlainRecord(options)) throw new Error("Backend action options must be an object.");
     return executeBackendRequest(method, url, options, context);
   };
 }

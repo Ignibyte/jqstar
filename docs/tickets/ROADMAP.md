@@ -33,10 +33,12 @@ complete, as is the README positioning correction (0045). The installed CSP proo
 open before the final program audit. Ticket 0048 removed mutation testing from ticket 0043's active
 contract. Ticket 0017 owns the clean 1.0 candidate audit and non-publishing handoff.
 
-Current testing correction: ticket 0014 is in testing after the program audit reproduced silent
-failure to remove caller-hardened temporary globals and fetch replacements. Its fix reports those
-failures, preserves callback errors and continues the remaining cleanup. Focused regressions and all
-1,572 fast-suite tests pass; complete delivery and closure remain required.
+Current cleanup corrections: owners 0006, 0009 and 0014 are complete after their reopened criteria
+passed source/documentation inspection, exact Test validation and Document validation. The combined
+cleanup batch passes all 13 delivery gates, 1,642 unit tests, 487 browser tests and all 16 detector
+controls. Installed package and release checks pass within unchanged size limits. Owner 0035 remains
+in testing for its outstanding accessibility evidence. The final program audit, release preparation,
+jQuery UI migration follow-up and intentionally deferred mutation ticket remain open.
 
 Current guide correction: ticket 0017 aligns the manual release commands with the existing forced
 candidate checks and corrects the documented modular request default. Its prerequisite closure and

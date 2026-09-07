@@ -765,15 +765,53 @@ describe("jQuery Star", () => {
       actions: { run: action },
       ui: { button: { on: { click: { action: "run", debounce: 50 } } } },
     });
+    const instance = $("#app").star("instance");
+    const internals = instance as unknown as { timers: Set<ReturnType<typeof setTimeout>> };
 
     $("button").trigger("click");
+    expect(internals.timers.size).toBe(1);
     await vi.advanceTimersByTimeAsync(25);
     $("button").trigger("click");
+    expect(internals.timers.size).toBe(1);
     await vi.advanceTimersByTimeAsync(49);
     expect(action).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
 
     expect(action).toHaveBeenCalledOnce();
+    expect(internals.timers.size).toBe(0);
+    $("button").trigger("click");
+    expect(internals.timers.size).toBe(1);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(action).toHaveBeenCalledTimes(2);
+    expect(internals.timers.size).toBe(0);
+  });
+
+  it("releases a fired debounce record before its action schedules another event", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `<section id="app"><button>Run</button></section>`;
+    const observed: number[] = [];
+    const action = vi.fn(() => {
+      const application = $("#app").star("instance") as unknown as {
+        timers: Set<ReturnType<typeof setTimeout>>;
+      };
+      observed.push(application.timers.size);
+      if (observed.length === 1) $("button").trigger("click");
+    });
+    $("#app").star({
+      actions: { run: action },
+      ui: { button: { on: { click: { action: "run", debounce: 50 } } } },
+    });
+    $("button").trigger("click");
+    await vi.advanceTimersByTimeAsync(50);
+    expect(observed).toEqual([0]);
+    expect(vi.getTimerCount()).toBe(1);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(observed).toEqual([0, 0]);
+    expect(vi.getTimerCount()).toBe(0);
+    $("button").trigger("click");
+    $("#app").star("destroy");
+    await vi.advanceTimersByTimeAsync(50);
+    expect(action).toHaveBeenCalledTimes(2);
   });
 
   it("refreshes inserted bindings and reports inserted mount failures", async () => {

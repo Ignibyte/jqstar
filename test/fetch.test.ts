@@ -82,6 +82,30 @@ describe("backend actions", () => {
     expect(lifecycle.map(({ type }) => type)).toEqual(["started", "progress", "finished"]);
   });
 
+  it("owns nested pending and error state without replacing existing sibling values", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1, status: 42, existing: { kept: 7, result: { error: 'old' } } }"></section>
+    `;
+    const fetchMock = vi.fn(async () => {
+      expect(instance().state.status).toEqual({ request: { loading: true } });
+      expect(instance().state.existing).toEqual({ kept: 7, result: { error: null } });
+      return new Response(null, { status: 204 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    $("#app").star();
+
+    await instance().run(
+      $.star.get<TestState>("/nested-status", {
+        pending: "status..request.loading",
+        error: "existing.result.error",
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(instance().state.status).toEqual({ request: { loading: false } });
+    expect(instance().state.existing).toEqual({ kept: 7, result: { error: null } });
+  });
+
   it("posts JSON and morphs an HTML target without losing live directives", async () => {
     document.body.innerHTML = `
       <section id="app" data-signals="{ count: 2, loading: false, requestError: null }">

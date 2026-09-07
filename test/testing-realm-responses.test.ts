@@ -1,8 +1,10 @@
 import { execFileSync } from "node:child_process";
+import { getEventListeners } from "node:events";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { transferableAbortController } from "node:util";
 import $ from "jquery";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   abortFixture,
   assertStarDOMRealm,
@@ -30,6 +32,12 @@ function realm(): StarDOMWindow {
   document.body.append(frame);
   frames.push(frame);
   return frame.contentWindow as StarDOMWindow;
+}
+
+function installedFetch(target: { fetch?: typeof fetch }): typeof fetch {
+  const replacement = target.fetch;
+  if (!replacement) throw new Error("The response controller did not install fetch.");
+  return replacement;
 }
 
 afterEach(() => {
@@ -185,6 +193,133 @@ console.log(JSON.stringify({ failures: failure.errors.length, otherGlobalsRestor
 });
 
 describe("queued response controller", () => {
+  it.each([
+    ["abort", "dispose"],
+    ["abort", "external-abort"],
+    ["delay", "dispose"],
+    ["delay", "external-abort"],
+  ] as const)("releases only its own %s listener after %s", async (kind, cleanup) => {
+    const controller = createResponseController();
+    const target = {} as { fetch?: typeof fetch };
+    const abort = transferableAbortController();
+    const callerListener = vi.fn();
+    abort.signal.addEventListener("abort", callerListener);
+    controller.install(target);
+    const url = "https://example.test/listener-cleanup";
+    if (kind === "abort") controller.abort({ url });
+    else controller.delay({ url }, 60_000, responseFixture({ status: 204 }));
+    const settled = installedFetch(target)(url, { signal: abort.signal }).catch(
+      (error: unknown) => error,
+    );
+    try {
+      expect(getEventListeners(abort.signal, "abort")).toHaveLength(2);
+      if (cleanup === "dispose") controller.dispose();
+      else {
+        abort.abort();
+        controller.dispose();
+      }
+      expect(await settled).toMatchObject({ name: "AbortError" });
+      expect(controller.outstanding()).toEqual([]);
+      expect(getEventListeners(abort.signal, "abort")).toEqual([callerListener]);
+      expect(abort.signal.aborted).toBe(cleanup === "external-abort");
+      expect(callerListener).toHaveBeenCalledTimes(cleanup === "external-abort" ? 1 : 0);
+      controller.dispose();
+      expect(Object.hasOwn(target, "fetch")).toBe(false);
+      expect(() => controller.dispose()).not.toThrow();
+    } finally {
+      abort.abort();
+      controller.dispose();
+    }
+  });
+
+  it.each(["response", "abort"] as const)(
+    "transfers nested delay cancellation to its %s fixture",
+    async (kind) => {
+      vi.useFakeTimers();
+      const controller = createResponseController();
+      const target = {} as { fetch?: typeof fetch };
+      const abort = transferableAbortController();
+      controller.install(target);
+      controller.delay(
+        { url: "https://example.test/nested-delay" },
+        5,
+        delayFixture(5, kind === "abort" ? abortFixture() : responseFixture({ status: 204 })),
+      );
+      const settled = installedFetch(target)("https://example.test/nested-delay", {
+        signal: abort.signal,
+      }).catch((error: unknown) => error);
+      try {
+        expect(getEventListeners(abort.signal, "abort")).toHaveLength(1);
+        await vi.advanceTimersByTimeAsync(5);
+        expect(getEventListeners(abort.signal, "abort")).toHaveLength(1);
+        expect(controller.outstanding()).toHaveLength(1);
+        await vi.advanceTimersByTimeAsync(5);
+        expect(getEventListeners(abort.signal, "abort")).toHaveLength(kind === "abort" ? 1 : 0);
+        controller.dispose();
+        expect(await settled).toMatchObject(
+          kind === "abort" ? { name: "AbortError" } : { status: 204 },
+        );
+        expect(getEventListeners(abort.signal, "abort")).toEqual([]);
+        expect(abort.signal.aborted).toBe(false);
+        expect(controller.outstanding()).toEqual([]);
+        expect(vi.getTimerCount()).toBe(0);
+      } finally {
+        abort.abort();
+        controller.dispose();
+        vi.useRealTimers();
+      }
+    },
+  );
+
+  it("rejects canceled fixtures and blocks late delivery even when timer cancellation fails", async () => {
+    vi.useFakeTimers();
+    const timerFailure = new Error("timer cancellation failed");
+    const timerWindow = {
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+      clearTimeout() {
+        throw timerFailure;
+      },
+    } as unknown as StarDOMWindow;
+    const controller = createResponseController({ window: timerWindow });
+    const target = {} as { fetch?: typeof fetch };
+    const delayedAbort = transferableAbortController();
+    const siblingAbort = transferableAbortController();
+    const factory = vi.fn(() => new Response("late"));
+    controller.install(target);
+    controller
+      .delay({ url: "https://example.test/failed-cancel" }, 1, responseFixture(factory))
+      .abort({ url: "https://example.test/sibling" });
+    const delayed = installedFetch(target)("https://example.test/failed-cancel", {
+      signal: delayedAbort.signal,
+    }).catch((error: unknown) => error);
+    const sibling = installedFetch(target)("https://example.test/sibling", {
+      signal: siblingAbort.signal,
+    }).catch((error: unknown) => error);
+    try {
+      expect(() => controller.dispose()).toThrow(
+        expect.objectContaining({ name: "AggregateError", errors: [timerFailure] }),
+      );
+      expect(getEventListeners(delayedAbort.signal, "abort")).toEqual([]);
+      expect(getEventListeners(siblingAbort.signal, "abort")).toEqual([]);
+      expect(Object.hasOwn(target, "fetch")).toBe(false);
+      expect(await delayed).toMatchObject({ name: "AbortError" });
+      expect(await sibling).toMatchObject({ name: "AbortError" });
+      expect(controller.outstanding()).toEqual([]);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(factory).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(delayedAbort.signal.aborted).toBe(false);
+      expect(siblingAbort.signal.aborted).toBe(false);
+      expect(() => controller.dispose()).not.toThrow();
+    } finally {
+      await vi.runAllTimersAsync();
+      delayedAbort.abort();
+      siblingAbort.abort();
+      controller.dispose();
+      vi.useRealTimers();
+    }
+  });
+
   it("reports a refused removal of an originally absent fetch during explicit release", () => {
     const controller = createResponseController();
     const target = {} as { fetch?: typeof fetch };
@@ -336,12 +471,12 @@ describe("queued response controller", () => {
       headers: { "x-init": "source" },
       body: "from-request",
     });
-    expect(await (await target.fetch!(request, { headers: { "x-init": "override" } })).text()).toBe(
-      "request",
-    );
+    expect(
+      await (await installedFetch(target)(request, { headers: { "x-init": "override" } })).text(),
+    ).toBe("request");
     expect(
       await (
-        await target.fetch!("https://example.test/params", {
+        await installedFetch(target)("https://example.test/params", {
           method: "POST",
           body: new URLSearchParams({ ready: "true" }),
         })
@@ -351,7 +486,7 @@ describe("queued response controller", () => {
     Object.defineProperty(blob, "text", { value: async () => "blob-body" });
     expect(
       await (
-        await target.fetch!("https://example.test/blob", {
+        await installedFetch(target)("https://example.test/blob", {
           method: "POST",
           body: blob,
         })
@@ -359,7 +494,7 @@ describe("queued response controller", () => {
     ).toBe("blob");
     expect(
       await (
-        await target.fetch!("https://example.test/buffer", {
+        await installedFetch(target)("https://example.test/buffer", {
           method: "POST",
           body: new ArrayBuffer(1),
         })
@@ -404,31 +539,12 @@ describe("queued response controller", () => {
     controller.install(target);
     controller.delay({ url: "https://example.test/delayed-abort" }, 1_000, responseFixture({}));
     const abort = new AbortController();
-    const pending = target.fetch!("https://example.test/delayed-abort", {
+    const pending = installedFetch(target)("https://example.test/delayed-abort", {
       signal: abort.signal,
     });
     abort.abort();
     await expect(pending).rejects.toMatchObject({ name: "AbortError" });
     controller.dispose();
-
-    const timerWindow = {
-      setTimeout: globalThis.setTimeout.bind(globalThis),
-      clearTimeout() {
-        throw new Error("timer cancellation failed");
-      },
-    } as unknown as StarDOMWindow;
-    const cancellationFailure = createResponseController({ window: timerWindow });
-    const timerTarget = {} as { fetch?: typeof fetch };
-    cancellationFailure.install(timerTarget);
-    cancellationFailure.delay(
-      { url: "https://example.test/cancel-failure" },
-      1,
-      responseFixture({ body: "late" }),
-    );
-    const late = timerTarget.fetch!("https://example.test/cancel-failure");
-    await Promise.resolve();
-    expect(() => cancellationFailure.dispose()).toThrow("response cleanup failed");
-    expect(await (await late).text()).toBe("late");
 
     const restorationFailure = createResponseController();
     const originalFetch = () => Promise.resolve(new Response());
@@ -461,7 +577,7 @@ describe("queued response controller", () => {
           }),
       ),
     });
-    const pending = target.fetch!("https://example.test/factory");
+    const pending = installedFetch(target)("https://example.test/factory");
     await Promise.resolve();
     expect(controller.outstanding()).toHaveLength(1);
     controller.dispose();

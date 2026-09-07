@@ -1,7 +1,66 @@
 import { describe, expect, it, vi } from "vitest";
-import { boundedText, diagnosticError, isPlainRecord, isThenable } from "../src/value-checks";
+import {
+  boundedText,
+  cloneValue,
+  diagnosticError,
+  isPlainRecord,
+  isThenable,
+} from "../src/value-checks";
 
 describe("shared core value boundaries", () => {
+  it("isolates nested state copies while retaining atomic values and sparse array holes", () => {
+    const date = new Date("2026-01-01T00:00:00Z");
+    const method = () => 1;
+    const custom = Object.create({ inherited: true }) as object;
+    const sparse: unknown[] = [];
+    sparse[2] = { value: 1 };
+    const record = Object.assign(Object.create(null) as Record<string, unknown>, { count: 1 });
+    const source = { nested: { count: 1 }, sparse, record, date, method, custom, empty: null };
+    const copy = cloneValue(source);
+
+    expect(copy).toEqual(source);
+    expect(copy).not.toBe(source);
+    expect(copy.nested).not.toBe(source.nested);
+    expect(copy.sparse).not.toBe(sparse);
+    expect(copy.sparse[2]).not.toBe(sparse[2]);
+    expect(copy.sparse).toHaveLength(3);
+    expect(0 in copy.sparse).toBe(false);
+    expect(1 in copy.sparse).toBe(false);
+    expect(copy.record).not.toBe(record);
+    expect(Object.getPrototypeOf(copy.record)).toBe(Object.prototype);
+    expect(copy.date).toBe(date);
+    expect(copy.method).toBe(method);
+    expect(copy.custom).toBe(custom);
+    copy.nested.count = 2;
+    copy.record.count = 3;
+    expect(source.nested.count).toBe(1);
+    expect(record.count).toBe(1);
+  });
+
+  it("copies enumerable string keys once and preserves a failing accessor's error", () => {
+    const symbol = Symbol("state metadata");
+    const read = vi.fn(() => ({ count: 1 }));
+    const source = {
+      get value() {
+        return read();
+      },
+      [symbol]: "metadata",
+    };
+    Object.defineProperty(source, "hidden", { value: 2 });
+    const copy = cloneValue(source);
+    expect(copy).toEqual({ value: { count: 1 } });
+    expect(Reflect.ownKeys(copy)).toEqual(["value"]);
+    expect(read).toHaveBeenCalledOnce();
+    const failure = new Error("state accessor");
+    expect(() =>
+      cloneValue({
+        get value() {
+          throw failure;
+        },
+      }),
+    ).toThrow(failure);
+  });
+
   it("accepts only current-realm plain or null-prototype records", () => {
     expect(isPlainRecord({})).toBe(true);
     expect(isPlainRecord(Object.create(null))).toBe(true);

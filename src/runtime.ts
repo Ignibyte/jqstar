@@ -1,3 +1,4 @@
+import { cloneValue } from "./value-checks";
 import {
   DeclarativeApplication,
   readModelValue,
@@ -40,21 +41,6 @@ import type {
 import { STAR_VERSION } from "./version";
 
 const INSTANCE_KEY = "jqueryStar.instance";
-
-function cloneValue<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(cloneValue) as T;
-
-  if (value && typeof value === "object") {
-    const prototype = Object.getPrototypeOf(value) as object | null;
-    if (prototype === Object.prototype || prototype === null) {
-      return Object.fromEntries(
-        Object.entries(value).map(([key, child]) => [key, cloneValue(child)]),
-      ) as T;
-    }
-  }
-
-  return value;
-}
 
 function resolveValue<Result, State extends StateRecord, Computed extends ComputedRecord>(
   value: Value<Result, State, Computed>,
@@ -153,6 +139,7 @@ class Application<
       });
       this.installRules();
       this.mountTree(root);
+      if (this.isDestroyed) return;
 
       const ownedObserver = capabilities.observe(
         `application:${this.namespace}:mutation`,
@@ -229,7 +216,7 @@ class Application<
       attempt(errors, () => cancelElementRequests(element));
     }
     for (const [element, rules] of Array.from(this.mounted)) {
-      if (!tree.contains(element)) continue;
+      if (tree !== this.root && !tree.contains(element)) continue;
       if (
         preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
       ) {
@@ -306,6 +293,7 @@ class Application<
   private installRules(): void {
     for (const [selector, rule] of Object.entries(this.definition.ui ?? {})) {
       this.installBindings(selector, rule);
+      if (this.isDestroyed) return;
       this.installModel(selector, rule);
       this.installEvents(selector, rule);
     }
@@ -336,7 +324,8 @@ class Application<
         onError: (error) => this.$root.trigger("jquery-star:error", [error]),
       },
     );
-    this.ownedEffects.add(runner);
+    if (this.isDestroyed) stop(runner);
+    else this.ownedEffects.add(runner);
   }
 
   private applyBindings(element: Element, rule: UIRule<State, Computed>): void {
@@ -458,8 +447,16 @@ class Application<
         this.debounceTimers.set(identity, timers);
       }
       const previous = timers.get(element);
-      clearTimeout(previous);
-      const timer = setTimeout(invoke, options.debounce);
+      if (previous !== undefined) {
+        timers.delete(element);
+        this.timers.delete(previous);
+        clearTimeout(previous);
+      }
+      const timer = setTimeout(() => {
+        this.timers.delete(timer);
+        timers.delete(element);
+        invoke();
+      }, options.debounce);
       timers.set(element, timer);
       this.timers.add(timer);
       return;
@@ -489,6 +486,7 @@ class Application<
         ) {
           continue;
         }
+        if (this.isDestroyed) return;
         this.mountElement(element, rule);
       }
     }
@@ -504,7 +502,8 @@ class Application<
 
     rules.set(rule, undefined);
     const cleanup = rule.mount?.(this.elementContext(element));
-    rules.set(rule, cleanup || undefined);
+    if (this.mounted.get(element) !== rules) cleanup?.();
+    else rules.set(rule, cleanup || undefined);
   }
 
   private handleMutations(mutations: MutationRecord[]): void {

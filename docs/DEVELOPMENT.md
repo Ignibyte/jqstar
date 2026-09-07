@@ -65,6 +65,13 @@ standalone server.
 10. Add `Status: Complete` only after the current-state audit, mark the ticket `done`, and rerun
     `npm run quality:delivery` so the receipt covers the final documentation and status.
 
+The modular package build emits core and CSP together. It assigns the runtime's complete static
+dependency graph to a shared chunk and keeps the trusted compiler outside the CSP graph. Frozen CSP
+grammar metadata has its own chunk. The separate UMD build remains the compatibility global.
+Terser's function-declaration hoisting, browser target, sourcemaps and explicit private-property
+allowlist remain in place. Package checks measure complete installed consumer graphs and the tarball
+against the existing raw, gzip, Brotli and packed-size limits.
+
 ## Agent-content authoring
 
 `config/agent-content.json` is the reviewed source manifest. It names the allowed public guides,

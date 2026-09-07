@@ -51,7 +51,10 @@ registered through a jQStar or harness capability.
 - `src/testing/responses.ts`: one FIFO expectation queue, immutable request captures, active
   response records, cancellation callbacks, and exact target property descriptors. Failed property
   removal is reported; controller disposal still attempts every target. No request can pass through
-  to the real network.
+  to the real network. Each abort/delay fixture owns its signal listener. Cancellation removes that
+  listener, leaves the caller's signal unchanged and closes the delayed callback before attempting
+  timer cancellation. A timer-host failure is reported but cannot resume canceled work or prevent
+  its rejection.
 - `src/testing/realm.ts`: one process-local ambient lease plus the current callback's finite global
   descriptor stack. It rejects a second lease before mutation and clears the lease after attempting
   every restoration. Refused deletion of a temporary global is a cleanup failure, combined with any
@@ -98,7 +101,9 @@ registered through a jQStar or harness capability.
   step/async counters and capability tags only for one invocation. Synchronous declarative computed
   reads in the same application share those counters and an active-getter set. A temporary module
   record carries only the application identity and budget during a getter call and restores the
-  previous record in `finally`; it does not retain a context between evaluations.
+  previous record in `finally`; it does not retain a context between evaluations. The evaluator's
+  private read-only literal-argument method set is fixed policy metadata, shared across frames
+  without storing application, argument or result data.
 - `src/expression-runtime.ts`: a `WeakMap` associates live application identities with exact action/
   helper resolvers, raw action startup, and the declarative getter-ownership predicate. The CSP
   evaluator checks the exact application state before consulting the predicate for its key/getter
@@ -120,11 +125,22 @@ registered through a jQStar or harness capability.
   being copied back into state. Its shared native form-value helpers retain no application, element,
   callback, or jQuery selection between calls; the unchecked-radio sentinel is an immutable module
   constant.
+- Provisional registered directives enter the teardown map before their mount callback. Their task
+  controller and optional kernel release function belong to the directive from factory invocation
+  onward; failed registration aborts and detaches them. A returned effect is stopped if its initial
+  callback released the owner. Destroyed applications stop scanning, and mount/update cleanup
+  returned after release runs immediately. Late task rejection stays observed after detachment.
+  Built-in effect and model initialization also rechecks application lifetime after the first
+  callback. A released application stops the returned runner before recording it or installing model
+  listeners.
 - `src/reactivity.ts`: dependency/proxy/raw indexes, current effect, owned pending effects, pending
   unowned failures, and flush flag.
 - `src/fetch.ts`: active requests by element and root; selected profile, request abort controller,
   private replayable body, validated middleware descriptor, retry delay, visibility listener,
-  lifecycle counters, and response state live in each request.
+  lifecycle counters, and response state live in each request. Each root counts its active requests
+  per controller. Settlement releases one reference, so a shared-controller sibling remains owned
+  until its own settlement or root cleanup. Application debounce records are removed when replaced
+  or fired, before action invocation; teardown clears the remaining timers.
 - `src/protocol.ts`: one active response owns frozen metadata, a single-claim body lease, optional
   stream reader, cancellation promise, adapter task, scoped patch/event capabilities, progress
   callback, and registry cleanup.
@@ -253,3 +269,23 @@ policy-expiry timer. Default-off attachment owns no observer, trace array or tim
 controller clears data and policies; final lease release removes the collector. Kernel disposal
 closes every client and releases all resources even when a callback throws. Cleanup failures are
 counted once; the terminal public report records failed owned collector cleanup.
+
+## Behavior setup and detached mounts
+
+Behavior application ownership begins during setup. Initial binding callbacks that destroy their
+application cannot leave their runner subscribed or install later handlers, mounts or an observer. A
+mount's provisional record owns its cleanup slot; cleanup returned after that record is released
+runs immediately. Full root destruction releases the entire owned mount map, including nodes that
+left the root before observer delivery. Subtree cleanup retains its containment and preservation
+boundaries. Error propagation and repeated-destruction guarantees apply to these paths as well.
+
+Declarative attribute cleanup follows the same full-root ownership boundary: DOM detachment does not
+remove an element from its application's cleanup map. Destruction releases those records and their
+directive cleanup, model handlers and event listeners even before observer delivery. Scoped subtree
+cleanup keeps containment and preserved-root exclusions.
+
+All six conformance cases share one explicit owner for their factory-returned harness. Before an
+explicit disposal attempt, completion or failure releases that harness. A distinct cleanup error is
+retained alongside the original work error. The case keeps its own expected-disposal-failure and
+idempotence assertions. The module's fixed native freeze-function reference holds no application
+data. Caller-created DOM realms remain caller-owned.

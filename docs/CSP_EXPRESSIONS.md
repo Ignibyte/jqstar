@@ -485,3 +485,10 @@ forms navigate successfully with JavaScript disabled and preserve the submitted 
 policy. The proof's named controls support the separate manual accessibility charters; automated
 keyboard and axe results do not replace real screen-reader testing. See the
 [testing contract](TESTING.md) for the required evidence.
+
+## Serving the published modules
+
+Keep the published `dist` files together when serving modules directly. The CSP entry imports shared
+runtime and grammar chunks; copying only `csp.js` is insufficient. Package-aware bundlers resolve
+these imports automatically. The shared runtime contains no trusted compiler, and CSP's complete
+transitive graph remains subject to the no-dynamic-code checks above.

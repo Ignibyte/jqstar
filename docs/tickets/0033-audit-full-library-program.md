@@ -689,7 +689,104 @@ full-matrix tests remain required, followed by fast, complete delivery and phase
 completes navigation evidence loading; the whole-program manifest, execution and acceptance report
 remain separate unfinished work.
 
+### Plan extension: testing-guide coverage wording (2026-09-06)
+
+Semantic review of all 124 authored units in `docs/TESTING.md` confirms that its plugin section
+attributes changed-branch enforcement to a gate that checks changed executable lines/functions and
+aggregate branch floors. Align that sentence with `docs/QUALITY_PROGRAM.md` and
+`scripts/quality/coverage-report.mjs`. Planned files are `docs/TESTING.md` and this ticket; preserve
+all thresholds, behavior, source classifications and detector checks. Validate the Plan, inspect the
+exact corrected claim, format, validate tickets and include the change in the next complete
+delivery. The finding is retained in `claim-review/testing-coverage-wording-finding.json`.
+
+### Plan extension: package-size correction (2026-09-06)
+
+The latest full delivery rejects the corrected lifecycle's packed size and installed core gzip size.
+Keep all fixed budgets and shipped contents. Ticket 0006 owns the shared cloning and private
+event-option refactor. Enable Terser's documented `hoist_funs` compression in `vite.config.ts`: it
+moves function declarations before use without enabling unsafe transformations. The existing module
+formats, browser target, property-mangling allowlist, diagnostics and sourcemaps remain. Isolated
+ordinary Vite consumers measure 63,106 gzip bytes with hoisting alone and 62,984 with the selected
+source refactor. Other investigated refactors and minifier settings remain unapplied.
+
+Planned files: `vite.config.ts`, `docs/DEVELOPMENT.md`, `quality/jquery-mobile-migration.json`, this
+ticket and `docs/tickets/ROADMAP.md`. Build the actual package, update only the Mobile reference
+app's measured UMD byte field from that artifact, and verify installed consumers, API/types, graphs,
+all browsers, packed and bundle limits, package-budget detector isolation and complete delivery.
+Retain failures and measured identities. A source-only size experiment cannot authorize closure or
+commit. Mutation testing remains deferred.
+
+### Coordinated CSP build plan (2026-09-06)
+
+Owner 0035 replaces the duplicated separate CSP distribution with shared neutral runtime chunks;
+owner 0014 reuses its equivalent harness error helper to retain the testing entry-file limit.
+Planned files are `vite.config.ts`, removal of `vite.csp.config.ts`, `package.json`,
+`quality/production-census.json`, `src/testing/harness.ts`, the CSP/architecture/development/testing
+guides, owners 0014/0035, this ticket and the roadmap. Generated agent files may refresh through the
+existing generator only if their source bindings change. Existing raw/compressed/packed budgets, API
+declarations, module formats, source maps and documentation remain required.
+
+Preserve the two rejected circular chunk layouts and their `Function` scan failures. The selected
+isolated layout passes both CSP graph scans, all entry-file budgets, core gzip 62,967 and CSP Brotli
+38,979. Current actual package proof remains failed until rebuilt and installed. Require the full
+package/API/type/browser/graph/corpus/detector and reproducibility checks, then complete delivery
+and owner acceptance. Keep manual accessibility and the remaining program audit open.
+
+### Behavior lifecycle follow-up plan (2026-09-06)
+
+The current runtime review confirms behavior startup can retain effects, returned mount cleanup and
+an observer after a callback destroys its application. Full teardown also misses mounts detached
+before observer delivery. Owner 0006 records the correction and new public regression plan before
+Code. Planned files are its runtime, new behavior lifecycle tests, public/brain ownership guidance,
+owner ledgers and roadmap, plus generated bindings and actual Mobile UMD measurement if changed.
+Retain the source probes and private prototype as separate evidence, and repeat current size and
+complete delivery checks without weakening any ceiling or acceptance criterion.
+
+### CSP literal-policy sharing plan (2026-09-06)
+
+Owner 0035 records a source correction for the remaining CSP compressed-size limit: share the fixed
+literal-argument method set and merge the identical `html` predicate while retaining the complete
+arity table and unknown-method refusal. The selected private build fits both core and CSP limits.
+Update its evaluator, architecture/ownership guidance, owner ledgers and roadmap, then verify the
+current frozen CSP contract, installed package, coverage and complete delivery. Do not credit
+unapplied alternatives or private builds as final acceptance.
+
+### Detached declarative cleanup correction plan (2026-09-06)
+
+The refreshed ownership review finds that full declarative root cleanup excludes owned elements
+already removed from the DOM. The public reproduction retains a custom directive cleanup and a
+window event after application/kernel teardown. Owner 0006 returns to planned and will make full
+root cleanup cover detached records while keeping ordinary subtree containment and preservation. It
+owns the new negative-to-positive application/kernel, error and live-sibling tests plus affected
+public/brain documentation. Retain current-source probe identities and the interrupted delivery.
+Finish the targeted source review and repeat focused, fast, coverage, installed-package and complete
+delivery validation before any owner closure or receipt-based commit.
+
+### Conformance runner ownership correction plan (2026-09-06)
+
+The testing source review finds a retained harness after the last core conformance case fails. Owner
+0014 returns to planned to dispose that harness, plus the optional cleanup-failing-plugin case on
+early failure. Preserve named cases, original error identity and distinct cleanup errors. The
+current public reproduction proves the harness still accepts new application work after the runner
+reports failure. Keep the source/bundle record and negative controls, then require focused, fast,
+coverage, installed-package and full delivery proof. This is an additional ownership finding; it
+does not replace the pending declarative cleanup correction or final program requirements.
+
+### Conformance allocation correction plan (2026-09-06)
+
+The installed combined corrections pass twelve checks but exceed the testing CommonJS entry limit by
+176 bytes. Owner 0014 returns to planned to share all six case harness lifetimes through one
+internal helper. Its tests will also cover combined work/cleanup errors in each core case, retaining
+both errors instead of the older finally precedence. Keep public signatures, case rosters and all
+budgets unchanged. Record negative tests, focused checks and a fresh exact package/delivery result.
+
 ## Code
+
+Coordinated-build implementation: `vite.config.ts` now owns CSP with the other modular entries; its
+runtime dependency traversal prevents shared helpers from reconnecting CSP to the trusted compiler.
+The separate CSP config and package build step are removed, and the production census reflects that
+removal. The equivalent harness error helper and public/brain serving/build guidance are updated
+under owners 0014 and 0035. Existing graph and size checks remain unchanged.
 
 ### Changed-file ledger
 
@@ -754,6 +851,11 @@ The candidate preparation function still requires every declared prerequisite to
 
 ### Design changes
 
+The package-size correction adds documented function-declaration hoisting in `vite.config.ts` and
+explains it in `docs/DEVELOPMENT.md`. Ticket 0006 owns source consolidation. The selected isolated
+consumer measures 62,984 gzip bytes; installed-package verification and the actual Mobile UMD
+measurement are pending. Fixed budgets and existing runtime guarantees remain unchanged.
+
 The activation Plan passed before maintained audit code was added. The preliminary inventory parser
 missed 0034 AC-06 because its description starts on the next line. Strict count reconciliation
 exposed the omission; derivation now retains the criterion and an explicit regression case. Internal
@@ -768,6 +870,185 @@ integration, reviewed mappings, declined-service decisions/absence integration, 
 orchestration remain unfinished. No current criterion has been relabeled complete.
 
 ## Test
+
+Final documentation run `2026-09-07T02-13-50-146Z-150` passes unit, coverage, property, format and
+workflow checks but fails spelling on one word in ticket 0009. The wording now says mutation testing
+remains deferred. After the failure was confirmed, the runner received SIGTERM; later gates were not
+executed and no receipt was issued. The corrected final tree requires a fresh complete delivery run.
+
+| Command                                                              | Result | Evidence                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check` (invokes `quality:delivery`) | Pass   | `2026-09-07T01-53-29-076Z-39380/report.json`: all 13 enforced gates pass with matching 858-file fingerprint `c053e7f45e868a3f5e29824b29610eeaaec1da8b27f97ada8b4a51b834691121`. All 1,642 unit tests, 487 browser tests, 13 installed-package checks, seven release checks and 16 detector controls pass. Coverage reports no uncovered changed executable lines or functions in the nine changed runtime files. |
+| Installed package sizes from that delivery run                       | Pass   | `package-report.json`: testing CommonJS/ESM are 12,975/12,988 bytes, core consumer is 62,991 gzip bytes and CSP consumer is 38,983 Brotli bytes. Existing 13,000/63,000/39,000 limits are unchanged.                                                                                                                                                                                                             |
+| Actual Test phase validation for owners 0006, 0009 and 0014          | Pass   | `ownership-census/current-batch-test-validation.log`: all three validators pass against that exact delivery report before moving to Document. The final documentation and status changes require a new matching delivery receipt before commit.                                                                                                                                                                  |
+
+| Command                                                                 | Result | Evidence                                                                                                                                                                                                                                      |
+| ----------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JQS_QUALITY_FORCE_ALL=1 npm run quality:fast` (shared case correction) | Pass   | `2026-09-07T01-50-50-116Z-26250/report.json`: all six gates and 1,642 unit tests pass with zero failures or pending cases. Start/end fingerprint `de5b1c1e725d368bd1f15f790d4332492e08d00862cbca2db608589cb7cfb82d` matches across 858 files. |
+| Owner 0014 Code validation against that exact fast report               | Pass   | Actual phase validation passed before moving 0014 to testing. Current installed-package, coverage and full delivery proof remain required.                                                                                                    |
+
+Fast run `2026-09-07T01-48-13-397Z-13196` passes 1,642 unit tests and every gate except formatting.
+The shortened aggregate label changes Prettier's line layout in `src/testing/conformance.ts`;
+formatting is corrected without a semantic change. The failed report is retained and a complete
+passing fast run is still required before Code closure.
+
+The final shared-case implementation passes 53 focused testing-helper cases, including all three
+core cases with normal and throwing cleanup. The two combined-error cases first fail against the
+prior finally-based source, while seven controls pass. The actual build now emits `testing.cjs` at
+12,975 and `testing.js` at 12,988 bytes, both within the unchanged 13,000-byte limits. Earlier
+shared builds at 13,053/13,066 and 12,994/13,007 remain recorded as insufficient. Inlining the
+single-use cleanup helper, sharing the native freeze reference, retaining an unset disposal flag and
+shortening the new aggregate label preserve report shapes and both error identities. The plugin
+factory keeps its original method receiver, and synchronous cases still clean up synchronously.
+Current fast, coverage, installed-package and complete delivery remain required.
+
+Installed run `detached-conformance-installed-4b167b4` passes twelve of thirteen checks. The only
+failure is `dist/testing.cjs` at 13,176 bytes against its unchanged 13,000-byte limit. All three
+browsers and consumer graph budgets pass. All 41 input identities remain unchanged during execution.
+Owner 0014 owns the shared case cleanup correction; the failed package report remains retained.
+
+Fast run `2026-09-07T01-35-41-017Z-92774` passes all six gates and 1,638 unit tests with matching
+858-file fingerprints. Owners 0006 and 0014 pass actual Code validation before returning to testing.
+The current consumer preview measures core gzip 62,991 and CSP Brotli 38,983 within unchanged
+limits; installed-package execution, current coverage and full delivery remain pending. The
+architecture, ownership and testing claim records are deliberately refreshed with archived prior
+records and exact unchanged-unit checks: 20 sources and 818 authored units are semantically
+reviewed. Final direct evidence remains unproven.
+
+The combined build passes and its actual UMD is 463,263 bytes. The Mobile measurement is updated
+under owner 0006's validated manifest extension. Conformance cleanup now passes 49 focused cases,
+including the same-terminal-error control. Focused ESLint initially rejected a missing caught cause
+and unnecessary type assertion; the corrected source passes without rule changes. The complete
+testing implementation source review now covers five more runtime files, bringing ownership review
+to 46 of 109. These counts and focused results do not establish final acceptance.
+
+The declarative correction passes 88 focused lifecycle/patch tests after four negative teardown
+cases and a passing live-sibling control. A malformed initial control is separately retained and
+corrected before source changes. The conformance correction passes 48 focused testing-helper cases
+after three negative ownership regressions and one passing control. Both source/bundle probes and
+test reports are retained under `ownership-census/`. Current fast, changed-code coverage,
+installed-package budgets and full delivery remain open.
+
+Delivery `2026-09-07T01-23-08-047Z-63863` is an intentional SIGTERM error after the detached
+declarative cleanup defect was reproduced. Six gates pass, including 1,628 tests and delivery static
+analysis. Coverage is interrupted; subsequent gates do not run. The matching-fingerprint report has
+no receipt. Probe records under `ownership-census/declarative-detached-*` show zero custom cleanup
+calls after application and kernel teardown, with a remaining window listener. Owner 0006 must
+correct and verify this before final acceptance.
+
+Corrected fast run `2026-09-07T01-20-28-576Z-50719` passes all six gates and 1,628 unit tests with
+matching 856-file fingerprints. Owner 0035 passes the actual Code validator against that report
+before returning to testing. Current installed-package proof passes all thirteen checks;
+changed-code coverage, complete delivery, remaining source review and final program acceptance are
+still required. No delivery receipt is issued by fast verification.
+
+Fast run `2026-09-07T01-18-31-719Z-37831` passes all 1,628 unit tests and five of six gates. Static
+analysis fails only the spelling check on one word in owner 0035's allocation plan. The wording is
+corrected without changing a dictionary or rule. The failure remains recorded and Code closure
+requires a passing repeat.
+
+Installed run `csp-literal-policy-installed-4b167b4` passes all thirteen checks for the combined
+behavior and CSP corrections. Its 265-file tarball is 2,869,763 packed bytes with digest
+`13143443ea894021b3a51acf15fe3ea750959329c5966313595c52011d7c697d`; core gzip is 62,998 and CSP
+Brotli is 38,992. API/types, both CSP graphs, all consumer budgets and Chromium/Firefox/WebKit pass.
+All 38 snapshotted changed inputs remain unchanged throughout execution. Records are retained under
+`ownership-census/csp-literal-policy-installed/`. The architecture/ownership claim refresh now
+covers 810 authored units across the same 20 sources; the evaluator's exact static-policy delta is
+separately reviewed with historical census offsets explicitly retained. These are development
+records. Current fast, changed-code coverage, complete delivery and final audit acceptance remain
+pending.
+
+The CSP literal-policy correction passes 40 focused tests and the separate four-test frozen contract
+command, with the existing contract digest and case inventories unchanged. Focused ESLint succeeds.
+Its recovered build log completes declarations and CSS; the original process exit was not retained.
+The UMD bytes and hash match the behavior correction. The selected private preview measures core
+gzip 62,998 and CSP Brotli 38,992, but current installed-package execution, fast, changed-code
+coverage and complete delivery are still required. Evidence remains under
+`ownership-census/csp-literal-policy-*`. The new static-policy documentation also requires an
+explicit refresh of the architecture, ownership and evaluator review records before final evidence
+binding.
+
+Behavior follow-up fast run `2026-09-07T00-57-56-093Z-17895` passes all six gates and 1,628 unit
+tests. Owner 0006 passes Code validation before returning to testing. The build, focused ESLint and
+agent generation pass. Current consumer preview measures core gzip 62,998 and CSP Brotli 39,055; the
+latter exceeds its unchanged 39,000-byte ceiling. Three additional CSP chunk layouts and four
+compiler/source-sharing variants did not satisfy both limits and remain unapplied. Current actual
+installed-package, changed-code coverage and full delivery remain required.
+
+The behavior correction passes 116 focused tests across five suites. All seven new public
+regressions first failed against the unchanged runtime; their negative and passing records remain
+under `ownership-census/behavior-lifecycle-{negative,focused}.*`. The source now stops late setup,
+immediately releases returned mount cleanup after record removal and releases detached mounts during
+root destruction. Current fast, coverage, rebuilt package sizes and complete delivery remain open.
+
+Delivery `2026-09-07T00-44-32-365Z-72294` was deliberately stopped with SIGTERM after the new
+behavior lifecycle defects were reproduced. Eleven gates passed, including 1,621 unit tests,
+changed-code coverage, static analysis, thirteen package checks and seven release checks. The
+browser gate was interrupted and the detector gate did not start. The runner records `error` with
+matching start/end fingerprints and no receipt. Preserve that result; the forthcoming behavior
+correction requires fresh complete delivery.
+
+Installed-package run `shared-runtime-installed-4b167b4` passes all thirteen checks against the
+coordinated build. The 265-file archive is 2,869,140 packed and 9,930,485 unpacked bytes; core gzip
+is 62,967 and CSP Brotli is 38,979, within unchanged limits. API/types, ESM/CommonJS/QUnit,
+Chromium/Firefox/WebKit, parsed CSP graphs, every optional consumer bundle and copy-in registry
+checks pass. All 36 snapshotted changed-file identities remain unchanged throughout execution.
+Evidence is `ownership-census/shared-runtime-installed/package-report.json` with the corresponding
+input snapshot. This replaces the earlier package failures for the current build; full delivery,
+current changed-code coverage, reproducibility and detector verification remain required.
+
+Corrected fast run `2026-09-07T00-39-45-843Z-56060` passes all six gates and 1,621 unit tests. Its
+start/end fingerprint is `dab37305752a564ff0530caa6b3a91976929c84907ef9f9c79a65c150b85764a` across
+855 files after staging the planned config deletion. Owners 0014 and 0035 pass actual Code
+validation against that report before moving to testing. This fast result supplies no delivery
+receipt; installed-package validation and complete delivery remain required.
+
+Fast run `2026-09-07T00-35-53-404Z-42795` passes all 1,621 unit tests and five of six gates. Its
+source-policy scan fails while opening the removed `vite.csp.config.ts`, which was still in Git's
+index. Stage that planned deletion so the scanner sees the intended file roster. The direct
+source-policy rerun passes 679 files without changing any policy rule. Preserve the failed report; a
+fresh complete fast run was required and passes as recorded above. Installed-package validation
+remains required.
+
+Coordinated-build follow-up passes the actual build, API/declaration extraction, all individual
+bundle-file budgets and both complete CSP emitted-graph scans. Seven focused suites pass 55 tests.
+The UMD digest and measured Mobile reference field remain unchanged. Agent-content regeneration
+passes through the maintained command. Current installed-package, changed-code coverage and complete
+delivery evidence remain pending; the prior failed package report stays retained.
+
+Corrected coverage passes for all 125 changed executable lines and 25 changed functions, with no
+uncovered/unexplained changes, all 28 executed requirement mappings, and passing global/subsystem
+floors and immutable threshold comparison. Raw reports and 30 unchanged input hashes are retained in
+`ownership-census/package-size-coverage-passed/`. This standalone pass does not resolve the packed
+or CSP Brotli size failures and supplies no delivery receipt.
+
+The first size-refactor coverage run reports one uncovered changed line, `src/fetch.ts:91`, for
+nested request-state path initialization. Tests, global/subsystem floors and all 28 executed
+requirement mappings pass. Owner 0006 adds a public pending/error state test before rerunning the
+unchanged coverage contract; original raw reports are retained.
+
+Standalone package run `package-size-installed-4b167b4` fails two of thirteen checks: packed size
+3,176,621 exceeds the combined 3,174,000-byte allowance, and CSP consumer Brotli size 39,046 exceeds
+39,000. The installed core raw/gzip assertions pass before that CSP failure. Other package checks,
+including API/types, isolated consumers, QUnit, Chromium/Firefox/WebKit, Mobile UMD identity and
+registry copying pass. All 29 input hashes remain unchanged. Preserve
+`ownership-census/package-size-installed/package-report.json`; do not treat this standalone run as
+delivery or claim later bundle assertions executed after the CSP failure. Investigate the separate
+CSP/UMD compression and retained sourcemap sizes before repeating package validation.
+
+Package-size correction: seven focused suites pass 153 tests, and `npm run build` passes. The actual
+UMD artifact measures 463,097 bytes (SHA-256
+`887fd2794f8aa0de7f7d1200aa6c107bae2c53275ed902d638b70049e7afc46b`), and
+`quality/jquery-mobile-migration.json` now records that value. The local build measurement is
+retained in `ownership-census/package-size-umd-measurement.json`; installed package sizes and
+complete delivery remain pending. No fixed limit changed.
+
+The package-size correction passes fast run `2026-09-07T00-13-54-546Z-15329`: all six selected gates
+and 1,620 unit tests, unchanged fingerprint
+`629cc01ec800fbb83a349344f00162fe527fa62685ca4c7cfa4949833164c4ca` across 856 files. Owner 0006
+passes actual Code validation and returns to testing. Subsequent phase/evidence edits require new
+delivery. Semantic review of the two added architecture/development claims brings the reviewed
+authored-unit count to 802 across 20 of 74 sources, with final acceptance still pending.
 
 | Command                                                                      | Result              | Evidence                                                                                                                                                                                                                                                                                                                      |
 | ---------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1243,3 +1524,112 @@ The corrected batch passes 38 focused tests and fast run `2026-09-06T22-38-12-35
 0014 passes Code validation against that exact report and moves to testing; complete delivery and
 final closure remain required. Earlier generated-corpus and CSP inventory failures remain in the
 owner ledger with their corrections; no budget, grammar or coverage threshold was relaxed.
+
+### Response cancellation finding (2026-09-06)
+
+The restoration correction passed full forced delivery `2026-09-06T22-44-39-527Z-6366`, all thirteen
+enforced gates and exact receipt/Test validation before commit `4b167b4`. Continued ownership review
+confirms that abort and delayed response fixtures retain their signal listener after controller
+disposal. An injected timer cancellation failure also permits the disposed timer to invoke its
+response factory. Owner 0014 returns to Plan before correcting both paths. Exact public-API probes
+and controls are retained in `ownership-census/response-cancellation-finding.json`. The ownership
+census remains 38/109 inspected; confirmed findings are not acceptance. The request controller,
+debounce-record and directive-registration findings still require owners 0006/0009 to reopen. Final
+manual accessibility, reference and release evidence remains outstanding; mutation testing remains
+deferred.
+
+### Lifecycle owner reopening (2026-09-06)
+
+Owners 0006 and 0009 return to planned with unchecked criteria and explicit implementation/test
+scopes for the confirmed shared-controller, debounce-record and directive-registration defects.
+Their prior closures remain historical. Owner 0014's response-cancellation correction passes 45
+focused tests and independent native-signal/timer probes. Its first fast run passes 1,579 unit tests
+but rejects increased non-null assertions; the extended Plan replaces them with explicit fetch setup
+checks and removes the obsolete allowance. Full correction verification remains required.
+
+### Verified lifecycle corrections and next owner (2026-09-06)
+
+Owners 0014 and 0006 pass Code validation against fast run `2026-09-06T23-15-18-323Z-88354`: all six
+gates and 1,600 unit tests pass, with an unchanged 856-file fingerprint. Both move to testing;
+complete delivery and acceptance remain pending. Owner 0009's public reentrant-setup probe also
+confirms skipped provisional/returned cleanup and later enhancement after application destruction.
+Its Plan now covers that ordering defect before source edits. The exact probe is
+`ownership-census/directive-reentrant-finding.json`.
+
+### Directive rollback correction implemented (2026-09-06)
+
+Owner 0009 implements the validated provisional-cleanup and task/effect registration rollback Plan.
+Ten regressions reject the original source, which is restored exactly after the negative control.
+The fixed source passes 100 focused tests across four suites. Public core/application tests cover
+reentrant destruction and failed task creation; explicit capability injection covers release during
+kernel task registration and a throwing detach. The owner remains coding pending fast, coverage and
+full delivery. Source-review identities must be refreshed before final program acceptance.
+
+### Combined lifecycle corrections enter full verification (2026-09-06)
+
+Fast run `2026-09-06T23-26-05-896Z-7785` passes all six gates and 1,610 unit tests with a matching
+856-file fingerprint. Owner 0009 passes Code validation and moves to testing alongside 0006/0014.
+Independent current-source probes confirm task cancellation, stopped effects, cleanup during
+reentrant teardown and no later descendant enhancement. Complete delivery and owner acceptance
+remain pending; mutation testing remains deferred.
+
+### Combined delivery failure (2026-09-06)
+
+Forced delivery `2026-09-06T23-28-19-460Z-20892` finishes with eleven passing gates and two
+failures. All 1,610 unit tests, 487 browser cases, coverage, properties, static checks and seven
+release checks pass. Coverage measures all 96 changed executable lines and sixteen changed
+functions, with no uncovered or unexplained changes. Package quality rejects 3,175,232 packed bytes
+against 3,174,000, 63,203 core gzip bytes against 63,000, and the stale Mobile UMD reference
+(463,011 versus actual 463,830 bytes). The package-budget detector also fails because these
+unrelated package errors remain alongside its deliberate failure. The other fifteen detector
+controls pass. Source fingerprints match throughout; no delivery receipt is eligible. Preserve the
+failed report and correct the implementation/measurement within unchanged budgets before repeating
+full delivery.
+
+### Semantic review and built-in lifecycle follow-up (2026-09-06)
+
+Semantic review now covers twenty of 74 sources and 799 authored units. Ownership, architecture and
+backend records were refreshed against exact current sources while preserving their historical
+records. The testing-guide review identifies the coverage wording correction above. These are draft
+interpretations, not final direct evidence or acceptance. Ownership review remains 38/109.
+
+Additional actual public-API probes confirm initial-effect leaks in built-in `data-effect`,
+`data-show` and `data-bind`. The model case also retains input handling after destruction. Owner
+0006's extended Plan reopens AC-01 and covers both effect and model registration before code. The
+small shared-clone/private-member size experiments do not meet the core budget and have not been
+promoted. Original references, actual accessibility records, final program assembly and
+private-reporting authorization remain pending; mutation testing has not been run.
+
+### Built-in correction focused and fast results (2026-09-06)
+
+The built-in initial-registration correction passes all 108 focused tests and fresh source-bundled
+public probes. `data-effect` and `data-show` no longer run after owner destruction; model state
+updates no longer write the destroyed input and native input cannot update its state. Retained
+effect counts are zero. Source changes keep the existing callback and diagnostic behavior.
+
+Fast run `2026-09-06T23-51-17-189Z-80588` passes all 1,618 unit tests and typed/static code checks,
+but fails the ticket and spelling gates. Inserting a subheading before the main Test table hid the
+existing fast rows from the documented section reader. The failure note now remains plain text in
+the main Test section. The spelling correction uses ordinary prose instead of an unrecognized word.
+No validator or spelling allowance changed. A corrected fast run remains required.
+
+The ownership/testing semantic records now bind the corrected sources: twenty reviewed sources, 800
+authored units and 54 remaining sources. Earlier records are preserved. Final direct evidence,
+package size, owner acceptance and whole-program completion remain pending.
+
+### Built-in correction returns to testing (2026-09-06)
+
+Corrected fast run `2026-09-06T23-54-22-242Z-93737` passes all six gates and 1,618 unit tests with
+unchanged 856-file fingerprint `ce08adb4…e49f0`. Actual Code validation for 0006 passes against that
+exact report before its return to testing. The phase/ledger edits follow that run and require later
+matching delivery. Current changed-code coverage and package-size/measurement correction remain
+outstanding. No delivery receipt or owner completion is claimed.
+
+### Built-in correction coverage (2026-09-06)
+
+Standalone coverage passes all 104 changed executable lines and eighteen changed functions with no
+uncovered or unexplained changes. All 28 requirement mappings identify executed passing tests;
+global coverage is 94.52% lines/statements, 93.44% functions and 85.05% branches. The unchanged
+subsystem and historical-floor checks pass. Exact raw reports and current input hashes are retained
+in `ownership-census/builtin-registration-coverage/`. This is coverage evidence only; the known
+package failures still require correction before a matching complete delivery and owner closure.

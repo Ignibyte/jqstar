@@ -1,3 +1,4 @@
+import { cloneValue, isPlainRecord } from "./value-checks";
 import { Idiomorph } from "idiomorph";
 import { kernelForDocument, type RenderTransaction } from "./kernel";
 import type {
@@ -7,24 +8,8 @@ import type {
   StateRecord,
 } from "./types";
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
-}
-
 function isElement(node: Node): node is Element {
   return node.nodeType === 1;
-}
-
-function cloneValue<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(cloneValue) as T;
-  if (isPlainObject(value)) {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, child]) => [key, cloneValue(child)]),
-    ) as T;
-  }
-  return value;
 }
 
 export function patchSignals(
@@ -43,9 +28,9 @@ export function patchSignals(
       continue;
     }
 
-    if (isPlainObject(value)) {
+    if (isPlainRecord(value)) {
       const current = state[key];
-      if (!isPlainObject(current)) {
+      if (!isPlainRecord(current)) {
         if (onlyIfMissing && exists) continue;
         state[key] = {};
       }

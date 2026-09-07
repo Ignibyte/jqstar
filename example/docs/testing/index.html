@@ -95,8 +95,9 @@ await withStarDOMRealm({ window }, async () =&gt; {
         passthrough.
       </p>
       <p>
-        Cleanup cannot remove caller-made non-configurable properties. Realm and fetch restoration
-        report that failure, attempt remaining cleanup, and preserve callback errors.
+        Non-configurable properties cannot be removed; cleanup reports failures, completes other
+        attempts and preserves callback errors. Disposal removes fixture listeners and cancels
+        delays without aborting caller signals; failed timer cancellation cannot resume work.
       </p>
       <p>
         <code>jquery-star/datastar/testing</code> adds success, ordered multi-event, chunked, retry,

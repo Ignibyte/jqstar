@@ -1,4 +1,4 @@
-import { isPlainRecord, isThenable } from "./value-checks";
+import { cloneValue, isPlainRecord, isThenable } from "./value-checks";
 import { cancelElementRequests, cancelRequests } from "./fetch";
 import { attempt, throwCollectedErrors } from "./errors";
 import { isElementNode, isInputElement, isSelectElement } from "./dom";
@@ -9,6 +9,7 @@ import {
   type StarDirective,
   type StarDirectiveCleanup,
   type StarDirectiveContext,
+  type StarDirectiveTask,
   type StarParsedDirectiveAttribute,
 } from "./directive";
 import type { ApplicationCapabilities, ApplicationLifecycle } from "./kernel";
@@ -78,15 +79,15 @@ const DIRECTIVE_PREFIX = "data-";
 
 interface ParsedEvent {
   event: string;
-  prevent: boolean;
-  stop: boolean;
-  once: boolean;
-  self: boolean;
-  outside: boolean;
-  window: boolean;
-  document: boolean;
-  capture: boolean;
-  passive: boolean;
+  prevent?: boolean;
+  stop?: boolean;
+  once?: boolean;
+  self?: boolean;
+  outside?: boolean;
+  window?: boolean;
+  document?: boolean;
+  capture?: boolean;
+  passive?: boolean;
   key?: string;
   debounce?: number;
   throttle?: number;
@@ -97,19 +98,6 @@ interface MountedDirective {
   attribute: StarParsedDirectiveAttribute<unknown>;
   readonly cleanups: StarDirectiveCleanup[];
   readonly definition: StarDirective<unknown>;
-}
-
-function cloneValue<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(cloneValue) as T;
-  if (value && typeof value === "object") {
-    const prototype = Object.getPrototypeOf(value) as object | null;
-    if (prototype === Object.prototype || prototype === null) {
-      return Object.fromEntries(
-        Object.entries(value).map(([key, child]) => [key, cloneValue(child)]),
-      ) as T;
-    }
-  }
-  return value;
 }
 
 function mergeState(target: StateRecord, source: Record<string, unknown>): void {
@@ -155,15 +143,6 @@ function parseEvent(attribute: string): ParsedEvent {
   const [event = "", ...modifiers] = attribute.slice("data-on:".length).split("__");
   const parsed: ParsedEvent = {
     event,
-    prevent: false,
-    stop: false,
-    once: false,
-    self: false,
-    outside: false,
-    window: false,
-    document: false,
-    capture: false,
-    passive: false,
   };
 
   for (const modifier of modifiers) {
@@ -407,6 +386,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         )
         .sort((left, right) => right.priority - left.priority || left.index - right.index);
       for (const { attribute } of attributes) {
+        if (this.isDestroyed) return;
         this.initializeDirective(element, attribute.name);
       }
     }
@@ -567,12 +547,12 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     attributes.set(attribute.name, record);
 
     try {
+      this.setCleanup(element, attribute.name, () => this.releaseDirectiveRecord(element, record));
       const result = definition.mount(this.directiveContext(record, element, attribute));
       this.registerDirectiveResult(record, result);
-      this.setCleanup(element, attribute.name, () => this.releaseDirectiveRecord(element, record));
     } catch (error) {
       const errors = [error];
-      attempt(errors, () => this.releaseDirectiveRecord(element, record));
+      attempt(errors, () => this.cleanupDirective(element, attribute.name));
       throwCollectedErrors(errors, `Directive ${definition.id} setup rollback failed.`);
     }
   }
@@ -601,37 +581,72 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
           throw new Error(`Directive ${record.definition.id} effect must be a function.`);
         }
         const runner = effect(run, { owner: this.owner, onError: report });
-        this.ownedEffects.add(runner);
-        return this.ownDirectiveCleanup(record, () => {
+        try {
+          this.assertDirectiveActive(record);
+          this.ownedEffects.add(runner);
+          return this.ownDirectiveCleanup(record, () => {
+            this.ownedEffects.delete(runner);
+            stop(runner);
+          });
+        } catch (error) {
           this.ownedEffects.delete(runner);
           stop(runner);
-        });
+          throw error;
+        }
       },
       report,
-      task: (task) => {
-        this.assertDirectiveActive(record);
-        if (typeof task !== "function") {
-          throw new Error(`Directive ${record.definition.id} task must be a function.`);
-        }
-        const controller = new AbortController();
-        const result = task(controller.signal);
-        if (!isThenable(result)) {
-          throw new Error(`Directive ${record.definition.id} task must return a thenable.`);
-        }
-        const releaseTask = this.runtimeCapabilities.task(this.owner, result, report);
-        return this.ownDirectiveCleanup(record, () => {
-          controller.abort();
-          releaseTask();
-        });
-      },
+      task: (task) => this.ownDirectiveTask(record, task, report),
     };
     return Object.freeze(context);
   }
 
   private assertDirectiveActive(record: MountedDirective): void {
-    if (!record.active) {
+    if (this.isDestroyed || !record.active) {
       throw new Error(`Directive ${record.definition.id} has already been released.`);
     }
+  }
+
+  private ownDirectiveTask(
+    record: MountedDirective,
+    task: StarDirectiveTask,
+    report: (error: unknown) => void,
+  ): StarDirectiveCleanup {
+    this.assertDirectiveActive(record);
+    if (typeof task !== "function") {
+      throw new Error(`Directive ${record.definition.id} task must be a function.`);
+    }
+    const controller = new AbortController();
+    const registration: { closed: boolean; release: StarDirectiveCleanup | undefined } = {
+      closed: false,
+      release: undefined,
+    };
+    const cleanup = this.ownDirectiveCleanup(record, () => {
+      registration.closed = true;
+      const release = registration.release;
+      registration.release = undefined;
+      const errors: unknown[] = [];
+      attempt(errors, () => controller.abort());
+      if (release) attempt(errors, release);
+      throwCollectedErrors(errors, `Directive ${record.definition.id} task cleanup failed.`);
+    });
+    try {
+      const result = task(controller.signal);
+      if (!isThenable(result)) {
+        throw new Error(`Directive ${record.definition.id} task must return a thenable.`);
+      }
+      const pending = Promise.resolve(result);
+      void pending.catch(() => undefined);
+      this.assertDirectiveActive(record);
+      const release = this.runtimeCapabilities.task(this.owner, pending, report);
+      if (registration.closed) release();
+      else registration.release = release;
+      this.assertDirectiveActive(record);
+    } catch (error) {
+      const errors = [error];
+      attempt(errors, cleanup);
+      throwCollectedErrors(errors, `Directive ${record.definition.id} task registration failed.`);
+    }
+    return cleanup;
   }
 
   private ownDirectiveCleanup(
@@ -662,7 +677,9 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     if (typeof result !== "function") {
       throw new Error(`Directive ${record.definition.id} must return cleanup or undefined.`);
     }
-    this.ownDirectiveCleanup(record, result as StarDirectiveCleanup);
+    const cleanup = result as StarDirectiveCleanup;
+    if (this.isDestroyed || !record.active) cleanup();
+    else this.ownDirectiveCleanup(record, cleanup);
   }
 
   private releaseDirectiveRecord(element: Element, record: MountedDirective): void {
@@ -704,6 +721,10 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       onError: (error) =>
         this.report(error, element, attributeName, element.getAttribute(attributeName) ?? ""),
     });
+    if (this.isDestroyed) {
+      stop(runner);
+      return;
+    }
     this.ownedEffects.add(runner);
     this.setCleanup(element, attributeName, () => {
       this.ownedEffects.delete(runner);
@@ -726,6 +747,10 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         onError: (error) => this.report(error, element, attributeName, path),
       },
     );
+    if (this.isDestroyed) {
+      stop(runner);
+      return;
+    }
     this.ownedEffects.add(runner);
     const namespace = `.jqueryStarBind${Math.random().toString(36).slice(2)}`;
     const handler = (): void => {
@@ -801,7 +826,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       if (debounceTimer) clearTimeout(debounceTimer);
       if (native)
         target.removeEventListener(options.event, invoke, {
-          capture: options.capture,
+          capture: Boolean(options.capture),
         });
       else this.$(element).off(options.event, jqueryInvoke);
     };
@@ -809,8 +834,8 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     try {
       if (native) {
         target.addEventListener(options.event, invoke, {
-          capture: options.capture,
-          passive: options.passive,
+          capture: Boolean(options.capture),
+          passive: Boolean(options.passive),
         });
       } else {
         this.$(element).on(options.event, jqueryInvoke);
@@ -868,7 +893,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       attempt(errors, () => cancelElementRequests(element));
     }
     for (const [element, attributes] of Array.from(this.cleanups)) {
-      if (element !== tree && !tree.contains(element)) continue;
+      if (tree !== this.root && !tree.contains(element)) continue;
       if (
         preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
       ) {

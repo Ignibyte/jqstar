@@ -73,11 +73,7 @@ function raceDeadline<Value>(work: Promise<Value>, remainingMs: number): Promise
       },
       (error: unknown) => {
         clearTimeout(timer);
-        reject(
-          error instanceof Error
-            ? error
-            : new Error("jQStar harness work rejected with a non-Error value.", { cause: error }),
-        );
+        reject(errorValue(error, "jQStar harness work rejected with a non-Error value."));
       },
     );
   });

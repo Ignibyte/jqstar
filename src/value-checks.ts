@@ -67,3 +67,13 @@ export function diagnosticError(
   });
   return Object.freeze({ name: boundedText(name, 120), message: boundedText(message, 1_024) });
 }
+
+export function cloneValue<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(cloneValue) as T;
+  if (isPlainRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [key, cloneValue(child)]),
+    ) as T;
+  }
+  return value;
+}

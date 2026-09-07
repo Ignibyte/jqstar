@@ -35,6 +35,10 @@ setup succeeds. Failed setup rolls back staged work. Destruction removes cleanup
 invoking them, attempts every event, effect, request, mount, directive, observer, and data cleanup,
 removes the kernel record, and then reports one error or an aggregate.
 
+Behavior applications, declarative applications and signal patches share the same recursive state
+copy routine. It copies arrays and plain records while retaining other object and function values by
+identity. Requests and patches reuse the same plain-record check.
+
 Persistent UI document/window listeners and observers are installed through the document host and
 released during idempotent public disposal. `$.star.dispose()` returns a frozen terminal report,
 memoizes the same report or typed aggregate failure for repeated calls, removes only its own jQuery
@@ -272,6 +276,11 @@ finite tasks use abort signals and the kernel resource/enhancement ledgers. `Mut
 support lets newly patched nodes mount without a page reload. UI controllers must also tolerate
 repeated `$.star.ui.enhance()` calls because server patches can replace their internal elements.
 
+Provisional directive cleanup is registered before mount callbacks run. Destruction during a
+callback stops further scanning and resource registration, and a cleanup returned after release runs
+immediately. Task registration owns rollback before invoking its factory, and effect registration
+stops its runner if the initial callback releases the application or directive.
+
 ## Backend responses
 
 `src/fetch.ts` creates GET, POST, PUT, PATCH, and DELETE actions. One profile is selected before
@@ -457,3 +466,35 @@ while preserving its own empty-message and truncation policy. These internal hel
 export or optional runtime dependency. Installed core budgets use the unchanged consumer and gzip
 defaults; supported Node compressor versions can produce different sizes for the same JavaScript, so
 release evidence names its toolchain.
+
+## Shared distribution runtime
+
+One build emits the core and CSP module entries. The complete static import graph rooted at
+`src/runtime.ts` occupies a shared chunk, while the trusted expression compiler and render adapter
+remain separate. Frozen CSP grammar metadata has its own chunk. Assigning all runtime dependencies
+together prevents a shared helper from creating a path back into the trusted compiler. The package
+graph checks inspect every transitive CSP module in both formats. No entry exports or expression
+semantics change; direct module hosting must retain the related files in `dist`.
+
+The CSP evaluator shares a fixed, private set of methods requiring literal arguments. Frames read
+that policy without retaining application data in it. The `html` setter uses the same literal check
+as the other listed methods; the complete arity table and unknown-method refusal remain separate.
+
+## Behavior setup lifetime
+
+Behavior rules can destroy their application during initial binding or mounting. The runtime stops
+an initial runner before retaining it if its callback released the owner, and stops later rule,
+mount and observer setup. A mount has a provisional record before its callback runs; if cleanup
+removes that record, returned cleanup runs immediately. Root teardown releases every owned mount,
+including nodes detached before observer delivery. Subtree teardown still respects containment and
+preserved roots, and cleanup errors retain the existing aggregation behavior.
+
+Declarative full root cleanup visits the application's complete attribute-cleanup map, including
+detached elements. A scoped subtree cleanup still checks containment and preserved roots. Removing
+each owned map entry before invoking its callbacks preserves cleanup ordering and failure handling.
+
+All six core/plugin conformance cases share one internal harness owner. It records explicit terminal
+cleanup attempts and otherwise disposes after completion or early failure. A distinct cleanup error
+is aggregated with the original work error and caught cause. Existing disposal assertions retain
+their result/error identities. Report construction shares a private reference to the native freeze
+function; it retains no application data. The caller owns the DOM realm.
