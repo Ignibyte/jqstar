@@ -52,6 +52,55 @@ describe("jQuery Star Chart", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without changing the nearby chart", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Chart application did not start.");
+    const foreign = table();
+    await expect(
+      app.run("ui.chart.type", { element: foreign, args: [foreign, "line"] }),
+    ).rejects.toThrow('Chart target did not match data-jqs="chart"');
+    expect($.star.ui.chart.type(root())).toBe("bar");
+    await app.run("ui.chart.type", { args: [root(), "line"] });
+    expect($.star.ui.chart.type(root())).toBe("line");
+    await app.run("ui.chart.type", { args: ["#visitors-chart", "bar"] });
+    expect($.star.ui.chart.type(root())).toBe("bar");
+    await app.run("ui.chart.type", { element: foreign, args: ["line"] });
+    expect($.star.ui.chart.type(root())).toBe("line");
+  });
+
+  it.each(["plot", "legend", "status", "data"])(
+    "renders unchanged data into replaced %s parts",
+    async (part) => {
+      const previous = root().querySelector(`[data-part="${part}"]`);
+      if (!previous) throw new Error("Missing chart part.");
+      previous.replaceWith(previous.cloneNode(part === "data"));
+      const rendered = vi.fn();
+      root().addEventListener("jquery-star:chart:render", rendered);
+      $.star.ui.enhance(root());
+      await $.star.whenEnhanced();
+      expect(plot().querySelectorAll('[data-part="bar"]')).toHaveLength(6);
+      expect(root().querySelector('[data-part="legend"]')?.textContent).toBe("DesktopMobile");
+      expect(root().querySelector('[data-part="status"]')?.textContent).toContain("3 categories");
+      expect(rendered).toHaveBeenCalledOnce();
+      $.star.ui.enhance(root());
+      await $.star.whenEnhanced();
+      expect(rendered).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("retries a canceled replacement render on the next enhancement", async () => {
+    plot().replaceWith(plot().cloneNode(false));
+    const cancel = (event: Event): void => event.preventDefault();
+    root().addEventListener("jquery-star:chart:before-render", cancel);
+    $.star.ui.enhance(root());
+    await $.star.whenEnhanced();
+    expect(plot().querySelectorAll('[data-part="bar"]')).toHaveLength(0);
+    root().removeEventListener("jquery-star:chart:before-render", cancel);
+    $.star.ui.enhance(root());
+    await $.star.whenEnhanced();
+    expect(plot().querySelectorAll('[data-part="bar"]')).toHaveLength(6);
+  });
+
   it("renders a responsive SVG from one accessible native table", () => {
     expect(table().caption?.textContent).toBe("Monthly visitors by device");
     expect(plot().getAttribute("viewBox")).toBe("0 0 640 300");

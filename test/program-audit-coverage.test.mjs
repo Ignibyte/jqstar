@@ -156,6 +156,13 @@ function fixture({ changed = false, stabilization = false } = {}) {
     },
     stabilization,
     denominator: structuredClone(measured),
+    roster: {
+      status: "pass",
+      expectedPaths: [path],
+      summaryPaths: [path],
+      hitPaths: [path],
+      failures: [],
+    },
     thresholds: {
       global: structuredClone(thresholds.global),
       subsystems: structuredClone(
@@ -186,6 +193,7 @@ function fixture({ changed = false, stabilization = false } = {}) {
               changedLines: [2],
               executableLines: [2],
               coverageMappedLines: [2],
+              initializerHeaderEvidence: [],
               coverageMapExemptEvidence: [],
               typeOrFormatOnlyLines: [],
               typeOrFormatEvidence: [],
@@ -239,6 +247,21 @@ it("checks handwritten coverage evidence from an independent source root in both
     assert.deepEqual(select(data, "changed-production"), data.report.changed);
   }
 });
+
+it.each(["missing", "failed", "empty", "failures"])(
+  "rejects a passing coverage report with a %s roster",
+  async (kind) => {
+    const { report } = fixture();
+    if (kind === "missing") Reflect.deleteProperty(report, "roster");
+    if (kind === "failed") report.roster.status = "fail";
+    if (kind === "empty") report.roster.expectedPaths = [];
+    if (kind === "failures") report.roster.failures = ["missing production file"];
+    const validate = createSchemaValidator(
+      JSON.parse(await readFile("schema/coverage-report.schema.json", "utf8")),
+    );
+    assert.equal(validate(report), false);
+  },
+);
 
 it("measures changed source lines and functions without turning an empty scope into coverage", () => {
   const data = fixture({ changed: true });

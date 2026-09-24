@@ -164,7 +164,22 @@ const onlineDefinition = defineStore({
 });
 ```
 
-`$.star.dispose()` first makes the facade, namespace, and stores terminal, aborts finite work, then
+Setup already has kernel lifetime ownership when its callback begins. If a setup callback disposes
+the kernel, its signal is aborted before disposal returns and the store is not published. Cleanup
+returned after disposal is released immediately. Effects and subscriptions release their initial
+evaluation if ownership cannot be acquired; a selector or equality callback that disposes the store
+cannot deliver a later listener callback.
+
+A name and definition are reserved while their initial factory and setup run. Recursive definition
+cannot reuse either reservation, and failed setup releases both so a later retry is possible.
+Transactions recheck the store lifetime after the updater returns and reject a commit after
+disposal.
+
+A retained setup context rejects new effects, subscriptions and tasks after rollback or disposal
+without invoking their callbacks. Supplying cleanup through that ended context releases it
+immediately and throws; if cleanup also fails, both errors are preserved.
+
+`$.star.dispose()` makes the facade, namespace, and stores terminal, aborts finite work, and
 attempts every registered cleanup exactly once. Application destruction stops that application's
 store-dependent UI effects but does not remove a kernel-owned store or affect sibling roots.
 

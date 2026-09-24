@@ -12,6 +12,9 @@ delivery order and when parallel work can start.
 | [0042](0042-install-static-quality-gates.md)        | Strict static, architecture, security, dependency, source, style, and documentation gates.                   | 0041            |
 | [0043](0043-enforce-coverage-and-mutation.md)       | Production census, coverage ratchets, and property testing; mutation tooling was removed by 0048.            | 0041, 0042      |
 | [0048](0048-remove-mutation-testing.md)             | Remove mutation tooling and keep it out unless a future ticket is explicitly requested.                      | 0043            |
+| [0054](0054-adopt-browser-first-verification.md)    | Make browser components the fast UI proof and remove mandatory all-unit and coverage score gates.            | 0044, 0048      |
+| [0055](0055-recover-package-size-budgets.md)        | Deduplicate packaged maps and review exact UI size limits so browser-first delivery can receive a receipt.   | 0054            |
+| [0056](0056-make-npm-test-browser-first.md)         | Point `npm test` at the required browser component check while retaining optional direct diagnostics.        | 0054, 0055      |
 | [0003](0003-freeze-public-baseline.md)              | Executable 0.1 behavior, environment, package, event, and request baseline.                                  | 0041            |
 | [0004](0004-build-package-consumer-harness.md)      | Real tarball consumers for modules, types, UMD, contents, sizes, and tree shaking.                           | 0003, 0041–0043 |
 | [0044](0044-prove-browser-package-quality.md)       | Three-browser, accessibility, package API/type, reproducibility, and release-quality proof.                  | 0004, 0041–0043 |
@@ -25,8 +28,9 @@ delivery order and when parallel work can start.
 
 Current census correction: ticket 0043 is complete after removing seven type-only modules from
 runtime coverage and verifying the actual denominator. Ticket 0044's process-result correction also
-passes full delivery and all sixteen detector controls. Coverage thresholds remain unchanged; actual
-screen-reader proof and the separately authorized private-reporting setting remain open.
+passes full delivery and all sixteen detector controls. Coverage thresholds remain stored as
+diagnostics under ticket 0054; actual screen-reader proof and the separately authorized
+private-reporting setting remain open.
 
 Current audit follow-up: the CSP implementation correction (0034) and quality review (0052) are
 complete, as is the README positioning correction (0045). The installed CSP proof (0035) remains
@@ -47,12 +51,12 @@ navigation index reader passes the complete development matrix and delivery chec
 assembly, public-claim review, original references and actual accessibility records remain required.
 
 Release gate: Plan → Code → Test → Document is evidence-gated. Delivery is bound to the exact tested
-worktree. Static analysis, coverage, security, browser, accessibility, installed-package, and
-gate-liveness checks pass without hidden baselines or suppressions. Current root behavior remains
-green while every owned runtime resource has a disposal path. Ecosystem work has an explicit
-integrate, migrate, or ignore decision and makes no unapproved official-project claim. The public
-site gives browser and headless agents a tested path to the same source-backed framework contracts
-shown to people, while WebMCP remains optional progressive enhancement.
+worktree. Static analysis, security, browser, accessibility, installed-package, and gate-liveness
+checks pass without hidden baselines or suppressions. Current root behavior remains green while
+every owned runtime resource has a disposal path. Ecosystem work has an explicit integrate, migrate,
+or ignore decision and makes no unapproved official-project claim. The public site gives browser and
+headless agents a tested path to the same source-backed framework contracts shown to people, while
+WebMCP remains optional progressive enhancement.
 
 ## Release 0.3: extension kernel
 

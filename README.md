@@ -123,6 +123,12 @@ Add UI and its CSS only when the component controllers are needed. Installing th
 `installed.star.ui`; it never claims `$.ui`, `$.widget`, jQuery UI identity, or a Widget Factory
 contract.
 
+Keep the UI facade returned by the current installation; retained facades reject calls after
+disposal. Controller resource ownership is being completed under ticket 0006. The
+[component lifecycle contract](docs/COMPONENT_ARCHITECTURE.md#public-contract) lists the implemented
+families and remaining verification. Dialog cleanup closes a modal opened by this UI installation;
+an authored open dialog keeps its native state.
+
 | Entry                          | Formats                 | Import behavior                                              |
 | ------------------------------ | ----------------------- | ------------------------------------------------------------ |
 | `jquery-star`                  | ESM, CommonJS, root UMD | Auto-installs core + Datastar + UI                           |
@@ -999,8 +1005,8 @@ filtering, status, and follow behavior without adding a component Mutation Obser
 JSON Viewer reads one non-executable `script[type="application/json"][data-part="source"]` and
 renders nested native disclosures. Use `set`, `value`, `expandAll`, and `collapseAll` under
 `$.star.ui.jsonViewer`, or the matching named actions for disclosure changes. Values are rendered as
-text, a depth limit prevents unbounded recursion, and rerendering occurs only when the source
-signature changes.
+text. The depth limit bounds the tree, and changes to the source, current parts, depth or expansion
+settings refresh its projection.
 
 Countdown accepts `data-duration` in seconds or an absolute `data-until` deadline. Public `start`,
 `until`, `pause`, `resume`, `reset`, `remaining`, and `state` methods are mirrored by named actions
@@ -1370,12 +1376,23 @@ remain authoritative. A plugin name containing a hyphen cannot publish a helper 
 not silently rewrite it to a JavaScript identifier.
 
 Installation is synchronous and closes permanently when the first application begins setup, even if
-that application rolls back. Application-hook cleanup runs once in reverse order when the
-application is destroyed. Plugin cleanup runs once in reverse order during kernel disposal, after
-applications are destroyed. An installer must register cleanup for each side effect as soon as it
-creates it; jQStar cannot roll back work that was never represented through `registrar.cleanup()`.
-Live uninstall, package discovery, arbitrary selector matchers, service registrars, and structural
-mutation access are intentionally outside the 0.1 plugin contract.
+that application rolls back. The host rechecks this boundary after each installer and activation.
+Disposal during those callbacks cancels installation and releases returned cleanup before refusing
+publication. Application destruction or kernel disposal during a setup hook stops later hooks and
+releases the interrupted hook's returned cleanup along with earlier cleanup. Staged document
+resources also register rollback immediately, including when an installer fails before activation.
+During installation, `registrar.documentHost.own(kind, owner, cleanup, root)` can associate a
+resource with an Element in that document. The host releases it before render removal, when
+processing native removal, or during disposal. Earlier native removals are processed before new
+scoped acquisition as well as at observer delivery. Promised preserved subtrees and connected moves
+in the same document retain their resources. The optional `canOwn(root)` capability reports whether
+the root can acquire resources now. Cleanup must still be registered for each acquired side effect.
+Application-hook cleanup runs once in reverse order when the application is destroyed. Plugin
+cleanup runs once in reverse order during kernel disposal, after applications are destroyed. An
+installer must register cleanup for each side effect as soon as it creates it; jQStar cannot roll
+back work that was never represented through `registrar.cleanup()`. Live uninstall, package
+discovery, arbitrary selector matchers, service registrars, and structural mutation access are
+intentionally outside the 0.1 plugin contract.
 
 `runPluginConformance()` from `jquery-star/testing` exercises a plugin against a caller-provided
 harness factory. It can verify successful use, facade identity, failed-install rollback, and public
@@ -1893,16 +1910,20 @@ Chromium, Firefox, and WebKit.
 
 ```sh
 npm test
+npm run test:unit
+npm run test:coverage
 npm run typecheck
 npm run build
 npm run build:demo
 npm run demo
+npm run check
 ```
 
-The test suite covers the exact `$count++; $(el).fadeOut()` example, named actions, action
-arguments, computed signals, every binding family, event modifiers, dynamic insertion, attribute
-replacement, cleanup, backend request encoding, retries, cancellation, JSON and HTML responses,
-chunked SSE, official Datastar SDK output, DOM morphing, and the optional behavior-sheet API.
+`npm test` runs the fast Chromium Component Lab suite: at least 76 selected and executed browser
+cases must pass without retries or skips. `npm run test:unit` runs the broader Vitest suite when a
+direct parser, protocol, or failure-path check is useful. `npm run test:coverage` reports coverage
+diagnostics without a required percentage. `npm run check` runs the full delivery gate, including
+cross-engine browser behavior, package and release checks. Mutation testing is deferred.
 
 This is an independent implementation. It accepts the official SDK’s signal and element patch events
 plus the related JSON and HTML response headers. It is not a copy of the full Datastar browser
@@ -1925,3 +1946,153 @@ even when another cleanup callback throws. Removing one subtree leaves live sibl
 Each core and plugin conformance case disposes its harness after completion or an early failure. A
 failure before explicit disposal preserves the original error and any distinct cleanup error. The
 existing expected-disposal-failure and repeated-disposal checks remain part of the cases.
+
+### Copy controller cleanup
+
+Clipboard and Code Block use the component's own window for clipboard access and read current source
+and status parts after a patch. Enhancement preserves authored status text and accessible
+descriptions. A pending copy retains its original text and promise result when output parts change
+or the root moves to another installed document. Removing or disposing the owner stops later UI
+updates. Clipboard releases its temporary disabled button state and preserves the remaining reset
+delay across document adoption. Both controllers honor inherited disabled and inert constraints
+before copying and after `before-copy` callbacks.
+
+### Viewer controller cleanup
+
+JSON Viewer and Log Viewer keep native state when a root moves to another installed document. Their
+facades resolve replacement parts before reading or writing. JSON retains open and closed branches
+by path, and a newer request supersedes older serializer or rendering callbacks. A failed serializer
+still throws to its caller without overwriting newer output. Log Viewer keeps pause and follow
+preferences, releases old filter and scroll listeners, and guards queued scrolling against removal,
+replacement and adoption. Pausing announcements still accepts incoming entries. Generated log-entry
+IDs stay unique as old entries are trimmed. Disabled and inert controls cannot invoke viewer
+actions.
+
+### Chart and Data Table cleanup
+
+Chart and Data Table preserve native elements and accepted state when moved to another installed
+document. Facade calls use current parts after a patch. Chart retries interrupted output and ignores
+older render callbacks after a newer request. Data Table keeps selection across pages and adoption,
+seeds checked rows only after valid initial setup, and retains stable original row order. Unchanged
+enhancement retains native listeners. Newer sort, filter or page requests supersede older work;
+disabled, inert or canceled native activation cannot apply a sort. Programmatic APIs remain
+available for application updates. Events belong to the current window, and the source
+installation's actions cannot operate the adopted component.
+
+### Calendar and Date Picker cleanup
+
+Calendar, Range Calendar and both Date Pickers accept elements and genuine Date values from their
+installed document, including after adoption from another window. ISO years below 100 keep their
+written year. Facade calls refresh replaced grids, inputs and labels. Unchanged enhancement retains
+day elements and roving focus. Picker adoption also reclaims its open Popover before the previous
+installation is disposed. Native inputs keep ordinary form submission and reset behavior.
+
+Newer requests supersede older setup, rendering and event callbacks. Selection rechecks source state
+and unavailable dates after `before-change`; changing event details cannot rewrite the accepted
+selection. Interrupted output can be rendered again. Native activation and named actions respect
+cancellation, disabled fields and inert ancestors, while programmatic selection remains available.
+Native input notifications stop when a listener changes the field or replaces its owner.
+
+### Form controller cleanup
+
+Form keeps native values and validation when adopted into another installed document. Facades and
+actions use the current native controls, including externally associated fields. Fields named
+`reset`, `checkValidity`, `reportValidity` or `elements` retain ordinary validation and reset
+behavior. Component events come from the current window. Canceled resets preserve errors, and a
+newer request supersedes pending reset or invalid notifications. Unchanged enhancement retains
+pending work.
+
+Form checks current controls and messages after callbacks and native writes. Interrupted operations
+stop before changing further controls or focusing detached fields. Clearing server errors preserves
+newer authored validation on validating controls and removes only description references that Form
+added. Native submission and named actions honor cancellation and disabled/inert ancestors. Direct
+APIs remain available for programmatic updates.
+
+### Questionnaire controller cleanup
+
+Questionnaire retains native answers, default navigation and submitted state when moved to another
+installed document. Its facades refresh replaced fieldsets, controls and buttons, and named actions
+can target the application root. Parts inside another controller do not become Questionnaire parts.
+Events belong to the current window, and a field named `requestSubmit` does not replace the native
+submission method used by the API.
+
+Newer requests supersede older native writes, notifications and pending resets. Read-only inspection
+during `before-change` exposes the proposed value without committing the DOM; cancellation retains
+the prior navigation and submitted state. Native activation honors canceled events, disabled/inert
+ancestors and inactive questions. Direct APIs remain available for programmatic changes. Rendering
+preserves authored disabled buttons, native validation, form values and description references.
+
+### Toast controller cleanup
+
+Toast keeps native controls and the remaining display time when moved to another installed document.
+Facades refresh replacement parts. Events and recovery focus use the owning document. Unchanged
+enhancement keeps listeners, timers and announcements. Moving focus between Toast controls keeps its
+timer paused, and announcement expiry remains independent of dismissal.
+
+Native close, action, Escape and F8 interactions honor cancellation and disabled/inert ancestors.
+Named actions also honor native and jQuery event cancellation and target constraints. Direct `show`,
+`dismiss` and `clear` calls remain available for programmatic changes. Nested controller buttons
+cannot dismiss their containing Toast. A callback that replaces parts, changes source state, moves
+the Toast or disposes its owner stops the older operation. Invalid action markup is rejected before
+attachment, and option getters cannot revive a show superseded by a newer show or clear.
+
+### Feed controller cleanup
+
+Feed retains its native articles, cursor and status when moved to another installed document.
+Facades refresh replacement parts and patched cursor, done and loading state. Events, keyboard
+boundary focus and automatic loading use the owning document. Unchanged enhancement keeps its
+listeners and intersection observer. Replacing the More button retires the old binding.
+
+Loading still clicks the native More button so application actions own requests and appended items.
+Canceled interactions and disabled/inert ancestors prevent native and named activation. Direct
+completion, failure, reset and focus calls remain available for programmatic updates. Newer
+requests, replaced parts, changed source state or owner disposal stop older continuations. Generated
+article labels follow current title/description parts, and authored disabled/hidden More buttons
+survive completion and reset.
+
+Feed-generated identifiers avoid IDs already present in the owning document or detached Feed
+subtree. Removing or prepending articles does not cause new articles to reuse an existing article's
+ID or label reference. Authored IDs remain unchanged.
+
+### Resizable and Sortable controller cleanup
+
+Resizable public methods read current parts and patched sizes. Unchanged enhancement keeps a drag
+active; replaced parts, changed orientation or constraints end the old session when observed.
+Pointer listeners, capture, events and optional storage belong to the owning document. Canceled
+native interactions and named actions leave sizes unchanged.
+
+Sortable previews retain the committed form values until drop; Escape restores the previous order.
+Keyboard movement retains focus. Implicit actions accept item values beginning with `#`, such as
+`@ui.sortable.up('#priority')`; pass a selector and value to target a different list. Patched order
+and replacement parts are read by the public methods. Native events and named actions honor
+cancellation and inert ancestors, and an adopted list uses its new installation's document.
+
+Scoped UI setup publishes a cleanup handle before acquiring document resources. A newer request or
+replacement can retire that provisional record immediately; older setup cannot reclaim it afterward.
+Pagination and Stepper retain requests accepted during that first acquisition. Retired controllers
+stop before writing metadata to replaced parts, and floating controls do not create closed-state
+attributes when their setup ended before initializing the DOM. Controls opened during setup still
+close during cleanup.
+
+Document observers own their lifetime before native constructor lookup and observation. Interrupted
+setup disconnects handles acquired after disposal, and retired callbacks do not run application
+work. If setup and cleanup both fail, the error retains both failures. Reentrant scoped setup
+retains one removal observer. Roots removed during acquisition are rejected when they began
+connected; initially detached roots and moves that finish connected remain supported.
+
+Document-host listeners capture their registration options once and stop delivering after release or
+disposal, including interrupted setup. Use the returned release function for cleanup. Completed
+registrations with the same target, event type, callback and capture mode share one native listener;
+either handle releases it. After native once delivery, signal cancellation or release, old cleanup
+cannot remove a newer registration. A nested registration supersedes an older setup still in
+progress. Native callback receivers, cancellation, passive defaults and AbortSignal remain intact.
+
+A plugin's staged document listener can be canceled while native setup is still running.
+Cancellation immediately stops that acquisition's callback, including synchronous native dispatch,
+and releases any registration that completes afterward. Canceling a provisional duplicate leaves an
+earlier completed listener active. Ordinary completed duplicates keep their shared native identity
+and either release handle removes it. Cancellation does not fail an otherwise valid plugin
+installation; native setup and cleanup failures are still reported.
+
+Listener acquisition order is recorded before native method and option getters run. If a getter or
+nested native call completes a newer registration, the older pending call cannot claim its cleanup.

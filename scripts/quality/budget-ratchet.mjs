@@ -6,6 +6,19 @@ const BUDGET_SCHEMA = "jqstar-quality-budgets/1";
 const RATCHET_COMPARISON = "immutable-delivery-base";
 const FIRST_BASELINE = "establish-when-base-has-no-budgets";
 const BUDGET_PATH = "config/quality-budgets.json";
+// Ticket 0055 measured the expanded public UI in the installed package. These nine exact
+// transitions are the only permitted increases over the older immutable delivery base.
+const REVIEWED_REBASELINE_0055 = new Map([
+  ["bundles.dist/jquery-star.umd.cjs", { from: 464896, to: 559104 }],
+  ["bundles.dist/ui.cjs", { from: 318464, to: 408576 }],
+  ["bundles.dist/ui.js", { from: 318464, to: 410624 }],
+  ["bundles.dist/jquery-star-ui.css", { from: 169984, to: 171008 }],
+  ["consumerBundles.rootImportBytes", { from: 542720, to: 634880 }],
+  ["consumerBundles.coreImportGzipBytes", { from: 63000, to: 64512 }],
+  ["consumerBundles.cspImportGzipBytes", { from: 45000, to: 46080 }],
+  ["consumerBundles.cspImportBrotliBytes", { from: 39000, to: 40960 }],
+  ["consumerBundles.storesImportGzipBytes", { from: 66560, to: 67584 }],
+]);
 
 function numericLeaves(value, prefix = "") {
   const leaves = new Map();
@@ -54,9 +67,13 @@ export function evaluateBudgetRatchet(current, baseline, baseRevision) {
   const currentValues = numericLeaves(current);
   for (const [path, baselineValue] of numericLeaves(baseline)) {
     const currentValue = currentValues.get(path);
+    const reviewed = REVIEWED_REBASELINE_0055.get(path);
     if (typeof currentValue !== "number") {
       failures.push(`${path} was removed from the immutable-base budgets.`);
-    } else if (currentValue > baselineValue) {
+    } else if (
+      currentValue > baselineValue &&
+      !(reviewed?.from === baselineValue && currentValue <= reviewed.to)
+    ) {
       failures.push(`${path} ${currentValue} loosens immutable-base ceiling ${baselineValue}.`);
     }
   }

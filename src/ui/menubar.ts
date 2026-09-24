@@ -1,341 +1,519 @@
+import { isElementNode, isHTMLElement } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { MenubarTarget, StarContext, StarMenuStatic, StarMenubarStatic } from "../types";
+import {
+  acquireUIResource,
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface MenubarRecord {
+interface MenubarRecord extends UIResources {
   activeIndex: number;
-  cleanup: () => void;
+  focused: HTMLElement | undefined;
   menus: HTMLElement[];
   openIndex: number | undefined;
-  root: HTMLElement;
   search: string;
-  searchTimer: number | undefined;
+  pending: { deadline: number; cancel(): void } | undefined;
   triggers: HTMLElement[];
 }
-
+interface MenubarSnapshot {
+  document: Document;
+  menus: HTMLElement[];
+  triggers: HTMLElement[];
+  activeValue: string;
+  focused: HTMLElement | undefined;
+  search: string;
+  deadline: number | undefined;
+}
+interface ChildMenus {
+  api: StarMenuStatic;
+  enhance(root: ParentNode): void;
+}
 interface MenubarCollection {
   api: StarMenubarStatic;
   enhance(root: ParentNode): void;
 }
-
 const records = new WeakMap<HTMLElement, MenubarRecord>();
+const retained = new WeakMap<HTMLElement, MenubarSnapshot>();
+const intents = new WeakMap<HTMLElement, number>();
 let menubarId = 0;
 
 function menubarRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="menubar"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="menubar"]') ? value : undefined;
 }
-
 function directMenus(root: HTMLElement): HTMLElement[] {
   return Array.from(root.children).filter(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === "menu",
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === "menu",
   );
 }
-
-function directPart(menu: HTMLElement, part: "trigger" | "content"): HTMLElement {
-  const element = Array.from(menu.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+function triggerPart(menu: HTMLElement): HTMLElement | undefined {
+  return Array.from(menu.children).find(
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === "trigger",
   );
-  if (!element) throw new Error(`Menubar menu #${menu.id} needs data-part="${part}".`);
-  return element;
 }
-
-function menuValue(record: MenubarRecord, index: number): string {
-  const menu = record.menus[index];
+function current(record: MenubarRecord, revision = record.revision): boolean {
+  if (
+    !uiCurrent(record, revision) ||
+    records.get(record.root) !== record ||
+    !menubarRoot(record.root)
+  )
+    return false;
+  const menus = directMenus(record.root);
   return (
-    menu?.dataset.value?.trim() || record.triggers[index]?.textContent?.trim() || String(index)
+    menus.length === record.menus.length &&
+    menus.every(
+      (menu, index) =>
+        menu === record.menus[index] &&
+        menu.matches('[data-jqs="menu"]') &&
+        triggerPart(menu) === record.triggers[index],
+    )
   );
 }
-
-function disabled(trigger: HTMLElement): boolean {
+function intent(root: HTMLElement): number {
+  const next = (intents.get(root) ?? 0) + 1;
+  intents.set(root, next);
+  return next;
+}
+function begin(record: MenubarRecord): number {
+  intent(record.root);
+  return ++record.revision;
+}
+function menuValue(record: Pick<MenubarRecord, "menus" | "triggers">, index: number): string {
   return (
-    trigger.hasAttribute("disabled") ||
-    trigger.getAttribute("aria-disabled") === "true" ||
-    trigger.dataset.disabled !== undefined
+    record.menus[index]?.dataset.value?.trim() ||
+    record.triggers[index]?.textContent?.trim() ||
+    String(index)
   );
 }
-
+function unavailable(element: Element): boolean {
+  return !!element.closest(
+    ':disabled,[disabled],[aria-disabled="true"],[data-disabled]:not([data-disabled="false"]),[inert]',
+  );
+}
 function availableIndexes(record: MenubarRecord): number[] {
-  return record.triggers
-    .map((trigger, index) => ({ index, trigger }))
-    .filter(({ trigger }) => !disabled(trigger))
-    .map(({ index }) => index);
+  return record.triggers.flatMap((trigger, index) => (unavailable(trigger) ? [] : [index]));
 }
-
-function setActive(record: MenubarRecord, index: number, focus = false): void {
-  if (!record.triggers[index] || disabled(record.triggers[index])) return;
+function setActive(
+  record: MenubarRecord,
+  index: number,
+  focus = false,
+  revision = record.revision,
+): void {
+  const trigger = record.triggers[index];
+  if (!current(record, revision) || !trigger || unavailable(trigger)) return;
   record.activeIndex = index;
-  for (const [candidate, trigger] of record.triggers.entries()) {
+  for (const [candidate, trigger] of record.triggers.entries())
     trigger.tabIndex = candidate === index ? 0 : -1;
-  }
-  if (focus) record.triggers[index]?.focus();
+  if (focus) trigger.focus();
 }
-
-function move(record: MenubarRecord, offset: number): number {
+function move(record: MenubarRecord, offset: number, activeIndex = record.activeIndex): number {
   const indexes = availableIndexes(record);
-  const current = indexes.indexOf(record.activeIndex);
-  if (indexes.length === 0) return record.activeIndex;
-  return indexes[(Math.max(current, 0) + offset + indexes.length) % indexes.length] ?? 0;
+  const index = indexes.indexOf(activeIndex);
+  return indexes[(Math.max(index, 0) + offset + indexes.length) % indexes.length] ?? activeIndex;
 }
-
 function resolveIndex(record: MenubarRecord, value?: string): number {
   if (value === undefined) return record.activeIndex;
   const index = record.menus.findIndex((_, candidate) => menuValue(record, candidate) === value);
   if (index >= 0) return index;
   throw new Error(`Menubar #${record.root.id} has no menu with value "${value}".`);
 }
-
-function closeAll(record: MenubarRecord, menuApi: StarMenuStatic): HTMLElement {
-  for (const menu of record.menus) {
-    if (menu.dataset.state === "open") menuApi.close(menu);
+function syncState(record: MenubarRecord): void {
+  if (!current(record)) return;
+  const open = record.menus.findIndex((menu) => menu.dataset.state === "open");
+  record.openIndex = open < 0 ? undefined : open;
+  record.root.dataset.state = open < 0 ? "closed" : "open";
+  if (open < 0) delete record.root.dataset.value;
+  else {
+    const value = menuValue(record, open);
+    if (record.root.dataset.value !== value) record.root.dataset.value = value;
   }
-  record.openIndex = undefined;
-  record.root.dataset.state = "closed";
-  delete record.root.dataset.value;
-  return record.root;
 }
-
-function openIndex(record: MenubarRecord, menuApi: StarMenuStatic, index: number): HTMLElement {
+function closeAll(record: MenubarRecord, menuApi: StarMenuStatic, revision: number): void {
+  for (const menu of record.menus) {
+    if (!current(record, revision)) return;
+    menuApi.close(menu);
+  }
+  if (current(record, revision)) syncState(record);
+}
+function openIndex(
+  record: MenubarRecord,
+  menuApi: StarMenuStatic,
+  index: number,
+  revision: number,
+): void {
   const menu = record.menus[index];
-  if (!menu || disabled(record.triggers[index]!)) return record.root;
-  setActive(record, index);
+  const trigger = record.triggers[index];
+  if (!current(record, revision) || !menu || !trigger || unavailable(trigger)) return;
+  setActive(record, index, false, revision);
   menuApi.open(menu);
-  return record.root;
+  if (current(record, revision)) syncState(record);
 }
-
-function switchMenu(record: MenubarRecord, menuApi: StarMenuStatic, index: number): void {
+function switchMenu(
+  record: MenubarRecord,
+  menuApi: StarMenuStatic,
+  index: number,
+  revision: number,
+): void {
   const wasOpen = record.openIndex !== undefined;
-  setActive(record, index, true);
-  if (wasOpen) openIndex(record, menuApi, index);
+  setActive(record, index, true, revision);
+  if (wasOpen && current(record, revision)) openIndex(record, menuApi, index, revision);
 }
-
-function clearSearch(record: MenubarRecord): void {
-  if (record.searchTimer !== undefined) window.clearTimeout(record.searchTimer);
-  record.search = "";
-  record.searchTimer = undefined;
+function scheduleSearch(record: MenubarRecord, deadline: number): void {
+  const revision = record.revision;
+  record.pending?.cancel();
+  if (!current(record, revision)) return;
+  let handle: number | undefined;
+  let active = true;
+  const pending = { deadline, cancel };
+  function cancel(): void {
+    active = false;
+    if (record.pending === pending) record.pending = undefined;
+    record.cleanups.delete(cancel);
+    const acquired = handle;
+    handle = undefined;
+    if (acquired !== undefined) record.window.clearTimeout(acquired);
+  }
+  const valid = (): boolean => active && current(record) && record.pending === pending;
+  record.pending = pending;
+  acquireUIResource(
+    record,
+    valid,
+    () => {
+      handle = record.window.setTimeout(
+        () => {
+          const accepted = valid();
+          const revision = record.revision;
+          cancel();
+          if (accepted && current(record, revision)) record.search = "";
+        },
+        Math.max(0, deadline - Date.now()),
+      );
+    },
+    cancel,
+  );
 }
-
-function typeahead(record: MenubarRecord, key: string): void {
-  if (record.searchTimer !== undefined) window.clearTimeout(record.searchTimer);
+function typeahead(record: MenubarRecord, key: string, revision: number): void {
   record.search += key.toLocaleLowerCase();
-  record.searchTimer = window.setTimeout(() => clearSearch(record), 500);
+  scheduleSearch(record, Date.now() + 500);
+  if (!current(record, revision)) return;
   const indexes = availableIndexes(record);
-  const current = indexes.indexOf(record.activeIndex);
-  const ordered = [...indexes.slice(current + 1), ...indexes.slice(0, current + 1)];
+  const index = indexes.indexOf(record.activeIndex);
+  const ordered = [...indexes.slice(index + 1), ...indexes.slice(0, index + 1)];
   const match = ordered.find((index) =>
     record.triggers[index]?.textContent?.trim().toLocaleLowerCase().startsWith(record.search),
   );
-  if (match !== undefined) setActive(record, match, true);
+  if (match !== undefined) setActive(record, match, true, revision);
 }
-
-function wire(record: MenubarRecord, menuApi: StarMenuStatic): () => void {
-  const cleanups: Array<() => void> = [];
-  const keydown = (event: KeyboardEvent): void => {
+function ownedMenu(record: MenubarRecord, target: EventTarget | null): HTMLElement | undefined {
+  if (!isElementNode(target)) return undefined;
+  const owner = target.closest('[data-jqs]:not(button[data-jqs="button"])');
+  return record.menus.find((menu) => menu === owner);
+}
+function wire(record: MenubarRecord, menuApi: StarMenuStatic): void {
+  const valid = (): boolean => current(record);
+  listenUI(record, valid, record.root, "keydown", (event) => {
+    const keyboard = event as KeyboardEvent;
+    const menu = ownedMenu(record, event.target);
+    if (
+      event.defaultPrevented ||
+      keyboard.isComposing ||
+      !menu ||
+      !isElementNode(event.target) ||
+      !!event.target.closest(":disabled,[disabled],[inert]")
+    )
+      return;
     const vertical = record.root.dataset.orientation === "vertical";
     const nextKey = vertical ? "ArrowDown" : "ArrowRight";
     const previousKey = vertical ? "ArrowUp" : "ArrowLeft";
-    if (event.key === "Tab") {
-      closeAll(record, menuApi);
+    const index = record.menus.indexOf(menu);
+    const trigger = record.triggers[index];
+    if (!trigger || unavailable(trigger)) return;
+    const atTrigger = trigger.contains(event.target);
+    if (atTrigger && unavailable(event.target)) return;
+    if (keyboard.key === "Tab") {
+      closeAll(record, menuApi, begin(record));
       return;
     }
-    const trigger = record.triggers.find(
-      (candidate) => candidate === event.target || candidate.contains(event.target as Node),
-    );
-    const contentMenu =
-      event.target instanceof Element
-        ? event.target.closest<HTMLElement>('[data-part="menu"][data-jqs="menu"]')
-        : null;
+    if (!atTrigger) {
+      if (!vertical && (keyboard.key === "ArrowRight" || keyboard.key === "ArrowLeft")) {
+        event.preventDefault();
+        const revision = begin(record);
+        openIndex(
+          record,
+          menuApi,
+          move(record, keyboard.key === "ArrowRight" ? 1 : -1, index),
+          revision,
+        );
+      }
+      return;
+    }
+    const key = keyboard.key;
     if (
-      contentMenu &&
-      !trigger &&
-      !vertical &&
-      (event.key === "ArrowRight" || event.key === "ArrowLeft")
-    ) {
-      event.preventDefault();
-      const current = record.menus.indexOf(contentMenu);
-      const next = move(
-        { ...record, activeIndex: Math.max(0, current) },
-        event.key === "ArrowRight" ? 1 : -1,
-      );
-      setActive(record, next);
-      openIndex(record, menuApi, next);
+      ![nextKey, previousKey, "Home", "End", "Escape"].includes(key) &&
+      !(vertical && (key === "ArrowLeft" || key === "ArrowRight")) &&
+      !(
+        key.length === 1 &&
+        /\S/.test(key) &&
+        !keyboard.ctrlKey &&
+        !keyboard.metaKey &&
+        !keyboard.altKey
+      )
+    )
       return;
-    }
-    if (!trigger || event.defaultPrevented) return;
-    const index = record.triggers.indexOf(trigger);
-    setActive(record, index);
-    if (event.key === nextKey || event.key === previousKey) {
+    const revision = begin(record);
+    setActive(record, index, false, revision);
+    if (key === nextKey || key === previousKey) {
       event.preventDefault();
-      switchMenu(record, menuApi, move(record, event.key === nextKey ? 1 : -1));
-    } else if (vertical && event.key === "ArrowRight") {
+      switchMenu(record, menuApi, move(record, key === nextKey ? 1 : -1), revision);
+    } else if (vertical && key === "ArrowRight") {
       event.preventDefault();
-      openIndex(record, menuApi, index);
-    } else if ((vertical && event.key === "ArrowLeft") || event.key === "Escape") {
+      openIndex(record, menuApi, index, revision);
+    } else if ((vertical && key === "ArrowLeft") || key === "Escape") {
       event.preventDefault();
-      closeAll(record, menuApi);
-      trigger.focus();
-    } else if (event.key === "Home" || event.key === "End") {
+      closeAll(record, menuApi, revision);
+      if (current(record, revision) && !unavailable(trigger)) trigger.focus();
+    } else if (key === "Home" || key === "End") {
       event.preventDefault();
       const indexes = availableIndexes(record);
-      switchMenu(record, menuApi, event.key === "Home" ? (indexes[0] ?? 0) : (indexes.at(-1) ?? 0));
-    } else if (event.key.length === 1 && /\S/.test(event.key)) {
-      typeahead(record, event.key);
-    }
-  };
-  record.root.addEventListener("keydown", keydown);
-  cleanups.push(() => record.root.removeEventListener("keydown", keydown));
-
+      const edge = key === "Home" ? indexes[0] : indexes.at(-1);
+      if (edge !== undefined) switchMenu(record, menuApi, edge, revision);
+    } else typeahead(record, key, revision);
+  });
+  listenUI(record, valid, record.root, "focusin", (event) => {
+    const menu = ownedMenu(record, event.target);
+    const index = menu ? record.menus.indexOf(menu) : -1;
+    const trigger = record.triggers[index];
+    record.focused =
+      trigger && isElementNode(event.target) && trigger.contains(event.target)
+        ? trigger
+        : undefined;
+    if (record.focused) setActive(record, index);
+  });
   for (const [index, menu] of record.menus.entries()) {
-    const trigger = record.triggers[index]!;
-    const focusin = (): void => setActive(record, index);
-    const pointerenter = (): void => {
-      if (record.openIndex !== undefined && record.openIndex !== index) {
-        openIndex(record, menuApi, index);
-      }
-    };
-    const opened = (): void => {
-      record.openIndex = index;
-      record.root.dataset.state = "open";
-      record.root.dataset.value = menuValue(record, index);
-      setActive(record, index);
-    };
-    const closed = (): void => {
-      if (record.openIndex === index) record.openIndex = undefined;
-      if (!record.menus.some((candidate) => candidate.dataset.state === "open")) {
-        record.root.dataset.state = "closed";
-        delete record.root.dataset.value;
-      }
-    };
-    trigger.addEventListener("focusin", focusin);
-    trigger.addEventListener("pointerenter", pointerenter);
-    menu.addEventListener("jquery-star:menu:open", opened);
-    menu.addEventListener("jquery-star:menu:close", closed);
-    cleanups.push(
-      () => trigger.removeEventListener("focusin", focusin),
-      () => trigger.removeEventListener("pointerenter", pointerenter),
-      () => menu.removeEventListener("jquery-star:menu:open", opened),
-      () => menu.removeEventListener("jquery-star:menu:close", closed),
-    );
+    const trigger = record.triggers[index];
+    listenUI(record, valid, trigger, "pointerenter", (event) => {
+      if (
+        !event.defaultPrevented &&
+        record.openIndex !== undefined &&
+        record.openIndex !== index &&
+        trigger &&
+        !unavailable(trigger)
+      )
+        openIndex(record, menuApi, index, begin(record));
+    });
+    for (const name of ["open", "close"] as const)
+      listenUI(record, valid, menu, `jquery-star:menu:${name}`, (event) => {
+        if (event.target !== menu) return;
+        syncState(record);
+        if (name === "open" && record.openIndex === index) setActive(record, index);
+      });
   }
-  return () => {
-    clearSearch(record);
-    cleanups.forEach((cleanup) => cleanup());
+}
+function snapshot(record: MenubarRecord): MenubarSnapshot {
+  return {
+    document: record.document,
+    menus: record.menus,
+    triggers: record.triggers,
+    activeValue: menuValue(record, record.activeIndex),
+    focused: record.focused,
+    search: record.search,
+    deadline: record.pending?.deadline,
   };
 }
-
-function enhanceMenubar(root: HTMLElement, menuApi: StarMenuStatic): MenubarRecord {
-  root.id ||= `jqs-menubar-${++menubarId}`;
-  root.setAttribute("role", "menubar");
-  root.setAttribute(
+function metadata(record: MenubarRecord): void {
+  record.root.setAttribute("role", "menubar");
+  record.root.setAttribute(
     "aria-orientation",
-    root.dataset.orientation === "vertical" ? "vertical" : "horizontal",
+    record.root.dataset.orientation === "vertical" ? "vertical" : "horizontal",
   );
-  const menus = directMenus(root);
-  if (menus.length === 0)
-    throw new Error(`Menubar #${root.id} needs direct data-part="menu" children.`);
-  for (const menu of menus) {
-    if (!menu.matches('[data-jqs="menu"]')) {
-      throw new Error(`Menubar #${root.id} menu parts must also use data-jqs="menu".`);
-    }
-    menu.setAttribute("role", "none");
-  }
-  const triggers = menus.map((menu) => directPart(menu, "trigger"));
-  triggers.forEach((trigger) => trigger.setAttribute("role", "menuitem"));
-
+  for (const menu of record.menus) menu.setAttribute("role", "none");
+  for (const trigger of record.triggers) trigger.setAttribute("role", "menuitem");
+}
+function enhanceMenubar(root: HTMLElement, children: ChildMenus): MenubarRecord {
+  const requested = intents.get(root);
   const previous = records.get(root);
-  const activeValue = previous ? menuValue(previous, previous.activeIndex) : undefined;
+  if (previous && current(previous)) {
+    const revision = previous.revision;
+    children.enhance(root);
+    if (!current(previous, revision)) return previous;
+    metadata(previous);
+    const indexes = availableIndexes(previous);
+    setActive(
+      previous,
+      indexes.includes(previous.activeIndex) ? previous.activeIndex : (indexes[0] ?? 0),
+    );
+    syncState(previous);
+    return previous;
+  }
+  const saved = previous ? snapshot(previous) : retained.get(root);
   previous?.cleanup();
-  const activeIndex = Math.max(
-    0,
-    activeValue === undefined
-      ? triggers.findIndex((trigger) => !disabled(trigger))
-      : menus.findIndex(
-          (_, index) => menuValue({ ...previous!, menus, triggers }, index) === activeValue,
-        ),
-  );
-  const openIndexValue = menus.findIndex((menu) => menu.dataset.state === "open");
+  const replacement = records.get(root);
+  if (replacement) return replacement;
+  if (previous && !uiActive(root)) return previous;
+  root.id ||= `jqs-menubar-${++menubarId}`;
+  const menus = directMenus(root);
+  if (!menus.length) throw new Error(`Menubar #${root.id} needs direct data-part="menu" children.`);
+  const triggers = menus.map((menu) => {
+    if (!menu.matches('[data-jqs="menu"]'))
+      throw new Error(`Menubar #${root.id} menu parts must also use data-jqs="menu".`);
+    const trigger = triggerPart(menu);
+    if (!trigger) throw new Error(`Menubar menu #${menu.id} needs data-part="trigger".`);
+    return trigger;
+  });
+  const restore = saved && (previous || saved.document !== root.ownerDocument);
+  const sameParts =
+    restore &&
+    saved.menus.length === menus.length &&
+    saved.menus.every(
+      (menu, index) => menu === menus[index] && saved.triggers[index] === triggers[index],
+    );
   const record: MenubarRecord = {
-    activeIndex,
-    cleanup: () => undefined,
+    ...uiResources(root),
     menus,
-    openIndex: openIndexValue < 0 ? undefined : openIndexValue,
-    root,
-    search: "",
-    searchTimer: undefined,
     triggers,
+    activeIndex: 0,
+    openIndex: undefined,
+    focused: undefined,
+    search: sameParts ? saved.search : "",
+    pending: undefined,
   };
-  records.set(root, record);
-  setActive(record, activeIndex);
-  root.dataset.state = record.openIndex === undefined ? "closed" : "open";
-  record.cleanup = wire(record, menuApi);
+  const indexes = availableIndexes(record);
+  const restored = restore
+    ? menus.findIndex((_, index) => menuValue(record, index) === saved.activeValue)
+    : -1;
+  record.activeIndex = indexes.includes(restored) ? restored : (indexes[0] ?? 0);
+  record.cleanups.add(() => {
+    retained.set(root, snapshot(record));
+    if (!records.has(root)) {
+      root.dataset.state = "closed";
+      delete root.dataset.value;
+    }
+  });
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    if (!record.active) return record;
+    const revision = record.revision;
+    metadata(record);
+    setActive(record, record.activeIndex);
+    wire(record, children.api);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    children.enhance(root);
+    if (current(record, revision) && intents.get(root) === requested) {
+      syncState(record);
+      if (sameParts && saved.deadline !== undefined) scheduleSearch(record, saved.deadline);
+      if (sameParts && saved.focused && record.openIndex === undefined && current(record, revision))
+        setActive(record, record.triggers.indexOf(saved.focused), true, revision);
+    }
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
-
+function matchingMenubar(selector: string, root: ParentNode): HTMLElement | undefined {
+  try {
+    if (isHTMLElement(root) && root.matches(selector) && menubarRoot(root)) return root;
+    for (const element of root.querySelectorAll(selector)) {
+      const match = menubarRoot(element);
+      if (match) return match;
+    }
+  } catch (error) {
+    if (!["SyntaxError", "TypeError"].includes((error as { name?: string }).name ?? ""))
+      throw error;
+  }
+  return undefined;
+}
 function resolveMenubar(target: MenubarTarget, root: ParentNode = document): HTMLElement {
-  const resolved =
-    typeof target === "string" ? menubarRoot(root.querySelector(target)) : menubarRoot(target);
+  const resolved = typeof target === "string" ? matchingMenubar(target, root) : menubarRoot(target);
   if (resolved) return resolved;
-  throw new Error(`Menubar target did not match data-jqs="menubar": ${String(target)}`);
+  throw new Error(`Menubar target did not match data-jqs="menubar".`);
 }
-
+function localMenubar(context: StarContext): HTMLElement | undefined {
+  const closest =
+    context.element?.closest('[data-jqs="menubar"]') ??
+    (isHTMLElement(context.root) && menubarRoot(context.root));
+  return isHTMLElement(closest) ? closest : undefined;
+}
+function hasMenuValue(root: HTMLElement, value: string): boolean {
+  return directMenus(root).some((menu, index) => {
+    if (!menu.matches('[data-jqs="menu"]')) return false;
+    return (
+      (menu.dataset.value?.trim() || triggerPart(menu)?.textContent.trim() || String(index)) ===
+      value
+    );
+  });
+}
 function controlledMenubar(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="menubar"]')) return target;
-  if (typeof target === "string" && target.startsWith("#")) {
-    return resolveMenubar(target, context.root);
-  }
-  const closest = context.element?.closest('[data-jqs="menubar"]');
-  return resolveMenubar(closest instanceof HTMLElement ? closest : String(target));
+  if (isHTMLElement(target)) return resolveMenubar(target, context.root);
+  if (typeof target === "string") return resolveMenubar(target, context.root);
+  const closest = localMenubar(context);
+  if (closest) return resolveMenubar(closest, context.root);
+  throw new Error('ui.menubar requires a selector or an element inside data-jqs="menubar".');
 }
-
-function enhanceTree(root: ParentNode, menuApi: StarMenuStatic): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="menubar"]')));
-  for (const element of elements) {
-    const menubar = menubarRoot(element);
-    if (menubar) enhanceMenubar(menubar, menuApi);
-  }
-}
-
 export function createMenubars(
-  menuApi: StarMenuStatic,
+  children: ChildMenus,
   registerAction: ActionRegistrar,
 ): MenubarCollection {
+  const operate = (
+    target: MenubarTarget,
+    operation: "open" | "close" | "focus",
+    value?: string,
+  ): HTMLElement => {
+    const root = resolveMenubar(target);
+    const requested = intent(root);
+    const record = enhanceMenubar(root, children);
+    if (intents.get(root) !== requested || !current(record)) return root;
+    const revision = ++record.revision;
+    if (operation === "close") closeAll(record, children.api, revision);
+    else if (operation === "open")
+      openIndex(record, children.api, resolveIndex(record, value), revision);
+    else setActive(record, resolveIndex(record, value), true, revision);
+    return root;
+  };
   const api: StarMenubarStatic = {
-    open: (target, value) => {
-      const root = resolveMenubar(target);
-      const record = records.get(root) ?? enhanceMenubar(root, menuApi);
-      return openIndex(record, menuApi, resolveIndex(record, value));
-    },
-    close: (target) => {
-      const root = resolveMenubar(target);
-      return closeAll(records.get(root) ?? enhanceMenubar(root, menuApi), menuApi);
-    },
-    focus: (target, value) => {
-      const root = resolveMenubar(target);
-      const record = records.get(root) ?? enhanceMenubar(root, menuApi);
-      setActive(record, resolveIndex(record, value), true);
-      return root;
-    },
+    open: (target, value) => operate(target, "open", value),
+    close: (target) => operate(target, "close"),
+    focus: (target, value) => operate(target, "focus", value),
     value: (target) => {
-      const root = resolveMenubar(target);
-      const record = records.get(root) ?? enhanceMenubar(root, menuApi);
-      return record.openIndex === undefined ? undefined : menuValue(record, record.openIndex);
+      const record = enhanceMenubar(resolveMenubar(target), children);
+      return current(record) && record.openIndex !== undefined
+        ? menuValue(record, record.openIndex)
+        : undefined;
     },
   };
-  registerAction("ui.menubar.open", (context) => {
-    const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
-    const target = controlledMenubar(context, explicit ? first : undefined);
-    const value = explicit ? context.args?.[1] : first;
-    return api.open(target, typeof value === "string" ? value : undefined);
-  });
+  for (const operation of ["open", "focus"] as const)
+    registerAction(`ui.menubar.${operation}`, (context) => {
+      const first = context.args?.[0];
+      const local = localMenubar(context);
+      const twoArgument = (context.args?.length ?? 0) > 1;
+      if (twoArgument && !isHTMLElement(first) && typeof first !== "string")
+        throw new Error('Menubar target did not match data-jqs="menubar".');
+      const explicit =
+        twoArgument ||
+        isHTMLElement(first) ||
+        (typeof first === "string" &&
+          !(local && hasMenuValue(local, first)) &&
+          (first.startsWith("#") || !!matchingMenubar(first, context.root) || !local));
+      const target = controlledMenubar(context, explicit ? first : undefined);
+      const value = explicit ? context.args?.[1] : first;
+      return api[operation](target, typeof value === "string" ? value : undefined);
+    });
   registerAction("ui.menubar.close", (context) =>
     api.close(controlledMenubar(context, context.args?.[0])),
   );
-  registerAction("ui.menubar.focus", (context) => {
-    const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
-    const target = controlledMenubar(context, explicit ? first : undefined);
-    const value = explicit ? context.args?.[1] : first;
-    return api.focus(target, typeof value === "string" ? value : undefined);
-  });
-  return { api, enhance: (root) => enhanceTree(root, menuApi) };
+  return {
+    api,
+    enhance: (root) => {
+      for (const element of uiElements(root, '[data-jqs="menubar"]')) {
+        const menubar = menubarRoot(element);
+        if (menubar) enhanceMenubar(menubar, children);
+      }
+    },
+  };
 }

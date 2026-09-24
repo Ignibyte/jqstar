@@ -1,14 +1,26 @@
+import { isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { InputOTPTarget, StarContext, StarInputOTPStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  listenUIReset,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface InputOTPRecord {
-  cleanup: () => void;
-  control: HTMLInputElement;
-  lastComplete: boolean;
+interface InputOTPRecord extends UIResources {
+  form: HTMLFormElement | null;
+  input: HTMLInputElement;
+  completed: boolean;
+  signature: string;
   root: HTMLElement;
   slots: HTMLElement;
   status: HTMLElement | undefined;
-  suppressInput: boolean;
   value: string;
 }
 
@@ -26,18 +38,17 @@ interface InputOTPCollection {
 }
 
 const records = new WeakMap<HTMLElement, InputOTPRecord>();
+const reflected = new WeakMap<HTMLElement, string>();
 let inputOTPId = 0;
 
 function inputOTPRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="input-otp"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="input-otp"]') ? value : undefined;
 }
 
 function directControl(root: HTMLElement): HTMLInputElement {
   const control = Array.from(root.children).find(
     (child): child is HTMLInputElement =>
-      child instanceof HTMLInputElement && child.dataset.part === "control",
+      isHTMLTag(child, "input") && child.dataset.part === "control",
   );
   if (!control) {
     throw new Error(`Input OTP #${root.id} needs a direct <input data-part="control">.`);
@@ -50,12 +61,12 @@ function directControl(root: HTMLElement): HTMLInputElement {
 
 function directPart(root: HTMLElement, part: "slots" | "status"): HTMLElement | undefined {
   return Array.from(root.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === part,
   );
 }
 
 function createSlots(root: HTMLElement): HTMLElement {
-  const slots = document.createElement("div");
+  const slots = root.ownerDocument.createElement("div");
   slots.dataset.part = "slots";
   slots.dataset.generated = "";
   slots.setAttribute("aria-hidden", "true");
@@ -63,10 +74,10 @@ function createSlots(root: HTMLElement): HTMLElement {
   return slots;
 }
 
-function length(record: Pick<InputOTPRecord, "root" | "control">): number {
+function length(record: Pick<InputOTPRecord, "root" | "input">): number {
   const configured = Number(record.root.dataset.length);
   if (Number.isInteger(configured) && configured > 0) return configured;
-  if (record.control.maxLength > 0) return record.control.maxLength;
+  if (record.input.maxLength > 0) return record.input.maxLength;
   return 6;
 }
 
@@ -91,6 +102,25 @@ function complete(record: InputOTPRecord, value = record.value): boolean {
   return value.length === length(record);
 }
 
+function configuration(record: InputOTPRecord): string {
+  return JSON.stringify([length(record), record.root.dataset.pattern, record.input.type]);
+}
+
+function unavailable(record: InputOTPRecord): boolean {
+  return record.input.disabled || record.input.readOnly;
+}
+
+function current(record: InputOTPRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.querySelector(':scope > input[data-part="control"]') === record.input &&
+    directPart(record.root, "slots") === record.slots &&
+    directPart(record.root, "status") === record.status &&
+    record.input.form === record.form
+  );
+}
+
 function emit(
   record: InputOTPRecord,
   name: "before-change" | "change" | "complete",
@@ -100,13 +130,13 @@ function emit(
 ): boolean {
   const detail: InputOTPEventDetail = {
     complete: complete(record, value),
-    control: record.control,
+    control: record.input,
     inputOTP: record.root,
     previousValue,
     value,
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:input-otp:${name}`, {
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:input-otp:${name}`, {
       bubbles: true,
       cancelable,
       detail,
@@ -114,7 +144,7 @@ function emit(
   );
 }
 
-function slotElement(index: number): HTMLElement {
+function slotElement(index: number, document: Document): HTMLElement {
   const slot = document.createElement("span");
   slot.dataset.part = "slot";
   slot.dataset.index = String(index);
@@ -124,10 +154,12 @@ function slotElement(index: number): HTMLElement {
 function ensureSlots(record: InputOTPRecord): HTMLElement[] {
   const count = length(record);
   let slots = Array.from(record.slots.children).filter(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === "slot",
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === "slot",
   );
   if (slots.length !== count) {
-    slots = Array.from({ length: count }, (_, index) => slotElement(index));
+    slots = Array.from({ length: count }, (_, index) =>
+      slotElement(index, record.root.ownerDocument),
+    );
     record.slots.replaceChildren(...slots);
   }
   return slots;
@@ -136,17 +168,19 @@ function ensureSlots(record: InputOTPRecord): HTMLElement[] {
 function sync(record: InputOTPRecord): void {
   const count = length(record);
   record.root.style.setProperty("--jqs-otp-length", String(count));
-  if (record.control.maxLength !== count) record.control.maxLength = count;
-  const next = normalize(record, record.control.value);
-  if (record.control.value !== next) record.control.value = next;
+  if (record.input.maxLength !== count) record.input.maxLength = count;
+  const next = normalize(record, record.input.value);
+  if (record.input.value !== next) record.input.value = next;
   record.value = next;
+  record.signature = configuration(record);
   const serialized = record.value;
+  reflected.set(record.root, serialized);
   if (record.root.dataset.value !== serialized) record.root.dataset.value = serialized;
   const isComplete = complete(record);
   record.root.dataset.state = isComplete ? "complete" : "incomplete";
-  const focused = document.activeElement === record.control;
+  const focused = record.root.ownerDocument.activeElement === record.input;
   const activeIndex = Math.min(record.value.length, count - 1);
-  const masked = record.control.type === "password";
+  const masked = record.input.type === "password";
   for (const [index, slot] of ensureSlots(record).entries()) {
     const character = record.value[index];
     const content = character ? (masked ? "•" : character) : "";
@@ -157,76 +191,89 @@ function sync(record: InputOTPRecord): void {
   }
 }
 
-function announceComplete(record: InputOTPRecord): void {
-  if (record.status) record.status.textContent = "Code complete.";
+function notifyChange(
+  record: InputOTPRecord,
+  value: string,
+  previousValue: string,
+  revision: number,
+): void {
+  const isComplete = complete(record);
+  const completed = isComplete && !record.completed;
+  record.completed = isComplete;
+  emit(record, "change", value, previousValue);
+  if (!current(record, revision) || record.input.value !== value) return;
+  if (completed) {
+    if (record.status) record.status.textContent = "Code complete.";
+    emit(record, "complete", value, previousValue);
+  } else if (!isComplete && record.status?.textContent === "Code complete.") {
+    record.status.textContent = "";
+  }
 }
 
 function acceptNativeValue(record: InputOTPRecord): void {
-  if (record.suppressInput) return;
   const previousValue = record.value;
-  const value = normalize(record, record.control.value);
-  if (value !== record.control.value) record.control.value = value;
+  const value = normalize(record, record.input.value);
+  if (value !== record.input.value) record.input.value = value;
   if (value === previousValue) {
     sync(record);
     return;
   }
-  if (!emit(record, "before-change", value, previousValue, true)) {
-    record.control.value = previousValue;
+  const revision = ++record.revision;
+  const signature = configuration(record);
+  const accepted = emit(record, "before-change", value, previousValue, true);
+  if (
+    !current(record, revision) ||
+    record.input.value !== value ||
+    configuration(record) !== signature ||
+    normalize(record, value) !== value
+  )
+    return;
+  if (!accepted) {
+    record.input.value = previousValue;
     sync(record);
     return;
   }
   record.value = value;
   sync(record);
-  emit(record, "change", value, previousValue);
-  const isComplete = complete(record);
-  if (isComplete && !record.lastComplete) {
-    announceComplete(record);
-    emit(record, "complete", value, previousValue);
-  } else if (!isComplete && record.status?.textContent === "Code complete.") {
-    record.status.textContent = "";
-  }
-  record.lastComplete = isComplete;
+  notifyChange(record, value, previousValue, revision);
 }
 
 function requestValue(root: HTMLElement, rawValue: string): HTMLElement {
-  const record = records.get(root) ?? enhanceInputOTP(root);
-  if (record.control.disabled || record.control.readOnly) return root;
+  const record = recordFor(root);
+  const revision = ++record.revision;
+  if (unavailable(record)) return root;
   const previousValue = record.value;
+  const nativeValue = record.input.value;
+  const signature = configuration(record);
   const value = normalize(record, rawValue);
-  if (value === previousValue || !emit(record, "before-change", value, previousValue, true)) {
+  if (
+    value === previousValue ||
+    !emit(record, "before-change", value, previousValue, true) ||
+    !current(record, revision) ||
+    unavailable(record) ||
+    record.input.value !== nativeValue ||
+    configuration(record) !== signature ||
+    normalize(record, rawValue) !== value
+  ) {
     return root;
   }
-  record.control.value = value;
+  record.input.value = value;
   record.value = value;
   sync(record);
-  record.suppressInput = true;
-  record.control.dispatchEvent(new Event("input", { bubbles: true }));
-  record.control.dispatchEvent(new Event("change", { bubbles: true }));
-  record.suppressInput = false;
-  emit(record, "change", value, previousValue);
-  const isComplete = complete(record);
-  if (isComplete && !record.lastComplete) {
-    announceComplete(record);
-    emit(record, "complete", value, previousValue);
-  } else if (!isComplete && record.status?.textContent === "Code complete.") {
-    record.status.textContent = "";
-  }
-  record.lastComplete = isComplete;
+  record.input.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("input", { bubbles: true }),
+  );
+  if (!current(record, revision) || record.input.value !== value) return root;
+  record.input.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+  );
+  if (current(record, revision) && record.input.value === value)
+    notifyChange(record, value, previousValue, revision);
   return root;
 }
 
 function enhanceInputOTP(root: HTMLElement): InputOTPRecord {
   const existing = records.get(root);
-  if (existing) {
-    const patched = root.dataset.value;
-    if (patched !== undefined && patched !== existing.control.value) {
-      existing.control.value = normalize(existing, patched);
-    }
-    sync(existing);
-    existing.lastComplete = complete(existing);
-    return existing;
-  }
-
   root.id ||= `jqs-input-otp-${++inputOTPId}`;
   const control = directControl(root);
   const slots = directPart(root, "slots") ?? createSlots(root);
@@ -239,33 +286,63 @@ function enhanceInputOTP(root: HTMLElement): InputOTPRecord {
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
   }
+  const authored = root.dataset.value;
+  const patched =
+    authored !== undefined &&
+    (authored !== reflected.get(root) || (existing && existing.input !== control));
+  if (existing && current(existing)) {
+    if (existing.resetRevision === existing.revision && !patched) return existing;
+    if (patched) control.value = authored;
+    const changed =
+      existing.value !== normalize(existing, control.value) ||
+      existing.signature !== configuration(existing);
+    if (changed) existing.revision += 1;
+    sync(existing);
+    if (changed) existing.completed = complete(existing);
+    return existing;
+  }
+  existing?.cleanup();
+  const replacement = records.get(root);
+  if (replacement) return replacement;
   const record: InputOTPRecord = {
-    cleanup: () => undefined,
-    control,
-    lastComplete: false,
-    root,
+    ...uiResources(root),
+    input: control,
+    form: control.form,
     slots,
     status,
-    suppressInput: false,
+    completed: false,
+    signature: "",
     value: "",
   };
+  if (patched) control.value = authored;
   const input = (): void => acceptNativeValue(record);
-  const focus = (): void => sync(record);
-  const blur = (): void => sync(record);
-  control.addEventListener("input", input);
-  control.addEventListener("focus", focus);
-  control.addEventListener("blur", blur);
-  record.cleanup = () => {
-    control.removeEventListener("input", input);
-    control.removeEventListener("focus", focus);
-    control.removeEventListener("blur", blur);
+  const refresh = (): void => {
+    const changed =
+      record.value !== normalize(record, control.value) ||
+      record.signature !== configuration(record);
+    if (changed) record.revision += 1;
+    sync(record);
+    if (changed) record.completed = complete(record);
+    if (!record.completed && status?.textContent === "Code complete.") status.textContent = "";
   };
-  records.set(root, record);
-  const initial = root.dataset.value ?? control.value;
-  control.value = normalize(record, initial);
-  sync(record);
-  record.lastComplete = complete(record);
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    const listen = listenUI.bind(undefined, record, () => current(record));
+    listen(control, "input", input);
+    listen(control, "focus", refresh);
+    listen(control, "blur", refresh);
+    listenUIReset(record, () => current(record), record.form, refresh);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    refresh();
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
+}
+
+function recordFor(root: HTMLElement): InputOTPRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceInputOTP(root);
 }
 
 function resolveInputOTP(target: InputOTPTarget, root: ParentNode = document): HTMLElement {
@@ -276,17 +353,17 @@ function resolveInputOTP(target: InputOTPTarget, root: ParentNode = document): H
 }
 
 function controlledInputOTP(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="input-otp"]')) return target;
+  if (isHTMLElement(target)) return resolveInputOTP(target, context.root);
   if (typeof target === "string" && target.startsWith("#"))
     return resolveInputOTP(target, context.root);
   const closest = context.element?.closest('[data-jqs="input-otp"]');
-  return resolveInputOTP(closest instanceof HTMLElement ? closest : String(target));
+  return resolveInputOTP(isHTMLElement(closest) ? closest : String(target));
 }
 
 function registerActions(api: StarInputOTPStatic, registerAction: ActionRegistrar): void {
   registerAction("ui.input-otp.set", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlledInputOTP(context, explicit ? first : undefined);
     const value = explicit ? context.args?.[1] : first;
     if (typeof value !== "string" && typeof value !== "number") {
@@ -303,9 +380,7 @@ function registerActions(api: StarInputOTPStatic, registerAction: ActionRegistra
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="input-otp"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="input-otp"]')) {
     const input = inputOTPRoot(element);
     if (input) enhanceInputOTP(input);
   }
@@ -317,17 +392,17 @@ export function createInputOTPs(registerAction: ActionRegistrar): InputOTPCollec
     clear: (target) => requestValue(resolveInputOTP(target), ""),
     focus: (target) => {
       const root = resolveInputOTP(target);
-      const record = records.get(root) ?? enhanceInputOTP(root);
-      record.control.focus();
+      const record = recordFor(root);
+      record.input.focus();
       return root;
     },
     value: (target) => {
       const root = resolveInputOTP(target);
-      return (records.get(root) ?? enhanceInputOTP(root)).value;
+      return recordFor(root).value;
     },
     complete: (target) => {
       const root = resolveInputOTP(target);
-      return complete(records.get(root) ?? enhanceInputOTP(root));
+      return complete(recordFor(root));
     },
   };
   registerActions(api, registerAction);

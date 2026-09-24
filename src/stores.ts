@@ -271,6 +271,10 @@ function runReleases(releases: readonly StarStoreCleanup[], message: string): vo
   if (errors.length > 1) throw new AggregateError(errors, message);
 }
 
+function assertStoreActive(record: Pick<StoreRecord, "active" | "name">, active = true): void {
+  if (!active || !record.active) throw new Error(`Store ${record.name} has been disposed.`);
+}
+
 function liveStore<Store extends object>(
   source: Store,
   record: Pick<StoreRecord, "active" | "name">,
@@ -282,12 +286,12 @@ function liveStore<Store extends object>(
     if (existing) return existing as Value;
     const proxy = new Proxy(value, {
       get(target, key, receiver) {
-        if (!record.active) throw new Error(`Store ${record.name} has been disposed.`);
+        assertStoreActive(record);
         const result = Reflect.get(target, key, receiver) as unknown;
         return isObject(result) ? wrap(result) : result;
       },
       set(target, key, value) {
-        if (!record.active) throw new Error(`Store ${record.name} has been disposed.`);
+        assertStoreActive(record);
         if (typeof key !== "string" || reservedNames.has(key)) {
           throw new TypeError(`Store ${record.name} cannot write the key ${String(key)}.`);
         }
@@ -310,7 +314,7 @@ function liveStore<Store extends object>(
         }
       },
       deleteProperty(target, key) {
-        if (!record.active) throw new Error(`Store ${record.name} has been disposed.`);
+        assertStoreActive(record);
         if (typeof key !== "string" || reservedNames.has(key)) {
           throw new TypeError(`Store ${record.name} cannot delete the key ${String(key)}.`);
         }
@@ -330,11 +334,11 @@ function liveStore<Store extends object>(
         throw new TypeError(`Store ${record.name} cannot define property descriptors.`);
       },
       getOwnPropertyDescriptor(target, key) {
-        if (!record.active) throw new Error(`Store ${record.name} has been disposed.`);
+        assertStoreActive(record);
         return Reflect.getOwnPropertyDescriptor(target, key);
       },
       ownKeys(target) {
-        if (!record.active) throw new Error(`Store ${record.name} has been disposed.`);
+        assertStoreActive(record);
         return Reflect.ownKeys(target);
       },
     });
@@ -399,6 +403,7 @@ export function defineStore<Store extends object>(
 function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
   const { host, counts: resourceCounts } = countServiceResources(registrar.documentHost.services!);
   const records = new Map<string, StoreRecord>();
+  const preparingDefinitions = new Set<string | object>();
   const definitionNames = new WeakMap<object, string>();
   const namespaceTarget = reactive(Object.create(null) as Record<string, StarStoreObject>);
   let active = true;
@@ -460,6 +465,28 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
     if (!active) throw new Error(`The stores facade has been disposed and cannot ${operation}.`);
   };
 
+  const own = (
+    record: StoreRecord,
+    kind: Parameters<typeof host.own>[0],
+    owner: string,
+    cleanup: StarStoreCleanup,
+  ): StarStoreCleanup => {
+    const release = once(cleanup);
+    try {
+      assertStoreActive(record, active);
+      return host.own(kind, owner, release);
+    } catch (error) {
+      try {
+        release();
+      } catch (cleanupError) {
+        throw new AggregateError([error, cleanupError], `Store ${record.name} cleanup failed.`, {
+          cause: cleanupError,
+        });
+      }
+      throw error;
+    }
+  };
+
   const observe = (
     name: string,
     category: StarStoreOperationCategory,
@@ -498,6 +525,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
     options: StarStoreSubscriptionOptions<Selected> | undefined,
     owner: string,
   ): StarStoreCleanup => {
+    assertStoreActive(record, active);
     if (typeof selector !== "function" || typeof listener !== "function") {
       throw new TypeError("Store subscriptions need selector and listener functions.");
     }
@@ -508,13 +536,15 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
       throw new TypeError("Store subscription equality must be a function.");
     }
     const equality = options?.equality ?? Object.is;
+    const isActive = () => record.active;
     let initialized = false;
     let previous: Selected;
-    const deliver = (current: Selected): void => {
+    const deliver = (current: Selected, prior: Selected): void => {
+      if (!record.active) return;
       const change = Object.freeze<StarStoreChange<Store, Selected>>({
         current,
         name: record.name,
-        previous,
+        previous: prior,
         signal: record.controller.signal,
         store: record.store as Store,
       });
@@ -527,12 +557,13 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
     };
     const runner: ReactiveEffect = effect(
       () => {
-        if (!record.active) return;
+        if (!isActive()) return;
         const current = selector(record.store as Store);
+        if (!record.active) return;
         if (!initialized) {
           previous = current;
           initialized = true;
-          if (options?.immediate) deliver(current);
+          if (options?.immediate) deliver(current, previous);
           return;
         }
         let equal: boolean;
@@ -545,23 +576,11 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
         if (equal) return;
         const prior = previous;
         previous = current;
-        const change = Object.freeze<StarStoreChange<Store, Selected>>({
-          current,
-          name: record.name,
-          previous: prior,
-          signal: record.controller.signal,
-          store: record.store as Store,
-        });
-        try {
-          const result = listener(change);
-          if (isThenable(result)) observe(record.name, "subscription", owner, "failed");
-        } catch {
-          observe(record.name, "subscription", owner, "failed");
-        }
+        deliver(current, prior);
       },
       { owner, onError: () => observe(record.name, "subscription", owner, "failed") },
     );
-    const owned = host.own("subscription", owner, () => stop(runner));
+    const owned = own(record, "subscription", owner, () => stop(runner));
     observe(record.name, "subscription", owner, "completed");
     const release = once(() => {
       owned();
@@ -572,47 +591,53 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
 
   const addRelease = (record: StoreRecord, release: StarStoreCleanup): StarStoreCleanup => {
     const owned = once(release);
-    record.releases.push(owned);
+    if (record.active) record.releases.push(owned);
+    else owned();
     return owned;
   };
+
+  function cleanup(
+    record: StoreRecord,
+    release: StarStoreCleanup,
+    owner: string,
+  ): StarStoreCleanup {
+    return addRelease(
+      record,
+      own(record, "service", owner, () => {
+        try {
+          release();
+          observe(record.name, "cleanup", owner, "completed");
+        } catch (error) {
+          observe(record.name, "cleanup", owner, "failed");
+          throw error;
+        }
+      }),
+    );
+  }
 
   const setupContext = <Store extends object>(record: StoreRecord): StarStoreSetupContext<Store> =>
     Object.freeze({
       name: record.name,
       signal: record.controller.signal,
       store: record.store as Store,
-      cleanup(cleanup: StarStoreCleanup) {
-        if (typeof cleanup !== "function") throw new TypeError("Store cleanup must be a function.");
-        const owner = `${record.id}:cleanup`;
-        return addRelease(
-          record,
-          host.own("service", owner, () => {
-            try {
-              cleanup();
-              observe(record.name, "cleanup", owner, "completed");
-            } catch (error) {
-              observe(record.name, "cleanup", owner, "failed");
-              throw error;
-            }
-          }),
-        );
+      cleanup(release: StarStoreCleanup) {
+        if (typeof release !== "function") throw new TypeError("Store cleanup must be a function.");
+        return cleanup(record, release, `${record.id}:cleanup`);
       },
       effect(run: () => void) {
+        assertStoreActive(record, active);
         if (typeof run !== "function") throw new TypeError("Store effect must be a function.");
         const owner = `${record.id}:effect`;
         const runner = effect(run, {
           owner,
           onError: () => observe(record.name, "effect", owner, "failed"),
         });
-        const owned = host.own("effect", owner, () => stop(runner));
+        const owned = own(record, "effect", owner, () => stop(runner));
         observe(record.name, "effect", owner, "completed");
-        return addRelease(
-          record,
-          once(() => {
-            owned();
-            observe(record.name, "effect", owner, "cancelled");
-          }),
-        );
+        return addRelease(record, () => {
+          owned();
+          observe(record.name, "effect", owner, "cancelled");
+        });
       },
       subscribe<Selected>(
         selector: StarStoreSelector<Store, Selected>,
@@ -625,6 +650,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
         );
       },
       task(task: StarStoreTask) {
+        assertStoreActive(record, active);
         if (typeof task !== "function") throw new TypeError("Store task must be a function.");
         const result = task(record.controller.signal);
         if (!isThenable(result)) throw new TypeError("Store tasks must return a promise.");
@@ -650,20 +676,18 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
         );
         let owned: () => void;
         try {
+          assertStoreActive(record, active);
           owned = host.task!(owner, monitored, () => undefined);
         } catch (error) {
           decrease();
           void monitored.catch(() => undefined);
           throw error;
         }
-        return addRelease(
-          record,
-          once(() => {
-            decrease();
-            owned();
-            if (!settled) observe(record.name, "task", owner, "cancelled");
-          }),
-        );
+        return addRelease(record, () => {
+          decrease();
+          owned();
+          if (!settled) observe(record.name, "task", owner, "cancelled");
+        });
       },
     });
 
@@ -688,87 +712,94 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
       throw new Error(`This store definition already owns the name ${priorName}.`);
     }
 
-    const id = `store-${++recordId}`;
-    let cloned: Store;
-    try {
-      const initial =
-        typeof definition.initial === "function" ? definition.initial() : definition.initial;
-      if (isThenable(initial))
-        throw new TypeError(`Store ${name} initial value cannot be a promise.`);
-      cloned = cloneStore(initial, `Store ${name}`);
-    } catch (error) {
-      observe(name, "definition", id, "failed");
-      throw error;
+    if (preparingDefinitions.has(name) || preparingDefinitions.has(definition)) {
+      throw new Error(`Store ${name} is already being defined.`);
     }
-    const reactiveTarget = reactive(cloned);
-    const record: StoreRecord = {
-      active: true,
-      controller: new AbortController(),
-      definition: definition as unknown as StarStoreDefinition<object>,
-      id,
-      name,
-      releases: [],
-      store: undefined as unknown as object,
-      target: reactiveTarget,
-    };
-    const live = liveStore(reactiveTarget, record, (phase) =>
-      observe(name, "change", `${id}:change`, phase),
-    );
-    const published = reactive(live);
-    (record as { store: object }).store = published;
-
+    preparingDefinitions.add(name).add(definition);
     try {
-      const setupCleanup = definition.setup?.(setupContext<Store>(record));
-      if (setupCleanup !== undefined) {
-        if (typeof setupCleanup !== "function") {
-          throw new TypeError(`Store ${name} setup returned an invalid cleanup.`);
-        }
-        const owner = `${record.id}:setup`;
-        addRelease(
-          record,
-          host.own("service", owner, () => {
-            try {
-              setupCleanup();
-              observe(name, "cleanup", owner, "completed");
-            } catch (error) {
-              observe(name, "cleanup", owner, "failed");
-              throw error;
-            }
-          }),
-        );
+      const id = `store-${++recordId}`;
+      let cloned: Store;
+      try {
+        const initial =
+          typeof definition.initial === "function" ? definition.initial() : definition.initial;
+        if (isThenable(initial))
+          throw new TypeError(`Store ${name} initial value cannot be a promise.`);
+        cloned = cloneStore(initial, `Store ${name}`);
+      } catch (error) {
+        observe(name, "definition", id, "failed");
+        throw error;
       }
-      const lifetime = host.own("service", `${record.id}:lifetime`, () => {
+      const reactiveTarget = reactive(cloned);
+      const record: StoreRecord = {
+        active: true,
+        controller: new AbortController(),
+        definition: definition as unknown as StarStoreDefinition<object>,
+        id,
+        name,
+        releases: [],
+        store: undefined as unknown as object,
+        target: reactiveTarget,
+      };
+      const live = liveStore(reactiveTarget, record, (phase) =>
+        observe(name, "change", `${id}:change`, phase),
+      );
+      const published = reactive(live);
+      (record as { store: object }).store = published;
+
+      const end = () => {
         if (!record.active) return;
         record.active = false;
         record.controller.abort("cleanup");
         try {
-          runReleases(record.releases, `Store ${name} cleanup failed.`);
+          runReleases(record.releases.splice(0), `Store ${name} cleanup failed.`);
           observe(name, "cleanup", `${id}:lifetime`, "completed");
         } catch (error) {
           observe(name, "cleanup", `${id}:lifetime`, "failed");
           throw error;
         }
-      });
-      record.releases.push(once(lifetime));
-      records.set(name, record);
-      definitionNames.set(definition, name);
-      namespaceTarget[name] = published as StarStoreObject;
-      if (definition.setup) observe(name, "setup", `${id}:setup`, "completed");
-      observe(name, "definition", id, "completed");
-      return published;
-    } catch (error) {
-      if (definition.setup) observe(name, "setup", `${id}:setup`, "failed");
-      observe(name, "definition", id, "failed");
-      record.active = false;
-      record.controller.abort("rollback");
+      };
+      let preparing = true;
+      let provisional: StarStoreCleanup | undefined;
       try {
-        runReleases(record.releases, `Store ${name} setup rollback failed.`);
-      } catch (rollbackError) {
-        throw new AggregateError([error, rollbackError], `Store ${name} setup rollback failed.`, {
-          cause: rollbackError,
+        provisional = host.own("service", `${id}:lifetime`, () => {
+          if (preparing) end();
         });
+        const setupCleanup = definition.setup?.(setupContext<Store>(record));
+        if (setupCleanup !== undefined) {
+          if (typeof setupCleanup !== "function") {
+            throw new TypeError(`Store ${name} setup returned an invalid cleanup.`);
+          }
+          cleanup(record, setupCleanup, `${id}:setup`);
+        }
+        assertStoreActive(record, active);
+        preparing = false;
+        provisional();
+        const lifetime = host.own("service", `${id}:lifetime`, end);
+        record.releases.push(once(lifetime));
+        records.set(name, record);
+        definitionNames.set(definition, name);
+        namespaceTarget[name] = published as StarStoreObject;
+        if (definition.setup) observe(name, "setup", `${id}:setup`, "completed");
+        observe(name, "definition", id, "completed");
+        return published;
+      } catch (error) {
+        if (definition.setup) observe(name, "setup", `${id}:setup`, "failed");
+        observe(name, "definition", id, "failed");
+        record.active = false;
+        record.controller.abort("rollback");
+        try {
+          provisional?.();
+          runReleases(record.releases.splice(0), `Store ${name} setup rollback failed.`);
+        } catch (rollbackError) {
+          throw new AggregateError([error, rollbackError], `Store ${name} setup rollback failed.`, {
+            cause: rollbackError,
+          });
+        }
+        throw error;
       }
-      throw error;
+    } finally {
+      preparingDefinitions.delete(name);
+      preparingDefinitions.delete(definition);
     }
   };
 
@@ -818,6 +849,7 @@ function createStores(registrar: StarPluginRegistrar): StarStoresFacade {
         const before = cloneStore(record.store, `Store ${name}`) as Store;
         const draft = cloneStore(record.store, `Store ${name} draft`) as Store;
         const result = update(draft);
+        assertStoreActive(record, active);
         if (isThenable(result)) throw new TypeError("Store transactions must be synchronous.");
         const accepted = cloneStore(draft, `Store ${name} draft`);
         assertMethodsUnchanged(before, accepted);

@@ -145,7 +145,7 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
       "quality-runner-self-test",
       "resource-research-dependency",
       "format",
-      "unit",
+      "browser-components",
       "static-fast",
     ],
     delivery: [
@@ -153,8 +153,7 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
       "quality-runner-self-test",
       "resource-research-dependency",
       "format",
-      "unit",
-      "coverage",
+      "browser-components",
       "property",
       "static-delivery",
       "self-hosted",
@@ -168,9 +167,7 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
       "quality-runner-self-test",
       "resource-research-dependency",
       "format",
-      "unit",
-      "unit-repeated-audit",
-      "coverage",
+      "browser-components",
       "property",
       "property-random-audit",
       "static-full-audit",
@@ -197,7 +194,7 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
       "--install-only",
     ]);
     assert.equal(preparation.enforced, true);
-    assert.ok(preparation.stage < gates.find((gate) => gate.id === "unit").stage);
+    assert.ok(preparation.stage < gates.find((gate) => gate.id === "browser-components").stage);
   }
 
   for (const mode of ["delivery", "full-audit"]) {

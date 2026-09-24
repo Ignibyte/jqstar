@@ -1,4 +1,16 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
+import {
+  acquireUIResource,
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+} from "./lifecycle";
+import type { UIResources } from "./lifecycle";
 import type {
   MessageScrollerLatestOptions,
   MessageScrollerTarget,
@@ -6,15 +18,13 @@ import type {
   StarMessageScrollerStatic,
 } from "../types";
 
-interface MessageScrollerRecord {
-  cleanup: () => void;
+interface MessageScrollerRecord extends UIResources {
+  followAttribute: string | undefined;
   content: HTMLElement;
   following: boolean;
   knownMessages: WeakSet<Element>;
   latest: HTMLButtonElement;
-  observer: MutationObserver;
-  pending: number | undefined;
-  root: HTMLElement;
+  pending: { handle: number | undefined } | undefined;
   unread: number;
   viewport: HTMLElement;
 }
@@ -31,18 +41,25 @@ interface MessageScrollerEventDetail {
   unread: number;
 }
 
+const retained = new WeakMap<
+  HTMLElement,
+  {
+    followAttribute: string | undefined;
+    following: boolean;
+    unread: number;
+    knownMessages: WeakSet<Element>;
+  }
+>();
 const records = new WeakMap<HTMLElement, MessageScrollerRecord>();
 let messageScrollerId = 0;
 
 function messageScrollerRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="message-scroller"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="message-scroller"]') ? value : undefined;
 }
 
 function directPart<T extends HTMLElement = HTMLElement>(root: HTMLElement, part: string): T {
   const element = Array.from(root.children).find(
-    (child): child is T => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is T => isHTMLElement(child) && child.dataset.part === part,
   );
   if (!element) throw new Error(`Message Scroller #${root.id} needs data-part="${part}".`);
   return element;
@@ -50,8 +67,7 @@ function directPart<T extends HTMLElement = HTMLElement>(root: HTMLElement, part
 
 function contentPart(viewport: HTMLElement): HTMLElement {
   const content = Array.from(viewport.children).find(
-    (child): child is HTMLElement =>
-      child instanceof HTMLElement && child.dataset.part === "content",
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === "content",
   );
   if (!content)
     throw new Error(`Message Scroller viewport #${viewport.id} needs data-part="content".`);
@@ -88,7 +104,10 @@ function emit(
     unread: record.unread,
   };
   record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:message-scroller:${name}`, { bubbles: true, detail }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:message-scroller:${name}`,
+      { bubbles: true, detail },
+    ),
   );
 }
 
@@ -107,40 +126,56 @@ function sync(record: MessageScrollerRecord): void {
   );
 }
 
+function current(record: MessageScrollerRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    record.root.querySelector(':scope > [data-part="viewport"]') === record.viewport &&
+    record.viewport.querySelector(':scope > [data-part="content"]') === record.content &&
+    record.root.querySelector(':scope > [data-part="latest"]') === record.latest
+  );
+}
+
+function clearPending(record: MessageScrollerRecord): void {
+  const pending = record.pending;
+  record.pending = undefined;
+  if (pending?.handle !== undefined) record.window.clearTimeout(pending.handle);
+}
+
 function scrollLatest(
   record: MessageScrollerRecord,
   options: MessageScrollerLatestOptions = {},
 ): HTMLElement {
-  if (record.pending !== undefined) window.clearTimeout(record.pending);
-  record.pending = undefined;
+  if (!current(record)) return record.root;
+  const revision = ++record.revision;
+  clearPending(record);
+  if (!current(record, revision)) return record.root;
   const top = record.viewport.scrollHeight;
   try {
     record.viewport.scrollTo({ top, behavior: options.behavior ?? "auto" });
   } catch {
+    if (!current(record, revision)) return record.root;
     record.viewport.scrollTop = top;
   }
+  if (!current(record, revision)) return record.root;
   if (record.viewport.scrollTop !== top) record.viewport.scrollTop = top;
+  if (!current(record, revision)) return record.root;
   record.following = true;
   record.unread = 0;
   sync(record);
-  emit(record, "latest");
+  if (current(record, revision)) emit(record, "latest");
   return record.root;
 }
 
 function setFollowing(record: MessageScrollerRecord, following: boolean): HTMLElement {
+  if (!current(record)) return record.root;
+  const revision = ++record.revision;
   if (record.following === following && (!following || record.unread === 0)) return record.root;
-  if (!following && record.pending !== undefined) {
-    window.clearTimeout(record.pending);
-    record.pending = undefined;
-  }
-  record.following = following;
-  if (following) {
-    record.unread = 0;
-    scrollLatest(record);
-  } else {
-    sync(record);
-    emit(record, "unfollow");
-  }
+  if (following) return scrollLatest(record);
+  clearPending(record);
+  if (!current(record, revision)) return record.root;
+  record.following = false;
+  sync(record);
+  if (current(record, revision)) emit(record, "unfollow");
   return record.root;
 }
 
@@ -148,7 +183,7 @@ function addedMessages(record: MessageScrollerRecord, mutations: MutationRecord[
   let added = 0;
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
-      if (!(node instanceof Element)) continue;
+      if (!isElementNode(node)) continue;
       const candidates = [
         ...(node.matches('[data-jqs="message"]') ? [node] : []),
         ...Array.from(node.querySelectorAll('[data-jqs="message"]')),
@@ -167,47 +202,76 @@ function addedMessages(record: MessageScrollerRecord, mutations: MutationRecord[
   return added;
 }
 
-function observe(record: MessageScrollerRecord): MutationObserver {
-  const observer = new MutationObserver((mutations) => {
-    const added = addedMessages(record, mutations);
-    if (!added) return;
-    if (record.following) {
-      if (record.pending !== undefined) window.clearTimeout(record.pending);
-      record.pending = window.setTimeout(() => {
-        record.pending = undefined;
-        scrollLatest(record);
-      }, 0);
-    } else {
-      record.unread += added;
-      sync(record);
-    }
-    emit(record, "messages", added);
-  });
-  observer.observe(record.content, { childList: true, subtree: true });
-  return observer;
+function schedule(record: MessageScrollerRecord): void {
+  if (!current(record)) return;
+  const revision = record.revision;
+  clearPending(record);
+  if (!current(record, revision)) return;
+  const pending = { handle: undefined as number | undefined };
+  record.pending = pending;
+  try {
+    pending.handle = record.window.setTimeout(() => {
+      if (!current(record) || record.pending !== pending) return;
+      record.pending = undefined;
+      if (record.root.isConnected && record.following) scrollLatest(record);
+    }, 0);
+  } catch (error) {
+    if (record.pending === pending) record.pending = undefined;
+    throw error;
+  }
+  if (!current(record, revision) || record.pending !== pending)
+    record.window.clearTimeout(pending.handle);
 }
 
-function wire(record: MessageScrollerRecord): () => void {
+function observe(record: MessageScrollerRecord): void {
+  const holder: { observer?: MutationObserver } = {};
+  const disconnect = (): void => holder.observer?.disconnect();
+  acquireUIResource(
+    record,
+    () => current(record),
+    () => {
+      holder.observer = new (record.window as Window & typeof globalThis).MutationObserver(
+        (mutations) => {
+          if (!current(record)) return;
+          const added = addedMessages(record, mutations);
+          if (!added) return;
+          const revision = ++record.revision;
+          if (record.following) schedule(record);
+          else {
+            record.unread += added;
+            sync(record);
+          }
+          if (current(record, revision)) emit(record, "messages", added);
+        },
+      );
+      if (!current(record)) return;
+      holder.observer.observe(record.content, { childList: true, subtree: true });
+    },
+    disconnect,
+  );
+}
+
+function wire(record: MessageScrollerRecord): void {
+  const listen = listenUI.bind(undefined, record, () => current(record));
   const scroll = (): void => {
+    if (!current(record)) return;
     const following = nearLatest(record);
     if (following === record.following && (!following || record.unread === 0)) return;
+    const revision = ++record.revision;
+    if (!following) clearPending(record);
+    if (!current(record, revision)) return;
     record.following = following;
     if (following) record.unread = 0;
     sync(record);
-    emit(record, following ? "follow" : "unfollow");
+    if (current(record, revision)) emit(record, following ? "follow" : "unfollow");
   };
   const latest = (): void => {
+    const revision = record.revision + 1;
     scrollLatest(record, { behavior: "smooth" });
-    record.viewport.focus({ preventScroll: true });
+    if (current(record, revision)) record.viewport.focus({ preventScroll: true });
   };
-  record.viewport.addEventListener("scroll", scroll, { passive: true });
-  record.latest.addEventListener("click", latest);
-  return () => {
-    record.viewport.removeEventListener("scroll", scroll);
-    record.latest.removeEventListener("click", latest);
-    record.observer.disconnect();
-    if (record.pending !== undefined) window.clearTimeout(record.pending);
-  };
+  listen(record.viewport, "scroll", scroll, { passive: true });
+  listen(record.latest, "click", latest);
 }
 
 function enhanceMessageScroller(root: HTMLElement): MessageScrollerRecord {
@@ -215,7 +279,7 @@ function enhanceMessageScroller(root: HTMLElement): MessageScrollerRecord {
   const viewport = directPart(root, "viewport");
   const content = contentPart(viewport);
   const latest = directPart<HTMLButtonElement>(root, "latest");
-  if (!(latest instanceof HTMLButtonElement))
+  if (!isHTMLTag(latest, "button"))
     throw new Error(`Message Scroller #${root.id} latest part must be a button.`);
   viewport.id ||= `${root.id}-viewport`;
   viewport.tabIndex = viewport.hasAttribute("tabindex") ? viewport.tabIndex : 0;
@@ -226,36 +290,58 @@ function enhanceMessageScroller(root: HTMLElement): MessageScrollerRecord {
   latest.setAttribute("aria-controls", viewport.id);
   const existing = records.get(root);
   if (
-    existing?.viewport === viewport &&
+    existing &&
+    current(existing) &&
+    existing.viewport === viewport &&
     existing.content === content &&
     existing.latest === latest
   ) {
-    sync(existing);
+    if (existing.followAttribute !== root.dataset.follow) {
+      existing.revision += 1;
+      existing.followAttribute = root.dataset.follow;
+      existing.following = root.dataset.follow !== "false";
+      if (existing.following) {
+        existing.unread = 0;
+        schedule(existing);
+      } else clearPending(existing);
+    }
+    if (current(existing)) sync(existing);
     return existing;
   }
   existing?.cleanup();
+  const reentered = records.get(root);
+  if (reentered) return reentered;
+  const previous = retained.get(root);
+  const sameFollow = previous?.followAttribute === root.dataset.follow;
   const record: MessageScrollerRecord = {
-    cleanup: () => undefined,
+    ...uiResources(root),
+    followAttribute: root.dataset.follow,
     content,
-    following: root.dataset.follow !== "false",
-    knownMessages: new WeakSet(),
+    following: previous && sameFollow ? previous.following : root.dataset.follow !== "false",
+    knownMessages: previous?.knownMessages ?? new WeakSet(),
     latest,
-    observer: {} as MutationObserver,
     pending: undefined,
-    root,
-    unread: 0,
+    unread: previous?.unread ?? 0,
     viewport,
   };
   for (const message of messages(record)) record.knownMessages.add(message);
-  record.observer = observe(record);
-  records.set(root, record);
-  sync(record);
-  record.cleanup = wire(record);
-  if (record.following) {
-    record.pending = window.setTimeout(() => {
-      record.pending = undefined;
-      scrollLatest(record);
-    }, 0);
+  record.cleanups.add(() => clearPending(record));
+  record.cleanup = ownUIRecord(records, root, record, () => {
+    retained.set(root, {
+      followAttribute: record.followAttribute,
+      following: record.following,
+      unread: record.unread,
+      knownMessages: record.knownMessages,
+    });
+    releaseUIResources(record);
+  });
+  try {
+    observe(record);
+    if (current(record)) sync(record);
+    wire(record);
+    if (current(record) && record.following) schedule(record);
+  } catch (error) {
+    failUISetup(record, error);
   }
   return record;
 }
@@ -272,39 +358,41 @@ function resolve(target: MessageScrollerTarget, root: ParentNode = document): HT
 }
 
 function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="message-scroller"]'))
-    return target;
+  if (isHTMLElement(target)) return resolve(target, context.root);
   if (typeof target === "string" && target.startsWith("#")) return resolve(target, context.root);
   const closest = context.element?.closest('[data-jqs="message-scroller"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+  return resolve(isHTMLElement(closest) ? closest : String(target));
 }
 
 function enhanceAll(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="message-scroller"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="message-scroller"]')) {
     const scroller = messageScrollerRoot(element);
     if (scroller) enhanceMessageScroller(scroller);
   }
+}
+
+function recordFor(root: HTMLElement): MessageScrollerRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceMessageScroller(root);
 }
 
 export function createMessageScrollers(registerAction: ActionRegistrar): MessageScrollerCollection {
   const api: StarMessageScrollerStatic = {
     latest: (target, options) => {
       const root = resolve(target);
-      return scrollLatest(records.get(root) ?? enhanceMessageScroller(root), options);
+      return scrollLatest(recordFor(root), options);
     },
     follow: (target, following = true) => {
       const root = resolve(target);
-      return setFollowing(records.get(root) ?? enhanceMessageScroller(root), following);
+      return setFollowing(recordFor(root), following);
     },
     isFollowing: (target) => {
       const root = resolve(target);
-      return (records.get(root) ?? enhanceMessageScroller(root)).following;
+      return recordFor(root).following;
     },
     unread: (target) => {
       const root = resolve(target);
-      return (records.get(root) ?? enhanceMessageScroller(root)).unread;
+      return recordFor(root).unread;
     },
   };
   registerAction("ui.message-scroller.latest", (context) =>
@@ -312,7 +400,7 @@ export function createMessageScrollers(registerAction: ActionRegistrar): Message
   );
   registerAction("ui.message-scroller.follow", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = isHTMLElement(first) || (typeof first === "string" && first.startsWith("#"));
     const target = controlled(context, explicit ? first : undefined);
     const following = explicit ? context.args?.[1] : first;
     return api.follow(target, typeof following === "boolean" ? following : true);

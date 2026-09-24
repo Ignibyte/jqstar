@@ -15,7 +15,7 @@
   "properties": {
     "schema": { "const": "jqstar-coverage-report/1" },
     "runId": { "type": "string", "minLength": 1 },
-    "mode": { "enum": ["delivery", "stabilization"] },
+    "mode": { "enum": ["delivery", "stabilization", "diagnostic"] },
     "status": { "enum": ["pass", "fail", "error"] },
     "censusExitCode": { "type": "integer" },
     "testExitCode": { "type": "integer" },
@@ -30,19 +30,28 @@
       "additionalProperties": true
     },
     "denominator": { "type": "object" },
+    "roster": { "$ref": "#/$defs/roster" },
     "thresholds": { "type": "object" },
     "thresholdRatchet": { "$ref": "#/$defs/ratchet" },
     "executedEvidence": { "$ref": "#/$defs/executedEvidence" },
     "changed": { "$ref": "#/$defs/changed" },
     "stabilization": { "type": "boolean" },
+    "diagnostic": { "type": "boolean" },
     "failures": { "type": "array", "items": { "type": "string" } }
   },
   "allOf": [
     {
-      "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+      "if": {
+        "properties": {
+          "status": { "const": "pass" },
+          "mode": { "enum": ["delivery", "stabilization"] }
+        },
+        "required": ["status", "mode"]
+      },
       "then": {
         "required": [
           "denominator",
+          "roster",
           "thresholds",
           "thresholdRatchet",
           "executedEvidence",
@@ -52,6 +61,14 @@
           "censusExitCode": { "const": 0 },
           "testExitCode": { "const": 0 },
           "denominator": {},
+          "roster": {
+            "type": "object",
+            "properties": {
+              "status": { "const": "pass" },
+              "expectedPaths": { "type": "array", "minItems": 1 },
+              "failures": { "type": "array", "maxItems": 0 }
+            }
+          },
           "thresholds": {},
           "thresholdRatchet": {
             "type": "object",
@@ -73,6 +90,22 @@
     }
   ],
   "$defs": {
+    "roster": {
+      "type": "object",
+      "required": ["status", "expectedPaths", "summaryPaths", "hitPaths", "failures"],
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "expectedPaths": { "$ref": "#/$defs/paths" },
+        "summaryPaths": { "$ref": "#/$defs/paths" },
+        "hitPaths": { "$ref": "#/$defs/paths" },
+        "failures": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "paths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
     "ratchet": {
       "type": "object",
       "required": ["status", "baseRevision", "reason", "failures"],
@@ -148,6 +181,33 @@
               "coverageMappedLines": {
                 "type": "array",
                 "items": { "type": "integer", "minimum": 1 }
+              },
+              "initializerHeaderEvidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["line", "initializerStartLine", "mappedStatements", "hitCount"],
+                  "properties": {
+                    "line": { "type": "integer", "minimum": 1 },
+                    "initializerStartLine": { "type": "integer", "minimum": 1 },
+                    "mappedStatements": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": ["id", "line", "hits"],
+                        "properties": {
+                          "id": { "type": "string", "minLength": 1 },
+                          "line": { "type": "integer", "minimum": 1 },
+                          "hits": { "type": "integer", "minimum": 0 }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "hitCount": { "type": "integer", "minimum": 0 }
+                  },
+                  "additionalProperties": false
+                }
               },
               "coverageMapExemptEvidence": {
                 "type": "array",

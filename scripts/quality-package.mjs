@@ -34,6 +34,7 @@ import {
   reportStatus,
 } from "./quality/package-release-contracts.mjs";
 import { evaluateCurrentBudgetRatchet } from "./quality/budget-ratchet.mjs";
+import { verifyExternalizedSourceMaps } from "./quality/source-map-packaging.mjs";
 import { cspCodeViolations, inspectCSPGraphs } from "./quality/csp-graph.mjs";
 import { createOwnedTemporaryDirectory } from "./quality/lib/owned-temporary-directory.mjs";
 import { terminateDescendants } from "./quality/lib/process.mjs";
@@ -750,6 +751,7 @@ try {
   });
 
   await record("exports-and-files", async () => {
+    await verifyExternalizedSourceMaps(extracted);
     const mobileReference = JSON.parse(
       await readFile(join(root, "quality/jquery-mobile-migration.json"), "utf8"),
     );
@@ -2198,7 +2200,7 @@ QUnit.start();
       await readFile(join(installedPackage, "package.json"), "utf8"),
     );
     return serveBrowserProof(installedPackage, consumer, {
-      corpusDigest: "40d98004552885f9008f8a8c25435271a5779f30f006f5f8f5e598051d81c855",
+      corpusDigest: "fd875f093ecae0e04e99f188500e8215c25b7b5001f9cb11be8d18651941d3a0",
       grammarVersion: "jqstar-csp-expression/1",
       graph,
       packageVersion: installedManifest.version,

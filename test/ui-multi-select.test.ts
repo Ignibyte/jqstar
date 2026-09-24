@@ -83,6 +83,23 @@ describe("jQuery Star Multi Select", () => {
     expect($.star.ui.multiSelect.value(root())).toEqual(["docs"]);
   });
 
+  it("uses an explicit native root in value actions and rejects a different component", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Multi Select application did not start.");
+    await app.run("ui.multi-select.set", { args: [root(), ["api", "docs"]] });
+    expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs"]);
+    await app.run("ui.multi-select.select", { args: [root(), "qa", true] });
+    expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs", "qa"]);
+    const foreign = document.getElementById("set");
+    if (!foreign) throw new Error("Missing Multi Select external action.");
+    await expect(
+      app.run("ui.multi-select.set", { element: control(), args: [foreign, ["design"]] }),
+    ).rejects.toThrow('Multi Select target did not match data-jqs="multi-select"');
+    expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs", "qa"]);
+    await app.run("ui.multi-select.select", { element: control(), args: ["api", false] });
+    expect($.star.ui.multiSelect.value(root())).toEqual(["docs", "qa"]);
+  });
+
   it("honors canceled changes and accepts server-patched JSON", () => {
     const before = vi.fn((event: Event) => event.preventDefault());
     root().addEventListener("jquery-star:multi-select:before-change", before);

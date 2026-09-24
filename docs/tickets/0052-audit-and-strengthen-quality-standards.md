@@ -3,12 +3,40 @@ id: 0052
 title: Audit and strengthen JavaScript quality standards
 status: done
 created: 2026-09-06
-updated: 2026-09-06
+updated: 2026-09-17
 ---
 
 # 0052: Audit and strengthen JavaScript quality standards
 
 ## Plan
+
+### Complete coverage roster correction (2026-09-17)
+
+Delivery `2026-09-17T15-13-46-281Z-58497` passes all thirteen gates on an unchanged 881-file
+fingerprint, including 2,035 unit cases and 487 browser cases. Actual Test validation passes before
+these edits. Independent review nevertheless finds that the ordinary coverage evaluator checks
+changed files and named floors without comparing the complete raw/summary file roster to the
+production census. The retained `coverage-roster-before.json` removes unchanged Sidebar coverage
+from real Vitest maps, recomputes all summaries and still passes with 115 rather than 116 files
+under an empty changed scope. The actual executed report contains all 116 files; this is a detector
+gap.
+
+Derive the full expected coverage path set from the census filesystem collection, independent of Git
+changes. Compare both raw-hit and per-file summary keys to that complete set, rejecting missing,
+unexpected and duplicate normalized paths and an empty expected roster. Keep changed-line/function
+evaluation as its intersection with Git changes. Record the roster result in the coverage report and
+require a successful roster result in its passing schema. The final-audit adapter already performs
+stronger independent map/source/counter validation; retain it and pass its frozen full expected
+paths to the shared evaluator.
+
+Planned files: `scripts/quality/run-coverage.mjs`, `scripts/quality/coverage-report.mjs`,
+`scripts/program-audit/coverage.mjs`, `schema/coverage-report.schema.json`,
+`test/quality/quality-gates.test.mjs`, `test/program-audit-coverage.test.mjs`,
+`docs/QUALITY_PROGRAM.md`, `docs/TESTING.md`, and this ticket. Handwrite positive/negative fixtures
+for empty changed scope, missing unchanged files in either report, unexpected files, aliases and an
+empty expected set. Preserve all existing map, threshold and executed-evidence controls. Verify
+actual census/report equality, then focused tests, fast and complete delivery. AC-04 and AC-06 stay
+open; no floor, file classification, test selection or final-audit validation is weakened.
 
 ### Problem
 
@@ -41,8 +69,8 @@ current scopes, rules, thresholds, and failure detectors are sufficient.
 
 ### Out of scope
 
-- Mutation execution, automatic dependency upgrades, new hosted services, publication, and replacing
-  established analyzers solely to increase the tool count.
+- Mutation execution, unrelated automatic dependency upgrades, new hosted services, publication, and
+  replacing established analyzers solely to increase the tool count.
 
 ### Acceptance criteria
 
@@ -57,6 +85,10 @@ current scopes, rules, thresholds, and failure detectors are sufficient.
       and the final-audit evidence reference the actual configuration.
 - [x] [AC-05] Mutation remains absent from automatic commands, dependencies, and this execution.
       Ticket 0053 records the later authorized planning scope and the pending execution boundary.
+
+- [x] [AC-06] The locked quality tools resolve the reported Vitest and TOML advisories. Test
+      selection, coverage denominator, failure detection and evidence adapters retain their existing
+      contracts on the patched toolchain, with current fast and delivery proof.
 
 ### Design
 
@@ -304,6 +336,68 @@ Delivery `2026-09-06T14-01-24-670Z-21736` was intentionally interrupted during u
 include this newly identified correction in the same verification cycle. Its report records SIGINT,
 incomplete gates and no receipt. It is not a product failure or a passing delivery result.
 
+### Reopening decision: dependency advisories (2026-09-17)
+
+Delivery `2026-09-17T14-37-33-953Z-21874` passes all 2,005 unit tests, coverage and properties, but
+npm audit and OSV report vulnerable development tools in the current lockfile. Reopen AC-04 and add
+AC-06 before changing dependencies. The failed run also records a ticket ledger error and an extra
+blank line in owner 0006. It was deliberately interrupted during self-hosted verification; its later
+gates that did not start are errors and it supplies no delivery receipt.
+
+The [Vitest advisory](https://github.com/advisories/GHSA-82fw-gwwq-j7x9) lists 4.1.11 as the first
+patched stable version, with no fix planned for the installed 3.x line. It concerns redirect mocks
+through reachable development-server connections; the scanner result alone does not establish
+application exposure. The [TOML advisory](https://github.com/advisories/GHSA-7w5x-hrqm-74c2) lists
+1.7.1 as patched. Registry metadata confirms that markdownlint-cli2 0.23.2, still its current
+release, pins `smol-toml` 1.7.0 exactly.
+
+Use matching exact Vitest and coverage-v8 4.1.11 packages. Add a markdownlint-cli2-only override to
+`smol-toml` 1.7.1 until its upstream dependency is patched. Keep runtime dependencies and the
+existing analyzer set. This is a reviewed targeted update, not an unrestricted audit-fix operation.
+The [Vitest 4 migration guide](https://v4.vitest.dev/guide/migration) removes minWorkers and
+coverage.all. Remove those obsolete options while preserving the two-worker maximum and explicit
+census-derived include/exclude patterns. Verify the complete production denominator independently.
+
+Inspect JSON reporter, collection and V8 coverage compatibility against the repository's adapters.
+Correct any changed mock-constructor or fixture semantics without dropping assertions, exclusions,
+thresholds, browser projects, timeout limits or detector controls. Retain failure reports and
+compare the full test roster before and after migration. Run type/static analysis, detector tests,
+complete units and coverage/properties, both scanners, fast and delivery gates, then actual phase
+validation.
+
+Planned files: package.json, package-lock.json, the three Vitest configurations, affected test
+fixtures or quality report adapters only if direct failures require them, docs/QUALITY_PROGRAM.md,
+docs/TESTING.md, and this ticket. Owner 0006 records its corrected ledger/format and predecessor
+verification. Product lifetime changes remain in owner 0006 and are outside this tool update.
+
+### Coverage migration correction (2026-09-17)
+
+Delivery `2026-09-17T14-49-27-209Z-83917` passes units, properties, static/security, self-hosting
+and all package checks. Coverage fails under the new V8 maps. Preserve that failure and the
+deliberate interruption of later gates. The raw maps separate function headers from statements and
+expose previously hidden unexecuted expressions; neither is permission to lower a threshold.
+
+Extend the planned verifier work in scripts/quality/coverage-report.mjs. For changed lines absent
+from statement maps, use the exact function declaration-to-body-start range and its invocation
+counter. Require a positive counter; missing or zero function counts must fail. Default-argument
+locations must also retain their own branch-hit requirement. Do not use a called function to credit
+its unexecuted body or override a zero statement count. Add positive and deliberately failing cases
+in test/quality/quality-gates.test.mjs for these distinctions and multiline declarations. Existing
+missing-map, uncovered-line, changed-function and immutable-threshold detectors must remain live.
+
+The retained map also omits an isolated `let text: string;` declaration in JSON Viewer. Extend
+source classification only to variable statements with identifier bindings and no initializer,
+occupying their own physical lines. Record the specific reason in coverage evidence. Initializers,
+destructuring and neighboring executable statements must still fail when absent from the map;
+existing zero-hit maps take precedence. The focused positive/negative controls already exercise
+these distinctions.
+
+Then cover actual missing paths in the existing SSE, persistence/store, bridge and UI test suites.
+Add observable regression cases using their public APIs, including refusal and canceled/deferred
+cleanup branches. Any proved unreachable production branch must be handled in its owning product
+ticket before removal; do not remove defensive code solely for coverage. Recheck the complete
+production file roster and the unchanged floors with actual Vitest 4 evidence, then fast/full gates.
+
 ## Code
 
 The two migration property suites now use the shared seed/replay recorder for six stable IDs.
@@ -330,6 +424,17 @@ acceptance/rejection assertions; `test/property/regressions.json` preserves the 
 path, and literal input; `docs/TESTING.md` states the corrected generated-data contract.
 
 ### Changed-file ledger
+
+| File                                                                                                                                                    | Purpose                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`, `package-lock.json`                                                                                                                     | Pin matching Vitest/coverage-v8 4.1.11 and a markdownlint-cli2-only `smol-toml` 1.7.1 override; remove obsolete Vitest transitive dependencies.                      |
+| `vitest.config.ts`, `vitest.coverage.config.ts`, `vitest.property.config.ts`                                                                            | Remove options no longer supported in Vitest 4, retaining test selection, worker maximum, explicit coverage patterns and all thresholds.                             |
+| `test/testing-harness-conformance.test.ts`                                                                                                              | Remove the type assertion made redundant by the new matcher signature, keeping the same failure comparison.                                                          |
+| `scripts/quality/coverage-report.mjs`, `test/quality/quality-gates.test.mjs`                                                                            | Read actual function/default-argument hits for unmapped headers and classify isolated bindings; retain negative controls for missing bodies and zero-hit statements. |
+| `test/sse.test.ts`, `test/stores-lifecycle.test.ts`                                                                                                     | Exercise malformed SSE metadata, final carriage returns, and disposal from subscription option access.                                                               |
+| `test/ui-form-association.test.ts`, `test/ui-otp-tags-lifecycle.test.ts`, `test/ui-viewer-lifecycle.test.ts`, `test/ui-feed-scroller-lifecycle.test.ts` | Cover native form ownership, OTP normalization/refusal, viewer normalization/follow state, and coalesced message scrolling through public behavior.                  |
+| `docs/QUALITY_PROGRAM.md`, `docs/TESTING.md`                                                                                                            | Record the patched test toolchain, scoped override, and full-denominator migration contract.                                                                         |
+| `docs/tickets/0052-audit-and-strengthen-quality-standards.md`                                                                                           | Record the reopening, dependency evidence, changed files and current verification.                                                                                   |
 
 | File                                                                                                               | Purpose                                                                                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -363,6 +468,19 @@ path, and literal input; `docs/TESTING.md` states the corrected generated-data c
 
 ### Design changes
 
+Fast `2026-09-17T14-44-47-750Z-56635` passes all 2,005 units and the first five gates. Static
+analysis rejects an obsolete test error assertion under Vitest 4's broader matcher type and spelling
+in the new prose. Remove the erased assertion from test/testing-harness-conformance.test.ts without
+changing the matcher; use code formatting for the exact parser identifier and plain wording for
+remaining gates. The source API report's previously changed warning line also receives LF
+termination to pass the whitespace check; declarations and report text remain identical.
+
+The September 17 dependency update uses the planned exact versions. Registry inspection and the
+lockfile diff show only the Vitest dependency graph and the scoped TOML parser changing. Runtime
+dependency versions stay fixed. npm audit and OSV both report no known issues after installation;
+TypeScript application, registry and quality-test compilation passes. Complete unit/reporter,
+coverage, detector and delivery verification remain pending.
+
 Plan activation passed before changes. The dispatcher dropped from cognitive complexity 145 to 30;
 the tokenizer dropped from 107 to 63. All authored JavaScript now has the same ceiling (65) and five
 SonarJS rules. Redundant type fixes are runtime-erased; JSON5 output is explicitly `unknown`, and
@@ -370,6 +488,78 @@ negative async contract fixtures use unknown input before a deliberate boundary 
 guard was removed merely because TypeScript considered it redundant.
 
 ## Test
+
+| Command                                      | Result | Evidence                                                                                                                                                                                                                   |
+| -------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                       | Pass   | `2026-09-17T15-44-28-223Z-39646`: six gates, 2,057 unit cases.                                                                                                                                                             |
+| `npm run quality:delivery` (`npm run check`) | Pass   | `2026-09-17T15-48-23-507Z-72866`: thirteen gates, 2,057 unit cases, 116 coverage files, 487 browser cases, thirteen package and seven release checks; matching fingerprints and actual Test validation before these edits. |
+
+Fast `2026-09-17T15-44-28-223Z-39646` passes all six gates and all 2,057 unit cases. Actual Code
+phase validation passes for this owner before the phase/ledger edit. Current full delivery is next.
+
+| Command                | Result | Evidence                                                                                        |
+| ---------------------- | ------ | ----------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` | Pass   | `2026-09-17T15-44-28-223Z-39646`: all six gates and 2,057 cases; actual Code validation passes. |
+
+Delivery `2026-09-17T15-46-27-991Z-53969` found that the new subsection hid this owner's previous
+fast table from the Test ledger parser. Move the current passing result above the subsection. The
+run was interrupted after this known failure; it grants no receipt or phase closure. Keep its error
+records and rerun complete delivery after validating the corrected ticket layout.
+
+### Complete roster correction evidence
+
+The runner now supplies every census coverage path to the shared evaluator. Both raw and summary
+keys must match that set exactly, including an unchanged source omitted under an empty Git scope.
+The schema requires a successful nonempty roster with no failures on passing reports. The final
+audit supplies its frozen complete roster and retains independent map/source/counter validation.
+Changed files: the six planned script/schema/test files, `docs/QUALITY_PROGRAM.md`,
+`docs/TESTING.md`, and this ticket. No threshold or census classification changes.
+
+The first focused run found an Ajv strict-types error in the new conditional schema clause. Explicit
+object/array types correct that schema authoring failure; the next two-suite run passes all 90
+cases. Additional controls cover the expected-roster alias and missing/failed/empty/error-bearing
+rosters in a passing envelope. ESLint passes for all changed scripts and tests. The three focused
+suites pass all 104 cases. `quality-refresh-2026-09-17/coverage-roster-after.json` retains the real
+116-file passing control and the 115-file failing control: both summary and raw-hit roster checks
+reject the missing unchanged Sidebar. Fast `2026-09-17T15-42-03-246Z-25292` passes all 2,057 unit
+cases and the analyzer checks except formatting and two spelling findings in owner 0002. Correct the
+documents and rerun fast/full before closing this correction.
+
+| Command                | Result | Evidence                                                                                                                                 |
+| ---------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` | Pass   | `2026-09-17T15-11-06-759Z-44572`: all six gates and all 2,035 cases pass. Actual Code validation passes before these phase/ledger edits. |
+
+| Command                | Result | Evidence                                                                                                                               |
+| ---------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` | Pass   | `2026-09-17T14-47-02-447Z-70212`: all six gates and all 2,005 unit cases pass. Actual Code validation passes before this phase change. |
+
+The subsequent full run `2026-09-17T14-49-27-209Z-83917` failed coverage and was interrupted during
+release verification. Units, properties, static/security, self-hosting and all package checks pass;
+the interrupted and unexecuted gates are errors, and the run supplies no receipt. Focused detector
+tests pass 80 cases. The resumed six runtime suites pass 99 cases. Standalone coverage at
+`quality-refresh-2026-09-17/coverage-resume.log` verifies all 116 production files and passes every
+unchanged aggregate/subsystem floor, but still flags htmx disposal, persistence report/repair, and
+OTP synchronization lines. Owner 0019's new public probe demonstrates a real repair reentry bug;
+that correction has its own Plan. Full current delivery remains required.
+
+The corrected standalone coverage run passes all 2,034 unit cases, all 116 production files,
+unchanged aggregate/subsystem floors and every changed executable line/function. Raw hit maps,
+executed test evidence and post-run source hashes are retained in
+`quality-refresh-2026-09-17/coverage-after-repair/`. Its execution has no skips or failures. This
+standalone result does not replace the required fast/delivery reports.
+
+Fast `2026-09-17T15-07-53-511Z-30777` passes all six gates and 2,034 cases, and actual Code phase
+validation passes before further edits. Owner 0019 then disproves the proposed removal of a status
+guard with a public error-accessor regression, restores the guard and retains the failing evidence.
+The next verification must include that additional case; no coverage floor or detector is relaxed.
+
+| Command                                                        | Result | Evidence                                                                                                                                                                                     |
+| -------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install --ignore-scripts`; `npm audit`; OSV lockfile scan | Pass   | Matching 4.1.11 Vitest packages and the scoped 1.7.1 parser install; both scanners report zero known issues.                                                                                 |
+| `npm run typecheck`; quality-test TypeScript compilation       | Pass   | Application, registry and test types compile with the new toolchain.                                                                                                                         |
+| Complete Vitest 4 unit run                                     | Fail   | 2,004 of 2,005 pass; only the frozen inspection lockfile digest is stale. No tests are skipped. Owner 0031 reopens before remeasurement.                                                     |
+| Reporter schema and exact roster comparison                    | Pass   | `quality-refresh-2026-09-17/reporter-compatibility.json`: all 2,005 file/name entries including duplicates match Vitest 3, and the actual Vitest 4 report passes the unchanged audit schema. |
+| `npm run build:self-hosted`; installed inspection measurement  | Pass   | Full build passes. Six real browser/application investigations resolve with four reads each and zero failed or remaining resources; 0031 records the refreshed evidence.                     |
 
 Current delivery `2026-09-06T15-57-46-593Z-71119` passes all thirteen gates, 1,334 unit tests, 487
 browser cases and sixteen detector controls, with unchanged start/end fingerprints. Test phase
@@ -518,18 +708,24 @@ before this additional test correction; a fresh receipt is required for the chan
 
 ### Inspection ledger
 
-| Finding                                                          | Resolution                                                    |
-| ---------------------------------------------------------------- | ------------------------------------------------------------- |
-| Historical tool inventory is insufficient for current completion | Inspect effective scopes and executable gates before closure. |
+| Finding                                                                        | Resolution                                                                                                                                                       |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Coverage omitted unchanged files without detecting an incomplete roster.       | Complete census equality is required for both raw hits and summaries; real 116-file positive and 115-file negative controls behave correctly.                    |
+| Patched V8 maps and current documentation differed from earlier tool evidence. | Actual-hit header/default rules, schema controls, security scans and full delivery pass; public counts now match 315 TypeScript files and 303 file/rule entries. |
+| Historical tool inventory is insufficient for current completion               | Inspect effective scopes and executable gates before closure.                                                                                                    |
 
 ## Document
 
 ### Documentation changed
 
-The final documentation cross-check corrects two stale numbers in the existing scope matrix: 288
-selected TypeScript files and 82 `no-base-to-string` occurrences. The measured inventory remains 305
-exact file/rule allowances. These values come from the current lint-boundary report and
-`quality/lint-boundaries.json`; no analyzer scope, rule or allowance changes.
+The complete census roster and failure controls are documented in `docs/QUALITY_PROGRAM.md` and
+`docs/TESTING.md`. The reports retain full path lists and independent final-audit validation.
+
+The September 17 documentation cross-check uses the current passing lint-boundary report: 315
+selected TypeScript files and 303 exact file/rule entries. Occurrences are 1,060 non-null
+assertions, 131 unnecessary conditions and 82 base-to-string checks; the other four counts are
+unchanged. `docs/QUALITY_PROGRAM.md` now matches the actual inventory. This update changes no rule
+or allowance.
 
 `docs/QUALITY_PROGRAM.md` documents actual scopes, lowered complexity, exact counted debt, coverage
 history, detector checks, and hosted/manual limitations. This ticket records measurements, failed
@@ -538,13 +734,14 @@ the explicit deferred mutation boundary.
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                                                                          |
-| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | `docs/QUALITY_PROGRAM.md` records each category, effective scope/rules/commands, detector and limitation, including PHPStan (TypeScript/typed ESLint), PHPMD (SonarJS/jscpd), and PHPCS (Prettier/style rules). Hosted protection was read separately and its review limitations are explicit.                                                    |
-| AC-02     | Pass   | Effective-config tests prove five SonarJS rules in JavaScript and TypeScript, actual root configuration/CSS selectors, and stronger typed defaults. The current gate covers 288 TypeScript files and exactly 305 file/rule counts; new files cannot inherit blanket exclusions. JavaScript process code remains explicitly outside type analysis. |
-| AC-03     | Pass   | Historical metric, coverage, and package ratchets reject weaker ceilings/floors, removed targets, and environment bypasses. Three isolated-Git coverage tests prove explicit-base/local-HEAD behavior and invalid-history refusal. Static/package detector controls pass without mutation tooling.                                                |
-| AC-04     | Pass   | Current delivery `2026-09-06T15-57-46-593Z-71119` passes all thirteen gates and Test validation. Hosted full audit `34039155609` passes all fifteen gates for `09d6109`, including 968 browser executions with no failures, skips or flaky results. Public guidance and the current inventory describe the actual controls and their limits.      |
-| AC-05     | Pass   | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                            |
+| Criterion | Result | Evidence                                                                                                                                                                                                                                                                                                                                    |
+| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass   | `docs/QUALITY_PROGRAM.md` records each category, effective scope/rules/commands, detector and limitation, including PHPStan (TypeScript/typed ESLint), PHPMD (SonarJS/jscpd), and PHPCS (Prettier/style rules). Hosted protection was read separately and its review limitations are explicit.                                              |
+| AC-02     | Pass   | Current effective-config and counted-rule checks cover 315 TypeScript files and 303 exact file/rule entries, with five SonarJS rules across JavaScript and TypeScript and immutable-base refusal of new/increased allowances. JavaScript process code remains explicitly outside type analysis.                                             |
+| AC-03     | Pass   | Historical metric, coverage, and package ratchets reject weaker ceilings/floors, removed targets, and environment bypasses. Three isolated-Git coverage tests prove explicit-base/local-HEAD behavior and invalid-history refusal. Static/package detector controls pass without mutation tooling.                                          |
+| AC-04     | Pass   | Delivery `2026-09-17T15-48-23-507Z-72866` passes all thirteen gates, exact-tree receipt and actual Test validation. Public quality/testing guidance matches the complete coverage roster and current analyzer inventory. Historical hosted results remain labeled as earlier evidence; final immutable program acceptance is owned by 0033. |
+| AC-05     | Pass   | Ticket 0053 remains planned and requires later explicit execution authorization. No mutation dependency, automatic command, installation, configuration, or execution was introduced; 0048 exclusions remain enforced.                                                                                                                      |
+| AC-06     | Pass   | Paired Vitest/coverage-v8 4.1.11 and the scoped `smol-toml` 1.7.1 override pass both security scans. The 2,057-test suite, 116-file coverage roster, unchanged floors, header/declaration negative controls, report schema controls and independent audit adapter all pass current fast/delivery verification.                              |
 
 ### Previous completion audit (superseded 2026-09-06)
 
@@ -556,7 +753,7 @@ type, manual-accessibility, and hosted-review limitations rather than claiming t
 
 Historical status: Complete
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-17)
 
 The effective analyzer scopes, counted typed boundaries, maintainability limits and failure
 detectors satisfy AC-01 through AC-05. The current delivery passes every required gate, and the
@@ -569,7 +766,7 @@ coverage, properties and browser/package/release evidence. JavaScript type-analy
 manual-assistive-technology limits remain explicit. No mutation tooling was installed, configured or
 run; 0053 remains planned for later authorization.
 
-Status: Complete
+Historical status: Complete
 
 Historical setup failure: the first standalone clean-unit diagnostic intentionally had no `dist/`,
 but also omitted the research preparation required by `docs/TESTING.md`. Its retained report has
@@ -577,3 +774,15 @@ three temporary-parent failures and one missing research-dependency suite. These
 setup failures, not a passing clean-unit receipt. The corrected verification uses the documented
 research preparation while asserting that `dist/` remains absent. Canonical quality commands already
 create their evidence directory and install the research dependency before unit execution.
+
+### Completion audit
+
+The patched paired Vitest tools and scoped TOML parser pass both dependency scanners and the
+complete delivery. Coverage preserves all floors and verifies the entire 116-file census in both raw
+and summary reports; the independent 115-file negative control fails. Header/default-argument and
+isolated-declaration controls retain actual-hit requirements. The final-audit adapter keeps its
+independent map/source/counter checks. Public analyzer counts now match the current
+315-file/303-entry measurement. All six criteria have direct evidence; hosted historical runs and
+manual-accessibility limits remain separate. No mutation tooling was installed or run.
+
+Status: Complete

@@ -550,11 +550,6 @@
       "count": 1
     },
     {
-      "path": "src/ui/calendar.ts",
-      "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 2
-    },
-    {
       "path": "src/ui/carousel.ts",
       "rule": "@typescript-eslint/no-base-to-string",
       "count": 1
@@ -585,48 +580,8 @@
       "count": 1
     },
     {
-      "path": "src/ui/clipboard-write.ts",
-      "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 2
-    },
-    {
-      "path": "src/ui/clipboard.ts",
-      "rule": "@typescript-eslint/no-base-to-string",
-      "count": 1
-    },
-    {
-      "path": "src/ui/clipboard.ts",
-      "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 1
-    },
-    {
-      "path": "src/ui/clipboard.ts",
-      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
-      "count": 1
-    },
-    {
-      "path": "src/ui/code-block.ts",
-      "rule": "@typescript-eslint/no-base-to-string",
-      "count": 1
-    },
-    {
-      "path": "src/ui/code-block.ts",
-      "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 2
-    },
-    {
-      "path": "src/ui/code-block.ts",
-      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
-      "count": 1
-    },
-    {
       "path": "src/ui/color-picker.ts",
       "rule": "@typescript-eslint/no-base-to-string",
-      "count": 1
-    },
-    {
-      "path": "src/ui/color-picker.ts",
-      "rule": "@typescript-eslint/no-unnecessary-condition",
       "count": 1
     },
     {
@@ -681,28 +636,13 @@
     },
     {
       "path": "src/ui/feed.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 2
-    },
-    {
-      "path": "src/ui/feed.ts",
       "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 1
-    },
-    {
-      "path": "src/ui/feed.ts",
-      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
       "count": 1
     },
     {
       "path": "src/ui/file-upload.ts",
       "rule": "@typescript-eslint/no-base-to-string",
       "count": 1
-    },
-    {
-      "path": "src/ui/file-upload.ts",
-      "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 3
     },
     {
       "path": "src/ui/form.ts",
@@ -727,11 +667,6 @@
     {
       "path": "src/ui/json-viewer.ts",
       "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 3
-    },
-    {
-      "path": "src/ui/json-viewer.ts",
-      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
       "count": 1
     },
     {
@@ -740,18 +675,8 @@
       "count": 1
     },
     {
-      "path": "src/ui/log-viewer.ts",
-      "rule": "@typescript-eslint/no-unnecessary-type-parameters",
-      "count": 1
-    },
-    {
       "path": "src/ui/menu.ts",
       "rule": "@typescript-eslint/no-base-to-string",
-      "count": 1
-    },
-    {
-      "path": "src/ui/menu.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
       "count": 1
     },
     {
@@ -761,18 +686,8 @@
     },
     {
       "path": "src/ui/menubar.ts",
-      "rule": "@typescript-eslint/no-base-to-string",
-      "count": 1
-    },
-    {
-      "path": "src/ui/menubar.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 3
-    },
-    {
-      "path": "src/ui/menubar.ts",
       "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 3
+      "count": 2
     },
     {
       "path": "src/ui/message-scroller.ts",
@@ -791,13 +706,8 @@
     },
     {
       "path": "src/ui/multi-select.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 1
-    },
-    {
-      "path": "src/ui/multi-select.ts",
       "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 3
+      "count": 1
     },
     {
       "path": "src/ui/number-field.ts",
@@ -827,7 +737,7 @@
     {
       "path": "src/ui/questionnaire.ts",
       "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 9
+      "count": 7
     },
     {
       "path": "src/ui/questionnaire.ts",
@@ -897,7 +807,7 @@
     {
       "path": "src/ui/stepper.ts",
       "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 8
+      "count": 6
     },
     {
       "path": "src/ui/stepper.ts",
@@ -958,11 +868,6 @@
       "path": "src/ui/transfer-list.ts",
       "rule": "@typescript-eslint/no-base-to-string",
       "count": 1
-    },
-    {
-      "path": "src/ui/transfer-list.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 13
     },
     {
       "path": "src/ui/tree.ts",
@@ -1072,11 +977,6 @@
     {
       "path": "test/inspection.test.ts",
       "rule": "@typescript-eslint/no-unnecessary-condition",
-      "count": 1
-    },
-    {
-      "path": "test/jquery-mobile-migration-contract.test.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
       "count": 1
     },
     {

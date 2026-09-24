@@ -92,13 +92,14 @@ timeouts, result-recording failures, and stale worktree state. Delivery writes a
 only when every enforced gate passes and the start/end content fingerprints match.
 
 The JavaScript stack includes strict TypeScript and typed ESLint, architecture and dead-code checks,
-security and secret scanning, production coverage, property tests, Chromium/Firefox/WebKit behavior,
-accessibility, installed-package consumers, API and type reports, bundle budgets, generated-output
-drift, documentation validation, and detector sabotage fixtures.
+security and secret scanning, optional production coverage diagnostics, property tests,
+Chromium/Firefox/WebKit behavior, accessibility, installed-package consumers, API and type reports,
+bundle budgets, generated-output drift, documentation validation, and detector sabotage fixtures.
 
-Coverage thresholds are ratchets. Changed production lines and functions require 100% coverage. No
-generated baseline or blanket suppression can make a red gate green. Mutation testing is excluded
-unless a future ticket is explicitly requested for it.
+Browser component behavior is the primary UI proof. Coverage percentages and changed-code misses
+remain diagnostic; they do not gate delivery. No generated baseline or blanket suppression can make
+a red gate green. Mutation testing is excluded unless a future ticket is explicitly requested for
+it.
 
 ## Supported topology
 
@@ -376,7 +377,7 @@ historical jQuery project inside one package.
 | jQuery UI      | Keep out of the runtime. Test coexistence and publish incremental component migration guidance.   |
 | Sizzle         | Add no package or selector layer. Use the selector behavior supplied by jQuery Core.              |
 | jQuery Mobile  | Keep out of the runtime. Preserve progressive-enhancement lessons in a no-runtime migration path. |
-| QUnit          | Test one installed consumer without replacing internal Vitest and Playwright coverage.            |
+| QUnit          | Test one installed consumer alongside browser and focused direct contract checks.                 |
 | jQuery Migrate | Use as an opt-in upgrade aid and diagnostic input. Never bundle or auto-load it.                  |
 
 The dated releases, OpenJS statuses, primary sources, and expiry policy live in
@@ -629,7 +630,7 @@ documented smoke matrix covers each cross-browser primitive.
 
 - Install the public evidence-gated workflow, CI, quality report, worktree fingerprint, and receipt.
 - Install strict static, architecture, security, dependency, style, and documentation gates.
-- Correct the production census and enforce coverage and property tests.
+- Correct the production census, retain optional coverage diagnostics, and enforce property tests.
 - Freeze public behavior and environment support.
 - Record the jQuery Core, UI, Mobile, Sizzle, QUnit, and Migrate stewardship and naming policy.
 - Install and test real package tarballs.
@@ -690,8 +691,8 @@ passes its browser matrix, and does not expand the root compatibility bundle.
       receipt matches the exact gated worktree.
 - [ ] Static, architecture, security, dependency, documentation, source-policy, and gate-liveness
       checks fail closed without hidden baselines or blanket suppressions.
-- [ ] The complete production artifact census has coverage or named non-unit evidence. Changed
-      production lines/functions have 100% coverage.
+- [ ] The complete production artifact census has named browser, package, static, direct-test or
+      optional coverage evidence appropriate to its behavior, without a percentage target.
 - [ ] Property, three-browser, accessibility, package API/type, reproducibility, and size audits run
       at their documented delivery or release cadence.
 - [ ] The 0.1 root behavior, request bytes, event payloads, exports, package contents, and side

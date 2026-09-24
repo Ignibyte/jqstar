@@ -58,6 +58,21 @@ describe("jQuery Star Select", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without opening the nearby select", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Select application did not start.");
+    await expect(
+      app.run("ui.select.open", { element: trigger(), args: [trigger()] }),
+    ).rejects.toThrow('Select target did not match data-jqs="select"');
+    expect(content().hidden).toBe(true);
+    await app.run("ui.select.open", { args: [root()] });
+    expect(content().hidden).toBe(false);
+    await app.run("ui.select.close", { args: ["#select"] });
+    expect(content().hidden).toBe(true);
+    await app.run("ui.select.open", { element: trigger() });
+    expect(content().hidden).toBe(false);
+  });
+
   it("generates combobox and listbox anatomy while retaining the native form value", () => {
     expect(control().dataset.enhanced).toBe("true");
     expect(control().hidden).toBe(true);

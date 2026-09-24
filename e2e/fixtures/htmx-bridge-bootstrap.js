@@ -8,6 +8,15 @@ if (!version) throw new Error("The htmx bridge fixture requires an explicit vers
 if (!htmx || typeof htmx !== "object") throw new Error("The htmx host did not load.");
 
 const installed = installStarCore($);
+if (new globalThis.URL(import.meta.url).searchParams.get("backend") === "1") {
+  const { datastarPlugin } = await import("/interop/assets/jqstar/datastar.js");
+  installed.star.use(datastarPlugin);
+  window.__interopBackend = installed.star;
+}
+if (new globalThis.URL(import.meta.url).searchParams.get("ui") === "1") {
+  const { uiPlugin } = await import("/interop/assets/jqstar/ui.js");
+  window.__interopUI = installed.star.use(uiPlugin);
+}
 const bridge = installed.star.use(createHtmxBridge({ $, htmx, version }));
 for (const root of document.querySelectorAll("[data-jqs]")) $(root).star();
 

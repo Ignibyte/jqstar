@@ -20,7 +20,9 @@ standalone server.
 | Command                           | Purpose                                                           |
 | --------------------------------- | ----------------------------------------------------------------- |
 | `npm run demo`                    | Start the jQStar website, Component Lab, and proof backend.       |
-| `npm run test:unit`               | Run Vitest unit and integration tests.                            |
+| `npm test`                        | Run the required fast Chromium Component Lab browser suite.       |
+| `npm run test:unit`               | Optionally run Vitest unit and integration tests directly.        |
+| `npm run test:browser:components` | Run the fast Chromium Component Lab browser suite.                |
 | `npm run test:e2e`                | Run browser behavior and accessibility tests.                     |
 | `npm run test:webmcp:native`      | Run zero-mock WebMCP proof in flagged Chromium.                   |
 | `npm run typecheck`               | Check runtime and registry block TypeScript.                      |
@@ -37,7 +39,7 @@ standalone server.
 | `npm run quality:static:delivery` | Add local security and external-tool sabotage gates.              |
 | `npm run quality:static:self`     | Prove every custom source detector and scope selector.            |
 | `npm run quality:census`          | Verify every operated artifact has exactly one evidence class.    |
-| `npm run test:coverage`           | Enforce global, subsystem, and 100% changed-code coverage.        |
+| `npm run test:coverage`           | Collect optional coverage diagnostics without a score target.     |
 | `npm run test:property`           | Run deterministic properties with the committed replay seed.      |
 | `npm run test:property:audit`     | Run an acknowledged random property seed and record it.           |
 | `npm run test:quality:self`       | Prove coverage, property, and census detectors fail red.          |
@@ -54,8 +56,8 @@ standalone server.
 3. Keep runtime behavior generic. Put application-specific orchestration in a registry block.
 4. Preserve native semantics and form behavior before adding custom state.
 5. Treat stable data attributes, named actions, events, and TypeScript types as public API.
-6. Add focused tests with the code. Use browser tests for keyboard, responsive, server, or
-   accessibility behavior that jsdom cannot prove.
+6. Add browser component checks for observable UI behavior. Add focused direct tests for parser,
+   protocol, package or failure contracts that browser checks cannot efficiently prove.
 7. Run the smallest relevant test during iteration, then `npm run quality:fast` before leaving Code.
 8. Run `npm run quality:delivery` before closing Test. Do not reuse its result after editing a gated
    file.
@@ -71,6 +73,11 @@ grammar metadata has its own chunk. The separate UMD build remains the compatibi
 Terser's function-declaration hoisting, browser target, sourcemaps and explicit private-property
 allowlist remain in place. Package checks measure complete installed consumer graphs and the tarball
 against the existing raw, gzip, Brotli and packed-size limits.
+
+The JavaScript build stores 30 repeated source-map inputs once under `dist/sources/` and points the
+corresponding maps at those packaged files. The generated manifest records each exact source digest
+and reference count. Package quality verifies the extracted tarball's paths and bytes before running
+installed consumers; keep this step after both Vite builds when changing `build:js`.
 
 ## Agent-content authoring
 
@@ -99,8 +106,8 @@ Quality runs keep their source scope, logs, JSON report, and any receipt in `.gi
 files are local evidence and do not dirty the worktree. The report lists every configured gate in a
 stable order, including conditional gates that were skipped.
 
-Coverage and property gates write JSON evidence into the active run's `evidence/` directory.
-Standalone commands use `test-results/quality/`, while standalone coverage detail also uses
+The optional coverage command and property gates write JSON evidence into `evidence/`. Standalone
+commands use `test-results/quality/`, while standalone coverage detail also uses
 `coverage/quality/`. Both locations are transient and ignored. Coverage always deletes its old
 detail before running. To replay a property failure, pass the recorded seed and path, for example:
 
@@ -182,7 +189,8 @@ whether the run is green or red.
 - Add the source recipe under `registry/components/`.
 - Add the registry entry and dependencies to `registry.json`.
 - Document its contract in `README.md` and `docs/COMPONENT_ARCHITECTURE.md`.
-- Add unit behavior tests and Playwright interaction/accessibility proof.
+- Add Playwright behavior and accessibility checks; add direct tests for non-UI contracts when
+  useful.
 
 ## Adding a server-driven block
 
@@ -192,8 +200,8 @@ whether the run is green or red.
 - Send typed signal payloads with `$.star.get` or another backend action.
 - Generate SSE with the official Datastar SDK.
 - Patch narrow stable targets and make replacement markup safe to enhance repeatedly.
-- Cover the action module with a mocked SDK response, the endpoint with server tests, and the full
-  workflow with Playwright.
+- Cover the full workflow with Playwright. Add focused endpoint or SDK contract tests when the
+  browser cannot observe the failure or protocol boundary.
 
 ## Private resource research dependency
 

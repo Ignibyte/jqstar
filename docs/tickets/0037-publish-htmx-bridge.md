@@ -1,14 +1,121 @@
 ---
 id: 0037
 title: Publish the htmx lifecycle bridge
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-17
 ---
 
 # 0037: Publish the htmx lifecycle bridge
 
 ## Plan
+
+Owner 0016 will add a separate `nested=1` actual-host backend mode after owner 0006's plain
+application-island correction. Verify child-only JSON/HTML/SDK SSE actions and isolated outer state
+before and after real htmx inner swap on both pinned versions and three engines. Retain the
+single-app control and before-native-removal check; this remains a common-matrix slice.
+
+Owner 0016 plans an opt-in actual-host backend slice for generic JSON/HTML and official-SDK Datastar
+SSE before and after htmx replacement. This ticket will record the six pinned htmx cases and
+no-bridge timing negative while retaining AC-10 for the rest of the common matrix.
+
+Owner 0016 plans an active Resizable pointer-session host slice for both pinned htmx versions in all
+three desktop engines. This owner will record its six cases and no-bridge timing negative; AC-10
+stays open for the remaining common matrix.
+
+### Actual-host UI Countdown continuation (2026-09-23)
+
+Owner 0016 now plans a separate Message Scroller observer/listener slice over both pinned htmx
+versions and all three desktop engines. This ticket will record its six host cases and retain AC-10
+open for the rest of the common matrix.
+
+The six htmx Message Scroller cases pass. The no-bridge 2.0.0 Chromium diagnostic fails the
+before-native-removal observer/listener assertion after the host removes the root. The 54-case
+combined baseline and UI selection passes across all three engines; AC-10 remains open.
+
+The exact 929-file `npm run check` report `2026-09-23T06-22-37-775Z-4099/report.json` passes all
+1,666 browser cases, including these six, but remains red on inherited coverage, three fixed package
+sizes and package-budget detector isolation. There is no delivery receipt.
+
+The tightened connected-to-detached assertion also passes the combined 54-case host selection. The
+tightened snapshot's `npm run check` report `2026-09-23T07-05-16-938Z-98065/report.json` passes all
+1,666 browser cases, including htmx, but repeats the inherited coverage, three fixed-size and
+detector failures. AC-10 remains open without a receipt.
+
+Owner 0016 opens an opt-in actual-host UI fixture and twelve-case browser selection. Its read-only
+current-dist htmx probe passes 2.0.0/2.0.10 in all three desktop engines: Countdown timer cleanup
+occurs before native inner-swap removal, incoming enhancement starts a new timer and the preserved
+neighbor retains node/value identity. Omitting the bridge lets the host swap but fails the
+before-removal timer assertion. Owner 0016 owns the shared fixture/spec; this ticket records
+htmx-version evidence without closing AC-10 or replacing the remaining UI/resource/JSON/SSE host
+matrix. Keep the approved versions, bridge behavior and budgets fixed.
+
+### Disposal aggregation refinement (2026-09-17)
+
+Vitest 4 maps the per-operation catch callback in disposal as an uncalled changed function. The
+failure helper already contains adapter rejection and resolves normal terminal work. Keep the
+disposal boundary's containment of unexpected rejected promises, but express it with
+`Promise.allSettled` over the captured operations. Preserve asynchronous memoization, attempts for
+all operations, the final frozen report and repeated promise identity. This replaces the equivalent
+`Promise.all` plus individual rejection handlers without inventing an unreachable error test or
+removing failure containment. Existing public bridge disposal and observer-error cases must pass,
+followed by coverage, package budgets and the full delivery. Shared UI ownership remains open.
+
+### Additional coexistence finding (2026-09-08)
+
+The current disposal correction passes its complete delivery. Keep this owner open for AC-10:
+`ui-removal-contract-before.json` confirms that Countdown keeps its interval after public render
+removal until a detached tick, and after kernel disposal while the node remains connected. The
+shared interoperability matrix promises controller cleanup before removal. Existing Toggle-based
+coexistence evidence cannot establish that timer/resource guarantee. Owner 0006 must correct generic
+UI ownership and owner 0016 must extend the common contract evidence, followed by both actual host
+matrices. No host-version or bridge-mutation expansion is authorized by this finding.
+
+### Reopening decision: disposal before host settlement (2026-09-08)
+
+Ticket 0033's current-source public bridge probe disposes immediately after the after-swap event,
+then awaits core enhancement. Disposal and idle remain pending because the bridge has removed the
+host-settle listener required to finish the operation. Sending the later host-settle event cannot
+recover it. Evidence: `bridge-disposal-before.json` in the current program-audit resume directory.
+Reopen AC-13 and AC-14; earlier completion is historical. Owner 0037 implements this correction.
+
+Disposal will memoize its report before settling captured operations. Already-settling core work
+keeps its existing promise and must finish without a second adapter settlement. Successful core
+commit after disposal terminates the bridge operation as failed-after-mutation without requiring
+another host event. A core commit already complete but awaiting host settlement also terminates
+without asking its settled adapter to fail again. Retain original failure behavior for prepared and
+removing transactions, and classify failures after actual mutation accordingly. Clear listeners and
+prepared correlations once; preserve independent host/kernel ownership, bounded observations, exact
+public event fields and memoized repeated reports. No synthetic host event or network work is added.
+
+A host swap failure reported from the externally-mutated observation can start adapter failure
+before the normal commit call resumes. Treat an already-settling operation as ineligible for commit,
+so that path has one failure settlement and no second-adapter error. Add an observer-triggered
+native host failure case to exercise the after-mutation failure branch and retain its negative
+result.
+
+The first isolated ESM build is 18,080 bytes against the unchanged 18,000-byte limit. Remove the
+disposal mapper's duplicate settling branch because the failure helper already returns that same
+completion promise, combine its terminal/settling guard, and copy observation snapshots directly
+without a redundant identity callback. These preserve all results and ownership; measure again
+without increasing any budget. The full temporary type build emitted declarations but API Extractor
+could not use the linked checkout's file-shaped .git path; verify the two affected API reports with
+an isolated temporary report directory, then run the normal complete build after root integration.
+
+The first reduction leaves ESM at 18,041 bytes. The no-swap branch already sets its request flag
+true, then queues work whose only possible write sets the same flag true again. There is no reset of
+that field on the same record. Remove this redundant queued callback and its temporary capture of
+the host event/request; preserve the existing no-swap and cancellation tests and exact host trace.
+
+Planned files: `src/htmx.ts`, shared new `test/bridge-disposal-lifecycle.test.ts`,
+`docs/INTEROPERABILITY.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/TESTING.md` and this ticket. Cover
+direct and observer-triggered disposal while commit is pending and after commit before host
+settlement, settling failure/cancellation, repeated promise identity, idle barriers, independent
+operations and ignored later host events. Keep the prepared-disposal controls and original negative
+results. Run focused bridge/render tests, types/lint/changed-code coverage, fixed package/API checks
+and current fast/Code/full/Test/Document gates. Work in the isolated checkout during root
+verification and revalidate root Plan before selective integration. No mutation tooling or
+publication is authorized.
 
 ### Problem
 
@@ -187,7 +294,7 @@ remains htmx-owned.
       settle/boost/history/focus/scroll/indicator/extensions/scripts/mutation/events. Spies prove no
       second request, replay, ajax/process/trigger renderer, target/content rewrite, history/focus/
       scroll write, or synthetic host event.
-- [x] [AC-10] Root/modular, behavior/declarative, generic JSON/HTML, official-SDK Datastar, UI,
+- [ ] [AC-10] Root/modular, behavior/declarative, generic JSON/HTML, official-SDK Datastar, UI,
       jQuery, native GET/non-GET forms including validation/submitter/file, focus,
       JavaScript-disabled, and disposal coexistence pass across repeated region/boost/OOB/history
       flows.
@@ -274,6 +381,27 @@ invariants and final connectivity. The bridge never teaches core htmx selectors 
 
 ## Code
 
+Owner 0016 extends the opt-in backend fixture and spec with `nested=1`; owner 0006 scopes plain
+declarative application islands. The htmx inner request carries the mode while the outer region
+application remains installed. The single-app route, public bridge API and supported version range
+stay unchanged.
+
+The September 17 refinement uses `Promise.allSettled` for captured disposal work, retaining
+containment and the memoized frozen report. The shared bridge lifecycle and htmx suites pass within
+the 238-case focused correction run. Current coverage, package and full delivery remain required;
+the independent generic UI ownership finding is still open.
+
+Root reopening Plan passed before selective integration on 2026-09-08. The six shared source, test
+and guide files match the verified isolated correction. Normal root build and current quality
+verification follow; the previous green delivery does not cover this correction.
+
+The isolated correction memoizes disposal before settling captured work. Turbo reuses its existing
+idle barrier for settling operations; htmx ends disposed commits without another host event and
+closes already-completed adapters directly. Shared lifecycle tests cover direct/observer disposal,
+terminal phase, repeated promise identity and delayed-renderer controls. The interoperability,
+ownership and testing guides are updated. Public signatures and host-version boundaries are
+unchanged.
+
 ### Changed-file ledger
 
 | File                                         | Purpose                                                               |
@@ -342,6 +470,94 @@ invariants and final connectivity. The bridge never teaches core htmx selectors 
 
 ## Test
 
+Six nested htmx backend cases pass across 2.0.0/2.0.10 and Chromium, Firefox and WebKit. They check
+isolated outer state, child-only request/action handling, preservation and outgoing child
+destruction before native removal. The 24-case backend and 90-case combined host selections pass.
+Named-component explicit boot and full common-matrix/delivery acceptance remain open.
+
+The nested 2.0.0 no-bridge Chromium diagnostic renders but leaves its outgoing child live after
+native removal. Full `npm run check` report `2026-09-23T13-35-36-553Z-47216/report.json` binds a
+matching 932-file fingerprint and passes 1,702 browser cases across eight projects, 558 per desktop
+engine. Coverage, three fixed package-size checks and package-budget detector isolation remain red;
+no delivery receipt follows.
+
+The opt-in generic JSON/HTML and official-SDK Datastar SSE selection passes both pinned htmx
+versions in Chromium, Firefox and WebKit, six cases. The combined host selection passes 78 cases.
+The 2.0.0 no-bridge Chromium diagnostic renders but fails outgoing application destruction before
+native removal. AC-10 remains open for named-component explicit boot, async/error paths and the full
+common matrix. The 931-file `npm run check` report `2026-09-23T12-24-53-903Z-32528/report.json`
+passes all 1,690 browser cases, including these six htmx cases, but fails 96 changed-code coverage
+checks, three fixed package sizes and package-budget detector isolation. There is no delivery
+receipt.
+
+The active Resizable pointer selection passes htmx 2.0.0 and 2.0.10 in Chromium, Firefox and WebKit,
+six cases. The 66-case combined host selection passes. The 2.0.0 Chromium no-bridge diagnostic
+renders but fails the before-native-disconnect listener/capture assertion. An incoming trusted drag
+works and the preserved neighbor remains identical. Full delivery on this snapshot and the remaining
+common coexistence matrix are still required for AC-10.
+
+The 930-file `npm run check` report `2026-09-23T08-11-31-064Z-12902/report.json` passes all 1,678
+browser cases, including these six htmx cases, but fails inherited changed-code coverage, three
+fixed package-size limits and package-budget detector isolation. No delivery receipt follows.
+
+The opt-in actual-host UI Countdown selection owned by 0016 passes 2.0.0 and 2.0.10 in Chromium,
+Firefox and WebKit, six cases total. The matching no-bridge negative catches timer cleanup occurring
+after native inner-swap removal despite a successful host swap. Incoming UI and the preserved
+neighbor behave correctly in the positive selection. The ordinary host baseline passes 30 combined
+Turbo/htmx cases. The exact 928-file delivery run `2026-09-23T05-27-52-448Z-6211/report.json` passes
+all 1,654 browser cases, including this selection, but fails inherited changed-code coverage, three
+fixed package sizes and package-budget detector isolation. AC-10 remains open for the full common UI
+and generic/Datastar matrix.
+
+| Command                | Result | Evidence                                                                                                                                 |
+| ---------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` | Pass   | `2026-09-17T15-11-06-759Z-44572`: all six gates and all 2,035 cases pass. Actual Code validation passes before these phase/ledger edits. |
+
+| Command                                                                    | Result | Evidence                                                                                                                                                                                           |
+| -------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check` / `quality:delivery`                                       | Pass   | `2026-09-08T17-27-26-764Z-47398/report.json`: all 13 gates, 1,950 unit tests, 487 browser cases, 13 package checks and seven release checks; matching 877-file fingerprint and authorized receipt. |
+| `npm run ticket:validate -- --phase test` with this ticket and that report | Pass   | Executed before tracked edits; `bridge-test-0037.log`.                                                                                                                                             |
+
+Current correction delivery passes coverage, properties, static checks, browser execution and
+detector self-tests. Its fingerprint is
+`f6e6ec7b3a6db152491b0806b13c356f3daf94ef18e67d07fe3030692a613725`. Earlier failures remain
+recorded. The separate final source-pass UI batch is excluded from this run.
+
+| Command                                                                    | Result | Evidence                                                                                                                                                                              |
+| -------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                     | Pass   | `2026-09-08T17-24-34-188Z-34093/report.json`: all six gates and 1,950 unit tests on matching 877-file fingerprint `e0dbec97889fffe1524f635645c70f8be5ee970440b1b17700998d9e423924a5`. |
+| `npm run ticket:validate -- --phase code` with this ticket and that report | Pass   | Actual command passed before tracked edits; `bridge-code-0037.log`.                                                                                                                   |
+
+Current complete delivery follows. Both earlier fast failures are retained: the circular Mobile
+phase requirement, then the removed assertion's obsolete allowance and one ticket spelling word. The
+obsolete one-use allowance is deleted; no limit increases. Current full Test closure remains
+required for this correction.
+
+Fast `2026-09-08T17-16-43-355Z-7070` fails one of 1,950 unit cases: the Mobile migration test
+requires these reopened bridge owners to be done before their verification can finish. All 1,949
+other units and the five other gates pass. Owner 0040 reopens the contract test to verify its
+completed navigation decision and current exports without conflating a correction phase with a
+revoked approval. This failed report grants no Code or Test closure.
+
+The final isolated bridge set passes 54 cases across four suites. The tenth case reproduces an extra
+adapter-settlement error when a native host failure arrives from the htmx post-mutation observer;
+the commit guard fixes it. Raw JSON coverage and the unchanged repository evaluator cover every
+changed line and function in both bridge modules (`bridge-disposal-changed-coverage.json`). Current
+test types and focused lint pass. ESM sizes are htmx 17,969 and Turbo 8,156 bytes against fixed
+18,000/8,192 limits; CJS sizes also pass. Both affected API reports match after declaration build
+and isolated API extraction. Earlier size, configuration, missing raw-report and API-directory
+failures remain retained. Full normal root build and complete delivery remain required after
+selective integration; these isolated checks grant no receipt.
+
+Owner Plans pass before source edits, including the Turbo refinement to reuse its existing idle
+barrier. `bridge-disposal-negative.log` records five failures and four controls across nine new
+cases. `bridge-disposal-barrier-focused.log` passes all 53 cases across both bridges, render adapter
+and new lifecycle tests. Test types pass with the repository's actual configuration; an initial
+command named a nonexistent configuration and is retained in `bridge-disposal-types.log`. Focused
+lint passed before the final Turbo barrier simplification; current lint/coverage/build and root
+integration/fast/full verification remain required. All logs are under the current program-audit
+resume directory. This isolated result grants no current root Test closure.
+
 | Command                                                                                                                                                                                          | Result        | Evidence                                                                                                                                                               |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run ticket:validate -- --phase plan --ticket docs/tickets/0037-publish-htmx-bridge.md`                                                                                                      | Pass          | Activation, imported manifest, mapping IDs, version boundaries, and design validated before Code.                                                                      |
@@ -391,6 +607,9 @@ invariants and final connectivity. The bridge never teaches core htmx selectors 
 
 ## Document
 
+INTEROPERABILITY, BACKEND, TESTING, PROGRAM_AUDIT and owner/umbrella tickets record this additional
+nested htmx slice and its limits.
+
 ### Documentation changed
 
 - `README.md` documents inert htmx bridge import, explicit installation, the exact supported range,
@@ -406,23 +625,28 @@ invariants and final connectivity. The bridge never teaches core htmx selectors 
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                  |
-| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | Activation evidence pins manifest/render digests, aliases, integrity values, nine mapping IDs, prerequisites, version policy, and passing Plan validation.                                |
-| AC-02     | Pass   | `package.json`, generated declarations/API report, package smoke, and installed consumers prove inert ESM/CommonJS resolution, types, and explicit plugin installation.                   |
-| AC-03     | Pass   | Actual htmx 2.0.0/2.0.10 fixtures pass every approved swap, OOB, boost, history, form, cancellation, no-content, and failure path in Chromium, Firefox, and WebKit.                       |
-| AC-04     | Pass   | Focused lifecycle tests and actual host traces prove no cleanup at intent, cleanup at the true host seam, explicit incoming commit, enhancement, and one terminal result.                 |
-| AC-05     | Pass   | Focused cancellation, no-swap, malformed boundary, host error, cleanup failure, commit failure, and lost-preservation tests prove phase-correct settlement without rollback or replay.    |
-| AC-06     | Pass   | Unit and three-browser identity assertions cover valid, unmatched, duplicate, nested, moved, disconnected, and lost `data-jqs-preserve`/`hx-preserve` roots plus host-owned focus.        |
-| AC-07     | Pass   | Cleanup-dedupe tests, OOB browser cases, overlap rejection, and generated disjoint completion orders prove exact-once removal and distinct non-overlapping operations.                    |
-| AC-08     | Pass   | Repeated actual swaps/restores assert one incoming application, exact outgoing destruction, preserved identity, and no duplicate owned behavior.                                          |
-| AC-09     | Pass   | Browser network/event assertions and public-method spies prove htmx retains request, form, redirect, history, focus, processing, event, and DOM authority.                                |
-| AC-10     | Pass   | Unit, full browser, package, self-hosted, and release lanes cover modular/root, declarative, JSON/HTML, Datastar, UI, jQuery, native forms, no-JavaScript, and disposal coexistence.      |
-| AC-11     | Pass   | Focused, generated, and browser assertions require exact phase/outcome IDs, separate boundary operations, a 256-record cap, frozen records, and sensitive-field omission.                 |
-| AC-12     | Pass   | Factory/plugin tests reject missing or malformed capabilities, mismatched/malformed/prerelease/out-of-range versions, duplicates, unsupported swaps, and invalid targets before mutation. |
-| AC-13     | Pass   | Prepared, active, settling, terminal, and repeated-disposal tests prove memoized reports, listener/correlation release, settled barriers, and independent live htmx/kernel ownership.     |
-| AC-14     | Pass   | Delivery run `2026-09-04T14-21-53-303Z-6305` passes all 12 lanes; package evidence proves API/types/formats, optional peer, host-code isolation, and artifact/consumer size ceilings.     |
+| Criterion | Result  | Evidence                                                                                                                                                                                                                           |
+| --------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass    | Activation evidence pins manifest/render digests, aliases, integrity values, nine mapping IDs, prerequisites, version policy, and passing Plan validation.                                                                         |
+| AC-02     | Pass    | `package.json`, generated declarations/API report, package smoke, and installed consumers prove inert ESM/CommonJS resolution, types, and explicit plugin installation.                                                            |
+| AC-03     | Pass    | Actual htmx 2.0.0/2.0.10 fixtures pass every approved swap, OOB, boost, history, form, cancellation, no-content, and failure path in Chromium, Firefox, and WebKit.                                                                |
+| AC-04     | Pass    | Focused lifecycle tests and actual host traces prove no cleanup at intent, cleanup at the true host seam, explicit incoming commit, enhancement, and one terminal result.                                                          |
+| AC-05     | Pass    | Focused cancellation, no-swap, malformed boundary, host error, cleanup failure, commit failure, and lost-preservation tests prove phase-correct settlement without rollback or replay.                                             |
+| AC-06     | Pass    | Unit and three-browser identity assertions cover valid, unmatched, duplicate, nested, moved, disconnected, and lost `data-jqs-preserve`/`hx-preserve` roots plus host-owned focus.                                                 |
+| AC-07     | Pass    | Cleanup-dedupe tests, OOB browser cases, overlap rejection, and generated disjoint completion orders prove exact-once removal and distinct non-overlapping operations.                                                             |
+| AC-08     | Pass    | Repeated actual swaps/restores assert one incoming application, exact outgoing destruction, preserved identity, and no duplicate owned behavior.                                                                                   |
+| AC-09     | Pass    | Browser network/event assertions and public-method spies prove htmx retains request, form, redirect, history, focus, processing, event, and DOM authority.                                                                         |
+| AC-10     | Pending | Current suites pass their covered flows, but the public Countdown timer probe contradicts the shared UI cleanup promise. Generic owner 0006/common contract 0016 correction and actual host matrix verification remain required.   |
+| AC-11     | Pass    | Focused, generated, and browser assertions require exact phase/outcome IDs, separate boundary operations, a 256-record cap, frozen records, and sensitive-field omission.                                                          |
+| AC-12     | Pass    | Factory/plugin tests reject missing or malformed capabilities, mismatched/malformed/prerelease/out-of-range versions, duplicates, unsupported swaps, and invalid targets before mutation.                                          |
+| AC-13     | Pass    | Current shared disposal lifecycle cases and `2026-09-08T17-27-26-764Z-47398/report.json` prove memoized disposal, settled enhancement barriers, one terminal outcome, listener release and independent live host/kernel ownership. |
+| AC-14     | Pass    | Current delivery `2026-09-08T17-27-26-764Z-47398` passes all 13 gates, including package/API/type/graph/size checks and both host boundary suites in three engines. No budget increases or mutation tooling.                       |
+
+### Historical completion audit
+
+Historical status: Complete
 
 ### Completion audit
 
-Status: Complete
+The disposal correction has current full evidence. AC-10 remains open for the confirmed common UI
+resource cleanup gap; this owner is not ready for Document closure.

@@ -24,7 +24,9 @@ export function createCustomStorageAdapter(
     run: () => Value,
   ): Value => {
     check();
-    return attempt(code, run);
+    const value = attempt(code, run);
+    check();
+    return value;
   };
   return Object.freeze({
     kind: source.kind,
@@ -70,6 +72,10 @@ export function createCustomStorageAdapter(
               }),
             );
             if (typeof release !== "function") fail("contract");
+            if (!active) {
+              attempt("cleanup", release);
+              fail("disposed");
+            }
             let subscribed = true;
             return () => {
               if (!subscribed) return;

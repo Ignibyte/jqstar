@@ -96,19 +96,36 @@ Back up the database before each application upgrade and on a regular schedule. 
 take a consistent online backup without copying a live WAL file by itself:
 
 ```sh
-sudo install -d -m 0750 /var/backups/jqstar
+sudo install -d -o jqstar -g jqstar -m 0750 /var/backups/jqstar &&
 sudo -u jqstar sqlite3 /var/lib/jqstar/projects.sqlite ".backup '/var/backups/jqstar/projects-$(date +%F).sqlite'"
 ```
 
-Test restores away from production. To restore the service database, stop the process, preserve the
-failed files, copy the chosen backup into place, restore ownership, and start the service:
+Test restores away from production. Replace `YYYY-MM-DD` with the chosen backup date before running
+the following block. Stop any other database users first. The block checks the backup, stops the
+service and preserves the existing database with its optional WAL, SHM and journal files under their
+original names in a new private directory. Keeping these files together preserves the failed state
+and prevents an old WAL from being applied to the restored backup. The shell stops on any failed
+step, leaving the service stopped if preservation or installation fails. Resolve that failure before
+restarting; the archive path is printed for recovery.
 
 ```sh
-sudo systemctl stop jqstar
-sudo mv /var/lib/jqstar/projects.sqlite /var/lib/jqstar/projects.sqlite.failed
-sudo install -o jqstar -g jqstar -m 0640 /var/backups/jqstar/projects-YYYY-MM-DD.sqlite /var/lib/jqstar/projects.sqlite
-sudo systemctl start jqstar
+sudo sh -eu <<'RESTORE'
+backup_path=/var/backups/jqstar/projects-YYYY-MM-DD.sqlite
+test -f "$backup_path"
+test -r "$backup_path"
+systemctl stop jqstar
+jqstar_failed_dir=$(mktemp -d /var/lib/jqstar/failed.XXXXXX)
+printf 'Preserving database files in %s\n' "$jqstar_failed_dir"
+for suffix in '' -wal -shm -journal; do
+  database_file="/var/lib/jqstar/projects.sqlite$suffix"
+  if test -e "$database_file"; then
+    mv "$database_file" "$jqstar_failed_dir/"
+  fi
+done
+install -o jqstar -g jqstar -m 0640 "$backup_path" /var/lib/jqstar/projects.sqlite
+systemctl start jqstar
 curl --fail --silent http://127.0.0.1:4173/health
+RESTORE
 ```
 
 ## Public traffic

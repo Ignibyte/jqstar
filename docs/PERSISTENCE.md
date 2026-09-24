@@ -50,6 +50,11 @@ Options are normalized at attachment. Later mutation of nested configuration doe
 selected adapter metadata, codec method identities, migration map, timing, or limits. Callback
 closures and custom adapter implementations remain the caller's responsibility.
 
+If a codec, migration, clock or adapter callback disposes the kernel during attachment, setup stops
+before another callback or hydration commit. Starting an application during that setup also rejects
+the attachment. Any subscription cleanup returned after disposal runs immediately; the failed
+attachment is not registered. Disposal of unfinished setup does not flush provisional state.
+
 ## Adapters and ownership
 
 | Adapter                               | Persistence and sharing                                                                                                     |
@@ -165,10 +170,13 @@ including changes whose store notifications have not run yet.
 Revisions compare the Lamport counter first and origin string second. A writer increments beyond
 every revision it has observed. An external winner applies one store transaction and its resulting
 notification does not echo the same value. Duplicate revisions do not rerender. If an older write
-lands last in storage, an active participant can repair it with the accepted newer envelope.
-Revision comparisons are independent of wall-clock skew. Origins contain 128 random bits from the
-kernel window's `crypto.getRandomValues()`. Persistence does not require the secure-context-only
-UUID API.
+lands last in storage, an active participant can repair it with the accepted newer envelope. An
+adapter read may synchronously deliver another update or trigger recovery. Repair uses accepted
+state after that read returns, so it cannot write an earlier captured revision over a newer winner.
+Recovery from missing or expired storage clears accepted revision metadata while preserving live
+values; an interrupted repair does not recreate the removed envelope. Revision comparisons are
+independent of wall-clock skew. Origins contain 128 random bits from the kernel window's
+`crypto.getRandomValues()`. Persistence does not require the secure-context-only UUID API.
 
 The selected payload is one last-write-wins unit. Concurrent edits can lose fields changed by
 another page. Split unrelated preferences into separate stores when they need separate conflict
@@ -182,6 +190,16 @@ subscription, timer, storage listener, and owned adapter. Set it to false to dis
 Every cleanup is attempted even after a failure. Repeated disposal returns the same report. Kernel
 disposal runs attachment services before shared stores become terminal and includes persistence
 cleanup failures in the kernel's disposal error report.
+
+Disposal during a persistence callback also stops the interrupted retry, reset or flush. A returned
+subscription cleanup still runs once if acquisition finishes after disposal. Later status listeners
+stop when an earlier listener disposes the attachment, and resumed work preserves the terminal
+status and disposal report. Disposal may complete its own requested final flush; it does not resume
+the interrupted operation.
+
+Facade disposal clears its attachment registrations before invoking their cleanup and attempts the
+default memory adapter's cleanup even if an attachment throws during reentrant disposal. Failures
+remain in the kernel's aggregate disposal error; one failing attachment cannot skip later cleanup.
 
 ## Status and observations
 

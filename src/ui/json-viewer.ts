@@ -1,18 +1,33 @@
+import { isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { JSONViewerTarget, StarContext, StarJSONViewerStatic } from "../types";
+import {
+  failUISetup,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 interface JSONViewerCollection {
   api: StarJSONViewerStatic;
   enhance(root: ParentNode): void;
 }
 
-interface JSONViewerRecord {
-  root: HTMLElement;
+interface JSONViewerState {
+  text: string | undefined;
   signature: string | undefined;
-  source: HTMLScriptElement;
+  expanded: boolean | undefined;
+  json: HTMLScriptElement;
   status: HTMLElement | undefined;
   tree: HTMLElement;
   value: unknown;
+  branches: Map<string, boolean>;
+}
+interface JSONViewerRecord extends UIResources, JSONViewerState {
+  rendering: string | undefined;
 }
 
 interface JSONViewerEventDetail {
@@ -23,34 +38,64 @@ interface JSONViewerEventDetail {
 }
 
 const records = new WeakMap<HTMLElement, JSONViewerRecord>();
+const retained = new WeakMap<HTMLElement, JSONViewerState>();
+const intents = new WeakMap<HTMLElement, number>();
 let jsonViewerId = 0;
 
 function jsonViewerRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="json-viewer"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="json-viewer"]') ? value : undefined;
 }
 
-function owned<T extends HTMLElement>(root: HTMLElement, selector: string): T | undefined {
-  return Array.from(root.querySelectorAll<T>(selector)).find(
-    (element) => element.closest('[data-jqs="json-viewer"]') === root,
+function owned(root: HTMLElement, selector: string): HTMLElement | undefined {
+  return Array.from(root.querySelectorAll(selector)).find(
+    (element): element is HTMLElement =>
+      isHTMLElement(element) &&
+      element.closest('[data-jqs]:not(button[data-jqs="button"])') === root,
   );
+}
+function current(record: JSONViewerRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.dataset.jqs === "json-viewer" &&
+    owned(record.root, 'script[data-part="source"]') === record.json &&
+    owned(record.root, '[data-part="tree"]') === record.tree &&
+    owned(record.root, '[data-part="status"]') === record.status
+  );
+}
+function disclosures(record: JSONViewerState): HTMLDetailsElement[] {
+  return Array.from(record.tree.querySelectorAll('details[data-part="branch"]')).filter(
+    (element): element is HTMLDetailsElement =>
+      isHTMLTag(element, "details") &&
+      element.closest("[data-jqs]") === record.tree.closest("[data-jqs]"),
+  );
+}
+function branchState(record: JSONViewerState): Map<string, boolean> {
+  return new Map(disclosures(record).map((branch) => [branch.dataset.path ?? "", branch.open]));
+}
+function snapshot(record: JSONViewerRecord): JSONViewerState {
+  const { text, signature, expanded, json, status, tree, value } = record;
+  return { text, signature, expanded, json, status, tree, value, branches: branchState(record) };
 }
 
 function resolve(target: JSONViewerTarget, root: ParentNode = document): HTMLElement {
   const value =
     typeof target === "string"
-      ? jsonViewerRoot(root.querySelector(target))
+      ? jsonViewerRoot(
+          isHTMLElement(root) && root.matches(target) ? root : root.querySelector(target),
+        )
       : jsonViewerRoot(target);
   if (value) return value;
   throw new Error(`JSON Viewer target did not match data-jqs="json-viewer": ${String(target)}`);
 }
 
 function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="json-viewer"]')) return target;
+  if (isHTMLElement(target)) return resolve(target, context.root);
   if (typeof target === "string") return resolve(target, context.root);
-  const closest = context.element?.closest('[data-jqs="json-viewer"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+  const closest =
+    context.element?.closest('[data-jqs="json-viewer"]') ??
+    (isHTMLElement(context.root) ? jsonViewerRoot(context.root) : undefined);
+  return resolve(isHTMLElement(closest) ? closest : String(target));
 }
 
 function emit(
@@ -65,7 +110,10 @@ function emit(
     ...(options.error === undefined ? { value: record.value } : {}),
   };
   record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:json-viewer:${name}`, { bubbles: true, detail }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:json-viewer:${name}`,
+      { bubbles: true, detail },
+    ),
   );
 }
 
@@ -84,7 +132,7 @@ function primitiveLabel(value: unknown): string {
   return typeof value === "string" ? JSON.stringify(value) : String(value);
 }
 
-function keyLabel(key: string | undefined): HTMLElement | undefined {
+function keyLabel(key: string | undefined, document: Document): HTMLElement | undefined {
   if (key === undefined) return undefined;
   const element = document.createElement("span");
   element.dataset.part = "key";
@@ -93,7 +141,8 @@ function keyLabel(key: string | undefined): HTMLElement | undefined {
 }
 
 function appendKey(parent: HTMLElement, key: string | undefined): void {
-  const label = keyLabel(key);
+  const document = parent.ownerDocument;
+  const label = keyLabel(key, document);
   if (!label) return;
   const separator = document.createElement("span");
   separator.dataset.part = "separator";
@@ -103,10 +152,11 @@ function appendKey(parent: HTMLElement, key: string | undefined): void {
 }
 
 interface RenderContext {
-  expanded: ReadonlySet<string>;
+  document: Document;
+  expanded: ReadonlyMap<string, boolean>;
   maxDepth: number;
   nodes: number;
-  openAll: boolean;
+  openAll: boolean | undefined;
 }
 
 function renderNode(
@@ -116,6 +166,7 @@ function renderNode(
   depth: number,
   context: RenderContext,
 ): HTMLLIElement {
+  const { document } = context;
   context.nodes += 1;
   const item = document.createElement("li");
   item.dataset.part = "node";
@@ -141,7 +192,7 @@ function renderNode(
   const details = document.createElement("details");
   details.dataset.part = "branch";
   details.dataset.path = path;
-  details.open = context.openAll || depth === 0 || context.expanded.has(path);
+  details.open = context.expanded.get(path) ?? context.openAll ?? depth === 0;
   const summary = document.createElement("summary");
   summary.dataset.part = "summary";
   appendKey(summary, key);
@@ -167,114 +218,169 @@ function maxDepth(record: JSONViewerRecord): number {
   return Number.isInteger(value) && value > 0 ? value : 20;
 }
 
-function render(record: JSONViewerRecord, signature: string): void {
-  const expanded = new Set(
-    Array.from(
-      record.tree.querySelectorAll<HTMLDetailsElement>('details[data-part="branch"][open]'),
-    )
-      .map((details) => details.dataset.path)
-      .filter((path): path is string => Boolean(path)),
-  );
+function configuration(record: JSONViewerRecord) {
+  const text = record.json.textContent.trim() || "null";
+  const expanded =
+    record.root.dataset.expanded === "true"
+      ? true
+      : record.root.dataset.expanded === "false"
+        ? false
+        : undefined;
+  const depth = maxDepth(record);
+  return { text, expanded, depth, signature: JSON.stringify([text, expanded, depth]) };
+}
+function sync(record: JSONViewerRecord): void {
+  if (!current(record)) return;
+  const config = configuration(record);
+  if (record.signature === config.signature || record.rendering === config.signature) return;
+  const revision = ++record.revision;
+  const valid = (): boolean =>
+    current(record, revision) && configuration(record).signature === config.signature;
+  const document = record.document;
+  const expanded =
+    record.expanded === config.expanded ? branchState(record) : new Map<string, boolean>();
+  if (record.expanded === config.expanded && expanded.size === 0) {
+    for (const entry of record.branches) expanded.set(...entry);
+  }
+  record.rendering = config.signature;
+  let committed = false;
   try {
-    const value = JSON.parse(signature) as unknown;
-    const context: RenderContext = {
-      expanded,
-      maxDepth: maxDepth(record),
-      nodes: 0,
-      openAll: record.root.dataset.expanded === "true",
-    };
-    const list = document.createElement("ul");
-    list.dataset.part = "document";
-    list.append(renderNode(value, undefined, "", 0, context));
-    record.tree.replaceChildren(list);
-    record.signature = signature;
+    let value: unknown;
+    let error: unknown;
+    let parsed = true;
+    try {
+      value = JSON.parse(config.text) as unknown;
+    } catch (failure) {
+      parsed = false;
+      error = failure;
+    }
+    if (!valid()) return;
+    let content: HTMLElement;
+    let nodes = 0;
+    if (parsed) {
+      const context: RenderContext = {
+        document,
+        expanded,
+        maxDepth: config.depth,
+        nodes: 0,
+        openAll: config.expanded,
+      };
+      content = document.createElement("ul");
+      content.dataset.part = "document";
+      content.append(renderNode(value, undefined, "", 0, context));
+      nodes = context.nodes;
+    } else {
+      content = document.createElement("p");
+      content.dataset.part = "error";
+      content.setAttribute("role", "alert");
+      content.textContent = error instanceof Error ? error.message : String(error);
+    }
+    if (!valid()) return;
+    record.text = config.text;
+    record.signature = config.signature;
+    record.expanded = config.expanded;
     record.value = value;
-    if (record.root.dataset.state !== "ready") record.root.dataset.state = "ready";
+    record.tree.replaceChildren(content);
+    if (!valid()) return;
+    const state = parsed ? "ready" : "error";
+    if (record.root.dataset.state !== state) record.root.dataset.state = state;
+    if (!valid()) return;
     setText(
       record.status,
-      `${context.nodes.toLocaleString()} JSON ${context.nodes === 1 ? "value" : "values"}.`,
+      parsed
+        ? `${nodes.toLocaleString()} JSON ${nodes === 1 ? "value" : "values"}.`
+        : "JSON could not be parsed.",
     );
-    emit(record, "update", { nodes: context.nodes });
-  } catch (error) {
-    const message = document.createElement("p");
-    message.dataset.part = "error";
-    message.setAttribute("role", "alert");
-    message.textContent = error instanceof Error ? error.message : String(error);
-    record.tree.replaceChildren(message);
-    record.signature = signature;
-    record.value = undefined;
-    if (record.root.dataset.state !== "error") record.root.dataset.state = "error";
-    setText(record.status, "JSON could not be parsed.");
-    emit(record, "error", { error, nodes: 0 });
+    if (!valid()) return;
+    committed = true;
+    record.branches = branchState(record);
+    emit(record, parsed ? "update" : "error", parsed ? { nodes } : { error, nodes: 0 });
+  } finally {
+    if (record.rendering === config.signature) record.rendering = undefined;
+    if (record.revision === revision && !committed) record.signature = undefined;
   }
 }
-
-function sync(record: JSONViewerRecord): void {
-  const signature = record.source.textContent?.trim() ?? "";
-  if (signature === record.signature) return;
-  render(record, signature || "null");
-}
-
 function enhanceJSONViewer(root: HTMLElement): JSONViewerRecord {
-  let record = records.get(root);
-  if (record) {
-    sync(record);
-    return record;
+  const previous = records.get(root);
+  if (previous && current(previous)) {
+    sync(previous);
+    return previous;
   }
-  root.id ||= `jqs-json-viewer-${++jsonViewerId}`;
-  const source = owned<HTMLScriptElement>(root, 'script[data-part="source"]');
-  const tree = owned<HTMLElement>(root, '[data-part="tree"]');
-  if (!source || !tree) {
+  const saved = previous ? snapshot(previous) : retained.get(root);
+  previous?.cleanup();
+  const reentered = records.get(root);
+  if (reentered) return reentered;
+  const source = owned(root, 'script[data-part="source"]');
+  const tree = owned(root, '[data-part="tree"]');
+  if (!isHTMLTag(source, "script") || !tree)
     throw new Error(`JSON Viewer #${root.id} needs a JSON script source and data-part="tree".`);
-  }
-  if (source.type !== "application/json") source.type = "application/json";
-  record = {
-    root,
-    signature: undefined,
-    source,
-    status: owned<HTMLElement>(root, '[data-part="status"]'),
+  const status = owned(root, '[data-part="status"]');
+  const same = saved?.json === source && saved.tree === tree && saved.status === status;
+  const record: JSONViewerRecord = {
+    ...uiResources(root),
+    json: source,
     tree,
-    value: undefined,
+    status,
+    text: same ? saved.text : undefined,
+    signature: same ? saved.signature : undefined,
+    value: same ? saved.value : undefined,
+    expanded: saved?.expanded,
+    branches: saved?.branches ?? new Map<string, boolean>(),
+    rendering: undefined,
   };
-  records.set(root, record);
-  sync(record);
+  record.cleanups.add(() => retained.set(root, snapshot(record)));
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    root.id ||= `jqs-json-viewer-${++jsonViewerId}`;
+    if (current(record) && source.type !== "application/json") source.type = "application/json";
+    if (current(record)) sync(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
-
-function recordFor(target: JSONViewerTarget): JSONViewerRecord {
+function request(
+  target: JSONViewerTarget,
+  run: (record: JSONViewerRecord, valid: () => boolean) => void,
+): HTMLElement {
   const root = resolve(target);
-  return records.get(root) ?? enhanceJSONViewer(root);
+  const requested = (intents.get(root) ?? 0) + 1;
+  intents.set(root, requested);
+  const record = enhanceJSONViewer(root);
+  const revision = ++record.revision;
+  const valid = (): boolean => current(record, revision) && intents.get(root) === requested;
+  if (valid()) run(record, valid);
+  return root;
 }
-
-function setValue(record: JSONViewerRecord, value: unknown): HTMLElement {
-  let signature: string;
+function setValue(record: JSONViewerRecord, value: unknown, valid: () => boolean): void {
+  let text: string;
   try {
-    signature = JSON.stringify(value, null, 2);
+    text = JSON.stringify(value, null, 2);
   } catch (error) {
-    emit(record, "error", { error });
+    if (valid()) emit(record, "error", { error });
     throw error;
   }
-  if (signature === undefined) signature = "null";
-  if (record.source.textContent !== signature) record.source.textContent = signature;
-  render(record, signature);
-  return record.root;
+  if (!valid()) return;
+  if (text === undefined) text = "null";
+  if (record.json.textContent !== text) record.json.textContent = text;
+  if (valid()) sync(record);
 }
-
-function toggleAll(record: JSONViewerRecord, open: boolean): HTMLElement {
-  record.tree
-    .querySelectorAll<HTMLDetailsElement>('details[data-part="branch"]')
-    .forEach((details) => {
-      details.open = open;
-    });
+function toggleAll(record: JSONViewerRecord, open: boolean, valid: () => boolean): void {
+  for (const details of disclosures(record)) {
+    if (!valid()) return;
+    if (details.open !== open) details.open = open;
+  }
+  if (!valid()) return;
   record.root.dataset.expanded = String(open);
+  if (!valid()) return;
+  record.expanded = open;
+  record.signature = configuration(record).signature;
+  record.branches = branchState(record);
   emit(record, open ? "expand" : "collapse");
-  return record.root;
 }
 
 function enhanceAll(root: ParentNode): void {
-  const candidates: Element[] = root instanceof Element ? [root] : [];
-  candidates.push(...Array.from(root.querySelectorAll('[data-jqs="json-viewer"]')));
-  for (const candidate of candidates) {
+  for (const candidate of uiElements(root, '[data-jqs="json-viewer"]')) {
     const viewer = jsonViewerRoot(candidate);
     if (viewer) enhanceJSONViewer(viewer);
   }
@@ -282,16 +388,22 @@ function enhanceAll(root: ParentNode): void {
 
 export function createJSONViewers(registerAction: ActionRegistrar): JSONViewerCollection {
   const api: StarJSONViewerStatic = {
-    set: (target, value) => setValue(recordFor(target), value),
-    value: (target) => structuredClone(recordFor(target).value),
-    expandAll: (target) => toggleAll(recordFor(target), true),
-    collapseAll: (target) => toggleAll(recordFor(target), false),
+    set: (target, value) => request(target, (record, valid) => setValue(record, value, valid)),
+    value: (target) => structuredClone(enhanceJSONViewer(resolve(target)).value),
+    expandAll: (target) => request(target, (record, valid) => toggleAll(record, true, valid)),
+    collapseAll: (target) => request(target, (record, valid) => toggleAll(record, false, valid)),
   };
-  registerAction("ui.json-viewer.expand-all", (context) =>
-    api.expandAll(controlled(context, context.args?.[0])),
-  );
-  registerAction("ui.json-viewer.collapse-all", (context) =>
-    api.collapseAll(controlled(context, context.args?.[0])),
-  );
+  for (const [name, method] of [
+    ["expand-all", "expandAll"],
+    ["collapse-all", "collapseAll"],
+  ] as const) {
+    registerAction(`ui.json-viewer.${name}`, (context) => {
+      const root = controlled(context, context.args?.[0]);
+      const selector =
+        ':disabled,[disabled],[aria-disabled="true"],[data-disabled]:not([data-disabled="false"]),[inert]';
+      if (root.closest(selector) || context.element?.closest(selector)) return root;
+      return api[method](root);
+    });
+  }
   return { api, enhance: enhanceAll };
 }

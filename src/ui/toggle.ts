@@ -1,3 +1,4 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type {
   StarContext,
@@ -6,16 +7,27 @@ import type {
   ToggleGroupTarget,
   ToggleTarget,
 } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 type Orientation = "horizontal" | "vertical";
 type ToggleGroupType = "single" | "multiple";
 
-interface ToggleRecord {
-  cleanup: () => void;
+interface ToggleRecord extends UIResources {
+  root: HTMLButtonElement;
 }
 
-interface ToggleGroupRecord {
-  cleanup: () => void;
+interface ToggleGroupRecord extends UIResources {
+  items: HTMLButtonElement[];
+  signature: string;
   values: Set<string>;
 }
 
@@ -52,21 +64,17 @@ function isDisabled(element: HTMLElement): boolean {
 }
 
 function toggleRoot(value: Element | null): HTMLButtonElement | undefined {
-  return value instanceof HTMLButtonElement && value.matches('[data-jqs="toggle"]')
-    ? value
-    : undefined;
+  return isHTMLTag(value, "button") && value.matches('[data-jqs="toggle"]') ? value : undefined;
 }
 
 function groupRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="toggle-group"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="toggle-group"]') ? value : undefined;
 }
 
 function groupItems(root: HTMLElement): HTMLButtonElement[] {
   return Array.from(root.children).filter(
     (child): child is HTMLButtonElement =>
-      child instanceof HTMLButtonElement && child.getAttribute("data-part") === "item",
+      isHTMLTag(child, "button") && child.getAttribute("data-part") === "item",
   );
 }
 
@@ -111,7 +119,10 @@ function emitToggle(
 ): boolean {
   const detail: ToggleEventDetail = { pressed, toggle };
   return toggle.dispatchEvent(
-    new CustomEvent(`jquery-star:toggle:${name}`, { bubbles: true, cancelable, detail }),
+    new (toggle.ownerDocument.defaultView as Window & typeof globalThis).CustomEvent(
+      `jquery-star:toggle:${name}`,
+      { bubbles: true, cancelable, detail },
+    ),
   );
 }
 
@@ -121,26 +132,54 @@ function applyToggle(toggle: HTMLButtonElement, pressed: boolean): HTMLButtonEle
   return toggle;
 }
 
+function toggleCurrent(record: ToggleRecord, revision = record.revision): boolean {
+  return uiCurrent(record, revision) && toggleRecords.get(record.root) === record;
+}
+
 function requestToggle(toggle: HTMLButtonElement, pressed: boolean): HTMLButtonElement {
-  enhanceToggle(toggle);
-  if (isDisabled(toggle) || toggle.getAttribute("aria-pressed") === String(pressed)) return toggle;
-  if (!emitToggle(toggle, "before-change", pressed, true)) return toggle;
+  const record = enhanceToggle(toggle);
+  const revision = ++record.revision;
+  const previous = toggle.getAttribute("aria-pressed");
+  if (isDisabled(toggle) || previous === String(pressed)) return toggle;
+  if (
+    !emitToggle(toggle, "before-change", pressed, true) ||
+    !toggleCurrent(record, revision) ||
+    isDisabled(toggle) ||
+    toggle.getAttribute("aria-pressed") !== previous
+  )
+    return toggle;
   return applyToggle(toggle, pressed);
 }
 
-function enhanceToggle(toggle: HTMLButtonElement): void {
-  if (toggle.closest('[data-jqs="toggle-group"]')) return;
+function enhanceToggle(toggle: HTMLButtonElement): ToggleRecord {
+  const existing = toggleRecords.get(toggle);
   setPressed(
     toggle,
     toggle.getAttribute("aria-pressed") === "true" || toggle.dataset.state === "on",
   );
-  if (toggleRecords.has(toggle)) return;
-
-  const click = (): void => {
-    requestToggle(toggle, toggle.getAttribute("aria-pressed") !== "true");
-  };
-  toggle.addEventListener("click", click);
-  toggleRecords.set(toggle, { cleanup: () => toggle.removeEventListener("click", click) });
+  if (existing && toggleCurrent(existing)) return existing;
+  existing?.cleanup();
+  const replacement = toggleRecords.get(toggle);
+  if (replacement) return replacement;
+  const record: ToggleRecord = { ...uiResources(toggle), root: toggle };
+  record.cleanup = ownUIRecord(toggleRecords, toggle, record, () => releaseUIResources(record));
+  try {
+    if (!toggle.closest('[data-jqs="toggle-group"]')) {
+      listenUI(
+        record,
+        () => toggleCurrent(record),
+        toggle,
+        "click",
+        () => {
+          requestToggle(toggle, toggle.getAttribute("aria-pressed") !== "true");
+        },
+      );
+    }
+    if (!toggleCurrent(record)) throw new Error("This UI root cannot acquire resources.");
+  } catch (error) {
+    failUISetup(record, error);
+  }
+  return record;
 }
 
 function emitGroup(
@@ -161,11 +200,14 @@ function emitGroup(
     values,
   };
   return root.dispatchEvent(
-    new CustomEvent(`jquery-star:toggle-group:${name}`, {
-      bubbles: true,
-      cancelable,
-      detail,
-    }),
+    new (root.ownerDocument.defaultView as Window & typeof globalThis).CustomEvent(
+      `jquery-star:toggle-group:${name}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail,
+      },
+    ),
   );
 }
 
@@ -183,7 +225,7 @@ function syncFormInputs(root: HTMLElement, values: string[]): void {
   for (const input of existing) input.remove();
   if (!name) return;
   for (const value of values) {
-    const input = document.createElement("input");
+    const input = root.ownerDocument.createElement("input");
     input.type = "hidden";
     input.name = name;
     input.value = value;
@@ -201,11 +243,14 @@ function applyGroupValues(root: HTMLElement, values: Set<string>): string[] {
   if (root.dataset.value !== serialized) root.dataset.value = serialized;
   for (const item of groupItems(root)) setPressed(item, record.values.has(itemValue(item)));
   syncFormInputs(root, next);
+  record.signature = groupSignature(root);
   return next;
 }
 
 function requestGroupValue(root: HTMLElement, value: string, pressed: boolean): HTMLElement {
-  const record = groupRecords.get(root) ?? enhanceGroup(root);
+  const record = groupRecordFor(root);
+  const revision = ++record.revision;
+  const signature = groupSignature(root);
   const item = groupItems(root).find((candidate) => itemValue(candidate) === value);
   if (!item || isDisabled(item)) return root;
 
@@ -224,9 +269,16 @@ function requestGroupValue(root: HTMLElement, value: string, pressed: boolean): 
   if (root.hasAttribute("data-required") && next.size === 0) return root;
   const values = orderedValues(root, next);
   if (previousValues.join("\0") === values.join("\0")) return root;
-  if (!emitGroup(root, "before-change", item, pressed, previousValues, values, true)) return root;
+  if (
+    !emitGroup(root, "before-change", item, pressed, previousValues, values, true) ||
+    !groupCurrent(record, revision) ||
+    groupSignature(root) !== signature ||
+    isDisabled(item)
+  )
+    return root;
   applyGroupValues(root, next);
-  emitGroup(root, "change", item, pressed, previousValues, values);
+  if (groupCurrent(record, revision))
+    emitGroup(root, "change", item, pressed, previousValues, values);
   return root;
 }
 
@@ -248,31 +300,49 @@ function moveFocus(root: HTMLElement, current: HTMLButtonElement, event: Keyboar
   items[next]?.focus();
 }
 
-function wireGroup(root: HTMLElement): () => void {
-  const click = (event: MouseEvent): void => {
-    const target =
-      event.target instanceof Element ? event.target.closest("[data-part='item']") : null;
-    if (!(target instanceof HTMLButtonElement) || target.parentElement !== root) return;
+function groupCurrent(record: ToggleGroupRecord, revision = record.revision): boolean {
+  const items = groupItems(record.root);
+  return (
+    uiCurrent(record, revision) &&
+    groupRecords.get(record.root) === record &&
+    items.length === record.items.length &&
+    items.every((item, index) => item === record.items[index])
+  );
+}
+
+function groupSignature(root: HTMLElement): string {
+  return JSON.stringify([
+    root.dataset.value,
+    groupType(root),
+    orientation(root),
+    root.hasAttribute("data-required"),
+    groupItems(root).map((item) => [item.getAttribute("data-value"), isDisabled(item)]),
+  ]);
+}
+
+function groupRecordFor(root: HTMLElement): ToggleGroupRecord {
+  const record = groupRecords.get(root);
+  return record && groupCurrent(record) ? record : enhanceGroup(root);
+}
+
+function wireGroup(record: ToggleGroupRecord): void {
+  const root = record.root;
+  const listen = listenUI.bind(undefined, record, () => groupCurrent(record));
+  listen(root, "click", (event) => {
+    const target = isElementNode(event.target) ? event.target.closest("[data-part='item']") : null;
+    if (!isHTMLTag(target, "button") || target.parentElement !== root) return;
     requestGroupValue(root, itemValue(target), target.getAttribute("aria-pressed") !== "true");
-  };
-  const keydown = (event: KeyboardEvent): void => {
+  });
+  listen(root, "keydown", (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLButtonElement) || target.parentElement !== root) return;
-    moveFocus(root, target, event);
-  };
-  const focusin = (event: FocusEvent): void => {
+    if (!isHTMLTag(target, "button") || target.parentElement !== root) return;
+    moveFocus(root, target, event as KeyboardEvent);
+  });
+  listen(root, "focusin", (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLButtonElement) || target.parentElement !== root) return;
+    if (!isHTMLTag(target, "button") || target.parentElement !== root) return;
     for (const item of groupItems(root)) item.tabIndex = item === target ? 0 : -1;
-  };
-  root.addEventListener("click", click);
-  root.addEventListener("keydown", keydown);
-  root.addEventListener("focusin", focusin);
-  return () => {
-    root.removeEventListener("click", click);
-    root.removeEventListener("keydown", keydown);
-    root.removeEventListener("focusin", focusin);
-  };
+  });
 }
 
 function enhanceGroup(root: HTMLElement): ToggleGroupRecord {
@@ -290,11 +360,36 @@ function enhanceGroup(root: HTMLElement): ToggleGroupRecord {
     root.setAttribute("aria-orientation", currentOrientation);
   }
 
-  let record = groupRecords.get(root);
+  const existing = groupRecords.get(root);
+  const retained = existing && groupCurrent(existing);
+  let record = retained ? existing : undefined;
   if (!record) {
-    record = { cleanup: wireGroup(root), values: new Set() };
-    groupRecords.set(root, record);
+    existing?.cleanup();
+    const replacement = groupRecords.get(root);
+    if (replacement) return replacement;
+    record = { ...uiResources(root), items, signature: "", values: new Set() };
+    const acquired = record;
+    record.cleanup = ownUIRecord(groupRecords, root, record, () => releaseUIResources(acquired));
+    try {
+      wireGroup(record);
+      if (!groupCurrent(record)) throw new Error("This UI root cannot acquire resources.");
+    } catch (error) {
+      failUISetup(record, error);
+    }
   }
+  try {
+    syncGroup(record, Boolean(retained));
+  } catch (error) {
+    failUISetup(record, error);
+  }
+  return record;
+}
+
+function syncGroup(record: ToggleGroupRecord, retainTab: boolean): void {
+  const { root, items } = record;
+  const signature = groupSignature(root);
+  const unchanged = retainTab && signature === record.signature;
+  if (!unchanged) record.revision += 1;
 
   for (const item of items) {
     if (!item.hasAttribute("type")) item.type = "button";
@@ -308,7 +403,11 @@ function enhanceGroup(root: HTMLElement): ToggleGroupRecord {
       .map(itemValue),
   );
   const next =
-    requested.size > 0 ? requested : record.values.size > 0 ? record.values : stateMarked;
+    root.dataset.value !== undefined
+      ? requested
+      : record.values.size > 0
+        ? new Set(record.values)
+        : stateMarked;
   if (groupType(root) === "single" && next.size > 1) {
     const first = orderedValues(root, next)[0];
     next.clear();
@@ -322,27 +421,31 @@ function enhanceGroup(root: HTMLElement): ToggleGroupRecord {
   const focusValue = values[0];
   const focusItem = items.find((item) => itemValue(item) === focusValue && !isDisabled(item));
   const fallback = items.find((item) => !isDisabled(item));
-  for (const item of items) item.tabIndex = item === (focusItem ?? fallback) ? 0 : -1;
-  return record;
+  const focused = items.find((item) => item === record.document.activeElement && !isDisabled(item));
+  const retainedTab = unchanged
+    ? items.find((item) => item.tabIndex === 0 && !isDisabled(item))
+    : undefined;
+  for (const item of items)
+    item.tabIndex = item === (focused ?? retainedTab ?? focusItem ?? fallback) ? 0 : -1;
+  record.signature = groupSignature(root);
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="toggle-group"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="toggle-group"]')) {
     const group = groupRoot(element);
     if (group) enhanceGroup(group);
   }
 
-  const toggles: Element[] = root instanceof Element ? [root] : [];
-  toggles.push(...Array.from(root.querySelectorAll('[data-jqs="toggle"]')));
-  for (const element of toggles) {
+  for (const element of uiElements(root, '[data-jqs="toggle"]')) {
     const toggle = toggleRoot(element);
-    if (toggle) enhanceToggle(toggle);
+    if (toggle && !toggle.closest('[data-jqs="toggle-group"]')) enhanceToggle(toggle);
   }
 }
 
-function resolveToggle(target: ToggleTarget, root: ParentNode = document): HTMLButtonElement {
+function resolveToggle(
+  target: ToggleTarget | HTMLElement,
+  root: ParentNode = document,
+): HTMLButtonElement {
   const resolved =
     typeof target === "string" ? toggleRoot(root.querySelector(target)) : toggleRoot(target);
   if (resolved) return resolved;
@@ -357,20 +460,18 @@ function resolveGroup(target: ToggleGroupTarget, root: ParentNode = document): H
 }
 
 function controlledToggle(context: StarContext, target?: unknown): HTMLButtonElement {
-  if (target instanceof HTMLButtonElement) return resolveToggle(target);
+  if (isHTMLElement(target)) return resolveToggle(target);
   if (typeof target === "string") return resolveToggle(target, context.root);
   const closest = context.element?.closest('button[data-jqs="toggle"]') ?? null;
-  return resolveToggle(closest instanceof HTMLButtonElement ? closest : String(target));
+  return resolveToggle(isHTMLTag(closest, "button") ? closest : String(target));
 }
 
 function controlledGroup(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="toggle-group"]')) {
-    return target;
-  }
+  if (isHTMLElement(target)) return resolveGroup(target);
   if (typeof target === "string" && target.startsWith("#"))
     return resolveGroup(target, context.root);
   const closest = context.element?.closest('[data-jqs="toggle-group"]') ?? null;
-  return resolveGroup(closest instanceof HTMLElement ? closest : String(target));
+  return resolveGroup(isHTMLElement(closest) ? closest : String(target));
 }
 
 function registerActions(
@@ -380,7 +481,8 @@ function registerActions(
 ): void {
   registerAction("ui.toggle.press", (context) => {
     const first = context.args?.[0];
-    const explicitTarget = typeof first === "string" && first.startsWith("#");
+    const explicitTarget =
+      (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlledToggle(context, explicitTarget ? first : undefined);
     const pressed = explicitTarget ? context.args?.[1] : first;
     return toggle.press(target, pressed === undefined ? true : Boolean(pressed));
@@ -390,7 +492,8 @@ function registerActions(
   );
   registerAction("ui.toggle-group.select", (context) => {
     const first = context.args?.[0];
-    const explicitTarget = typeof first === "string" && first.startsWith("#");
+    const explicitTarget =
+      (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlledGroup(context, explicitTarget ? first : undefined);
     const value = explicitTarget ? context.args?.[1] : first;
     if (typeof value !== "string") throw new Error("ui.toggle-group.select needs an item value.");
@@ -399,7 +502,8 @@ function registerActions(
   });
   registerAction("ui.toggle-group.toggle", (context) => {
     const first = context.args?.[0];
-    const explicitTarget = typeof first === "string" && first.startsWith("#");
+    const explicitTarget =
+      (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlledGroup(context, explicitTarget ? first : undefined);
     const value = explicitTarget ? context.args?.[1] : first;
     if (typeof value !== "string") throw new Error("ui.toggle-group.toggle needs an item value.");
@@ -431,7 +535,7 @@ export function createToggles(registerAction: ActionRegistrar): ToggleCollection
     },
     value: (target) => {
       const root = resolveGroup(target);
-      const record = groupRecords.get(root) ?? enhanceGroup(root);
+      const record = groupRecordFor(root);
       const values = orderedValues(root, record.values);
       return groupType(root) === "multiple" ? values : values[0];
     },

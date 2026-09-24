@@ -43,6 +43,21 @@ describe("jQuery Star Context Menu", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element target without opening nearby context actions", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Context Menu application did not start.");
+    await expect(
+      app.run("ui.context-menu.open", { element: trigger(), args: [trigger(), 24, 32] }),
+    ).rejects.toThrow('Context Menu target did not match a data-jqs="context-menu" element');
+    expect(root().dataset.state).toBe("closed");
+    await app.run("ui.context-menu.open", { args: [root(), 24, 32] });
+    expect(root().dataset.state).toBe("open");
+    await app.run("ui.context-menu.close", { args: ["#context-menu"] });
+    expect(root().dataset.state).toBe("closed");
+    await app.run("ui.context-menu.open", { element: trigger(), args: [24, 32] });
+    expect(root().dataset.state).toBe("open");
+  });
+
   it("shares complete menu semantics without turning a normal click into a trigger", () => {
     expect(trigger().getAttribute("aria-haspopup")).toBe("menu");
     expect(trigger().hasAttribute("aria-expanded")).toBe(false);
@@ -92,6 +107,40 @@ describe("jQuery Star Context Menu", () => {
     expect(root().dataset.state).toBe("closed");
     expect(document.activeElement).toBe(trigger());
   });
+
+  it("opens through the native ContextMenu key and restores trigger focus on Escape", () => {
+    trigger().focus();
+    const invocation = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ContextMenu",
+    });
+    trigger().dispatchEvent(invocation);
+    expect(invocation.defaultPrevented).toBe(true);
+    expect(root().dataset.state).toBe("open");
+    expect(document.activeElement).toBe(item("duplicate"));
+    item("duplicate").dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
+    expect(root().dataset.state).toBe("closed");
+    expect(document.activeElement).toBe(trigger());
+  });
+
+  it.each(["pointermove", "pointerup", "pointercancel"] as const)(
+    "cancels a pending touch menu on %s",
+    (name) => {
+      vi.useFakeTimers();
+      const press = new Event("pointerdown", { bubbles: true });
+      Object.defineProperties(press, {
+        clientX: { value: 64 },
+        clientY: { value: 72 },
+        pointerType: { value: "touch" },
+      });
+      trigger().dispatchEvent(press);
+      trigger().dispatchEvent(new Event(name, { bubbles: true }));
+      vi.advanceTimersByTime(550);
+      expect(root().dataset.state).toBe("closed");
+      expect(content().hidden).toBe(true);
+    },
+  );
 
   it("opens from a stationary touch long-press", () => {
     vi.useFakeTimers();

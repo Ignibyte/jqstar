@@ -3,12 +3,44 @@ id: 0002
 title: Complete the production Data Table
 status: done
 created: 2026-08-30
-updated: 2026-09-06
+updated: 2026-09-17
 ---
 
 # 0002: Complete the production Data Table
 
 ## Plan
+
+### Reopening decision: executable backup and restore guidance (2026-09-17)
+
+Reopen AC-16 and AC-17. The self-hosting claim review reproduces two operational defects in
+`quality-refresh-2026-09-17/backup-permissions-before.json` and `restore-wal-before.json` under the
+program-audit evidence directory. Backup runs as jqstar after creating a root-owned 0750 directory,
+so it cannot create the output. After an abrupt SQLite exit, moving only the main file and copying a
+backup leaves the old WAL in place; the probe reads a post-backup row from the supposedly restored
+database. Writable-directory and preserved-sidecar controls pass. These probes use temporary
+databases only, with no live deployment, account or service changes.
+
+Give the backup directory explicit jqstar owner/group. Make the offline restore instructions stop on
+any failed step, stop database users, preserve the existing main database and optional WAL/SHM/
+journal files together under their original names in a unique directory, then install the chosen
+backup with the documented ownership. Missing optional sidecars must work normally. Do not delete
+failed-state evidence or reuse an old archive. Check the selected backup before stopping the service
+and show a health check after restart. Preserve the single-process deployment boundary.
+
+The [GNU install manual](https://www.gnu.org/s/coreutils/manual/html_node/install-invocation.html)
+documents privileged default ownership. The
+[SQLite WAL guide](https://sqlite.org/wal.html#the_wal_file) and
+[journal-pairing guidance](https://sqlite.org/howtocorrupt.html#_mispairing_database_files_and_hot_journals)
+explain why the database and its recovery files must remain together. These support the reproduced
+failures rather than replacing execution evidence.
+
+Planned files: `docs/SELF_HOSTING.md`, a temporary-database runbook regression in
+`test/self-hosting-recovery.test.mjs`, `docs/TESTING.md`, this ticket and the 0033 audit checkpoint.
+Execute the documented shell logic with temporary paths and isolated command substitutes; never
+operate a real systemd service or deployment path. Verify backup/restore contents, clean and abrupt
+shutdown, failed-state preservation and refusal to continue after an operational failure. Then run
+fast/full quality, current phase validation and whitespace checks. No runtime, database schema or
+public API change is planned. Earlier completion remains historical.
 
 ### Problem
 
@@ -232,6 +264,29 @@ as well as a save-refresh/query overlap. No write is replayed or canceled by thi
 
 ## Code
 
+### September 17 operational correction
+
+- `docs/SELF_HOSTING.md`: assign the backup directory to jqstar, stop the backup sequence if
+  directory creation fails, and execute restore in a shell that stops on errors. Check the selected
+  backup before stopping the service; archive the main file and optional sidecars under matching
+  names in a unique private directory, install with explicit ownership/mode, restart and check
+  health only after success.
+- `test/self-hosting-recovery.test.mjs`: execute both documented shell blocks against temporary
+  SQLite databases. Use actual backup, filesystem moves and permission modes; substitute account,
+  service and HTTP commands so the suite changes no host deployment. Verify clean and abrupt exits,
+  archive recovery contents, optional journal retention, repeated restores, missing backup and
+  failed stop/move/install steps. Owner/group arguments are asserted, not applied to a real account.
+- `docs/TESTING.md` and the 0033 checkpoint: record executable runbook coverage and its host limits.
+
+The initial focused run passes 103 cases and fails one test that opened a synthetic non-SQLite
+journal through a read-only database. The journal-retention case now checks exact archived bytes;
+the separate real WAL cases still reopen and verify both restored and archived database contents.
+This changes the test observation, not the restore procedure. The corrected three-suite run passes
+all 104 cases, including all nine recovery cases, in
+`quality-refresh-2026-09-17/roster-recovery-after.log`. Fast `2026-09-17T15-42-03-246Z-25292` passes
+all 2,057 unit cases but fails formatting and two spelling findings in this ticket. Formatting and
+wording are corrected without changing rules. A new fast pass and full delivery remain required.
+
 ### Changed-file ledger
 
 | Files                                                                                 | Purpose                                                                                                                                                        |
@@ -289,6 +344,14 @@ the hierarchical and editing workflows. Stable row IDs keep selection independen
 
 ## Test
 
+| Command                                      | Result | Evidence                                                                                                                                                                                                                   |
+| -------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                       | Pass   | `2026-09-17T15-44-28-223Z-39646`: six gates, 2,057 unit cases.                                                                                                                                                             |
+| `npm run quality:delivery` (`npm run check`) | Pass   | `2026-09-17T15-48-23-507Z-72866`: thirteen gates, 2,057 unit cases, 116 coverage files, 487 browser cases, thirteen package and seven release checks; matching fingerprints and actual Test validation before these edits. |
+
+Fast `2026-09-17T15-44-28-223Z-39646` passes all six gates and all 2,057 unit cases. Actual Code
+phase validation passes for this owner before the phase/ledger edit. Current full delivery is next.
+
 Correction verification, 2026-09-06:
 
 | Command                                              | Result             | Evidence                                                                                                                                                                                                   |
@@ -336,16 +399,22 @@ never exceeds the 80-row limit while selection remains stable.
 
 ### Inspection ledger
 
-| Finding                                                                            | Resolution                                                                                                                                      |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Process-local arrays could not prove migration, persistence, or conflict behavior. | The injectable SQLite store has idempotent migrations, deterministic seeding, durable reopen tests, and versioned writes.                       |
-| Unvalidated query fragments could reach SQL.                                       | Server-owned maps supply identifiers and clauses. User values remain bound parameters.                                                          |
-| Variable-height grouped/detail rows conflict with fixed-offset virtualization.     | Virtual mode uses fixed 52-pixel project rows and disables grouping and expansion.                                                              |
-| Row patches could leave stale requests or focus on removed elements.               | Per-root cancellation suppresses stale windows; request IDs are correlation data. Browser/block tests cover cancellation and focus restoration. |
+| Finding                                                                            | Resolution                                                                                                                                            |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Backup output directory was root owned with no service-user write permission.      | Explicit jqstar owner/group and 0750 mode; the documented backup block and directory-failure control pass.                                            |
+| Restoring only the main file could replay an old WAL.                              | Archive main/WAL/SHM/journal under matching names before install. Nine executed recovery cases verify contents, preserved state and failure stopping. |
+| Process-local arrays could not prove migration, persistence, or conflict behavior. | The injectable SQLite store has idempotent migrations, deterministic seeding, durable reopen tests, and versioned writes.                             |
+| Unvalidated query fragments could reach SQL.                                       | Server-owned maps supply identifiers and clauses. User values remain bound parameters.                                                                |
+| Variable-height grouped/detail rows conflict with fixed-offset virtualization.     | Virtual mode uses fixed 52-pixel project rows and disables grouping and expansion.                                                                    |
+| Row patches could leave stale requests or focus on removed elements.               | Per-root cancellation suppresses stale windows; request IDs are correlation data. Browser/block tests cover cancellation and focus restoration.       |
 
 ## Document
 
 ### Documentation changed
+
+The September 17 update corrects backup ownership and recovery-file preservation in
+`docs/SELF_HOSTING.md` and documents nine executable temporary-database regressions in
+`docs/TESTING.md`. The previous completion records remain historical.
 
 - `README.md` describes additive multi-sort and the complete persistent Project Browser.
 - `docs/BACKEND.md` defines signals, allowlists, windows, mutation validation, conflict semantics,
@@ -376,8 +445,8 @@ never exceeds the 80-row limit while selection remains stable.
 | AC-13 | Delegated stable IDs preserve selection across every page and virtual operation.                                                                                                                                                                                                                                               | Pass   |
 | AC-14 | Block and browser tests restore focus after patches, validation, success, and conflict.                                                                                                                                                                                                                                        | Pass   |
 | AC-15 | Parsed SDK-event tests cover every table response path.                                                                                                                                                                                                                                                                        | Pass   |
-| AC-16 | Unit, store, server, block, browser, accessibility, performance, deployment, and package pass.                                                                                                                                                                                                                                 | Pass   |
-| AC-17 | Public, backend, self-hosting, architecture, testing, and project documentation was updated.                                                                                                                                                                                                                                   | Pass   |
+| AC-16 | Delivery `2026-09-17T15-48-23-507Z-72866` passes all thirteen gates, including the existing store/server/block/table matrix and nine executable runbook recovery cases in `test/self-hosting-recovery.test.mjs`. Actual Test validation passes.                                                                                | Pass   |
+| AC-17 | `docs/SELF_HOSTING.md` gives explicit backup ownership and an error-stopping restore that preserves main/WAL/SHM/journal files together. `docs/TESTING.md` documents actual temporary-database execution and service/account test limits; existing backend/component guidance remains verified.                                | Pass   |
 
 ### Previous completion audit (superseded 2026-09-06)
 
@@ -392,12 +461,23 @@ omissions.
 The final full gate and package gate passed after the last controller performance change. No code,
 test, documentation, deployment, or acceptance task remains open in this ticket.
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-17)
 
 The stale-window and edit-loading races are corrected in verified commit `c3b957e`. Delivery
 `2026-09-06T06-34-06-391Z-92532` passes every enforced gate, with no failed, skipped, or flaky
 browser case. Test validation passed before the documentation phase. Current source and acceptance
 review confirms all 17 criteria; historical completion remains explicitly separate. The
 documentation phase is complete; the next commit still requires its own current delivery receipt.
+
+Historical status: Complete
+
+### Completion audit
+
+Backup directory ownership and the complete offline restore sequence are corrected. The nine
+documented-shell recovery cases verify selected backup contents, preserved failed state, clean and
+abrupt exits, repeated archives, permission modes and failure before restart. All existing
+table/store/server/browser/package checks pass in the current delivery. Actual Test validation
+precedes this documentation phase. Account, service and HTTP operations are isolated in the
+regression; a production Linux deployment is not claimed.
 
 Status: Complete

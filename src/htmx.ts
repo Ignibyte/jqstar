@@ -651,9 +651,6 @@ class HtmxBridgeController implements StarHtmxBridge {
     }
     if (event.detail?.shouldSwap !== true || style === "none") {
       request.noMutation = true;
-      queueMicrotask(() => {
-        if (event.defaultPrevented && !request.terminal) request.noMutation = true;
-      });
       return;
     }
     if (request.main && !request.main.terminal) {
@@ -978,7 +975,7 @@ class HtmxBridgeController implements StarHtmxBridge {
   }
 
   #commit(operation: ActiveRender, eventId: StarHtmxBridgeEventId): void {
-    if (operation.commitStarted || operation.terminal) return;
+    if (operation.commitStarted || operation.settling || operation.terminal) return;
     operation.commitStarted = true;
     operation.settling = true;
     this.#publish(operation, "enhancing", eventId);
@@ -1133,8 +1130,12 @@ class HtmxBridgeController implements StarHtmxBridge {
   }
 
   #completeIfReady(operation: ActiveRender, eventId: StarHtmxBridgeEventId): void {
-    if (operation.commitDone && operation.hostSettled && !operation.terminal) {
-      this.#settle(operation, "committed", "completed", operation.terminalEventId ?? eventId);
+    if (operation.commitDone && !operation.terminal) {
+      if (this.#disposed)
+        this.#settle(operation, "failed", "failed-after-mutation", "htmx:swapError");
+      else if (operation.hostSettled) {
+        this.#settle(operation, "committed", "completed", operation.terminalEventId ?? eventId);
+      }
     }
   }
 
@@ -1150,10 +1151,17 @@ class HtmxBridgeController implements StarHtmxBridge {
   }
 
   #fail(operation: ActiveRender, error: unknown, eventId: StarHtmxBridgeEventId): Promise<void> {
-    if (operation.terminal) return operation.done;
-    if (operation.settling) return operation.done;
+    if (operation.terminal || operation.settling) return operation.done;
+    if (operation.commitDone) {
+      this.#settle(operation, "failed", "failed-after-mutation", eventId);
+      return operation.done;
+    }
     operation.settling = true;
-    const outcome = operation.cleanupStarted ? "failed-after-removal" : "failed-before-mutation";
+    const outcome = operation.mutated
+      ? "failed-after-mutation"
+      : operation.cleanupStarted
+        ? "failed-after-removal"
+        : "failed-before-mutation";
     return operation.transaction.fail(error).then(undefined, () => {
       operation.settling = false;
       this.#settle(operation, "failed", outcome, eventId);
@@ -1277,7 +1285,7 @@ class HtmxBridgeController implements StarHtmxBridge {
   };
 
   observations(): readonly StarHtmxBridgeObservation[] {
-    return Object.freeze(this.#records.map((record) => record));
+    return Object.freeze([...this.#records]);
   }
 
   observe(observer: StarHtmxBridgeObserver): () => void {
@@ -1309,20 +1317,20 @@ class HtmxBridgeController implements StarHtmxBridge {
     this.#requests.clear();
     const active = [...this.#active];
     const disposedError = new Error("The htmx bridge was disposed.");
-    this.#disposal = Promise.all(
-      active.map((operation) =>
-        operation.settling
-          ? operation.done
-          : this.#fail(operation, disposedError, "htmx:swapError").catch(() => undefined),
-      ),
-    ).then(() =>
-      Object.freeze({
-        schema: "jqstar-htmx-bridge-disposal/1" as const,
-        attempted: active.length,
-        preparedReleased,
-        remaining: this.#active.size,
-      }),
-    );
+    this.#disposal = Promise.resolve()
+      .then(() =>
+        Promise.allSettled(
+          active.map((operation) => this.#fail(operation, disposedError, "htmx:swapError")),
+        ),
+      )
+      .then(() =>
+        Object.freeze({
+          schema: "jqstar-htmx-bridge-disposal/1" as const,
+          attempted: active.length,
+          preparedReleased,
+          remaining: this.#active.size,
+        }),
+      );
     return this.#disposal;
   }
 }

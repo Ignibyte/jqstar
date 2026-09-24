@@ -616,17 +616,25 @@ class TurboBridgeController implements StarTurboBridge {
     for (const release of this.#listeners.splice(0).reverse()) release();
     this.#observers.clear();
     const active = [...this.#active];
-    this.#disposal = Promise.all(
-      active.map((operation) =>
-        this.#fail(operation, new Error("The Turbo bridge was disposed.")).catch(() => undefined),
-      ),
-    ).then(() =>
-      Object.freeze({
-        schema: "jqstar-turbo-bridge-disposal/1" as const,
-        attempted: active.length,
-        remaining: this.#active.size,
-      }),
-    );
+    this.#disposal = Promise.resolve()
+      .then(() =>
+        Promise.all(
+          active.map((operation) =>
+            operation.settling || operation.terminal
+              ? this.whenIdle()
+              : this.#fail(operation, new Error("The Turbo bridge was disposed.")).catch(
+                  () => undefined,
+                ),
+          ),
+        ),
+      )
+      .then(() =>
+        Object.freeze({
+          schema: "jqstar-turbo-bridge-disposal/1" as const,
+          attempted: active.length,
+          remaining: this.#active.size,
+        }),
+      );
     return this.#disposal;
   }
 }

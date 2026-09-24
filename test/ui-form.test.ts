@@ -41,6 +41,63 @@ describe("jQuery Star Form", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind reset target without clearing the nearby native form", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Form application did not start.");
+    email().value = "proof@example.com";
+    await expect(app.run("ui.form.reset", { element: email(), args: [email()] })).rejects.toThrow(
+      'Form target did not match form[data-jqs="form"]',
+    );
+    expect(email().value).toBe("proof@example.com");
+    await app.run("ui.form.reset", { args: [form()] });
+    expect(email().value).toBe("");
+    email().value = "selector@example.com";
+    await app.run("ui.form.reset", { args: ["#profile-form"] });
+    expect(email().value).toBe("");
+    email().value = "implicit@example.com";
+    await app.run("ui.form.reset", { element: email() });
+    expect(email().value).toBe("");
+  });
+
+  it("validates an explicit native target before mapping server errors", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Form application did not start.");
+    await expect(
+      app.run("ui.form.set-errors", {
+        element: email(),
+        args: [email(), { email: "Already registered." }],
+      }),
+    ).rejects.toThrow('Form target did not match form[data-jqs="form"]');
+    expect(email().validity.customError).toBe(false);
+    await app.run("ui.form.set-errors", { args: [form(), { email: "Already registered." }] });
+    expect(email().validity.customError).toBe(true);
+    await app.run("ui.form.clear-errors", { args: ["#profile-form"] });
+    expect(email().validity.customError).toBe(false);
+  });
+
+  it("does not clear native server validity through a wrong-kind explicit target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Form application did not start.");
+    $.star.ui.form.setErrors(form(), { email: "Server rejection" }, { focus: false });
+    await expect(
+      app.run("ui.form.clear-errors", {
+        element: email(),
+        args: [email(), ["email"]],
+      }),
+    ).rejects.toThrow('Form target did not match form[data-jqs="form"]');
+    expect(email().validationMessage).toBe("Server rejection");
+    expect(form().dataset.serverInvalid).toBe("true");
+
+    await app.run("ui.form.clear-errors", { args: [form(), ["email"]] });
+    expect(email().validity.customError).toBe(false);
+    $.star.ui.form.setErrors(form(), { email: "Again" }, { focus: false });
+    await app.run("ui.form.clear-errors", { args: ["#profile-form", ["email"]] });
+    expect(email().validity.customError).toBe(false);
+    $.star.ui.form.setErrors(form(), { email: "Implicit" }, { focus: false });
+    await app.run("ui.form.clear-errors", { element: email(), args: [["email"]] });
+    expect(email().validity.customError).toBe(false);
+  });
+
   it("maps native validity to the field, message, description, and first invalid focus", async () => {
     const invalid = vi.fn();
     form().addEventListener("jquery-star:form:invalid", invalid);

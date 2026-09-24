@@ -38,6 +38,7 @@ describe("jQuery Star Color Picker", () => {
 
   afterEach(() => {
     $("#app").star("destroy");
+    vi.unstubAllGlobals();
   });
 
   it("keeps the native color input as the form source", () => {
@@ -65,6 +66,21 @@ describe("jQuery Star Color Picker", () => {
     expect(control().value).toBe("#dc2626");
   });
 
+  it("rejects a wrong-kind element action target without changing the nearby color input", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Color Picker application did not start.");
+    await expect(
+      app.run("ui.color-picker.set", { element: text(), args: [text(), "#2563eb"] }),
+    ).rejects.toThrow('Color Picker target did not match data-jqs="color-picker"');
+    expect(control().value).toBe("#0f766e");
+    await app.run("ui.color-picker.set", { args: [root(), "#2563eb"] });
+    expect(control().value).toBe("#2563eb");
+    await app.run("ui.color-picker.set", { args: ["#accent", "#9333ea"] });
+    expect(control().value).toBe("#9333ea");
+    await app.run("ui.color-picker.set", { element: text(), args: ["#dc2626"] });
+    expect(control().value).toBe("#dc2626");
+  });
+
   it("rejects unsupported values and restores canceled native changes", () => {
     text().value = "not-a-color";
     text().dispatchEvent(new Event("change", { bubbles: true }));
@@ -77,6 +93,78 @@ describe("jQuery Star Color Picker", () => {
     control().value = "#2563eb";
     control().dispatchEvent(new Event("input", { bubbles: true }));
     expect(control().value).toBe("#0f766e");
+  });
+
+  it("retains an authored disabled swatch while a disabled native color value changes", () => {
+    const swatch = root().querySelector<HTMLButtonElement>('[data-value="#2563eb"]');
+    if (!swatch) throw new Error("Missing authored color swatch.");
+    const changed = vi.fn();
+    const before = vi.fn();
+    root().addEventListener("jquery-star:color-picker:change", changed);
+    root().addEventListener("jquery-star:color-picker:before-change", before);
+    swatch.disabled = true;
+    root().dataset.disabled = "";
+    control().value = "#9333ea";
+    control().dispatchEvent(new Event("input", { bubbles: true }));
+    expect(root().dataset.value).toBe("#9333ea");
+    expect(text().value).toBe("#9333ea");
+    expect(root().dataset.state).toBe("disabled");
+    expect(changed).toHaveBeenCalledOnce();
+    expect(before).not.toHaveBeenCalled();
+    delete root().dataset.disabled;
+    $.star.ui.colorPicker.set(root(), "#dc2626");
+    expect(root().dataset.state).toBe("ready");
+    expect(swatch.disabled).toBe(true);
+    expect(text().disabled).toBe(false);
+  });
+
+  it("rejects a context-dependent CSS color even when CSS parsing accepts it", () => {
+    vi.stubGlobal("CSS", { supports: vi.fn(() => true) });
+    $.star.ui.colorPicker.set(root(), "currentColor");
+    expect(control().value).toBe("#0f766e");
+    expect(root().dataset.state).toBe("invalid");
+  });
+
+  it("keeps an authored patch made during native color normalization", () => {
+    const nativeClone = control().cloneNode.bind(control());
+    vi.spyOn(control(), "cloneNode").mockImplementation((deep) => {
+      root().dataset.value = "#778899";
+      return nativeClone(deep);
+    });
+    $.star.ui.colorPicker.set(root(), "#2563eb");
+    expect(control().value).toBe("#0f766e");
+    expect(root().dataset.value).toBe("#778899");
+    $.star.ui.enhance(root());
+    expect(control().value).toBe("#778899");
+  });
+
+  it("keeps a replacement controller acquired during old listener cleanup", () => {
+    const previous = control();
+    const replacement = previous.cloneNode(true) as HTMLInputElement;
+    previous.replaceWith(replacement);
+    const remove = previous.removeEventListener.bind(previous);
+    let reentered = false;
+    vi.spyOn(previous, "removeEventListener").mockImplementation((type, listener, options) => {
+      remove(type, listener, options);
+      if (reentered) return;
+      reentered = true;
+      $.star.ui.enhance(root());
+    });
+    $.star.ui.enhance(root());
+    expect(reentered).toBe(true);
+    $.star.ui.colorPicker.set(root(), "#445566");
+    expect(replacement.value).toBe("#445566");
+    previous.value = "#aabbcc";
+    previous.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(root().dataset.value).toBe("#445566");
+  });
+
+  it("ignores a bubbled click whose target is not an element", () => {
+    const textNode = document.createTextNode("Plain text");
+    root().append(textNode);
+    textNode.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(control().value).toBe("#0f766e");
+    expect(root().dataset.value).toBe("#0f766e");
   });
 
   it("accepts server patches and emits ordinary and component events", () => {

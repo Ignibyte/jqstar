@@ -1,63 +1,189 @@
 import type { ActionRegistrar } from "../registry";
 import type { ResizableTarget, StarContext, StarResizableStatic } from "../types";
+import { isElementNode, isHTMLElement } from "../dom";
+import {
+  acquireUIResource,
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 type Orientation = "horizontal" | "vertical";
-
-interface DragState {
+type Current = () => boolean;
+interface DragState extends UIResources {
   handleIndex: number;
   pointerId: number;
   startPosition: number;
   startSize: number;
   startSizes: number[];
   usableSize: number;
+  configuration: string;
 }
-
-interface ResizableRecord {
-  cleanup: () => void;
+interface ResizableRecord extends UIResources {
+  busy: boolean;
   drag: DragState | undefined;
   handles: HTMLElement[];
   panels: HTMLElement[];
   restoreSizes: Map<number, number>;
-  root: HTMLElement;
   sizes: number[];
+  stop: ((op?: Operation) => void) | undefined;
 }
-
-interface ResizableEventDetail {
-  handle: HTMLElement | undefined;
-  handleIndex: number | undefined;
-  previousSizes: number[];
-  resizable: HTMLElement;
-  sizes: number[];
-}
-
 interface ResizableCollection {
   api: StarResizableStatic;
   enhance(root: ParentNode): void;
 }
-
 const records = new WeakMap<HTMLElement, ResizableRecord>();
+const intents = new WeakMap<HTMLElement, number>();
+const retained = new WeakMap<HTMLElement, { sizes: number[]; restoreSizes: Map<number, number> }>();
 let resizableId = 0;
-
 function resizableRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="resizable"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="resizable"]') ? value : undefined;
 }
-
 function directParts(root: HTMLElement, part: "panel" | "handle"): HTMLElement[] {
   return Array.from(root.children).filter(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === part,
   );
 }
-
+function alternating(root: HTMLElement): boolean {
+  return Array.from(root.children)
+    .filter(
+      (child) => isHTMLElement(child) && ["panel", "handle"].includes(child.dataset.part ?? ""),
+    )
+    .every(
+      (part, index) => part.getAttribute("data-part") === (index % 2 === 0 ? "panel" : "handle"),
+    );
+}
 function orientation(root: HTMLElement): Orientation {
   return root.dataset.orientation === "vertical" ? "vertical" : "horizontal";
 }
-
 function disabled(root: HTMLElement): boolean {
-  return root.hasAttribute("disabled") || root.dataset.disabled !== undefined;
+  return (
+    root.hasAttribute("disabled") ||
+    (root.hasAttribute("data-disabled") && root.dataset.disabled !== "false")
+  );
 }
-
+function constrained(element: Element): boolean {
+  return Boolean(
+    element.closest(
+      '[disabled],[hidden],[inert],[aria-disabled="true"],[aria-hidden="true"],[data-disabled]:not([data-disabled="false"])',
+    ),
+  );
+}
+function current(record: ResizableRecord, revision = record.revision): boolean {
+  const panels = directParts(record.root, "panel"),
+    handles = directParts(record.root, "handle");
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    resizableRoot(record.root) === record.root &&
+    alternating(record.root) &&
+    panels.length === record.panels.length &&
+    panels.every((panel, index) => panel === record.panels[index]) &&
+    handles.length === record.handles.length &&
+    handles.every((handle, index) => handle === record.handles[index])
+  );
+}
+function configuration(record: ResizableRecord): string {
+  return JSON.stringify([
+    orientation(record.root),
+    record.root.dataset.step,
+    ...record.panels.flatMap((panel) => [panel.dataset.min, panel.dataset.max]),
+  ]);
+}
+function operation(record: ResizableRecord, allowed: Current = () => true) {
+  const revision = record.revision;
+  const attributes = new Map<HTMLElement, Map<string, string | null>>();
+  const parents = new Map<HTMLElement, HTMLElement | null>();
+  const observe = (element: HTMLElement, names: string[]): void => {
+    const values = attributes.get(element) ?? new Map<string, string | null>();
+    for (const name of names) values.set(name, element.getAttribute(name));
+    attributes.set(element, values);
+    parents.set(element, element.parentElement);
+  };
+  observe(record.root, [
+    "id",
+    "data-value",
+    "data-orientation",
+    "data-step",
+    "data-storage-key",
+    "style",
+  ]);
+  for (const panel of record.panels)
+    observe(panel, ["id", "data-min", "data-max", "data-size", "data-default-size"]);
+  for (const handle of record.handles)
+    observe(handle, [
+      "id",
+      "role",
+      "tabindex",
+      "aria-controls",
+      "aria-label",
+      "aria-labelledby",
+      "aria-orientation",
+      "aria-valuemin",
+      "aria-valuemax",
+      "aria-valuenow",
+      "data-state",
+    ]);
+  for (const part of [record.root, ...record.panels, ...record.handles])
+    for (let node: HTMLElement | null = part; node; node = node.parentElement)
+      observe(node, [
+        "disabled",
+        "hidden",
+        "inert",
+        "aria-disabled",
+        "aria-hidden",
+        "data-disabled",
+      ]);
+  const valid = (): boolean =>
+    current(record, revision) &&
+    allowed() &&
+    [...parents].every(([element, parent]) => element.parentElement === parent) &&
+    [...attributes].every(([element, values]) =>
+      [...values].every(([name, value]) => element.getAttribute(name) === value),
+    );
+  const attribute = (element: HTMLElement, name: string, value: string): boolean => {
+    if (!valid()) return false;
+    if (element.getAttribute(name) === value) return true;
+    attributes.get(element)?.set(name, value);
+    element.setAttribute(name, value);
+    return valid();
+  };
+  const style = (name: string, value: string): boolean => {
+    if (!valid()) return false;
+    if (record.root.style.getPropertyValue(name) === value) return true;
+    const next = record.document.createElement("div").style;
+    next.cssText = record.root.style.cssText;
+    next.setProperty(name, value);
+    return attribute(record.root, "style", next.cssText);
+  };
+  const write = (run: () => void): boolean => {
+    if (!valid()) return false;
+    run();
+    return valid();
+  };
+  return { valid, attribute, style, write };
+}
+type Operation = ReturnType<typeof operation>;
+function identifier(
+  record: ResizableRecord,
+  op: Operation,
+  element: HTMLElement,
+  preferred: string,
+): boolean {
+  if (element.id) return op.valid();
+  const ids = new Set(Array.from(record.root.querySelectorAll("[id]"), (element) => element.id));
+  let candidate = preferred,
+    index = 1;
+  while (ids.has(candidate) || record.document.getElementById(candidate))
+    candidate = `${preferred}-${++index}`;
+  return op.attribute(element, "id", candidate);
+}
 function panelMinimum(panel: HTMLElement): number {
   const value = Number(panel.dataset.min);
   return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
@@ -135,26 +261,6 @@ function serialized(sizes: number[]): string {
   return JSON.stringify(sizes.map((size) => Math.round(size * 1000) / 1000));
 }
 
-function storedSizes(root: HTMLElement, count: number): number[] | undefined {
-  const key = root.dataset.storageKey?.trim();
-  if (!key) return undefined;
-  try {
-    return parseSizes(localStorage.getItem(`jquery-star:resizable:${key}`) ?? undefined, count);
-  } catch {
-    return undefined;
-  }
-}
-
-function persist(record: ResizableRecord): void {
-  const key = record.root.dataset.storageKey?.trim();
-  if (!key) return;
-  try {
-    localStorage.setItem(`jquery-star:resizable:${key}`, serialized(record.sizes));
-  } catch {
-    // Storage can be unavailable in privacy modes; resizing still works for this session.
-  }
-}
-
 function emit(
   record: ResizableRecord,
   name: "before-change" | "change" | "resize-start" | "resize-end",
@@ -163,28 +269,26 @@ function emit(
   handleIndex?: number,
   cancelable = false,
 ): boolean {
-  const detail: ResizableEventDetail = {
-    handle: handleIndex === undefined ? undefined : record.handles[handleIndex],
-    handleIndex,
-    previousSizes,
-    resizable: record.root,
-    sizes,
-  };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:resizable:${name}`, {
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:resizable:${name}`, {
       bubbles: true,
       cancelable,
-      detail,
+      detail: {
+        handle: handleIndex === undefined ? undefined : record.handles[handleIndex],
+        handleIndex,
+        previousSizes: [...previousSizes],
+        resizable: record.root,
+        sizes: [...sizes],
+      },
     }),
   );
 }
-
 function handleBounds(
   record: ResizableRecord,
   index: number,
 ): { maximum: number; minimum: number } {
-  const primary = record.panels[index];
-  const secondary = record.panels[index + 1];
+  const primary = record.panels[index],
+    secondary = record.panels[index + 1];
   if (!primary || !secondary) return { minimum: 0, maximum: 0 };
   const total = (record.sizes[index] ?? 0) + (record.sizes[index + 1] ?? 0);
   return {
@@ -192,336 +296,570 @@ function handleBounds(
     maximum: Math.min(panelMaximum(primary), total - panelMinimum(secondary)),
   };
 }
-
-function syncHandle(record: ResizableRecord, handle: HTMLElement, index: number): void {
-  const primary = record.panels[index];
-  const secondary = record.panels[index + 1];
-  if (!primary || !secondary) return;
-  const bounds = handleBounds(record, index);
-  handle.id ||= `${record.root.id}-handle-${index + 1}`;
-  primary.id ||= `${record.root.id}-panel-${index + 1}`;
-  secondary.id ||= `${record.root.id}-panel-${index + 2}`;
-  handle.setAttribute("role", "separator");
-  handle.tabIndex = disabled(record.root) ? -1 : 0;
-  handle.setAttribute("aria-disabled", String(disabled(record.root)));
-  handle.setAttribute(
-    "aria-orientation",
-    orientation(record.root) === "horizontal" ? "vertical" : "horizontal",
-  );
-  handle.setAttribute("aria-controls", primary.id);
-  handle.setAttribute("aria-valuemin", String(Math.round(bounds.minimum)));
-  handle.setAttribute("aria-valuemax", String(Math.round(bounds.maximum)));
-  handle.setAttribute("aria-valuenow", String(Math.round(record.sizes[index] ?? 0)));
-  if (!handle.hasAttribute("aria-label") && !handle.hasAttribute("aria-labelledby")) {
-    handle.setAttribute("aria-label", `Resize panel ${index + 1}`);
-  }
-  handle.dataset.state = record.drag?.handleIndex === index ? "dragging" : "idle";
-}
-
-function render(record: ResizableRecord): void {
-  const value = serialized(record.sizes);
-  if (record.root.dataset.value !== value) record.root.dataset.value = value;
-  const currentOrientation = orientation(record.root);
-  if (record.root.dataset.orientation !== currentOrientation) {
-    record.root.dataset.orientation = currentOrientation;
-  }
+function render(record: ResizableRecord, op: Operation): void {
+  const { root } = record;
+  if (!root.id && !identifier(record, op, root, `jqs-resizable-${++resizableId}`)) return;
+  if (!op.attribute(root, "data-value", serialized(record.sizes))) return;
+  const axis = orientation(root);
+  if (!op.attribute(root, "data-orientation", axis)) return;
   const tracks: string[] = [];
   for (const [index, size] of record.sizes.entries()) {
     tracks.push(`${Math.max(size, 0.001)}fr`);
     if (index < record.handles.length) tracks.push("var(--jqs-resizable-handle-size, 0.75rem)");
   }
-  if (orientation(record.root) === "horizontal") {
-    record.root.style.gridTemplateColumns = tracks.join(" ");
-    record.root.style.gridTemplateRows = "minmax(0, 1fr)";
-  } else {
-    record.root.style.gridTemplateRows = tracks.join(" ");
-    record.root.style.gridTemplateColumns = "minmax(0, 1fr)";
-  }
+  if (
+    !op.style("grid-template-columns", axis === "horizontal" ? tracks.join(" ") : "minmax(0, 1fr)")
+  )
+    return;
+  if (!op.style("grid-template-rows", axis === "vertical" ? tracks.join(" ") : "minmax(0, 1fr)"))
+    return;
   for (const [index, panel] of record.panels.entries()) {
-    panel.dataset.size = String(record.sizes[index] ?? 0);
+    if (!identifier(record, op, panel, `${root.id}-panel-${index + 1}`)) return;
+    if (!op.attribute(panel, "data-size", String(record.sizes[index] ?? 0))) return;
   }
-  for (const [index, handle] of record.handles.entries()) syncHandle(record, handle, index);
+  for (const [index, handle] of record.handles.entries()) {
+    const primary = record.panels[index];
+    if (!primary) return;
+    const bounds = handleBounds(record, index);
+    if (!identifier(record, op, handle, `${root.id}-handle-${index + 1}`)) return;
+    for (const [name, value] of [
+      ["role", "separator"],
+      ["tabindex", disabled(root) ? "-1" : "0"],
+      ["aria-disabled", String(disabled(root))],
+      ["aria-orientation", axis === "horizontal" ? "vertical" : "horizontal"],
+      ["aria-controls", primary.id],
+      ["aria-valuemin", String(Math.round(bounds.minimum))],
+      ["aria-valuemax", String(Math.round(bounds.maximum))],
+      ["aria-valuenow", String(Math.round(record.sizes[index] ?? 0))],
+      ["data-state", record.drag?.handleIndex === index ? "dragging" : "idle"],
+    ] as const)
+      if (!op.attribute(handle, name, value)) return;
+    if (
+      !handle.hasAttribute("aria-label") &&
+      !handle.hasAttribute("aria-labelledby") &&
+      !op.attribute(handle, "aria-label", `Resize panel ${index + 1}`)
+    )
+      return;
+  }
 }
-
+function persist(record: ResizableRecord, op: Operation): void {
+  const key = record.root.dataset.storageKey?.trim();
+  if (!key || !op.valid()) return;
+  try {
+    const storage = record.window.localStorage;
+    if (op.valid()) storage.setItem(`jquery-star:resizable:${key}`, serialized(record.sizes));
+  } catch {
+    /* Unavailable storage must not prevent resizing. */
+  }
+}
 function applySizes(
   record: ResizableRecord,
   input: number[],
+  op: Operation,
   handleIndex?: number,
-  emitEvents = true,
-): HTMLElement {
-  const previousSizes = [...record.sizes];
-  const sizes = normalizedSizes(record.panels, input);
-  if (serialized(previousSizes) === serialized(sizes)) return record.root;
-  if (emitEvents && !emit(record, "before-change", previousSizes, sizes, handleIndex, true)) {
-    return record.root;
-  }
+): void {
+  if (!op.valid()) return;
+  const previousSizes = [...record.sizes],
+    sizes = normalizedSizes(record.panels, input);
+  if (!op.valid() || serialized(previousSizes) === serialized(sizes)) return;
+  if (!emit(record, "before-change", previousSizes, sizes, handleIndex, true) || !op.valid())
+    return;
   record.sizes = sizes;
-  render(record);
-  persist(record);
-  if (emitEvents) emit(record, "change", previousSizes, sizes, handleIndex);
-  return record.root;
+  render(record, op);
+  persist(record, op);
+  if (op.valid()) emit(record, "change", previousSizes, sizes, handleIndex);
 }
-
-function requestPair(record: ResizableRecord, index: number, primarySize: number): HTMLElement {
-  if (disabled(record.root)) return record.root;
-  const bounds = handleBounds(record, index);
-  const previousPrimary = record.sizes[index];
-  const previousSecondary = record.sizes[index + 1];
-  if (previousPrimary === undefined || previousSecondary === undefined) return record.root;
-  const nextPrimary = Math.max(bounds.minimum, Math.min(bounds.maximum, primarySize));
+function requestPair(
+  record: ResizableRecord,
+  index: number,
+  primarySize: number,
+  op: Operation,
+): void {
+  if (disabled(record.root) || !op.valid() || !Number.isFinite(primarySize)) return;
+  const bounds = handleBounds(record, index),
+    primary = record.sizes[index],
+    secondary = record.sizes[index + 1];
+  if (primary === undefined || secondary === undefined) return;
   const next = [...record.sizes];
-  next[index] = nextPrimary;
-  next[index + 1] = previousPrimary + previousSecondary - nextPrimary;
-  return applySizes(record, next, index);
+  next[index] = Math.max(bounds.minimum, Math.min(bounds.maximum, primarySize));
+  next[index + 1] = primary + secondary - next[index];
+  applySizes(record, next, op, index);
 }
-
-function step(record: ResizableRecord): number {
-  const value = Number(record.root.dataset.step);
-  return Number.isFinite(value) && value > 0 ? value : 5;
-}
-
-function collapse(record: ResizableRecord, index: number): HTMLElement {
-  const bounds = handleBounds(record, index);
-  const current = record.sizes[index] ?? bounds.minimum;
-  if (current > bounds.minimum + 0.001) {
-    record.restoreSizes.set(index, current);
-    return requestPair(record, index, bounds.minimum);
-  }
-  const restore = record.restoreSizes.get(index) ?? Math.min(bounds.maximum, bounds.minimum + 25);
-  return requestPair(record, index, restore);
-}
-
-function keydown(record: ResizableRecord, index: number, event: KeyboardEvent): void {
-  if (disabled(record.root)) return;
-  const current = record.sizes[index] ?? 0;
-  const amount = step(record) * (event.shiftKey ? 2 : 1);
-  const horizontal = orientation(record.root) === "horizontal";
-  const decreaseKey = horizontal ? "ArrowLeft" : "ArrowUp";
-  const increaseKey = horizontal ? "ArrowRight" : "ArrowDown";
-  if (![decreaseKey, increaseKey, "Home", "End", "Enter"].includes(event.key)) return;
-  event.preventDefault();
-  if (event.key === decreaseKey) requestPair(record, index, current - amount);
-  else if (event.key === increaseKey) requestPair(record, index, current + amount);
-  else if (event.key === "Home") requestPair(record, index, handleBounds(record, index).minimum);
-  else if (event.key === "End") requestPair(record, index, handleBounds(record, index).maximum);
-  else collapse(record, index);
-}
-
-function pointerPosition(event: PointerEvent, currentOrientation: Orientation): number {
-  return currentOrientation === "horizontal" ? event.clientX : event.clientY;
-}
-
-function startDrag(record: ResizableRecord, index: number, event: PointerEvent): void {
-  if (disabled(record.root) || event.button !== 0) return;
-  const rect = record.root.getBoundingClientRect();
-  const handlePixels = record.handles.reduce((total, handle) => {
-    const handleRect = handle.getBoundingClientRect();
-    return (
-      total + (orientation(record.root) === "horizontal" ? handleRect.width : handleRect.height)
+function collapse(record: ResizableRecord, index: number, op: Operation): void {
+  const bounds = handleBounds(record, index),
+    value = record.sizes[index] ?? bounds.minimum;
+  if (value > bounds.minimum + 0.001) {
+    requestPair(record, index, bounds.minimum, op);
+    if (op.valid() && record.sizes[index] === bounds.minimum) record.restoreSizes.set(index, value);
+  } else
+    requestPair(
+      record,
+      index,
+      record.restoreSizes.get(index) ?? Math.min(bounds.maximum, bounds.minimum + 25),
+      op,
     );
-  }, 0);
-  const axisSize = orientation(record.root) === "horizontal" ? rect.width : rect.height;
-  const usableSize = Math.max(1, axisSize - handlePixels);
-  record.drag = {
-    handleIndex: index,
-    pointerId: event.pointerId,
-    startPosition: pointerPosition(event, orientation(record.root)),
-    startSize: record.sizes[index] ?? 0,
-    startSizes: [...record.sizes],
-    usableSize,
-  };
-  event.preventDefault();
-  record.handles[index]?.setPointerCapture?.(event.pointerId);
-  render(record);
-  emit(record, "resize-start", [...record.sizes], [...record.sizes], index);
 }
-
-function moveDrag(record: ResizableRecord, event: PointerEvent): void {
-  const drag = record.drag;
-  if (!drag || drag.pointerId !== event.pointerId) return;
-  const delta = pointerPosition(event, orientation(record.root)) - drag.startPosition;
-  requestPair(record, drag.handleIndex, drag.startSize + (delta / drag.usableSize) * 100);
-}
-
-function endDrag(record: ResizableRecord, event: PointerEvent): void {
-  const drag = record.drag;
-  if (!drag || drag.pointerId !== event.pointerId) return;
+function request(
+  root: HTMLElement,
+  run: (record: ResizableRecord, op: Operation) => void,
+  allowed: Current = () => true,
+  preserve?: DragState,
+): HTMLElement {
+  const intent = (intents.get(root) ?? 0) + 1;
+  intents.set(root, intent);
+  if (!allowed()) return root;
+  const record = enhanceResizable(root);
+  if (!current(record) || intents.get(root) !== intent || !allowed()) return root;
+  ++record.revision;
+  const op = operation(record, () => intents.get(root) === intent && allowed()),
+    busy = record.busy;
+  record.busy = true;
   try {
-    record.handles[drag.handleIndex]?.releasePointerCapture?.(event.pointerId);
-  } catch {
-    // The pointer may already have been released by the browser.
+    if (record.drag && record.drag !== preserve) record.stop?.(op);
+    if (op.valid()) run(record, op);
+  } finally {
+    record.busy = busy;
   }
-  record.drag = undefined;
-  render(record);
-  emit(record, "resize-end", drag.startSizes, [...record.sizes], drag.handleIndex);
+  return root;
 }
-
-function wire(record: ResizableRecord): () => void {
-  const cleanups: Array<() => void> = [];
-  for (const [index, handle] of record.handles.entries()) {
-    const down = (event: PointerEvent): void => startDrag(record, index, event);
-    const key = (event: KeyboardEvent): void => keydown(record, index, event);
-    handle.addEventListener("pointerdown", down);
-    handle.addEventListener("keydown", key);
-    cleanups.push(() => {
-      handle.removeEventListener("pointerdown", down);
-      handle.removeEventListener("keydown", key);
-    });
+function keydown(record: ResizableRecord, index: number, event: KeyboardEvent): void {
+  const handle = record.handles[index];
+  if (
+    event.defaultPrevented ||
+    !handle ||
+    constrained(handle) ||
+    !isElementNode(event.target) ||
+    event.target.closest("[data-jqs]") !== record.root
+  )
+    return;
+  const axis = orientation(record.root),
+    decrease = axis === "horizontal" ? "ArrowLeft" : "ArrowUp",
+    increase = axis === "horizontal" ? "ArrowRight" : "ArrowDown";
+  if (![decrease, increase, "Home", "End", "Enter"].includes(event.key)) return;
+  event.preventDefault();
+  request(
+    record.root,
+    (active, op) => {
+      const step = Number(active.root.dataset.step),
+        amount = (Number.isFinite(step) && step > 0 ? step : 5) * (event.shiftKey ? 2 : 1);
+      const value = active.sizes[index] ?? 0;
+      if (event.key === decrease) requestPair(active, index, value - amount, op);
+      else if (event.key === increase) requestPair(active, index, value + amount, op);
+      else if (event.key === "Home")
+        requestPair(active, index, handleBounds(active, index).minimum, op);
+      else if (event.key === "End")
+        requestPair(active, index, handleBounds(active, index).maximum, op);
+      else collapse(active, index, op);
+    },
+    () => !constrained(handle),
+  );
+}
+function pointerPosition(event: PointerEvent, axis: Orientation): number {
+  return axis === "horizontal" ? event.clientX : event.clientY;
+}
+function dragCurrent(record: ResizableRecord, drag: DragState): boolean {
+  const handle = record.handles[drag.handleIndex];
+  return (
+    current(record) &&
+    record.drag === drag &&
+    drag.active &&
+    record.root.isConnected &&
+    Boolean(handle && !constrained(handle)) &&
+    configuration(record) === drag.configuration &&
+    record.root.dataset.value === serialized(record.sizes)
+  );
+}
+function moveDrag(record: ResizableRecord, drag: DragState, event: PointerEvent): void {
+  if (event.pointerId !== drag.pointerId) return;
+  if (!dragCurrent(record, drag)) {
+    record.stop?.();
+    return;
   }
-  const move = (event: PointerEvent): void => moveDrag(record, event);
-  const up = (event: PointerEvent): void => endDrag(record, event);
-  window.addEventListener("pointermove", move);
-  window.addEventListener("pointerup", up);
-  window.addEventListener("pointercancel", up);
-  cleanups.push(() => {
-    window.removeEventListener("pointermove", move);
-    window.removeEventListener("pointerup", up);
-    window.removeEventListener("pointercancel", up);
-  });
-  return () => cleanups.forEach((cleanup) => cleanup());
+  const delta = pointerPosition(event, orientation(record.root)) - drag.startPosition;
+  request(
+    record.root,
+    (active, op) =>
+      requestPair(active, drag.handleIndex, drag.startSize + (delta / drag.usableSize) * 100, op),
+    () => record.drag === drag && drag.active,
+    drag,
+  );
 }
-
+function endDrag(record: ResizableRecord, drag: DragState, event: PointerEvent): void {
+  if (event.pointerId !== drag.pointerId) return;
+  if (!dragCurrent(record, drag)) {
+    record.stop?.();
+    return;
+  }
+  request(
+    record.root,
+    (active, op) => {
+      active.stop?.(op);
+      if (!op.valid()) return;
+      render(active, op);
+      if (op.valid()) emit(active, "resize-end", drag.startSizes, active.sizes, drag.handleIndex);
+    },
+    () => true,
+    drag,
+  );
+}
+function startDrag(record: ResizableRecord, index: number, event: PointerEvent): void {
+  const handle = record.handles[index];
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    !handle ||
+    constrained(handle) ||
+    !isElementNode(event.target) ||
+    event.target.closest("[data-jqs]") !== record.root
+  )
+    return;
+  event.preventDefault();
+  request(
+    record.root,
+    (active, op) => {
+      const rect = active.root.getBoundingClientRect();
+      if (!op.valid()) return;
+      const axis = orientation(active.root);
+      let handlePixels = 0;
+      for (const part of active.handles) {
+        const bounds = part.getBoundingClientRect();
+        if (!op.valid()) return;
+        handlePixels += axis === "horizontal" ? bounds.width : bounds.height;
+      }
+      const drag: DragState = {
+        ...uiResources(active.root),
+        handleIndex: index,
+        pointerId: event.pointerId,
+        startPosition: pointerPosition(event, axis),
+        startSize: active.sizes[index] ?? 0,
+        startSizes: [...active.sizes],
+        usableSize: Math.max(1, (axis === "horizontal" ? rect.width : rect.height) - handlePixels),
+        configuration: configuration(active),
+      };
+      let closing: Operation | undefined;
+      const stop = (operation?: Operation): void => {
+        if (!drag.active) return;
+        active.cleanups.delete(stop);
+        if (active.drag === drag) {
+          active.drag = undefined;
+          active.stop = undefined;
+        }
+        closing = operation;
+        releaseUIResources(drag);
+      };
+      active.drag = drag;
+      active.stop = stop;
+      active.cleanups.add(stop);
+      drag.cleanups.add(() => {
+        const replacement = records.get(active.root);
+        if ((!replacement || replacement === active) && !active.drag) {
+          if (closing) closing.attribute(handle, "data-state", "idle");
+          else handle.setAttribute("data-state", "idle");
+        }
+      });
+      let acquisition: Current | undefined = op.valid;
+      const available = (): boolean =>
+        drag.active && current(active) && active.drag === drag && (acquisition?.() ?? true);
+      try {
+        for (const type of ["pointermove", "pointerup", "pointercancel"] as const)
+          listenUI(
+            drag,
+            () => drag.active && (acquisition?.() ?? true),
+            active.window,
+            type,
+            (next) =>
+              type === "pointermove"
+                ? moveDrag(active, drag, next as PointerEvent)
+                : endDrag(active, drag, next as PointerEvent),
+          );
+        if (!available()) {
+          stop();
+          return;
+        }
+        acquireUIResource(
+          drag,
+          available,
+          () => {
+            handle.setPointerCapture?.(event.pointerId);
+          },
+          () => {
+            const next = records.get(active.root)?.drag;
+            if (
+              next &&
+              next !== drag &&
+              next.pointerId === drag.pointerId &&
+              records.get(active.root)?.handles[next.handleIndex] === handle
+            )
+              return;
+            try {
+              handle.releasePointerCapture?.(event.pointerId);
+            } catch {
+              /* Capture may already be released. */
+            }
+          },
+        );
+        if (!available()) {
+          stop();
+          return;
+        }
+        render(active, op);
+        if (op.valid()) emit(active, "resize-start", active.sizes, active.sizes, index);
+        if (!available()) stop();
+      } catch (error) {
+        try {
+          stop();
+        } catch (cleanupError) {
+          throw new AggregateError(
+            [error, cleanupError],
+            "Resizable pointer setup and cleanup failed.",
+            { cause: cleanupError },
+          );
+        }
+        throw error;
+      } finally {
+        acquisition = undefined;
+      }
+    },
+    () => !constrained(handle),
+  );
+}
+function wire(record: ResizableRecord, op: Operation): void {
+  let acquisition: Current | undefined = op.valid;
+  const valid = (): boolean => current(record) && (acquisition?.() ?? true);
+  try {
+    for (const [index, handle] of record.handles.entries()) {
+      listenUI(record, valid, handle, "pointerdown", (event) =>
+        startDrag(record, index, event as PointerEvent),
+      );
+      listenUI(record, valid, handle, "keydown", (event) =>
+        keydown(record, index, event as KeyboardEvent),
+      );
+    }
+  } finally {
+    acquisition = undefined;
+  }
+}
 function enhanceResizable(root: HTMLElement): ResizableRecord {
   const existing = records.get(root);
-  if (existing) {
-    const patched = parseSizes(root.dataset.value, existing.panels.length);
-    if (patched && serialized(patched) !== serialized(existing.sizes)) {
-      existing.sizes = normalizedSizes(existing.panels, patched);
+  if (existing && current(existing)) {
+    if (existing.busy) return existing;
+    const sizes = normalizedSizes(
+      existing.panels,
+      parseSizes(root.dataset.value, existing.panels.length) ?? existing.sizes,
+    );
+    if (serialized(sizes) !== serialized(existing.sizes)) ++existing.revision;
+    const op = operation(existing);
+    existing.busy = true;
+    try {
+      if (
+        existing.drag &&
+        (existing.drag.configuration !== configuration(existing) ||
+          serialized(sizes) !== serialized(existing.sizes) ||
+          constrained(root))
+      )
+        existing.stop?.(op);
+      if (!op.valid()) return existing;
+      existing.sizes = sizes;
+      render(existing, op);
+    } catch (error) {
+      failUISetup(existing, error);
+    } finally {
+      existing.busy = false;
     }
-    render(existing);
     return existing;
   }
-
-  root.id ||= `jqs-resizable-${++resizableId}`;
-  const panels = directParts(root, "panel");
-  const handles = directParts(root, "handle");
-  if (panels.length < 2 || handles.length !== panels.length - 1) {
+  const saved = existing ?? retained.get(root);
+  existing?.cleanup();
+  const newer = records.get(root);
+  if (newer) return newer;
+  if (existing && !uiActive(root)) return existing;
+  const panels = directParts(root, "panel"),
+    handles = directParts(root, "handle");
+  if (panels.length < 2 || handles.length !== panels.length - 1)
     throw new Error("Resizable needs at least two direct panels and one handle between each pair.");
-  }
-  const sequence = Array.from(root.children).filter(
-    (child): child is HTMLElement =>
-      child instanceof HTMLElement && ["panel", "handle"].includes(child.dataset.part ?? ""),
-  );
-  if (
-    sequence.some((part, index) => part.dataset.part !== (index % 2 === 0 ? "panel" : "handle"))
-  ) {
+  if (!alternating(root))
     throw new Error("Resizable direct parts must alternate panel, handle, panel.");
-  }
   validateConstraints(panels);
-  const authored = parseSizes(root.dataset.value, panels.length);
-  const stored = storedSizes(root, panels.length);
-  const panelDefaults = panels.map((panel) => Number(panel.dataset.size));
-  const defaults = panelDefaults.every((size) => Number.isFinite(size) && size >= 0)
-    ? panelDefaults
-    : panels.map(() => 100 / panels.length);
+  const authored = parseSizes(root.dataset.value, panels.length),
+    defaults = panels.map((panel) => Number(panel.dataset.size));
   const record: ResizableRecord = {
-    cleanup: () => undefined,
+    ...uiResources(root),
+    busy: true,
     drag: undefined,
     handles,
     panels,
-    restoreSizes: new Map(),
-    root,
-    sizes: normalizedSizes(panels, authored ?? stored ?? defaults),
+    restoreSizes: new Map(saved?.restoreSizes),
+    sizes: normalizedSizes(
+      panels,
+      authored ??
+        (saved?.sizes.length === panels.length ? saved.sizes : undefined) ??
+        (defaults.every((value) => Number.isFinite(value) && value >= 0)
+          ? defaults
+          : panels.map(() => 100 / panels.length)),
+    ),
+    stop: undefined,
   };
-  record.cleanup = wire(record);
-  records.set(root, record);
-  render(record);
+  record.cleanups.add(() =>
+    retained.set(root, { sizes: [...record.sizes], restoreSizes: new Map(record.restoreSizes) }),
+  );
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  const op = operation(record);
+  let wired = false;
+  try {
+    const key = root.dataset.storageKey?.trim();
+    if (!authored && !saved && key) {
+      try {
+        const storage = record.window.localStorage;
+        if (op.valid()) {
+          const value = storage.getItem(`jquery-star:resizable:${key}`);
+          if (op.valid())
+            record.sizes = normalizedSizes(
+              panels,
+              parseSizes(value ?? undefined, panels.length) ?? record.sizes,
+            );
+        }
+      } catch {
+        /* Optional storage. */
+      }
+    }
+    render(record, op);
+    if (op.valid()) wire(record, op);
+    wired = op.valid();
+  } catch (error) {
+    failUISetup(record, error);
+  } finally {
+    record.busy = false;
+    if (!wired && record.active) record.cleanup();
+  }
   return record;
 }
-
-function resolveResizable(target: ResizableTarget, root: ParentNode = document): HTMLElement {
-  const resolved =
-    typeof target === "string" ? resizableRoot(root.querySelector(target)) : resizableRoot(target);
-  if (resolved) return resolved;
-  throw new Error(`Resizable target did not match data-jqs="resizable": ${String(target)}`);
+function resolve(
+  owner: Document,
+  target: ResizableTarget,
+  within: ParentNode = owner,
+): HTMLElement {
+  const root =
+    typeof target === "string"
+      ? resizableRoot(
+          isHTMLElement(within) && within.matches(target) ? within : within.querySelector(target),
+        )
+      : resizableRoot(target);
+  if (!root)
+    throw new Error(`Resizable target did not match data-jqs="resizable": ${String(target)}`);
+  if (root.ownerDocument !== owner || !uiActive(root))
+    throw new Error("This Resizable target is unavailable in its owning Document.");
+  return root;
 }
-
-function controlledResizable(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="resizable"]')) return target;
-  if (typeof target === "string" && target.startsWith("#"))
-    return resolveResizable(target, context.root);
-  const closest = context.element?.closest('[data-jqs="resizable"]');
-  return resolveResizable(closest instanceof HTMLElement ? closest : String(target));
+function controlled(owner: Document, context: StarContext, target?: unknown): HTMLElement {
+  if (isHTMLElement(target) || typeof target === "string")
+    return resolve(owner, target, context.root);
+  const root =
+    resizableRoot(context.element?.closest('[data-jqs="resizable"]') ?? null) ??
+    resizableRoot(context.root);
+  if (root) return resolve(owner, root);
+  throw new Error('Resizable action needs a selector or an element inside data-jqs="resizable".');
 }
-
-function registerActions(api: StarResizableStatic, registerAction: ActionRegistrar): void {
-  registerAction("ui.resizable.set", (context) => {
-    const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
-    const target = controlledResizable(context, explicit ? first : undefined);
-    const value = explicit ? context.args?.[1] : first;
-    if (!Array.isArray(value) || !value.every((size) => typeof size === "number")) {
-      throw new Error("ui.resizable.set needs an array of panel sizes.");
-    }
-    return api.set(target, value);
-  });
-  registerAction("ui.resizable.resize", (context) => {
-    const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
-    const target = controlledResizable(context, explicit ? first : undefined);
-    const index = explicit ? context.args?.[1] : first;
-    const size = explicit ? context.args?.[2] : context.args?.[1];
-    if (typeof index !== "number" || typeof size !== "number") {
-      throw new Error("ui.resizable.resize needs a zero-based handle index and primary size.");
-    }
-    return api.resize(target, index, size);
-  });
-  registerAction("ui.resizable.collapse", (context) => {
-    const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
-    const target = controlledResizable(context, explicit ? first : undefined);
-    const index = explicit ? context.args?.[1] : first;
-    return api.collapse(target, typeof index === "number" ? index : 0);
-  });
-  registerAction("ui.resizable.reset", (context) =>
-    api.reset(controlledResizable(context, context.args?.[0])),
-  );
-}
-
-function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="resizable"]')));
-  for (const element of elements) {
-    const resizable = resizableRoot(element);
-    if (resizable) enhanceResizable(resizable);
-  }
-}
-
-export function createResizables(registerAction: ActionRegistrar): ResizableCollection {
+export function createResizables(
+  registerAction: ActionRegistrar,
+  owner: Document,
+): ResizableCollection {
+  const set = (
+    root: HTMLElement,
+    input: readonly number[],
+    permit: Current = () => true,
+  ): HTMLElement =>
+    request(
+      root,
+      (record, op) => {
+        const sizes = [...input];
+        if (!op.valid()) return;
+        if (sizes.length !== record.panels.length)
+          throw new Error(`Resizable #${root.id} needs ${record.panels.length} panel sizes.`);
+        if (!sizes.every((size) => typeof size === "number" && Number.isFinite(size)))
+          throw new Error("Resizable needs finite panel sizes.");
+        applySizes(record, sizes, op);
+      },
+      permit,
+    );
+  const reset = (root: HTMLElement, permit: Current = () => true): HTMLElement =>
+    request(
+      root,
+      (record, op) => {
+        const defaults = record.panels.map((panel) =>
+          Number(panel.getAttribute("data-default-size")),
+        );
+        applySizes(
+          record,
+          defaults.every((size) => Number.isFinite(size) && size >= 0)
+            ? defaults
+            : record.panels.map(() => 100 / record.panels.length),
+          op,
+        );
+        if (op.valid()) record.restoreSizes.clear();
+      },
+      permit,
+    );
   const api: StarResizableStatic = {
-    set: (target, sizes) => {
-      const root = resolveResizable(target);
-      const record = records.get(root) ?? enhanceResizable(root);
-      if (sizes.length !== record.panels.length) {
-        throw new Error(`Resizable #${root.id} needs ${record.panels.length} panel sizes.`);
-      }
-      return applySizes(record, [...sizes]);
-    },
-    resize: (target, handleIndex, primarySize) => {
-      const root = resolveResizable(target);
-      return requestPair(records.get(root) ?? enhanceResizable(root), handleIndex, primarySize);
-    },
-    collapse: (target, handleIndex = 0) => {
-      const root = resolveResizable(target);
-      return collapse(records.get(root) ?? enhanceResizable(root), handleIndex);
-    },
-    reset: (target) => {
-      const root = resolveResizable(target);
-      const record = records.get(root) ?? enhanceResizable(root);
-      const defaults = record.panels.map((panel) =>
-        Number(panel.getAttribute("data-default-size")),
-      );
-      const sizes = defaults.every((size) => Number.isFinite(size) && size >= 0)
-        ? defaults
-        : record.panels.map(() => 100 / record.panels.length);
-      record.restoreSizes.clear();
-      return applySizes(record, sizes);
-    },
+    set: (target, sizes) => set(resolve(owner, target), sizes),
+    resize: (target, index, size) =>
+      request(resolve(owner, target), (record, op) => requestPair(record, index, size, op)),
+    collapse: (target, index = 0) =>
+      request(resolve(owner, target), (record, op) => collapse(record, index, op)),
+    reset: (target) => reset(resolve(owner, target)),
     value: (target) => {
-      const root = resolveResizable(target);
-      return [...(records.get(root) ?? enhanceResizable(root)).sizes];
+      const root = resolve(owner, target),
+        record = enhanceResizable(root);
+      return normalizedSizes(
+        record.panels,
+        parseSizes(root.dataset.value, record.panels.length) ?? record.sizes,
+      );
     },
   };
-  registerActions(api, registerAction);
-  return { api, enhance: enhanceTree };
+  const allowed = (context: StarContext, root: HTMLElement): boolean =>
+    uiActive(root) &&
+    root.ownerDocument === owner &&
+    !constrained(root) &&
+    uiActive(context.root) &&
+    context.root.ownerDocument === owner &&
+    !constrained(context.root) &&
+    (!context.element ||
+      (context.element.ownerDocument === owner &&
+        uiActive(context.element) &&
+        !constrained(context.element))) &&
+    !(context.event && "defaultPrevented" in context.event && context.event.defaultPrevented) &&
+    !(context.event && "isDefaultPrevented" in context.event && context.event.isDefaultPrevented());
+  for (const name of ["set", "resize", "collapse", "reset"] as const)
+    registerAction(`ui.resizable.${name}`, (context) => {
+      const first = context.args?.[0],
+        explicit = isHTMLElement(first) || typeof first === "string";
+      const root = controlled(owner, context, explicit ? first : undefined),
+        permit = () => allowed(context, root);
+      const value = explicit ? context.args?.[1] : first,
+        next = explicit ? context.args?.[2] : context.args?.[1];
+      if (name === "set") {
+        if (!Array.isArray(value))
+          throw new Error("ui.resizable.set needs an array of panel sizes.");
+        return set(root, value as number[], permit);
+      }
+      if (name === "reset") return reset(root, permit);
+      if (name === "resize" && (typeof value !== "number" || typeof next !== "number"))
+        throw new Error("ui.resizable.resize needs a zero-based handle index and primary size.");
+      return request(
+        root,
+        (record, op) =>
+          name === "collapse"
+            ? collapse(record, typeof value === "number" ? value : 0, op)
+            : requestPair(record, Number(value), Number(next), op),
+        permit,
+      );
+    });
+  return {
+    api,
+    enhance(root) {
+      for (const element of uiElements(root, '[data-jqs="resizable"]')) {
+        const target = resizableRoot(element);
+        if (target && target.ownerDocument === owner) enhanceResizable(target);
+      }
+    },
+  };
 }

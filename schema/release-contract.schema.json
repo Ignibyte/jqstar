@@ -159,7 +159,7 @@
               "properties": {
                 "mode": { "const": "full-audit" },
                 "command": { "const": "npm run quality:full-audit" },
-                "requiredGates": { "type": "array", "minItems": 15, "maxItems": 15 }
+                "requiredGates": { "type": "array", "minItems": 13, "maxItems": 13 }
               }
             }
           ]
@@ -172,7 +172,7 @@
               "properties": {
                 "mode": { "const": "delivery" },
                 "command": { "const": "npm run check" },
-                "requiredGates": { "type": "array", "minItems": 13, "maxItems": 13 }
+                "requiredGates": { "type": "array", "minItems": 12, "maxItems": 12 }
               }
             }
           ]

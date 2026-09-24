@@ -667,6 +667,8 @@ export type StarPluginCleanup = () => void;
 // @public (undocumented)
 export interface StarPluginDocumentHost {
     // (undocumented)
+    canOwn?(root: Element): boolean;
+    // (undocumented)
     readonly document: Document;
     // (undocumented)
     listen<EventType extends Event = Event>(target: EventTarget, type: string, listener: (event: EventType) => void, options?: boolean | AddEventListenerOptions): () => void;
@@ -675,9 +677,9 @@ export interface StarPluginDocumentHost {
     // (undocumented)
     operation?(observation: StarStoreOperationObservation): void;
     // (undocumented)
-    own(kind: StarPluginResourceKind, owner: string, cleanup: () => void): () => void;
+    own(kind: StarPluginResourceKind, owner: string, cleanup: () => void, root?: Element): () => void;
     // (undocumented)
-    readonly services?: Pick<StarPluginDocumentHost, "operation" | "own" | "task">;
+    readonly services?: Pick<StarPluginDocumentHost, "operation" | "own" | "task" | "canOwn">;
     // (undocumented)
     task?(owner: string, task: PromiseLike<unknown>, onError: (error: unknown) => void): () => void;
     // (undocumented)

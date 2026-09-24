@@ -62,7 +62,135 @@ function coverageFixture(statementCount = 1) {
   };
 }
 
+function functionHeaderFixture() {
+  const fixture = coverageFixture();
+  const path = "src/example.ts";
+  fixture.sourcesByPath[path] =
+    "export function example(\n  value = 1,\n): number {\n  return value;\n}\n";
+  fixture.scope.changedLines[path] = [1, 2, 3, 4];
+  const coverage = fixture.finalCoverage[repoPath(path)];
+  coverage.statementMap[0] = {
+    start: { line: 4, column: 2 },
+    end: { line: 4, column: 15 },
+  };
+  coverage.fnMap[0].loc = {
+    start: { line: 3, column: 10 },
+    end: { line: 5, column: 1 },
+  };
+  coverage.branchMap = {
+    0: {
+      type: "default-arg",
+      locations: [{ start: { line: 2, column: 10 }, end: { line: 2, column: 11 } }],
+    },
+  };
+  coverage.b = { 0: [1] };
+  return { fixture, coverage };
+}
+
 describe("quality detector liveness", () => {
+  it("checks the complete production roster when no production file changed", () => {
+    const fixture = coverageFixture();
+    fixture.scope = { changedPaths: [], changedLines: {} };
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("pass");
+    expect(result.changed.status).toBe("not-measured");
+    expect(result.roster).toEqual({
+      status: "pass",
+      expectedPaths: ["src/example.ts"],
+      summaryPaths: ["src/example.ts"],
+      hitPaths: ["src/example.ts"],
+      failures: [],
+    });
+  });
+
+  it.each(["summary", "finalCoverage"])("rejects an unchanged file missing from %s", (key) => {
+    const fixture = coverageFixture();
+    fixture.scope = { changedPaths: [], changedLines: {} };
+    fixture.coveredPaths.add("src/unchanged.ts");
+    const absolute = repoPath("src/unchanged.ts");
+    if (key === "summary") fixture.finalCoverage[absolute] = {};
+    else fixture.summary[absolute] = metrics();
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.roster.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("missing production files: src/unchanged.ts");
+  });
+
+  it.each(["summary", "finalCoverage"])("rejects an unexpected file in %s", (key) => {
+    const fixture = coverageFixture();
+    fixture.scope = { changedPaths: [], changedLines: {} };
+    fixture[key][repoPath("src/types-only.ts")] = {};
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.roster.failures.join(" ")).toContain("unexpected files: src/types-only.ts");
+  });
+
+  it.each(["summary", "finalCoverage"])("rejects duplicate normalized paths in %s", (key) => {
+    const fixture = coverageFixture();
+    fixture[key]["./src/example.ts"] = fixture[key][repoPath("src/example.ts")];
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.roster.failures.join(" ")).toContain("repeats normalized paths: src/example.ts");
+  });
+
+  it("rejects duplicate normalized paths in the expected roster", () => {
+    const fixture = coverageFixture();
+    fixture.coveredPaths.add("./src/example.ts");
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.roster.failures.join(" ")).toContain("repeats normalized paths: src/example.ts");
+  });
+
+  it("rejects an empty expected roster independently of the changed scope", () => {
+    const fixture = coverageFixture();
+    fixture.scope = { changedPaths: [], changedLines: {} };
+    fixture.coveredPaths.clear();
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.roster.failures).toContain("The expected production coverage roster is empty.");
+  });
+
+  it("uses function and default-argument hits for headers absent from V8 statement maps", () => {
+    const { fixture } = functionHeaderFixture();
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("pass");
+    expect(result.changed.files[0].unexplainedLines).toEqual([]);
+  });
+
+  it.each([0, undefined])("rejects function headers with invocation count %s", (count) => {
+    const { fixture, coverage } = functionHeaderFixture();
+    coverage.f[0] = count;
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("uncovered changed lines 1, 2, 3");
+  });
+
+  it.each([0, undefined])("rejects a default initializer with count %s", (count) => {
+    const { fixture, coverage } = functionHeaderFixture();
+    coverage.b[0] = [count];
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("uncovered changed lines 2");
+  });
+
+  it("does not credit an omitted body statement from function invocation", () => {
+    const { fixture, coverage } = functionHeaderFixture();
+    coverage.statementMap = {};
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.changed.files[0].unexplainedLines).toEqual([4]);
+  });
+
+  it("does not override zero statement hits with positive function hits", () => {
+    const { fixture, coverage } = functionHeaderFixture();
+    coverage.statementMap[1] = { start: { line: 1, column: 0 }, end: { line: 1, column: 10 } };
+    coverage.s[1] = 0;
+    coverage.s[0] = 0;
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("uncovered changed lines 1, 4");
+  });
+
   it("rejects a coverage report after covered tests are deleted", () => {
     const green = evaluateCoverage(coverageFixture(1));
     const sabotaged = evaluateCoverage(coverageFixture(0));
@@ -80,6 +208,104 @@ describe("quality detector liveness", () => {
     expect(result.status).toBe("fail");
     expect(result.changed.files[0].unexplainedLines).toEqual([2]);
     expect(result.failures.join(" ")).toContain("runtime-emitting changed lines absent");
+  });
+
+  it("attributes a multiline declaration header to its executed initializer", () => {
+    const fixture = coverageFixture(3);
+    fixture.sourcesByPath["src/example.ts"] =
+      "export function example() {\n  const value =\n    true;\n  return value;\n}\n";
+    fixture.scope.changedLines["src/example.ts"] = [2];
+    fixture.finalCoverage[repoPath("src/example.ts")].statementMap[0] = {
+      start: { line: 3, column: 4 },
+      end: { line: 3, column: 8 },
+    };
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("pass");
+    expect(result.changed.files[0].coverageMappedLines).toEqual([2]);
+    expect(result.changed.files[0].initializerHeaderEvidence).toEqual([
+      {
+        line: 2,
+        initializerStartLine: 3,
+        mappedStatements: [{ id: "0", line: 3, hits: 3 }],
+        hitCount: 3,
+      },
+    ]);
+  });
+
+  it("rejects a multiline declaration header when its initializer was not executed", () => {
+    const fixture = coverageFixture(0);
+    fixture.sourcesByPath["src/example.ts"] =
+      "export function example() {\n  const value =\n    true;\n  return value;\n}\n";
+    fixture.scope.changedLines["src/example.ts"] = [2];
+    fixture.finalCoverage[repoPath("src/example.ts")].statementMap[0] = {
+      start: { line: 3, column: 4 },
+      end: { line: 3, column: 8 },
+    };
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("uncovered changed lines 2");
+  });
+
+  it("does not attribute an unrelated following statement to an unmapped initializer", () => {
+    const fixture = coverageFixture(1);
+    fixture.sourcesByPath["src/example.ts"] =
+      "export function example() {\n  const value =\n    true;\n  return value;\n}\n";
+    fixture.scope.changedLines["src/example.ts"] = [2];
+    fixture.finalCoverage[repoPath("src/example.ts")].statementMap[0] = {
+      start: { line: 4, column: 2 },
+      end: { line: 4, column: 15 },
+    };
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.changed.files[0].unexplainedLines).toEqual([2]);
+  });
+
+  it("rejects a multiline declaration with no initializer coverage mapping", () => {
+    const fixture = coverageFixture(1);
+    fixture.sourcesByPath["src/example.ts"] =
+      "export function example() {\n  const value =\n    true;\n  return value;\n}\n";
+    fixture.scope.changedLines["src/example.ts"] = [2];
+    const coverage = fixture.finalCoverage[repoPath("src/example.ts")];
+    coverage.statementMap = {};
+    coverage.s = {};
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.changed.files[0].unexplainedLines).toEqual([2]);
+  });
+
+  it("does not borrow a hit after the initializer on the same line", () => {
+    const fixture = coverageFixture(1);
+    fixture.sourcesByPath["src/example.ts"] =
+      "export function example() {\n  const value =\n    true; return value;\n}\n";
+    fixture.scope.changedLines["src/example.ts"] = [2];
+    fixture.finalCoverage[repoPath("src/example.ts")].statementMap[0] = {
+      start: { line: 3, column: 10 },
+      end: { line: 3, column: 23 },
+    };
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.changed.files[0].unexplainedLines).toEqual([2]);
+  });
+
+  it("keeps an explicit zero hit on the header even when its initializer ran", () => {
+    const fixture = coverageFixture(1);
+    fixture.sourcesByPath["src/example.ts"] =
+      "export function example() {\n  const value =\n    true;\n  return value;\n}\n";
+    fixture.scope.changedLines["src/example.ts"] = [2];
+    const coverage = fixture.finalCoverage[repoPath("src/example.ts")];
+    coverage.statementMap[0] = {
+      start: { line: 3, column: 4 },
+      end: { line: 3, column: 8 },
+    };
+    coverage.statementMap[1] = {
+      start: { line: 2, column: 2 },
+      end: { line: 2, column: 15 },
+    };
+    coverage.s[1] = 0;
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("uncovered changed lines 2");
+    expect(result.changed.files[0].initializerHeaderEvidence).toEqual([]);
   });
 
   it("records type-erased changed lines as explicit non-runtime evidence", () => {
@@ -100,6 +326,42 @@ describe("quality detector liveness", () => {
     expect(result.status).toBe("pass");
     expect(result.changed.files[0].typeOrFormatOnlyLines).toEqual([1]);
     expect(result.changed.files[0].unexplainedLines).toEqual([]);
+  });
+
+  it.each([
+    ["let value: string;", "pass"],
+    ["let value = readValue();", "fail"],
+    ["let { value } = readValue();", "fail"],
+    ["let value: string; readValue();", "fail"],
+    ["readValue(); let value: string;", "fail"],
+  ])("classifies only an isolated uninitialized binding: %s", (source, status) => {
+    const fixture = coverageFixture();
+    const path = "src/example.ts";
+    fixture.sourcesByPath[path] = `${source}\nexport function example() { return true; }\n`;
+    fixture.scope.changedLines[path] = [1];
+    const coverage = fixture.finalCoverage[repoPath(path)];
+    coverage.statementMap[0].start.line = 2;
+    coverage.statementMap[0].end.line = 2;
+    for (const location of [coverage.fnMap[0].decl, coverage.fnMap[0].loc]) {
+      location.start.line = 2;
+      location.end.line = 2;
+    }
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe(status);
+    expect(result.changed.files[0].unexplainedLines).toEqual(status === "pass" ? [] : [1]);
+    if (status === "pass") {
+      expect(result.changed.files[0].coverageMapExemptEvidence).toEqual([
+        { line: 1, reason: "binding declaration without an initializer" },
+      ]);
+    }
+  });
+
+  it("rejects an unexecuted binding when the coverage map supplies its counter", () => {
+    const fixture = coverageFixture(0);
+    fixture.sourcesByPath["src/example.ts"] = "let value: string;\n";
+    const result = evaluateCoverage(fixture);
+    expect(result.status).toBe("fail");
+    expect(result.failures.join(" ")).toContain("uncovered changed lines 1");
   });
 
   it("requires explicit acknowledgement for random property audits", async () => {

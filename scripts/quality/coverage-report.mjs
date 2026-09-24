@@ -20,6 +20,47 @@ function normalizedCoverage(coverage) {
   );
 }
 
+function coverageRoster(summary, finalCoverage, coveredPaths) {
+  const expectedPaths = [...coveredPaths].map(normalizedPath).sort();
+  const summaryPaths = Object.keys(summary)
+    .filter((path) => path !== "total")
+    .map(normalizedPath)
+    .sort();
+  const hitPaths = Object.keys(finalCoverage).map(normalizedPath).sort();
+  const failures = [];
+  if (expectedPaths.length === 0)
+    failures.push("The expected production coverage roster is empty.");
+  for (const [label, paths] of [
+    ["expected", expectedPaths],
+    ["summary", summaryPaths],
+    ["hit", hitPaths],
+  ]) {
+    const duplicates = paths.filter((path, index) => index > 0 && path === paths[index - 1]);
+    if (duplicates.length > 0)
+      failures.push(`Coverage ${label} roster repeats normalized paths: ${duplicates.join(", ")}.`);
+  }
+  const expected = new Set(expectedPaths);
+  for (const [label, paths] of [
+    ["summary", summaryPaths],
+    ["hit", hitPaths],
+  ]) {
+    const actual = new Set(paths);
+    const missing = expectedPaths.filter((path) => !actual.has(path));
+    const unexpected = paths.filter((path) => !expected.has(path));
+    if (missing.length > 0)
+      failures.push(`Coverage ${label} roster is missing production files: ${missing.join(", ")}.`);
+    if (unexpected.length > 0)
+      failures.push(`Coverage ${label} roster has unexpected files: ${unexpected.join(", ")}.`);
+  }
+  return {
+    status: failures.length === 0 ? "pass" : "fail",
+    expectedPaths,
+    summaryPaths,
+    hitPaths,
+    failures,
+  };
+}
+
 function metricFailures(label, actual, floors) {
   const failures = [];
   for (const metric of METRICS) {
@@ -42,7 +83,61 @@ function statementLines(fileCoverage) {
       lines.set(line, counts);
     }
   }
+  const headers = new Map();
+  for (const [id, fn] of Object.entries(fileCoverage.fnMap ?? {})) {
+    for (let line = fn.decl.start.line; line <= fn.loc.start.line; line += 1) {
+      const counts = headers.get(line) ?? [];
+      counts.push(fileCoverage.f?.[id] ?? 0);
+      headers.set(line, counts);
+    }
+  }
+  for (const [id, branch] of Object.entries(fileCoverage.branchMap ?? {})) {
+    if (branch.type !== "default-arg") continue;
+    for (const [index, location] of branch.locations.entries()) {
+      for (let line = location.start.line; line <= location.end.line; line += 1) {
+        headers.get(line)?.push(fileCoverage.b?.[id]?.[index] ?? 0);
+      }
+    }
+  }
+  for (const [line, counts] of headers) if (!lines.has(line)) lines.set(line, counts);
   return lines;
+}
+
+function initializerHeaderEvidence(source, path, fileCoverage, lines, changed) {
+  const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true);
+  const mappedHeaderLines = new Set(lines.keys());
+  const evidence = [];
+  const visit = (node) => {
+    if (ts.isVariableDeclaration(node) && node.initializer) {
+      const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+      const initializerStart = node.initializer.getStart(sourceFile);
+      const initializerStartLine =
+        sourceFile.getLineAndCharacterOfPosition(initializerStart).line + 1;
+      if (changed.has(line) && initializerStartLine > line && !mappedHeaderLines.has(line)) {
+        const mappedStatements = Object.entries(fileCoverage.statementMap ?? {})
+          .filter(([, location]) => {
+            const { line: statementLine, column } = location.start;
+            if (!Number.isInteger(statementLine) || !Number.isInteger(column)) return false;
+            if (statementLine < initializerStartLine) return false;
+            const position = sourceFile.getPositionOfLineAndCharacter(statementLine - 1, column);
+            return position >= initializerStart && position < node.initializer.end;
+          })
+          .map(([id, location]) => ({
+            id,
+            line: location.start.line,
+            hits: fileCoverage.s?.[id] ?? 0,
+          }));
+        if (mappedStatements.length > 0) {
+          const hitCount = Math.max(...mappedStatements.map(({ hits }) => hits));
+          lines.set(line, [...(lines.get(line) ?? []), hitCount]);
+          evidence.push({ line, initializerStartLine, mappedStatements, hitCount });
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return evidence;
 }
 
 function decodeVlq(segment, start) {
@@ -110,12 +205,33 @@ export function emittedRuntimeLines(source, path) {
 function sourceLineEvidence(source, path) {
   const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true);
   const moduleLinkageLines = new Set();
+  const uninitializedBindingLines = new Set();
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) continue;
     const start = sourceFile.getLineAndCharacterOfPosition(statement.getStart(sourceFile)).line + 1;
     const end = sourceFile.getLineAndCharacterOfPosition(statement.end).line + 1;
     for (let line = start; line <= end; line += 1) moduleLinkageLines.add(line);
   }
+  const visit = (node) => {
+    if (
+      ts.isVariableStatement(node) &&
+      node.declarationList.declarations.every(
+        (declaration) => ts.isIdentifier(declaration.name) && !declaration.initializer,
+      )
+    ) {
+      const position = node.getStart(sourceFile);
+      const lineStart = source.lastIndexOf("\n", position - 1) + 1;
+      const nextLine = source.indexOf("\n", node.end);
+      const lineEnd = nextLine === -1 ? source.length : nextLine;
+      if (source.slice(lineStart, position).trim() || source.slice(node.end, lineEnd).trim())
+        return;
+      const start = sourceFile.getLineAndCharacterOfPosition(position).line + 1;
+      const end = sourceFile.getLineAndCharacterOfPosition(node.end).line + 1;
+      for (let line = start; line <= end; line += 1) uninitializedBindingLines.add(line);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
   const formatOnlyLines = new Set();
   for (const [index, text] of source.split("\n").entries()) {
     const trimmed = text.trim();
@@ -131,7 +247,7 @@ function sourceLineEvidence(source, path) {
       formatOnlyLines.add(index + 1);
     }
   }
-  return { formatOnlyLines, moduleLinkageLines };
+  return { formatOnlyLines, moduleLinkageLines, uninitializedBindingLines };
 }
 
 function changedCoverage(finalCoverage, scope, coveredPaths, sourcesByPath) {
@@ -147,8 +263,16 @@ function changedCoverage(finalCoverage, scope, coveredPaths, sourcesByPath) {
     const changed = new Set(scope.changedLines[path] ?? []);
     const lines = statementLines(coverage);
     const source = sourcesByPath[path];
+    const initializerHeaders =
+      typeof source === "string"
+        ? initializerHeaderEvidence(source, path, coverage, lines, changed)
+        : [];
     let emittedLines = new Set();
-    let sourceEvidence = { formatOnlyLines: new Set(), moduleLinkageLines: new Set() };
+    let sourceEvidence = {
+      formatOnlyLines: new Set(),
+      moduleLinkageLines: new Set(),
+      uninitializedBindingLines: new Set(),
+    };
     if (typeof source === "string") {
       try {
         emittedLines = emittedRuntimeLines(source, path);
@@ -164,8 +288,17 @@ function changedCoverage(finalCoverage, scope, coveredPaths, sourcesByPath) {
       .filter((line) => !lines.has(line))
       .sort((a, b) => a - b);
     const coverageMapExemptEvidence = absentFromCoverage
-      .filter((line) => sourceEvidence.moduleLinkageLines.has(line))
-      .map((line) => ({ line, reason: "module-linkage syntax" }));
+      .filter(
+        (line) =>
+          sourceEvidence.moduleLinkageLines.has(line) ||
+          sourceEvidence.uninitializedBindingLines.has(line),
+      )
+      .map((line) => ({
+        line,
+        reason: sourceEvidence.moduleLinkageLines.has(line)
+          ? "module-linkage syntax"
+          : "binding declaration without an initializer",
+      }));
     const exemptLines = new Set(coverageMapExemptEvidence.map(({ line }) => line));
     const typeOrFormatEvidence =
       typeof source === "string"
@@ -218,6 +351,7 @@ function changedCoverage(finalCoverage, scope, coveredPaths, sourcesByPath) {
       changedLines: [...changed].sort((a, b) => a - b),
       executableLines,
       coverageMappedLines,
+      initializerHeaderEvidence: initializerHeaders,
       coverageMapExemptEvidence,
       typeOrFormatOnlyLines,
       typeOrFormatEvidence,
@@ -364,23 +498,30 @@ export function evaluateCoverage({
   sourcesByPath = {},
   executedEvidence,
   thresholdRatchet,
+  diagnostic = false,
 }) {
   const normalizedSummary = normalizedCoverage(summary);
-  const failures = metricFailures("global", summary.total, thresholds.global);
+  const failures = diagnostic ? [] : metricFailures("global", summary.total, thresholds.global);
+  const roster = coverageRoster(summary, finalCoverage, coveredPaths);
+  failures.push(...roster.failures);
   const subsystemFloors = stabilization ? thresholds.stabilizationTargets : thresholds.subsystems;
-  for (const [path, floors] of Object.entries(subsystemFloors)) {
-    failures.push(...metricFailures(path, normalizedSummary[path], floors));
-  }
+  if (!diagnostic)
+    for (const [path, floors] of Object.entries(subsystemFloors)) {
+      failures.push(...metricFailures(path, normalizedSummary[path], floors));
+    }
   const changed = changedCoverage(finalCoverage, scope, coveredPaths, sourcesByPath);
-  failures.push(...changed.failures);
+  if (!diagnostic) failures.push(...changed.failures);
   if (!executedEvidence) failures.push("Executed test evidence was not evaluated.");
   else failures.push(...executedEvidence.failures);
   if (!thresholdRatchet) failures.push("Coverage threshold ratchet was not evaluated.");
-  else if (thresholdRatchet.status === "fail") failures.push(...thresholdRatchet.failures);
+  else if (!diagnostic && thresholdRatchet.status === "fail")
+    failures.push(...thresholdRatchet.failures);
   return {
     status: failures.length === 0 ? "pass" : "fail",
     stabilization,
+    ...(diagnostic ? { diagnostic: true } : {}),
     denominator: summary.total,
+    roster,
     thresholds: {
       global: thresholds.global,
       subsystems: subsystemFloors,

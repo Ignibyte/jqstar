@@ -19,6 +19,10 @@ assistive-technology evidence. The recorded milliseconds measure automated scena
 including browser scheduling and local requests. Operator preparation and analysis time were not
 measured and cannot be inferred from those durations.
 
+The September 17 toolchain refresh reruns all six installed scenarios against the current lockfile.
+Both application questions remain resolved in all three engines, so the original no-go decision
+stands. This development measurement does not establish the final immutable program candidate.
+
 The raw record is `quality/inspection-decision.json`. It includes six complete scenario results,
 browser versions, package digest, public snapshots/traces, fixture digests, import graphs, and
 package-absence checks. Reproduce after a current build:

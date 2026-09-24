@@ -1,7 +1,7 @@
 {
   "$schema": "../schema/jquery-mobile-migration.schema.json",
   "schemaVersion": 1,
-  "reviewedAt": "2026-09-04T16:30:00Z",
+  "reviewedAt": "2026-09-24T04:32:00Z",
   "policy": {
     "ecosystemSha256": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718",
     "runtime": "absent",
@@ -1706,7 +1706,7 @@
       },
       "assetBytes": {
         "jquery": 255967,
-        "jqueryStar": 463263,
+        "jqueryStar": 558894,
         "application": 3680,
         "styles": 3393
       },

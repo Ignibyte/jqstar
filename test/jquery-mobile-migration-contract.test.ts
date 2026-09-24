@@ -93,6 +93,7 @@ interface MigrationContract {
 interface PackageManifest {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  exports: Record<string, unknown>;
   files?: string[];
   optionalDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
@@ -235,7 +236,7 @@ describe("jQuery Mobile migration authority", () => {
     }
   });
 
-  it("imports only completed bridge choices and leaves native navigation unapproved", () => {
+  it("imports approved bridge choices with current exports and leaves native navigation unapproved", () => {
     expect(contract.bridgeDecisions).toEqual([
       expect.objectContaining({ id: "full-document", sourceTicket: null, status: "default" }),
       expect.objectContaining({ id: "datastar", sourceTicket: "0012", status: "available" }),
@@ -247,12 +248,19 @@ describe("jQuery Mobile migration authority", () => {
         status: "not-approved",
       }),
     ]);
-    for (const ticket of ["0012", "0036", "0037"]) {
+    for (const [ticket, entry] of [
+      ["0012", "datastar"],
+      ["0036", "turbo"],
+      ["0037", "htmx"],
+    ]) {
       const path = filesBelow(resolve(repositoryRoot, "docs/tickets")).find((candidate) =>
         candidate.includes(`/${ticket}-`),
       );
       expect(path).toBeDefined();
-      expect(readFileSync(path!, "utf8")).toMatch(/^status: done$/mu);
+      expect(packageManifest.exports[`./${entry}`]).toEqual({
+        import: { types: `./dist/${entry}.d.ts`, default: `./dist/${entry}.js` },
+        require: { types: `./dist/${entry}.d.cts`, default: `./dist/${entry}.cjs` },
+      });
     }
     const navigationDecision: unknown = JSON.parse(
       readFileSync(resolve(repositoryRoot, "quality/navigation-decision.json"), "utf8"),

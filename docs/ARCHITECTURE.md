@@ -35,6 +35,13 @@ setup succeeds. Failed setup rolls back staged work. Destruction removes cleanup
 invoking them, attempts every event, effect, request, mount, directive, observer, and data cleanup,
 removes the kernel record, and then reports one error or an aggregate.
 
+An application rooted on a plain `data-jqs` marker stops at descendant plain `data-jqs` application
+islands. It does not read their signals or computed values, bind their directives, or cancel
+requests claimed by them during subtree cleanup. A page-wide `$.star.boot()` root retains its
+documented document scope, including plain descendants. A named marker such as `data-jqs="button"`
+remains in its parent's directive scope as a UI component. Explicitly starting a separate
+application on a named component marker is a distinct ownership case still under review.
+
 Behavior applications, declarative applications and signal patches share the same recursive state
 copy routine. It copies arrays and plain records while retaining other object and function values by
 identity. Requests and patches reuse the same plain-record check.
@@ -66,9 +73,13 @@ is a mutable reactive proxy.
 Definitions and setup stage before namespace publication. Accepted initial data is cloned from
 descriptor-checked plain acyclic graphs; function leaves retain identity as ordinary methods. Failed
 setup aborts finite work and releases registered subscriptions, effects, tasks, and cleanup in
-reverse order. Successful records live until kernel disposal. Application destruction stops
-application-owned store readers without removing the kernel-owned store. See [STORES.md](STORES.md)
-for the public API and authority boundary.
+reverse order. A provisional kernel resource owns the store lifetime before setup begins. Successful
+setup transfers ownership to the final lifetime resource, preserving abort-before-cleanup ordering
+at normal disposal. Interrupted ownership releases the acquired resource immediately, and ended
+contexts cannot start new callback work. Name/definition reservations reject recursive setup, and
+transactions recheck lifetime before committing their drafts. Successful records live until kernel
+disposal. Application destruction stops application-owned store readers without removing the
+kernel-owned store. See [STORES.md](STORES.md) for the public API and authority boundary.
 
 The fixed context seam is separate from the committed helper tree. `stores` therefore cannot be
 shadowed by a plugin helper and resolves to `undefined` when the stores plugin is absent. `$store`
@@ -184,15 +195,21 @@ publish fixed bindings or access those optional hooks. `src/registry.ts`, `src/d
 directive, helper, namespace, middleware, profile, and inactive observer records without publishing
 them. After all synchronous installers return, the plugin host commits those snapshots with its
 installed-plugin, hook, cleanup, and facade snapshots. A failure runs represented cleanup in reverse
-order and exposes none of the staged state.
+order and exposes none of the staged state. The host rechecks the structural lock after every
+installer and activation, before another callback or publication. Staged document resources own
+cancellation immediately; rollback releases provisional cleanup even before activation, and failed
+observer ownership disconnects the provisional observer. Returned activation cleanup is retained
+before checking for owner disposal.
 
 The first application identity allocation closes structural installation. Application construction
 still happens first; `Kernel.trackApplication()` then runs plugin hooks before committing the kernel
-record and jQuery data. Hook failure reverses earlier hook cleanup and lets the existing outer
-application transaction destroy the uncommitted application. A committed kernel record owns its hook
-cleanup, so explicit destruction, patch removal, and kernel disposal use one exact-once path. Kernel
-disposal destroys applications before plugin-level cleanup, then clears actions and disposes the
-expression engine while aggregating failures.
+record and jQuery data. Each hook's returned cleanup is retained before checking application and
+host lifetime. Destruction or disposal stops later hooks and rejects application commit. Hook
+failure reverses earlier hook cleanup and lets the existing outer application transaction destroy
+the uncommitted application. A committed kernel record owns its hook cleanup, so explicit
+destruction, patch removal, and kernel disposal use one exact-once path. Kernel disposal destroys
+applications before plugin-level cleanup, then clears actions and disposes the expression engine
+while aggregating failures.
 
 External plugin names are dot-qualified stable namespaces. `core` and `ui` plus their descendants
 are reserved, and namespace claims cannot overlap. Framework-marked immutable `core.datastar` and
@@ -492,6 +509,12 @@ preserved roots, and cleanup errors retain the existing aggregation behavior.
 Declarative full root cleanup visits the application's complete attribute-cleanup map, including
 detached elements. A scoped subtree cleanup still checks containment and preserved roots. Removing
 each owned map entry before invoking its callbacks preserves cleanup ordering and failure handling.
+
+The kernel resource ledger also accepts optional Element scopes. Render boundaries prevent new
+acquisition during removal and release scoped work before changing DOM. A shared document observer
+handles native removal while retaining connected moves and in-progress preservation. UI ownership
+uses these capabilities through `src/ui/lifecycle.ts`; ticket 0006 tracks remaining controller
+enrollment and bundle verification. UI modules receive document capabilities, never a Kernel.
 
 All six core/plugin conformance cases share one internal harness owner. It records explicit terminal
 cleanup attempts and otherwise disposes after completion or early failure. A distinct cleanup error

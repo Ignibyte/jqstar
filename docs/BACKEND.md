@@ -149,6 +149,30 @@ const response = ServerSentEventGenerator.stream((stream) => {
 Do not construct SSE fields by hand. The SDK owns protocol event names, data encoding, retry
 metadata, and event IDs.
 
+## Actual-host backend coexistence
+
+The opt-in actual Turbo/htmx fixture runs `core.generic` JSON and HTML plus `core.datastar` SSE
+before and after real host replacement. Its SSE endpoint uses the official SDK stream generator.
+Across both pinned host versions in Chromium, Firefox and WebKit, generic requests omit the Datastar
+request header, implicit signal query and SSE preference; Datastar requests include their current
+signals and stream preference. Responses update signals and HTML, newly inserted directives remain
+live, and each action completes once. The bridge destroys the outgoing application before native
+removal and enhances the incoming one. The single-app control and separate `nested=1` mode also
+verify an outer plain application around the backend child. In that mode the outer state remains
+`{ outer: 100 }`, and the child supplies its own current signals and handles each action once on
+either side of replacement. Two nested no-bridge Chromium diagnostics render host results but leave
+the outgoing child live after native removal. Explicitly booted named component roots and
+cancellation/error combinations remain separate audit work. The earlier matching 931-file
+`npm run check` report `2026-09-23T12-24-53-903Z-32528/report.json` passes all 1,690 browser cases,
+but changed-code coverage, three fixed package sizes and package-budget detector isolation remain
+red. No delivery receipt follows.
+
+The subsequent `nested=1` slice's full `npm run check` report
+`2026-09-23T13-35-36-553Z-47216/report.json` binds a matching 932-file fingerprint and passes 4,933
+units plus 1,702 browser cases across eight projects. `src/declarative.ts` has no uncovered changed
+executable line or function, but the wider changed-source coverage gate, three fixed package-size
+limits and package-budget detector isolation remain red. There is no delivery receipt.
+
 ## jQuery Mobile migration reference endpoint
 
 The ticket-0040 browser fixture is a separate synthetic server, not a production package route. It

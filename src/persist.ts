@@ -8,7 +8,7 @@ import {
 import type { StarStoresFacade } from "./stores/types";
 import { createCustomStorageAdapter, createMemoryStorageAdapter } from "./persist/adapters";
 import { createAttachment } from "./persist/attachment";
-import { fail, storageKey, StarPersistError } from "./persist/data";
+import { errorCode, fail, storageKey, StarPersistError } from "./persist/data";
 import { normalize } from "./persist/envelope";
 import type { StarPersistAttachment, StarPersistFacade, StarPersistOptions } from "./persist/types";
 
@@ -71,17 +71,29 @@ function install(registrar: StarPluginRegistrar): StarPersistFacade {
   registrar.cleanup(() => {
     active = false;
     const errors: StarPersistError[] = [];
-    for (const { attachment } of [...records.values()].reverse()) {
-      for (const code of attachment.dispose().errors) errors.push(new StarPersistError(code));
-    }
+    const attachments = [...records.values()].reverse();
     records.clear();
-    memory.dispose();
+    for (const { attachment } of attachments) {
+      try {
+        for (const code of attachment.dispose().errors) errors.push(new StarPersistError(code));
+      } catch (error) {
+        errors.push(new StarPersistError(errorCode(error)));
+      }
+    }
+    try {
+      memory.dispose();
+    } catch (error) {
+      errors.push(new StarPersistError(errorCode(error)));
+    }
     if (errors.length) throw new AggregateError(errors, "Persistence disposal failed.");
   });
+  function check(): void {
+    if (!active) fail("disposed");
+    registrar.assertBeforeApplications();
+  }
   return Object.freeze({
     attach<Store extends object>(name: string, options: StarPersistOptions<Store>) {
-      if (!active) fail("disposed");
-      registrar.assertBeforeApplications();
+      check();
       if (attaching || !options || !Object.isFrozen(options)) fail("contract");
       const normalized = normalize(options);
       const key = storageKey(options.namespace, name, options.key);
@@ -109,6 +121,7 @@ function install(registrar: StarPluginRegistrar): StarPersistFacade {
         adapter,
         owned,
         options: normalized,
+        beforeApplications: () => registrar.assertBeforeApplications(),
       });
       attaching = true;
       let release: (() => void) | undefined;
@@ -118,6 +131,7 @@ function install(registrar: StarPluginRegistrar): StarPersistFacade {
           if (!report.ok) throw new StarPersistError(report.errors[0]!);
         });
         prepared.start();
+        check();
         sequence++;
         records.set(key, { name, options, attachment: prepared.attachment });
         if (owned) ownedAdapters.add(source);

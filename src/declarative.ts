@@ -196,6 +196,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
   private readonly computedGetters = new Map<object, string>();
   private readonly cleanups = new Map<Element, Map<string, () => void>>();
   private readonly directives = new Map<Element, Map<string, MountedDirective>>();
+  private readonly ownedElements = new WeakSet<Element>();
   private releaseExpressionRuntime: (() => void) | undefined;
   private releaseObserver: (() => void) | undefined;
   private isDestroyed = false;
@@ -310,12 +311,21 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     };
   }
 
+  private belongsHere(element: Element): boolean {
+    if (this.root.getAttribute("data-jqs") !== "") return true;
+    const island = element.closest('[data-jqs=""]');
+    return !island || island === this.root || !this.root.contains(island);
+  }
+
   private allWithin(tree: Element, preservedRoots: readonly Element[] = []): Element[] {
-    return [tree, ...Array.from(tree.querySelectorAll("*"))].filter(
+    const selected = [tree, ...Array.from(tree.querySelectorAll("*"))].filter(
       (element) =>
+        this.belongsHere(element) &&
         !element.closest("[data-ignore]") &&
         !preservedRoots.some((preserved) => preserved === element || preserved.contains(element)),
     );
+    for (const element of selected) this.ownedElements.add(element);
+    return selected;
   }
 
   private loadSignals(tree: Element, preservedRoots: readonly Element[] = []): void {
@@ -884,13 +894,16 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
 
   private cleanupTree(tree: Element, preservedRoots: readonly Element[] = []): void {
     const errors: unknown[] = [];
+    const released: Element[] = [];
     for (const element of [tree, ...Array.from(tree.querySelectorAll("*"))]) {
       if (
+        !this.ownedElements.has(element) ||
         preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
       ) {
         continue;
       }
       attempt(errors, () => cancelElementRequests(element));
+      released.push(element);
     }
     for (const [element, attributes] of Array.from(this.cleanups)) {
       if (tree !== this.root && !tree.contains(element)) continue;
@@ -902,6 +915,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       this.cleanups.delete(element);
       for (const cleanup of attributes.values()) attempt(errors, cleanup);
     }
+    for (const element of released) this.ownedElements.delete(element);
     throwCollectedErrors(errors, "jQuery Star declarative subtree cleanup failed.");
   }
 
@@ -912,6 +926,8 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         const element = mutation.target as Element;
         const attribute = mutation.attributeName;
         if (!attribute) continue;
+        if (element !== this.root && !this.root.contains(element)) continue;
+        if (!this.belongsHere(element)) continue;
         if (attribute === "data-ignore") {
           if (element.hasAttribute("data-ignore")) {
             attempt(errors, () => this.cleanupTree(element));

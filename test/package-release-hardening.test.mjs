@@ -568,6 +568,70 @@ describe("package and release quality contracts", () => {
     expect(evaluateBudgetRatchet(baseline, null, "a".repeat(40)).status).toBe("first-baseline");
   });
 
+  it("permits only ticket 0055's nine measured UI size transitions", () => {
+    const baseline = {
+      $schema: "jqstar-quality-budgets/1",
+      ratchet: {
+        comparison: "immutable-delivery-base",
+        firstBaseline: "establish-when-base-has-no-budgets",
+      },
+      bundles: {
+        "dist/jquery-star.umd.cjs": 464896,
+        "dist/ui.cjs": 318464,
+        "dist/ui.js": 318464,
+        "dist/jquery-star-ui.css": 169984,
+      },
+      consumerBundles: {
+        rootImportBytes: 542720,
+        coreImportBytes: 197632,
+        coreImportGzipBytes: 63000,
+        cspImportGzipBytes: 45000,
+        cspImportBrotliBytes: 39000,
+        storesImportGzipBytes: 66560,
+      },
+    };
+    const reviewed = structuredClone(baseline);
+    reviewed.bundles["dist/jquery-star.umd.cjs"] = 559104;
+    reviewed.bundles["dist/ui.cjs"] = 408576;
+    reviewed.bundles["dist/ui.js"] = 410624;
+    reviewed.bundles["dist/jquery-star-ui.css"] = 171008;
+    reviewed.consumerBundles.rootImportBytes = 634880;
+    reviewed.consumerBundles.coreImportGzipBytes = 64512;
+    reviewed.consumerBundles.cspImportGzipBytes = 46080;
+    reviewed.consumerBundles.cspImportBrotliBytes = 40960;
+    reviewed.consumerBundles.storesImportGzipBytes = 67584;
+    const revision = "a".repeat(40);
+    expect(evaluateBudgetRatchet(reviewed, baseline, revision).status).toBe("pass");
+
+    for (const [section, key] of [
+      ["bundles", "dist/jquery-star.umd.cjs"],
+      ["bundles", "dist/ui.cjs"],
+      ["bundles", "dist/ui.js"],
+      ["bundles", "dist/jquery-star-ui.css"],
+      ["consumerBundles", "rootImportBytes"],
+      ["consumerBundles", "coreImportGzipBytes"],
+      ["consumerBundles", "cspImportGzipBytes"],
+      ["consumerBundles", "cspImportBrotliBytes"],
+      ["consumerBundles", "storesImportGzipBytes"],
+    ]) {
+      const excessive = structuredClone(reviewed);
+      excessive[section][key] += 1;
+      expect(evaluateBudgetRatchet(excessive, baseline, revision).failures).toContain(
+        `${section}.${key} ${excessive[section][key]} loosens immutable-base ceiling ${baseline[section][key]}.`,
+      );
+      const wrongBase = structuredClone(baseline);
+      wrongBase[section][key] -= 1;
+      expect(evaluateBudgetRatchet(reviewed, wrongBase, revision).status).toBe("fail");
+    }
+
+    const unrelated = structuredClone(reviewed);
+    unrelated.consumerBundles.coreImportBytes += 1;
+    expect(evaluateBudgetRatchet(unrelated, baseline, revision).status).toBe("fail");
+    const removed = structuredClone(reviewed);
+    delete removed.bundles["dist/ui.js"];
+    expect(evaluateBudgetRatchet(removed, baseline, revision).status).toBe("fail");
+  });
+
   it("rejects missing, duplicate, misbound, and false-green package evidence", async () => {
     const validate = await compileSchema("schema/package-report.schema.json");
     const valid = packageReport();

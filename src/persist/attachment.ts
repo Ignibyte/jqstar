@@ -35,6 +35,7 @@ export interface AttachmentContext<Store extends object> {
   readonly adapter: StarPersistAdapter;
   readonly owned: boolean;
   readonly options: NormalizedOptions<Store>;
+  readonly beforeApplications: () => void;
 }
 
 export function createAttachment<Store extends object>(
@@ -74,11 +75,32 @@ export function createAttachment<Store extends object>(
     time: 0,
   });
 
+  function check(flushing = false): void {
+    if (!active && !flushing) fail("disposed");
+    if (!started && !flushing) attempt("contract", context.beforeApplications);
+  }
+
+  function invoke<Value>(run: () => Value, flushing = false): Value {
+    check(flushing);
+    const value = run();
+    check(flushing);
+    return value;
+  }
+
+  function retain(release: () => void): () => void {
+    if (!active) {
+      attempt("cleanup", release);
+      fail("disposed");
+    }
+    return release;
+  }
+
   function report(
     outcome: StarPersistStatus["outcome"],
     error: StarPersistErrorCode | null = null,
     bytes = status.bytes,
   ): StarPersistResult {
+    if (disposal) return Object.freeze({ ok: false, status });
     status = Object.freeze({
       ...status,
       revision: revision ? Object.freeze({ ...revision }) : null,
@@ -87,15 +109,17 @@ export function createAttachment<Store extends object>(
       bytes,
       time: status.time,
     });
+    const published = status;
     if (started)
       for (const listener of [...listeners]) {
+        if (!active) break;
         try {
           attempt("contract", () => listener(status));
         } catch {
           continue;
         }
       }
-    return Object.freeze({ ok: error === null, status });
+    return Object.freeze({ ok: error === null && status === published, status });
   }
 
   function cancelTimer(): void {
@@ -104,38 +128,42 @@ export function createAttachment<Store extends object>(
     firstChange = undefined;
   }
 
-  function disable(error: unknown): StarPersistResult {
+  function disable(error: unknown, flushing = false): StarPersistResult {
+    if (!active && !flushing) return Object.freeze({ ok: false, status });
     disabled = true;
     dirty = false;
     cancelTimer();
     return report("disabled", errorCode(error));
   }
 
-  function now(): number {
-    const value = time(options.clock);
+  function now(flushing = false): number {
+    const value = invoke(() => time(options.clock), flushing);
     status = Object.freeze({ ...status, time: value });
     return value;
   }
 
-  function encode(value: Readonly<Store>): string {
-    const data = attempt("encode", () => options.codec.encode(value));
+  function encode(value: Readonly<Store>, flushing = false): string {
+    const data = invoke(() => attempt("encode", () => options.codec.encode(value)), flushing);
     return serialize(data, options.maxBytes);
   }
 
-  function snapshot(): string {
-    return encode(readonlySnapshot(store));
+  function snapshot(flushing = false): string {
+    check(flushing);
+    return encode(readonlySnapshot(store), flushing);
   }
 
-  function available(): void {
-    if (!adapter.available()) fail("unavailable");
+  function available(flushing = false): void {
+    if (!invoke(() => adapter.available(), flushing)) fail("unavailable");
   }
 
   function decode(envelope: StarPersistEnvelope): string {
-    const data = migrate(envelope, options);
+    const data = migrate(envelope, options, check);
     let encoded = "";
     pipeline("decode", () =>
       stores.transaction<Store>(name, (draft) => {
-        attempt("decode", () => options.codec.decode(cloneData(data) as StarPersistData, draft));
+        invoke(() =>
+          attempt("decode", () => options.codec.decode(cloneData(data) as StarPersistData, draft)),
+        );
         encoded = encode(readonlySnapshot(draft));
       }),
     );
@@ -162,6 +190,7 @@ export function createAttachment<Store extends object>(
   function apply(envelope: StarPersistEnvelope, raw: string, external: boolean): void {
     const canonicalRaw = serialize(envelope, options.maxBytes);
     const encoded = decode(envelope);
+    check();
     selected = encoded;
     revision = Object.freeze({ ...envelope.revision });
     counter = Math.max(counter, revision.counter);
@@ -174,14 +203,15 @@ export function createAttachment<Store extends object>(
   }
 
   function repair(): void {
-    if (!acceptedRaw || !revision) return;
-    const current = adapter.read(key);
-    if (current === acceptedRaw || current === null) return;
+    const current = invoke(() => adapter.read(key));
+    const accepted = acceptedRaw;
+    if (!accepted || !revision) return;
+    if (current === accepted || current === null) return;
     const stored = readEnvelope(current, name, options);
     if (compareRevision(stored.revision, revision) >= 0) return;
     writing = true;
     try {
-      adapter.replace(key, acceptedRaw);
+      invoke(() => adapter.replace(key, accepted));
     } finally {
       writing = false;
     }
@@ -209,17 +239,20 @@ export function createAttachment<Store extends object>(
   }
 
   function subscribeAdapter(): void {
-    if (!releaseAdapter && adapter.subscribe) releaseAdapter = adapter.subscribe(external);
+    check();
+    if (!releaseAdapter && adapter.subscribe) releaseAdapter = retain(adapter.subscribe(external));
   }
 
   function hydrate(): void {
     available();
-    const raw = adapter.read(key);
+    const raw = invoke(() => adapter.read(key));
     const currentTime = now();
     // Acquire fallible listener resources before the live transaction or storage removal.
     subscribeAdapter();
     if (raw === null) {
       selected = snapshot();
+      acceptedRaw = null;
+      revision = null;
       disabled = false;
       dirty = false;
       cancelTimer();
@@ -231,7 +264,7 @@ export function createAttachment<Store extends object>(
       const encoded = snapshot();
       writing = true;
       try {
-        adapter.remove(key);
+        invoke(() => adapter.remove(key));
       } finally {
         writing = false;
       }
@@ -247,19 +280,19 @@ export function createAttachment<Store extends object>(
     apply(envelope, raw, false);
   }
 
-  function writeSnapshot(): StarPersistResult {
+  function writeSnapshot(flushing = false): StarPersistResult {
     if (disabled) return Object.freeze({ ok: false, status });
     cancelTimer();
     try {
-      const encoded = snapshot();
+      const encoded = snapshot(flushing);
       if (!dirty && encoded === selected) return Object.freeze({ ok: true, status });
-      available();
-      const raw = adapter.read(key);
+      available(flushing);
+      const raw = invoke(() => adapter.read(key), flushing);
       if (raw !== null) {
         const stored = readEnvelope(raw, name, options);
         counter = Math.max(counter, stored.revision.counter);
       }
-      const savedAt = now();
+      const savedAt = now(flushing);
       const expiresAt = options.ttlMs === null ? null : savedAt + options.ttlMs;
       if (expiresAt !== null && !Number.isSafeInteger(expiresAt)) fail("clock");
       if (!Number.isSafeInteger(counter + 1)) fail("limit");
@@ -278,7 +311,7 @@ export function createAttachment<Store extends object>(
       const nextRaw = serialize(envelope, options.maxBytes);
       writing = true;
       try {
-        adapter.replace(key, nextRaw);
+        invoke(() => adapter.replace(key, nextRaw), flushing);
       } finally {
         writing = false;
       }
@@ -289,7 +322,7 @@ export function createAttachment<Store extends object>(
       dirty = false;
       return report("written", null, byteLength(nextRaw));
     } catch (error) {
-      return disable(error);
+      return disable(error, flushing);
     }
   }
 
@@ -298,20 +331,24 @@ export function createAttachment<Store extends object>(
   }
 
   function cleanups(flushPending: boolean): StarPersistDisposalReport {
+    const flush = flushPending && started;
     active = false;
     started = false;
     disposing = true;
     const errors: StarPersistErrorCode[] = [];
-    if (flushPending) {
-      const result = writeSnapshot();
+    if (flush) {
+      const result = writeSnapshot(true);
       if (!result.ok && result.status.error) errors.push(result.status.error);
     }
-    for (const cleanup of [
+    const releases = [
       cancelTimer,
       releaseStore,
       releaseAdapter,
       ...(owned ? [() => adapter.dispose()] : []),
-    ]) {
+    ];
+    releaseStore = undefined;
+    releaseAdapter = undefined;
+    for (const cleanup of releases) {
       if (!cleanup) continue;
       try {
         attempt("cleanup", cleanup);
@@ -332,6 +369,7 @@ export function createAttachment<Store extends object>(
       if (!active) return Object.freeze({ ok: false, status });
       try {
         hydrate();
+        check();
         return Object.freeze({ ok: true, status });
       } catch (error) {
         return disable(error);
@@ -345,7 +383,7 @@ export function createAttachment<Store extends object>(
         subscribeAdapter();
         writing = true;
         try {
-          adapter.remove(key);
+          invoke(() => adapter.remove(key));
         } finally {
           writing = false;
         }
@@ -381,28 +419,31 @@ export function createAttachment<Store extends object>(
     start() {
       // Validate the codec and select dependencies before any hydration can commit.
       selected = snapshot();
-      releaseStore = stores.subscribe<Store, string>(
-        name,
-        () => {
-          try {
-            return snapshot();
-          } catch (error) {
-            if (started) disable(error);
-            else throw error;
-            return selected;
-          }
-        },
-        ({ current }) => {
-          if (current !== selected) schedule();
-        },
+      releaseStore = retain(
+        stores.subscribe<Store, string>(
+          name,
+          () => {
+            try {
+              return snapshot();
+            } catch (error) {
+              if (started) disable(error);
+              else throw error;
+              return selected;
+            }
+          },
+          ({ current }) => {
+            if (current !== selected) schedule();
+          },
+        ),
       );
       try {
         hydrate();
       } catch (error) {
-        if (options.strict || errorCode(error) === "contract")
+        if (!active || options.strict || errorCode(error) === "contract")
           throw new StarPersistError(errorCode(error));
         disable(error);
       }
+      check();
       started = true;
     },
     rollback() {

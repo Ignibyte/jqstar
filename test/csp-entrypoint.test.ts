@@ -22,7 +22,7 @@ describe("CSP public entry point", () => {
     expect(($.fn as JQueryStatic["fn"] & { star?: unknown }).star).toBeUndefined();
     expect(CSP_GRAMMAR_VERSION).toBe("jqstar-csp-expression/1");
     expect(CSP_CONTRACT_DIGEST).toBe(
-      "40d98004552885f9008f8a8c25435271a5779f30f006f5f8f5e598051d81c855",
+      "fd875f093ecae0e04e99f188500e8215c25b7b5001f9cb11be8d18651941d3a0",
     );
   });
 

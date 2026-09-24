@@ -3,12 +3,38 @@ id: 0040
 title: Publish the jQuery Mobile migration path
 status: done
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-08
 ---
 
 # 0040: Publish the jQuery Mobile migration path
 
 ## Plan
+
+### Reopening decision: imported bridge choice versus correction status (2026-09-08)
+
+Fast `2026-09-08T17-16-43-355Z-7070` passes 1,949 of 1,950 unit cases. The Mobile authority case
+fails solely because bridge owners 0036/0037 are correctly reopened for lifecycle fixes. It requires
+their current workflow status to be done, while their required Code/Test gates execute this same
+case before they can be done. The approved navigation choice, installed exports and supported host
+ranges have not changed. The existing decided navigation authority already chooses browser documents
+and these bridges and declines native navigation.
+
+Reopen AC-10 and AC-13. Verify imported choice against that decided authority and exact current
+Datastar/Turbo/htmx package export targets, retaining source-ticket existence and the exact Mobile
+choice list. Do not use the mutable implementation phase as approval authority. This does not waive
+any bridge acceptance: each reopened owner still requires its own focused tests, current fast/Code,
+full delivery/Test and Document validation; ticket 0033 still requires every prerequisite terminal.
+A changed or missing approval outcome, removed/changed public export or added native-navigation
+option must still fail the contract case. No runtime, host range, navigation or approval is added.
+
+Planned files: `test/jquery-mobile-migration-contract.test.ts`, `docs/TESTING.md`, this ticket and
+`quality/lint-boundaries.json`. Removing the old ticket read also removes the test's sole non-null
+assertion. Delete its exact one-use allowance after verification confirms zero uses; no allowance or
+threshold increases. Record the failed full-unit result, run the focused Mobile contract/property
+and bridge suites, then current fast/Code/full/Test/Document. Keep package/coverage/lint budgets
+unchanged. Update the brain test guide with the separation between completed decision evidence and a
+reopened correction phase. Original completion below is historical until this correction passes its
+required gates.
 
 ### Problem
 
@@ -360,6 +386,12 @@ ownership described by their completed fixtures instead of recreating a common r
 
 ## Code
 
+Current correction changes only the Mobile contract test, test guide and this ticket. The test keeps
+its exact approved choice list, source-ticket existence and decided browser/bridge outcome, adds
+exact ESM/CommonJS/declaration export checks, and removes dependence on mutable correction status.
+The final program audit still refuses unfinished prerequisites. Plan validation passed before this
+change; focused and full current verification follow.
+
 ### Changed-file ledger
 
 | File                                                     | Purpose                                                      |
@@ -406,6 +438,42 @@ ownership described by their completed fixtures instead of recreating a common r
   byte full-text limit does not change.
 
 ## Test
+
+| Command                                                                    | Result | Evidence                                                                                                                                                                                           |
+| -------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check` / `quality:delivery`                                       | Pass   | `2026-09-08T17-27-26-764Z-47398/report.json`: all 13 gates, 1,950 unit tests, 487 browser cases, 13 package checks and seven release checks; matching 877-file fingerprint and authorized receipt. |
+| `npm run ticket:validate -- --phase test` with this ticket and that report | Pass   | Executed before tracked edits; `bridge-test-0040.log`.                                                                                                                                             |
+
+Current correction delivery passes coverage, properties, static checks, browser execution and
+detector self-tests. Its fingerprint is
+`f6e6ec7b3a6db152491b0806b13c356f3daf94ef18e67d07fe3030692a613725`. Earlier failures remain
+recorded. The separate final source-pass UI batch is excluded from this run.
+
+| Command                                                                    | Result | Evidence                                                                                                                                                                              |
+| -------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                     | Pass   | `2026-09-08T17-24-34-188Z-34093/report.json`: all six gates and 1,950 unit tests on matching 877-file fingerprint `e0dbec97889fffe1524f635645c70f8be5ee970440b1b17700998d9e423924a5`. |
+| `npm run ticket:validate -- --phase code` with this ticket and that report | Pass   | Actual command passed before tracked edits; `bridge-code-0040.log`.                                                                                                                   |
+
+Current complete delivery follows. Both earlier fast failures are retained: the circular Mobile
+phase requirement, then the removed assertion's obsolete allowance and one ticket spelling word. The
+obsolete one-use allowance is deleted; no limit increases. Current full Test closure remains
+required for this correction.
+
+Fast `2026-09-08T17-21-53-257Z-20905` passes all 1,950 unit cases. Static verification rejects the
+now-unused one-use non-null allowance and one ticket spelling word. Remove that exact allowance and
+use plain wording; the other static checks pass. The corrected singular Mobile property suite passes
+all three cases in `mobile-bridge-phase-properties.log`.
+
+Current focused Mobile contract and bridge/render suites pass 65 cases across five files. The first
+command used a nonexistent plural property directory, so it supplies no property evidence; the
+correct singular path is run separately and its result retained. Logs are
+`mobile-bridge-phase-focused.log` and `mobile-bridge-phase-properties.log` under the current
+program-audit resume directory. No failed aggregate report is used for phase closure.
+
+| Command                                       | Result | Evidence                                                                                                                                             |
+| --------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` before this correction | Fail   | `2026-09-08T17-16-43-355Z-7070`: the only unit failure requires reopened bridge owners to be done; 1,949 other unit cases and five other gates pass. |
+| `npm run ticket:validate -- --phase plan`     | Pass   | `mobile-bridge-phase-plan.log`, before changing the contract test.                                                                                   |
 
 | Command                                                                                                                                                                                                                                          | Result | Evidence                                                                                                                                                                                                                                                              |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -473,16 +541,24 @@ ownership described by their completed fixtures instead of recreating a common r
 | AC-07     | Pass   | The fixture and guide preserve native validation, submitter value and override, action/method/encoding, multipart files, CSRF, server validation, output escaping, 303, 403, 409, 422, 503, pending ownership, and no replay of uncertain writes in script and no-script modes.                    |
 | AC-08     | Pass   | The pointer fixture has a native button alternative, one pointer ID, capture attempt, vertical cancellation, `pointercancel`, bounded `touch-action`, and one activation. Browser cases cover button activation, cancellation, 44-pixel targets, orientation, zoom/text scale, and reduced motion. |
 | AC-09     | Pass   | Sixteen executions pass: four shared scenarios in Chromium, Firefox, and WebKit plus mobile/touch/zoom/orientation/text, reduced motion, forced colors, and JavaScript-disabled scenarios. They include axe, keyboard/focus, history/scroll, slow/error, and offline evidence.                     |
-| AC-10     | Pass   | The authority and guide keep full documents as default, constrain Datastar to one official-SDK patch, point Turbo and htmx to their completed separate host bridges, and keep planned native navigation unapproved. No common Ajax navigation layer exists.                                        |
+| AC-10     | Pass   | Current contract verifies the exact approved choice list, decided browser-and-bridges authority, no-native utility outcome, owner existence and exact Datastar/Turbo/htmx exports. Reopened bridge corrections retain their own gates; no navigation choice changes.                               |
 | AC-11     | Pass   | The authority records exact source lines, served asset bytes, runtime dependency counts, route and browser counts, unsupported behavior, and two route/feature inventories with application-specific risks. The worksheet explicitly rejects inventory-only percentages.                           |
 | AC-12     | Pass   | README, ecosystem policy, full guide, public page, generated corpus, and contract tests call Mobile archived, attribute its useful lessons, recommend no new runtime use, and preserve the independent-project/no-successor wording.                                                               |
-| AC-13     | Pass   | Focused schema, contract, property, site, corpus, lint, HTML, spelling, three-browser, accessibility, no-script, package, release, server, deployment, ticket-phase, and whitespace checks pass. The final exact-tree `npm run check` supplies the delivery receipt without mutation testing.      |
+| AC-13     | Pass   | Focused 65 cases and three properties pass; current fast passes all six gates and 1,950 units; delivery `2026-09-08T17-27-26-764Z-47398` passes all 13 gates with exact receipt. Actual Code/Test validation passes; the obsolete one-use lint allowance is removed.                               |
 
-### Completion audit
+### Historical completion audit
 
 All 13 criteria have direct current evidence. The schema authority, modern fixture, exact
 measurements, package isolation, browser matrix, practical guide, public site, generated corpus,
 brain documents, and no-runtime decision agree. No unresolved finding, compatibility layer, or
 successor claim remains.
+
+Historical status: Complete
+
+### Completion audit
+
+All 13 criteria have direct evidence. The imported navigation decision remains unchanged; current
+exports and the decided authority replace mutable implementation phase as approval evidence. Current
+Code/Test gates pass, the testing guide explains the boundary, and no product runtime changes.
 
 Status: Complete

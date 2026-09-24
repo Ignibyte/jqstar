@@ -1,13 +1,26 @@
+import { isHTMLElement, isHTMLTag, isElementNode } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { DisclosureTarget, StarContext, StarDisclosureStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  uiActive,
+  type UIResources,
+} from "./lifecycle";
 
 type DisclosureKind = "collapsible" | "accordion";
 
-interface DisclosureRecord {
+interface DisclosureRecord extends UIResources {
+  root: HTMLDetailsElement;
+  group: HTMLElement | undefined;
   content: HTMLElement;
   open: boolean;
   trigger: HTMLElement;
-  triggerCleanup?: (() => void) | undefined;
 }
 
 interface DisclosureEventDetail {
@@ -24,22 +37,22 @@ interface DisclosureCollection {
 }
 
 const records = new WeakMap<HTMLDetailsElement, DisclosureRecord>();
+const groupRevisions = new WeakMap<HTMLElement, number>();
 let disclosureId = 0;
 
-function isDetails(value: Element | null): value is HTMLDetailsElement {
-  return value instanceof HTMLDetailsElement;
+function isDetails(value: unknown): value is HTMLDetailsElement {
+  return isHTMLTag(value, "details");
 }
 
 function directSummary(details: HTMLDetailsElement): HTMLElement | undefined {
   return Array.from(details.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.tagName === "SUMMARY",
+    (child): child is HTMLElement => isHTMLElement(child) && child.tagName === "SUMMARY",
   );
 }
 
 function directContent(details: HTMLDetailsElement): HTMLElement | undefined {
   return Array.from(details.children).find(
-    (child): child is HTMLElement =>
-      child instanceof HTMLElement && child.matches('[data-part="content"]'),
+    (child): child is HTMLElement => isHTMLElement(child) && child.matches('[data-part="content"]'),
   );
 }
 
@@ -73,18 +86,21 @@ function emit(
 ): boolean {
   const component = disclosureKind(details);
   return details.dispatchEvent(
-    new CustomEvent(`jquery-star:${component}:${phase}`, {
-      bubbles: true,
-      cancelable,
-      detail: eventDetail(details, record),
-    }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:${component}:${phase}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail: eventDetail(details, record),
+      },
+    ),
   );
 }
 
 function accordionItems(root: HTMLElement): HTMLDetailsElement[] {
   return Array.from(root.children).filter(
     (child): child is HTMLDetailsElement =>
-      child instanceof HTMLDetailsElement && child.matches('[data-part="item"]'),
+      isHTMLTag(child, "details") && child.matches('[data-part="item"]') && uiActive(child),
   );
 }
 
@@ -112,21 +128,52 @@ function updateAccordionDisabled(root: HTMLElement): void {
 
 function synchronize(details: HTMLDetailsElement, emitChange = true): void {
   const record = records.get(details);
-  if (!record) return;
+  if (!record || !current(record)) return;
 
   const changed = record.open !== details.open;
   record.open = details.open;
-  details.dataset.state = details.open ? "open" : "closed";
-  record.trigger.setAttribute("aria-expanded", String(details.open));
-  const root = accordionRoot(details);
-  if (root) updateAccordionDisabled(root);
-
+  reflect(record);
   if (changed && emitChange) emit(details, record, details.open ? "open" : "close");
 }
 
+function reflect(record: DisclosureRecord): void {
+  const details = record.root;
+  details.dataset.state = details.open ? "open" : "closed";
+  record.trigger.setAttribute("aria-expanded", String(details.open));
+  if (record.group) updateAccordionDisabled(record.group);
+}
+
 function commit(details: HTMLDetailsElement, open: boolean, emitChange = true): void {
+  const record = records.get(details);
+  if (!record || !current(record)) return;
+  const changed = details.open !== open;
   details.open = open;
-  synchronize(details, emitChange);
+  synchronize(details, false);
+  if (changed && emitChange && current(record)) emit(details, record, open ? "open" : "close");
+}
+
+function current(record: DisclosureRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    directSummary(record.root) === record.trigger &&
+    directContent(record.root) === record.content &&
+    accordionRoot(record.root) === record.group
+  );
+}
+
+function operation(record: DisclosureRecord): () => boolean {
+  const revision = ++record.revision;
+  const group = record.group;
+  const groupRevision = group ? (groupRevisions.get(group) ?? 0) + 1 : 0;
+  if (group) groupRevisions.set(group, groupRevision);
+  const mode = group?.dataset.mode;
+  const collapsible = group?.dataset.collapsible;
+  return () =>
+    current(record, revision) &&
+    (!group || groupRevisions.get(group) === groupRevision) &&
+    group?.dataset.mode === mode &&
+    group?.dataset.collapsible === collapsible;
 }
 
 function canClose(details: HTMLDetailsElement): boolean {
@@ -135,29 +182,53 @@ function canClose(details: HTMLDetailsElement): boolean {
   return accordionItems(root).filter((item) => item.open).length > 1;
 }
 
-function prepareSiblings(details: HTMLDetailsElement): boolean {
+function prepareSiblings(
+  details: HTMLDetailsElement,
+  valid: () => boolean,
+  commitChanges: boolean,
+): boolean {
   const root = accordionRoot(details);
-  if (!root || root.getAttribute("data-mode") === "multiple") return true;
-
+  if (!root || root.getAttribute("data-mode") === "multiple") return valid();
   const siblings = accordionItems(root).filter((item) => item !== details && item.open);
-  const prepared: Array<{ item: HTMLDetailsElement; record: DisclosureRecord }> = [];
+  const prepared: Array<{ item: HTMLDetailsElement; record: DisclosureRecord; revision: number }> =
+    [];
   for (const item of siblings) {
     const record = enhanceDetails(item);
-    if (!emit(item, record, "before-close", true)) return false;
-    prepared.push({ item, record });
+    const revision = ++record.revision;
+    if (
+      !emit(item, record, "before-close", true) ||
+      !valid() ||
+      !current(record, revision) ||
+      !item.open
+    )
+      return false;
+    prepared.push({ item, record, revision });
   }
-  for (const { item } of prepared) commit(item, false);
-  return true;
+  const ready = (): boolean =>
+    valid() &&
+    prepared.every(({ record, revision, item }) => current(record, revision) && item.open);
+  if (!ready()) return false;
+  if (commitChanges)
+    for (const { item, record, revision } of prepared) {
+      if (!valid() || !current(record, revision)) return false;
+      commit(item, false);
+    }
+  return valid();
 }
 
 function requestState(details: HTMLDetailsElement, open: boolean): HTMLDetailsElement {
   const record = enhanceDetails(details);
-  if (details.open === open) return details;
-  if (!open && !canClose(details)) return details;
-
-  if (!emit(details, record, open ? "before-open" : "before-close", true)) return details;
-  if (open && !prepareSiblings(details)) return details;
-  commit(details, open);
+  const valid = operation(record);
+  if (details.open === open || (!open && !canClose(details))) return details;
+  if (
+    !emit(details, record, open ? "before-open" : "before-close", true) ||
+    !valid() ||
+    details.open === open ||
+    (!open && !canClose(details))
+  )
+    return details;
+  if (open && !prepareSiblings(details, valid, true)) return details;
+  if (valid()) commit(details, open);
   return details;
 }
 
@@ -180,28 +251,34 @@ function moveAccordionFocus(details: HTMLDetailsElement, event: KeyboardEvent): 
 }
 
 function wireTrigger(details: HTMLDetailsElement, record: DisclosureRecord): void {
-  record.triggerCleanup?.();
-
-  const click = (event: MouseEvent): void => {
+  const trigger = record.trigger;
+  const click = (rawEvent: Event): void => {
+    const event = rawEvent as MouseEvent;
     if (event.defaultPrevented) return;
+    const interactive = isElementNode(event.target)
+      ? event.target.closest("a[href], button, input, select, textarea, label, [contenteditable]")
+      : null;
+    if (interactive && trigger.contains(interactive)) return;
+    const valid = operation(record);
     const nextOpen = !details.open;
-    if (!nextOpen && !canClose(details)) {
+    if (
+      (!nextOpen && !canClose(details)) ||
+      !emit(details, record, nextOpen ? "before-open" : "before-close", true) ||
+      !valid() ||
+      details.open === nextOpen ||
+      (!nextOpen && !canClose(details)) ||
+      (nextOpen && !prepareSiblings(details, valid, false))
+    )
       event.preventDefault();
-      return;
-    }
-    if (!emit(details, record, nextOpen ? "before-open" : "before-close", true)) {
-      event.preventDefault();
-      return;
-    }
-    if (nextOpen && !prepareSiblings(details)) event.preventDefault();
   };
-  const keydown = (event: KeyboardEvent): void => moveAccordionFocus(details, event);
-  record.trigger.addEventListener("click", click);
-  record.trigger.addEventListener("keydown", keydown);
-  record.triggerCleanup = () => {
-    record.trigger.removeEventListener("click", click);
-    record.trigger.removeEventListener("keydown", keydown);
-  };
+  listenUI(record, () => current(record), trigger, "click", click);
+  listenUI(
+    record,
+    () => current(record),
+    trigger,
+    "keydown",
+    (event) => moveAccordionFocus(details, event as KeyboardEvent),
+  );
 }
 
 function enhanceDetails(details: HTMLDetailsElement): DisclosureRecord {
@@ -221,19 +298,37 @@ function enhanceDetails(details: HTMLDetailsElement): DisclosureRecord {
   content.setAttribute("role", "region");
   content.setAttribute("aria-labelledby", trigger.id);
 
-  let record = records.get(details);
-  if (!record) {
-    record = { content, open: details.open, trigger };
-    records.set(details, record);
-    details.addEventListener("toggle", () => synchronize(details));
-    wireTrigger(details, record);
-  } else if (record.trigger !== trigger || record.content !== content) {
-    record.trigger = trigger;
-    record.content = content;
-    wireTrigger(details, record);
+  const existing = records.get(details);
+  if (existing && current(existing)) {
+    reflect(existing);
+    return existing;
   }
-
-  synchronize(details, false);
+  existing?.cleanup();
+  const replacement = records.get(details);
+  if (replacement) return replacement;
+  const record: DisclosureRecord = {
+    ...uiResources(details),
+    root: details,
+    group: accordionRoot(details),
+    content,
+    open: details.open,
+    trigger,
+  };
+  record.cleanup = ownUIRecord(records, details, record, () => releaseUIResources(record));
+  try {
+    listenUI(
+      record,
+      () => current(record),
+      details,
+      "toggle",
+      () => synchronize(details),
+    );
+    wireTrigger(details, record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    reflect(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
 
@@ -256,13 +351,8 @@ function enhanceAccordion(root: HTMLElement): void {
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(
-    ...Array.from(root.querySelectorAll('[data-jqs="collapsible"], [data-jqs="accordion"]')),
-  );
-
-  for (const element of elements) {
-    if (element.matches('[data-jqs="accordion"]') && element instanceof HTMLElement) {
+  for (const element of uiElements(root, '[data-jqs="collapsible"], [data-jqs="accordion"]')) {
+    if (element.matches('[data-jqs="accordion"]') && isHTMLElement(element)) {
       enhanceAccordion(element);
     } else if (element.matches('[data-jqs="collapsible"]') && isDetails(element)) {
       enhanceDetails(element);
@@ -270,18 +360,23 @@ function enhanceTree(root: ParentNode): void {
   }
 }
 
-function resolveDetails(target: DisclosureTarget, root: ParentNode = document): HTMLDetailsElement {
-  if (typeof target !== "string") return target;
-  const match = root.querySelector(target);
-  if (!isDetails(match)) throw new Error(`Disclosure target did not match a <details>: ${target}`);
+function resolveDetails(
+  target: DisclosureTarget | HTMLElement,
+  root: ParentNode = document,
+): HTMLDetailsElement {
+  const match = typeof target === "string" ? root.querySelector(target) : target;
+  if (!isDetails(match))
+    throw new Error(
+      `Disclosure target did not match a <details>: ${typeof target === "string" ? target : "provided element"}`,
+    );
   return match;
 }
 
 function controlledDetails(context: StarContext, target?: unknown): HTMLDetailsElement {
-  if (target instanceof HTMLDetailsElement) return target;
+  if (isHTMLElement(target)) return resolveDetails(target, context.root);
   if (typeof target === "string") {
     const local = context.root.querySelector(target);
-    return isDetails(local) ? local : resolveDetails(target);
+    return isDetails(local) ? local : resolveDetails(target, context.root);
   }
   const closest = context.element?.closest("details") ?? null;
   if (isDetails(closest)) return closest;

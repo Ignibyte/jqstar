@@ -142,12 +142,14 @@ export function readEnvelope<Store extends object>(
 export function migrate<Store extends object>(
   envelope: StarPersistEnvelope,
   options: NormalizedOptions<Store>,
+  checkpoint?: () => void,
 ): StarPersistData {
   let data = cloneData(envelope.data) as StarPersistData;
   for (let version = envelope.version; version < options.version; version++) {
     const migration = options.migrations[version];
     if (!migration) fail("migration");
     data = pipeline("migration", () => cloneData(migration(data)) as StarPersistData);
+    checkpoint?.();
     serialize(data, options.maxBytes);
   }
   return data;

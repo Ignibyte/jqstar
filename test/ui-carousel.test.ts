@@ -51,6 +51,34 @@ describe("jQuery Star Carousel", () => {
     vi.useRealTimers();
   });
 
+  it("rejects a wrong-kind element action target without advancing the nearby carousel", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Carousel application did not start.");
+    const foreign = slide("intro").querySelector<HTMLButtonElement>("button");
+    if (!foreign) throw new Error("Missing Carousel slide action.");
+    await expect(
+      app.run("ui.carousel.next", { element: foreign, args: [foreign] }),
+    ).rejects.toThrow('Carousel target did not match data-jqs="carousel"');
+    expect($.star.ui.carousel.value(carousel())).toBe("intro");
+    await app.run("ui.carousel.next", { args: [carousel()] });
+    expect($.star.ui.carousel.value(carousel())).toBe("details");
+    await app.run("ui.carousel.previous", { args: ["#feature-carousel"] });
+    expect($.star.ui.carousel.value(carousel())).toBe("intro");
+    await app.run("ui.carousel.next", { element: foreign });
+    expect($.star.ui.carousel.value(carousel())).toBe("details");
+  });
+
+  it("treats a native carousel root as an explicit go target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Carousel application did not start.");
+    await app.run("ui.carousel.go", { args: [carousel(), "done"] });
+    expect($.star.ui.carousel.value(carousel())).toBe("done");
+    await app.run("ui.carousel.go", { args: ["#feature-carousel", "intro"] });
+    expect($.star.ui.carousel.value(carousel())).toBe("intro");
+    await app.run("ui.carousel.go", { element: slide("intro"), args: ["details"] });
+    expect($.star.ui.carousel.value(carousel())).toBe("details");
+  });
+
   it("derives carousel and slide semantics from source-owned HTML", () => {
     expect(carousel().getAttribute("role")).toBe("region");
     expect(carousel().getAttribute("aria-roledescription")).toBe("carousel");

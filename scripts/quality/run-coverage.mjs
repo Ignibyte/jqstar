@@ -14,12 +14,13 @@ import {
 } from "./lib.mjs";
 import { evaluateCoverage, verifyExecutedTestEvidence } from "./coverage-report.mjs";
 import { currentCoverageThresholdRatchet } from "./coverage-thresholds.mjs";
+import { collectCensusFiles } from "./verify-production-census.mjs";
 
 const reportDirectory = process.env.JQS_QUALITY_RUN_DIRECTORY
   ? qualityEvidencePath("coverage")
   : repoPath("coverage/quality");
 const gateReport = qualityEvidencePath("coverage-gate.json");
-const coverageMode = process.argv.includes("--stabilization") ? "stabilization" : "delivery";
+const coverageMode = process.argv.includes("--stabilization") ? "stabilization" : "diagnostic";
 const runId = qualityRunId();
 const executedTestsReport = qualityEvidencePath("executed-tests.json");
 
@@ -56,7 +57,7 @@ async function main() {
     const summary = await readJson(resolve(reportDirectory, "coverage-summary.json"));
     const finalCoverage = await readJson(resolve(reportDirectory, "coverage-final.json"));
     const coveredPaths = new Set(
-      scope.changedPaths.filter((path) =>
+      (await collectCensusFiles(census)).filter((path) =>
         classifyPath(path, census).some((rule) => rule.kind === "coverage"),
       ),
     );
@@ -80,6 +81,7 @@ async function main() {
       sourcesByPath,
       executedEvidence,
       thresholdRatchet,
+      diagnostic: coverageMode === "diagnostic",
     });
   } catch (error) {
     evaluation = {
@@ -108,7 +110,7 @@ async function main() {
     },
     ...evaluation,
   });
-  console.log(`Coverage gate ${status}. Report: ${gateReport}`);
+  console.log(`Coverage ${coverageMode} ${status}. Report: ${gateReport}`);
   for (const failure of evaluation.failures ?? []) console.error(`- ${failure}`);
   if (status !== "pass") process.exitCode = 1;
 }

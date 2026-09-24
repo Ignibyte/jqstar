@@ -6,7 +6,6 @@ export default defineConfig({
     include: ["test/property/**/*.test.{ts,mjs}"],
     exclude: [".git/**", "e2e/**", "node_modules/**", "dist/**"],
     maxWorkers: Number(process.env.JQS_TEST_WORKERS ?? 2),
-    minWorkers: 1,
     coverage: { enabled: false },
     sequence: { shuffle: false },
   },

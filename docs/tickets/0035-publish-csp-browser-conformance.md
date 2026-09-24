@@ -10,6 +10,13 @@ updated: 2026-09-06
 
 ## Plan
 
+Ticket 0006's September 17 lifecycle documentation moves README example line locations. Regenerated
+inventory retains 240 public sources and 421 occurrences, with digest
+`0b61f627b3c50e95d5fc25a9a06053c26aa305e31e91b7dbbf677d13cdcf4bd6`. The runtime constant, API
+report, entrypoint test and installed-package identity expectation match that inventory. Grammar and
+example expressions remain unchanged. Earlier digest/full-delivery records below are historical; the
+lifecycle change still requires current full delivery and this ticket's actual manual evidence.
+
 ### Problem
 
 An internal finite evaluator is not a CSP-compatible product. The exact installed entrypoint, its
@@ -465,7 +472,28 @@ complete delivery. Preserve unknown-method refusal, rejection of dynamic `html`,
 and literal setter behavior. Keep all size ceilings, arity coverage, source maps, exports and
 mutation deferral intact.
 
+### Public inventory identity refresh (2026-09-08)
+
+Owner 0008's plugin lifecycle documentation shifts README expression locations. The generated
+conformance map changes only those locations, while accepted/denied/adversarial/context corpora,
+grammar, limits, AST and diagnostics remain unchanged. Update its aggregate identity in
+`src/csp/contract.ts`, `etc/jquery-star-csp.api.md`, `test/csp-entrypoint.test.ts` and the installed
+browser assertion in `scripts/quality-package.mjs` after independent validation. This is the same
+inventory-only pin refresh as the earlier correction. Current CSP contract, installed-package,
+source-graph and full delivery checks remain required. Actual assistive-technology evidence remains
+outstanding.
+
+Delivery `2026-09-08T13-13-33-365Z-48105` retained an old literal in the installed browser
+assertion. Eleven gates pass, including 487 browser cases, all 1,659 unit tests and changed-code
+coverage. The installed package and its detector baseline both fail on the stale digest. Correct
+that fourth literal before repeating package and full verification; no grammar change is involved.
+
 ## Code
+
+The current inventory correction changes `test/fixtures/csp/conformance-map.json` for shifted README
+locations and updates the exact digest in `src/csp/contract.ts`, `etc/jquery-star-csp.api.md`,
+`test/csp-entrypoint.test.ts` and `scripts/quality-package.mjs`. The four executable corpora and
+public expression counts are unchanged.
 
 The literal-policy correction adds one private `ReadonlySet<string>` in `src/csp/evaluator.ts` for
 fixed method names, including `html`, and uses the existing shared diagnostic predicate. The full
@@ -570,6 +598,40 @@ following files; the original implementation ledger below remains historical con
   `CSP_CONTRACT_DIGEST` and exact-package browser identity use the new aggregate.
 
 ## Test
+
+| Command                                                                    | Result | Evidence                                                                                                          |
+| -------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
+| `npm run check` / `quality:delivery`                                       | Pass   | `2026-09-08T16-53-32-481Z-44155/report.json`: all 13 gates and matching 876-file fingerprint; authorized receipt. |
+| `npm run ticket:validate -- --phase test` with this ticket and that report | Pass   | Executed before tracked edits; exact report and current receipt accepted.                                         |
+
+Current delivery `2026-09-08T16-53-32-481Z-44155` passes all 13 enforced gates, including 1,940 unit
+tests, 487 browser cases, changed-code coverage, 13 package checks, seven release checks and
+detector self-tests. The 876-file start/end fingerprint is
+`fc83d419cf48f197ce5fdab3c7416496f170c728da128418fbd8ff51c2f911db`. Actual Test validation passed
+against its authorized receipt before subsequent tracked edits; `ui-expanded-test-0035.log` records
+that command under the ownership-census evidence directory. Earlier delivery failures below remain
+historical evidence. This run excludes the separate bridge corrections and the final source-pass UI
+findings.
+
+| Command                                                                                | Result | Evidence                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                                 | Pass   | `2026-09-08T16-50-37-681Z-30674/report.json`: all six gates and 1,940 unit tests pass on matching 876-file fingerprint `33b30c7f70d1a19d422fc7e11c5860120726770307e957b4a98d2c6220548095`. Actual Code validation passes before tracked edits. |
+| `npm run ticket:validate -- --phase code` with this ticket and the current fast report | Pass   | Executed against that exact report before subsequent tracked status/documentation edits.                                                                                                                                                       |
+
+The fast report below preceded the passing delivery above. Older passing delivery rows refer to
+their recorded predecessor trees.
+
+Integrated fast `2026-09-08T13-40-13-597Z-23188` passes all six gates and 1,687 unit tests after the
+fourth installed-browser pin is corrected. Actual Code validation accepts the exact report.
+Regenerated inventory still validates at
+`e84916e5c49b9442c04e20ce5efd4df04ad62abc03fb04d183855b9c2f861815` with 240 public sources and 421
+occurrences. Fresh installed and full delivery proof remain required.
+
+The 2026-09-08 inventory-only refresh passes fast run `2026-09-08T13-11-08-222Z-35005` (all six
+gates and 1,659 unit tests) and exact Code validation. Aggregate identity is
+`e84916e5c49b9442c04e20ce5efd4df04ad62abc03fb04d183855b9c2f861815`. Independent comparison proves
+only 28 README locations changed and all four corpora remain byte-identical. Installed package,
+complete delivery and actual assistive-technology evidence remain pending.
 
 | Command                                                              | Result | Evidence                                                                                                                                                                                                                                                                                                                                                                                                         |
 | -------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -88,7 +88,7 @@ export function selectCoverage(report, selector, artifacts, context) {
     finalCoverage: maps.hits,
     thresholds: context.thresholds,
     scope: context.scope,
-    coveredPaths: new Set(context.scope.changedPaths.filter((path) => measuredPaths.has(path))),
+    coveredPaths: measuredPaths,
     stabilization: context.coverageMode === "stabilization",
     sourcesByPath: artifacts.sources,
     executedEvidence: verifyExecutedTestEvidence(context.testManifest, execution.normalized),

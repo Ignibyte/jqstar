@@ -36,6 +36,21 @@ describe("jQuery Star Tooltip", () => {
     vi.useRealTimers();
   });
 
+  it("rejects a wrong-kind element action target without opening the nearby tooltip", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Tooltip application did not start.");
+    await expect(
+      app.run("ui.tooltip.open", { element: trigger(), args: [trigger()] }),
+    ).rejects.toThrow('Tooltip target did not match a data-jqs="tooltip" element');
+    expect(content().hidden).toBe(true);
+    await app.run("ui.tooltip.open", { args: [tooltip()] });
+    expect(content().hidden).toBe(false);
+    await app.run("ui.tooltip.close", { args: ["#tooltip"] });
+    expect(content().hidden).toBe(true);
+    await app.run("ui.tooltip.open", { element: trigger() });
+    expect(content().hidden).toBe(false);
+  });
+
   it("adds tooltip semantics while preserving existing descriptions", () => {
     expect(content().getAttribute("role")).toBe("tooltip");
     expect(content().getAttribute("popover")).toBe("manual");

@@ -3,7 +3,7 @@ id: 0018
 title: Add optional shared reactive stores
 status: done
 created: 2026-08-30
-updated: 2026-09-04
+updated: 2026-09-08
 ---
 
 # 0018: Add optional shared reactive stores
@@ -279,7 +279,91 @@ the setup task capability.
 - `docs/tickets/0018-add-shared-stores.md`: Phase, ledger, commands, findings, criterion evidence,
   and completion audit.
 
+### Reopened setup ownership correction (2026-09-08)
+
+The current public-core probe in
+`.git/jqstar/program-audit/ownership-census/resume-2026-09-08/before.json` shows a store setup
+effect that calls `$.star.dispose()` during its first evaluation. Ownership registration then
+throws, but a later external reactive update runs that effect again. This contradicts AC-05 and
+requires a new review of the shared effect/subscription registration and terminal-disposal claims in
+AC-07 and AC-11. Previous passing evidence remains historical.
+
+Before correcting `src/stores.ts`, verify the affected setup and subscription acquisition paths,
+provisional cleanup and retained setup-context behavior. Register or roll back resources across
+initial callback execution, and ensure terminal context calls cannot create new live work. Keep
+caller callbacks, values, observation shapes and optional-package boundaries unchanged. Record any
+additional confirmed boundary in this Plan before implementing its correction.
+
+Planned files are `src/stores.ts`, `test/stores-lifecycle.test.ts`, `docs/STORES.md`, affected
+ownership/testing guidance and this ticket. Require focused positive/negative lifecycle tests,
+`npm run quality:fast`, exact phase validation, changed-code coverage, installed package checks and
+`npm run check`. Package limits, public API, coverage thresholds and mutation deferral remain fixed.
+
+### Additional confirmed setup boundaries (2026-09-08)
+
+`ownership-census/resume-2026-09-08/store-boundaries-before.json` records six current public-core
+probes. A retained context starts an effect and task after failed setup, late cleanup is deferred
+instead of released, cleanup returned after kernel disposal is lost, the provisional setup signal is
+still un-aborted when disposal returns, and a selector that disposes the kernel still delivers its
+immediate listener. These extend the same AC-05/AC-07/AC-11 correction before implementation.
+
+Register provisional store lifetime ownership before invoking setup. Reject effect, subscription and
+task work through an ended context; release supplied cleanup even when its ownership handoff fails.
+Stop an initially running effect if kernel ownership cannot be acquired. Recheck lifetime before
+listener delivery and before store publication. Keep setup rollback abort reasons, original/cleanup
+errors, exact reverse order, public observation shapes and sibling stores intact. Test disposal from
+initial effects/selectors/listeners/tasks, failed ownership, returned cleanup, synchronous signal
+abortion, retained context refusal, failure aggregation and live controls.
+
+### Ownership handoff design (2026-09-08)
+
+Acquire a provisional lifetime before setup, then transfer it to the final lifetime after setup
+succeeds. The final lifetime remains the newest kernel resource so normal disposal still aborts the
+store signal before invoking cleanup in reverse acquisition order. Retire provisional ownership
+without running cleanup during this transfer. Failed setup aborts with `rollback`, removes the
+provisional resource and consumes all acquired cleanup. Disposal during setup aborts with `cleanup`
+before the disposal call returns.
+
+Use one guarded ownership handoff for effects, subscriptions and supplied cleanup. If ownership
+fails, release the provisional resource immediately and preserve both acquisition and cleanup
+failures. Check retained contexts before invoking effects, selectors or tasks. Share subscription
+delivery and supplied-cleanup observation code to keep the optional artifact within its existing
+size ceiling. Consume release stacks during rollback and disposal so retained contexts do not retain
+already released cleanup closures. Work proceeds in an isolated checkout while owner 0008's
+unchanged delivery run finishes.
+
+### Definition reentry and transaction interruption (2026-09-08)
+
+The public-core `store-publication-before.json` probes show recursive setup replacing a committed
+same-name store, one definition publishing two names, and a transaction returning successfully after
+its updater disposes the kernel. Reopen AC-04 and AC-06 before correcting these callback boundaries.
+Reserve the name and definition in one private set before invoking the initial factory or setup,
+reject recursive acquisition, and remove both reservations in `finally`. Only committed records
+remain visible through the facade. Rollback must release reservations so retry stays possible.
+Recheck lifetime after the transaction updater and before committing its detached draft. Consolidate
+the repeated store-active assertion, preserving diagnostics and every proxy guard, to retain the
+unchanged package ceiling. Add same-name/definition reentry, retry, unpublished-name and interrupted
+transaction controls before repeating fast, coverage and full delivery.
+
+### Coverage mapping correction (2026-09-08)
+
+Delivery `2026-09-08T13-42-53-776Z-36345` covers all mapped changed lines and functions but rejects
+line 603 of `src/stores.ts`: the multiline expression-bodied cleanup helper emits runtime code on a
+declaration line absent from the coverage map. Replace that private arrow helper with a function
+declaration and explicit return. Its captures, invocation order and returned cleanup remain
+unchanged. Verify the generated coverage map in the isolated checkout, then repeat current fast and
+full coverage after integration. Do not add a mapping exemption or change thresholds.
+
 ## Code
+
+### Current correction ledger
+
+| File                                                                                     | Purpose                                                                                   |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `src/stores.ts`                                                                          | Guard setup lifetime, ownership handoff and terminal context operations.                  |
+| `test/stores-lifecycle.test.ts`                                                          | Reproduce interrupted acquisition and retained-context failures through the public core.  |
+| `docs/STORES.md`, `docs/ARCHITECTURE.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/TESTING.md` | Explain provisional lifetime, terminal contexts, cleanup handoff and regression coverage. |
+| `docs/tickets/0018-add-shared-stores.md`                                                 | Record the reopened scope, design and verification evidence.                              |
 
 ### Changed-file ledger
 
@@ -321,6 +405,73 @@ the setup task capability.
   without changing the root composition.
 
 ## Test
+
+| Current command                                                                                                                                                | Result | Evidence                                                                                                                                                                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:delivery` via `npm run check`                                                                                                                 | Pass   | `2026-09-08T14-15-52-232Z-38476/report.json`: all 13 gates, 1,722 unit tests, every changed executable line/function, 487 browser cases, all package/release/detector checks; unchanged 862-file fingerprint. |
+| `npm run ticket:validate -- --phase test --ticket docs/tickets/0018-add-shared-stores.md --report .git/jqstar/runs/2026-09-08T14-15-52-232Z-38476/report.json` | Pass   | Executed against the exact current receipt before Document changes.                                                                                                                                           |
+
+Document validation initially required the delivery command name in this direct Test table; the
+actual `npm run check` alias is now recorded explicitly. Earlier verification and failures remain
+below.
+
+| Command                | Result | Evidence                                                                                                     |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| `npm run quality:fast` | Pass   | Run `2026-09-08T13-40-13-597Z-23188`: all six gates, 1,687 unit tests, exact Code validation before testing. |
+
+### Reopened correction verification (2026-09-08)
+
+After the declaration correction, fast `2026-09-08T14-08-47-430Z-11571` passes all six gates and
+1,716 unit tests. Exact Code validation executes and passes for this owner before returning to Test.
+Complete current delivery remains pending.
+
+Full delivery `2026-09-08T13-42-53-776Z-36345` ended with 11 of 13 gates passing on the same
+860-file fingerprint `07e2803817e2555147c4b4afe41f10be9568c6726d6d0311f5eec4ab5651ddea`. All 1,687
+unit tests, 487 browser cases, 13 package checks, seven release checks and detector self-tests
+passed. The two failures were the source-map declaration gap described in Plan and a passing fast
+row below a Test subsection that the ticket validator did not read. The helper now uses an explicit
+function declaration, and the fast row is directly under Test. The isolated exact coverage
+configuration records 17 hits on the previously unmapped declaration; 40 store tests pass, and both
+store formats remain below their unchanged 13,312-byte limit. Preserve the failed report; current
+fast/Code and complete delivery must still run after integration.
+
+Fast `2026-09-08T13-40-13-597Z-23188` passes all six gates and 1,687 unit tests on the same 860-file
+fingerprint `41054e77edf295e823fa81e1206e2879d8ffcc9db00875454e31eb62914198cb`. Actual Code
+validation passes against that report before this ticket enters testing. Full delivery and
+changed-code coverage remain required. The final public publication probes now refuse recursive
+name/definition acquisition and transaction commit after disposal with the expected diagnostics.
+
+Integrated fast run `2026-09-08T13-36-12-814Z-9769` passes all 1,681 unit tests but fails workflow
+and static checks. The plugin ticket's historical heading rename removed the machine-required
+design-change heading; restore that heading with explicit historical context. Correct the new test
+source lint failures before repeating fast verification: attach the cleanup cause to the ownership
+aggregate and read subscription liveness through a closure so TypeScript does not assume the
+selector cannot dispose its record. No lint allowance changes. The source review then confirms the
+additional definition/transaction boundaries recorded above; the original passing focus is
+preserved.
+
+Expanded publication/lifecycle proof passes 61 cases, including 28 new lifecycle controls. The
+consolidated store-active assertion preserves all five proxy checks and current diagnostics while
+the added definition reservations and transaction guard fit the unchanged optional entry ceiling.
+The current pre-format build measures 13,155 ESM and 12,970 CommonJS bytes. Public docs now describe
+reservation retry and interrupted transaction refusal. Installed measurement and current full
+verification remain pending.
+
+Plan validation passes in the isolated checkout before Code. The initial 16-case lifecycle run fails
+13 cases against the original source. Expanded focused verification passes 55 tests across store
+lifecycle, existing stores, generated store properties and plugin lifecycle. The 22 new lifecycle
+cases preserve sibling behavior, rollback errors, abort reasons and normal reverse cleanup. Logs are
+retained in `ownership-census/resume-2026-09-08/store-*.log`. A standalone TypeScript check in the
+isolated checkout fails only because its separate research fixture dependency was not installed; the
+integrated root fast gate must run with the required dependency preparation.
+
+The first corrected optional-store preview measures 13,267 ESM and 13,097 CommonJS bytes under the
+unchanged 13,312-byte limit. The later release-stack guard still requires current package
+measurement. Independent inspection confirms provisional ownership precedes callbacks, successful
+transfer preserves normal abort ordering, and terminal release consumes retained cleanup stacks.
+Source tests exercise failure of both lifetime acquisitions and resource ownership, including a
+failed facade subscription whose store remains live. Exact fast, Code validation, coverage and
+delivery remain required before closure.
 
 | Command                                                                                               | Result | Evidence                                                                                            |
 | ----------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
@@ -370,23 +521,23 @@ the setup task capability.
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                                                                   |
-| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | Package exports, Vite/type builds, the reviewed stores API report, and installed import/require/type checks prove the inert optional entry and frozen official plugin.                                                     |
-| AC-02     | Pass   | Plugin/kernel tests prove same-facade identity, atomic official-service publication, rollback, per-document isolation, and no partial failed install.                                                                      |
-| AC-03     | Pass   | Store and property tests cover the safe name grammar, descriptor-only cloning, shared acyclic references, and rejection of every excluded graph type without caller mutation.                                              |
-| AC-04     | Pass   | Unit and packed-browser assertions prove exact definition/store identity, incompatible-name and definition rejection, sorted frozen names, lookup behavior, and terminal disposal errors.                                  |
-| AC-05     | Pass   | Setup tests cover the frozen context, reverse rollback, owned effects/subscriptions/tasks/cleanup, failure aggregation, observation, and exact-once kernel disposal.                                                       |
-| AC-06     | Pass   | Transaction, property, reactivity, and method tests prove detached synchronous staging, unchanged failure state, one batched commit, ordinary method receivers, and method-graph protection.                               |
-| AC-07     | Pass   | Subscription tests cover immediate/deferred delivery, previous/current values, `Object.is`, caller equality, batching, listener/selector failure containment, release, and disposal.                                       |
-| AC-08     | Pass   | Trusted/CSP unit integration, installed-package browsers, and `e2e/stores.spec.ts` prove late definition and shared updates across behavior/declarative roots with independent teardown.                                   |
-| AC-09     | Pass   | Context, expression, reflection, CSP, and package tests prove one read-only fixed namespace, mutable values, absent-plugin `undefined`, and reserved-helper protection.                                                    |
-| AC-10     | Pass   | Trusted/CSP two-root tests and the unchanged public baseline prove `$store` remains local while `$`, signals, state, computed values, actions, and helper precedence remain intact.                                        |
-| AC-11     | Pass   | Kernel observations and disposal reports prove value-free stable store categories/owners, task abort and cleanup, terminal facade/value behavior, and continued cleanup after failures.                                    |
-| AC-12     | Pass   | Package quality's 13 checks cover Node, TypeScript, QUnit, Chromium/Firefox/WebKit, version identity, maps, raw/gzip limits, and graph exclusion from all unrelated entries.                                               |
-| AC-13     | Pass   | Public/project/website/agent documentation distinguishes coordination, persistence, server authority, resources, security limits, methods, duplicates, and lifecycle; all 12 delivery gates pass without mutation testing. |
+| Criterion | Result | Evidence                                                                                                                                                                                                                                                    |
+| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass   | Package exports, Vite/type builds, the reviewed stores API report, and installed import/require/type checks prove the inert optional entry and frozen official plugin.                                                                                      |
+| AC-02     | Pass   | Plugin/kernel tests prove same-facade identity, atomic official-service publication, rollback, per-document isolation, and no partial failed install.                                                                                                       |
+| AC-03     | Pass   | Store and property tests cover the safe name grammar, descriptor-only cloning, shared acyclic references, and rejection of every excluded graph type without caller mutation.                                                                               |
+| AC-04     | Pass   | `test/stores-lifecycle.test.ts` proves same-name/definition reservation before factory/setup reentry, no pending-name publication, independent definitions and retries after failure. Existing source/packed identity tests and current full delivery pass. |
+| AC-05     | Pass   | The 28-case lifecycle suite proves provisional setup lifetime, immediate cleanup of interrupted acquisitions, ended-context refusal, retained task abort and reverse rollback. Current full coverage includes the corrected private helper declaration.     |
+| AC-06     | Pass   | Existing transaction/reactivity/property/method tests plus disposal-inside-updater cases prove detached staging and no commit after the store lifetime ends. Current full delivery passes without changing accepted data or scheduler behavior.             |
+| AC-07     | Pass   | Subscription tests cover immediate/deferred delivery, equality and batching; lifecycle cases reject ended setup, suppress listener delivery after selector disposal and release interrupted ownership. Current full coverage and delivery pass.             |
+| AC-08     | Pass   | Trusted/CSP unit integration, installed-package browsers, and `e2e/stores.spec.ts` prove late definition and shared updates across behavior/declarative roots with independent teardown.                                                                    |
+| AC-09     | Pass   | Context, expression, reflection, CSP, and package tests prove one read-only fixed namespace, mutable values, absent-plugin `undefined`, and reserved-helper protection.                                                                                     |
+| AC-10     | Pass   | Trusted/CSP two-root tests and the unchanged public baseline prove `$store` remains local while `$`, signals, state, computed values, actions, and helper precedence remain intact.                                                                         |
+| AC-11     | Pass   | Current lifecycle and kernel observation/disposal assertions prove aborted setup work, stable terminal behavior, consumed cleanup stacks and continued cleanup after failures. Existing bounded value-free evidence contracts remain covered.               |
+| AC-12     | Pass   | Package quality's 13 checks cover Node, TypeScript, QUnit, Chromium/Firefox/WebKit, version identity, maps, raw/gzip limits, and graph exclusion from all unrelated entries.                                                                                |
+| AC-13     | Pass   | Public/project/website/agent documentation distinguishes coordination, persistence, server authority, resources, security limits, methods, duplicates, and lifecycle; all 12 delivery gates pass without mutation testing.                                  |
 
-### Completion audit
+### Historical completion audit
 
 All 13 criteria have one current passing evidence row. The accepted package contains 226 files; its
 stores consumer measures 208,404 raw and 65,774 gzip bytes, within ratcheted 1 KiB bounds. The root
@@ -394,5 +545,20 @@ consumer remains below its immutable ceiling. Store code has 100% changed-line c
 and source two-root proofs pass in trusted and CSP modes, and the full delivery run passes all 12
 enforced gates across Chromium, Firefox, and WebKit. The ticket performs no tag, npm publication,
 GitHub release, or mutation testing. No unresolved finding remains.
+
+Status: Historical
+
+### Completion audit
+
+The reopened store criteria have direct current evidence from 28 added lifecycle cases, existing
+store/property/integration cases, updated public/brain guidance and full delivery
+`2026-09-08T14-15-52-232Z-38476`. All 13 gates, 1,722 unit tests, every changed executable
+line/function and 487 browser cases pass on fingerprint
+`94a419d86cec0fc16bb5f8ec6203fc1fd7aef6fd997ba34c6e8fd290b0d7994d` across 862 files. Actual Test
+validation accepts its report and receipt before these Document updates. Setup lifetime, provisional
+cleanup, recursive definition publication and transaction interruption are corrected; the
+declaration mapping gap and Test-table placement failures remain in the historical ledger. The
+installed package remains inside the unchanged limits. No required work remains for this owner
+correction; the whole-library program audit continues separately.
 
 Status: Complete

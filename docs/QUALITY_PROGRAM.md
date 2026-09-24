@@ -12,6 +12,36 @@ The quality system must remain usable by public contributors without access to I
 Rustal Workflow may orchestrate the same commands for Ignibyte work, but the commands, results,
 thresholds, and CI verdict live in this repository.
 
+## Current test toolchain
+
+Ticket 0054 makes actual-browser component behavior the primary UI acceptance check. Fast mode
+selects and executes at least 76 Component Lab cases in Chromium, with exact count, retry, skip and
+failure evidence. Delivery also runs the complete eight-project browser matrix; full audit repeats
+cross-engine browser execution. Focused direct tests remain available for parsers, protocols,
+packages and other contracts that a browser cannot efficiently prove. All-unit and V8 coverage
+scores are no longer automatic delivery gates. `npm run test:coverage` remains a diagnostic: its
+recorded percentages and uncovered changed code guide investigation but do not set a 100% target.
+The older thresholds and reports below describe the historical ticket 0043 policy.
+
+Vitest and its V8 coverage provider are pinned together at 4.1.11. The three test configurations
+retain their existing suite selection and two-worker default. Optional coverage diagnostics include
+the production census patterns, including uncovered files, and verify the complete denominator. The
+historical threshold evaluator remains available for detector tests but does not decide delivery.
+Removed Vitest 3 options do not provide coverage or worker guarantees in Vitest 4.
+
+For changed function headers omitted from statement maps, the evaluator requires the actual function
+invocation counter and any default-argument branch counters. It never credits an unmapped body from
+a function hit or overrides a zero statement count. Isolated identifier declarations without
+initializers receive a named source-classification record when V8 omits them; initializers and
+neighboring executable statements still require hit evidence. Detector tests prove these boundaries
+with missing and zero counters.
+
+The markdownlint-cli2 dependency is restricted to `smol-toml` 1.7.1 through a package-specific
+override because markdownlint-cli2 0.23.2 pins the affected 1.7.0 parser. Remove the override when
+that package itself selects a patched parser and both dependency scanners pass. This override does
+not change the parser versions used by other tools. Ticket 0052 records the advisory review and
+current verification; its earlier receipts remain evidence only for their original source and tools.
+
 ## Reference findings
 
 The plan was derived from direct inspection on 2026-08-30.
@@ -112,9 +142,10 @@ old debt.
 
 ### Ratchets only move up
 
-Coverage, package size, duplication, complexity, and warning counts have committed floors.
-Environment variables may raise a floor for an audit but cannot lower it. Lowering a floor requires
-a ticket with measured evidence and an explicit product decision.
+Package size, duplication, complexity, and warning counts retain committed limits. Coverage floors
+are historical diagnostic data under ticket 0054 and do not gate delivery. Environment values cannot
+loosen an enforced limit. Changing an enforced limit requires a ticket with measured evidence and an
+explicit product decision.
 
 ### Test behavior, not implementation trivia
 
@@ -206,23 +237,23 @@ Historical coverage floors and package ceilings retain immutable-base negative c
 now uses the review base when supplied and local HEAD otherwise; missing commit identity or invalid
 historical data fails instead of skipping the comparison.
 
-| Category                           | Actual scope and control                                                                                                                                                 | Evidence and limits                                                                                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Types / PHPStan equivalent         | Four strict TypeScript projects cover runtime, server, registry, tests/examples and TS build configuration; unchecked indexes and exact optional properties are enabled. | Compiler matrix, installed TypeScript consumers, API reports. Dependency declaration internals use `skipLibCheck`; consumer contracts still compile.          |
-| Typed correctness                  | `strictTypeChecked`, floating/misused promise checks, unnecessary assertions/type arguments, and reviewed void/async rules.                                              | Effective-rule tests and zero-warning ESLint; the counted legacy inventory below remains explicit.                                                            |
-| JavaScript CLI/automation          | Recommended ESLint, all five SonarJS rules, architecture checks, process/effect canaries, and installed CLI consumers.                                                   | JavaScript `.mjs` files are not type-checked. Process conformance and syntax lint do not substitute for type analysis.                                        |
-| Maintainability / PHPMD equivalent | SonarJS cognitive complexity, identical conditions/branches, inverted booleans and nested switches; jscpd duplication.                                                   | Current ceiling 65, immutable-base metric/detector ratchets, positive/negative controls. A green ceiling is not proof that each function is easy to maintain. |
-| Formatting / PHPCS equivalent      | Prettier checks the repository; Stylelint covers authored runtime/site/fixture CSS; HTML validation covers site, registry and browser fixtures.                          | Exact selectors and invalid/corrected CSS controls. Two frozen research styles retain cosmetic notation exceptions described below.                           |
-| Architecture and unused code       | dependency-cruiser checks production layering/cycles/resolution/dev imports; Knip checks configured entries, dependencies, files and exports.                            | Executable rule sabotage and package graphs. Dynamic imports and generated outputs have named entry/fixture contracts.                                        |
-| Security and dependencies          | Semgrep, gitleaks history/worktree, npm audit, OSV, lock integrity, licenses; hosted CodeQL and dependency review.                                                       | Local delivery logs plus hosted statuses. Tool success does not prove absence of vulnerabilities.                                                             |
-| Behavior and coverage              | Non-empty Vitest suites, source census, V8 coverage floors, seeded fast-check properties.                                                                                | Runner/schema/fingerprint controls and immutable-base coverage ratchets; `.mjs` process code is classified as process-contract evidence.                      |
-| Browsers and accessibility         | Chromium, Firefox, WebKit, axe, keyboard/focus/lifecycle tests, CSP and installed consumers.                                                                             | Automated tests plus separately recorded manual charters; axe is not screen-reader user testing.                                                              |
-| Package and release                | API Extractor, publint, Are the Types Wrong, isolated consumers, graph/size budgets, reproducibility, receipts.                                                          | Exact tarball identities, historical ceilings, positive/negative evidence checks; publication remains a separate action.                                      |
-| Documentation and automation       | Markdownlint, cspell, local links, generated-content/schema checks, ShellCheck, actionlint, runner self-tests.                                                           | Current tree-bound logs. Link checking validates repository targets, not the future availability of every external page.                                      |
+| Category                           | Actual scope and control                                                                                                                                                 | Evidence and limits                                                                                                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Types / PHPStan equivalent         | Four strict TypeScript projects cover runtime, server, registry, tests/examples and TS build configuration; unchecked indexes and exact optional properties are enabled. | Compiler matrix, installed TypeScript consumers, API reports. Dependency declaration internals use `skipLibCheck`; consumer contracts still compile.                                      |
+| Typed correctness                  | `strictTypeChecked`, floating/misused promise checks, unnecessary assertions/type arguments, and reviewed void/async rules.                                              | Effective-rule tests and zero-warning ESLint; the counted legacy inventory below remains explicit.                                                                                        |
+| JavaScript CLI/automation          | Recommended ESLint, all five SonarJS rules, architecture checks, process/effect canaries, and installed CLI consumers.                                                   | JavaScript `.mjs` files are not type-checked. Process conformance and syntax lint do not substitute for type analysis.                                                                    |
+| Maintainability / PHPMD equivalent | SonarJS cognitive complexity, identical conditions/branches, inverted booleans and nested switches; jscpd duplication.                                                   | Current ceiling 65, immutable-base metric/detector ratchets, positive/negative controls. A green ceiling is not proof that each function is easy to maintain.                             |
+| Formatting / PHPCS equivalent      | Prettier checks the repository; Stylelint covers authored runtime/site/fixture CSS; HTML validation covers site, registry and browser fixtures.                          | Exact selectors and invalid/corrected CSS controls. Two frozen research styles retain cosmetic notation exceptions described below.                                                       |
+| Architecture and unused code       | dependency-cruiser checks production layering/cycles/resolution/dev imports; Knip checks configured entries, dependencies, files and exports.                            | Executable rule sabotage and package graphs. Dynamic imports and generated outputs have named entry/fixture contracts.                                                                    |
+| Security and dependencies          | Semgrep, gitleaks history/worktree, npm audit, OSV, lock integrity, licenses; hosted CodeQL and dependency review.                                                       | Local delivery logs plus hosted statuses. Tool success does not prove absence of vulnerabilities.                                                                                         |
+| Behavior and coverage              | Chromium Component Lab in fast mode, the eight-project browser matrix in delivery, seeded fast-check properties, and optional direct tests and V8 coverage diagnostics.  | Browser execution counts and runner/schema/fingerprint controls; optional coverage retains a source census without an enforced score. `.mjs` process code uses process-contract evidence. |
+| Browsers and accessibility         | Chromium, Firefox, WebKit, axe, keyboard/focus/lifecycle tests, CSP and installed consumers.                                                                             | Automated tests plus separately recorded manual charters; axe is not screen-reader user testing.                                                                                          |
+| Package and release                | API Extractor, publint, Are the Types Wrong, isolated consumers, graph/size budgets, reproducibility, receipts.                                                          | Exact tarball identities, historical ceilings, positive/negative evidence checks; publication remains a separate action.                                                                  |
+| Documentation and automation       | Markdownlint, cspell, local links, generated-content/schema checks, ShellCheck, actionlint, runner self-tests.                                                           | Current tree-bound logs. Link checking validates repository targets, not the future availability of every external page.                                                                  |
 
 Seven formerly blanket-disabled typed rules are now default errors. The exact-file
-[lint boundary inventory](../quality/lint-boundaries.json) records 305 existing file/rule
-allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 288
+[lint boundary inventory](../quality/lint-boundaries.json) records 303 existing file/rule
+allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 318
 selected TypeScript source/test files and requires observed counts to match the inventory. Reducing
 a count requires reducing its allowance. After this initial baseline, the immutable-base comparison
 rejects new allowances and increased counts. These are remaining reviewed categories of debt, not
@@ -230,8 +261,8 @@ assertions that every occurrence is ideal or that unchanged counts prove an edit
 
 | Counted rule                     | Existing occurrences | Reason for preserving current behavior pending individual review                                                 |
 | -------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `no-non-null-assertion`          | 1,068                | Indexed access, lifecycle/DOM preconditions, and fixtures; the assertions still need their stated preconditions. |
-| `no-unnecessary-condition`       | 132                  | Runtime checks for JavaScript callers and closure state beyond TypeScript's narrowing.                           |
+| `no-non-null-assertion`          | 1,060                | Indexed access, lifecycle/DOM preconditions, and fixtures; the assertions still need their stated preconditions. |
+| `no-unnecessary-condition`       | 131                  | Runtime checks for JavaScript callers and closure state beyond TypeScript's narrowing.                           |
 | `no-base-to-string`              | 82                   | Existing coercion and formatting contracts, including untyped values.                                            |
 | `no-unnecessary-type-conversion` | 22                   | Runtime coercion of signals and JavaScript inputs.                                                               |
 | `no-unnecessary-type-parameters` | 25                   | Existing public generic inference and caller-selected types.                                                     |
@@ -287,13 +318,13 @@ static runner.
 
 ### Fast
 
-The fast gate is the edit loop and writes no delivery receipt. Target wall time is under two minutes
-on the reference machine.
+The fast gate is the edit loop and writes no delivery receipt. Target wall time is under five
+minutes on the reference machine.
 
 - formatting and configuration syntax
 - production and test TypeScript compilation
 - strict typed ESLint and project source bans
-- all Vitest unit and integration tests without coverage instrumentation
+- the Chromium Component Lab browser suite, with complete execution evidence without retries
 - architecture, unused-code, documentation, and test-selection checks that complete inside budget
 - gate-runner self-tests when gate code or configuration changes
 
@@ -304,11 +335,11 @@ Ordinary delivery runs retain changed-path selectors. The release-candidate orch
 internal all-gates flag so every configured delivery gate executes even from a clean commit.
 
 - every fast gate
-- complete production coverage census and ratchet
+- the fast Component Lab browser suite and the full eight-project browser matrix
 - property and contract tests selected by affected subsystem
 - local Semgrep, gitleaks, npm audit, OSV, dependency, license, and lockfile checks
 - clean build, generated-output drift, package API, package types, exports, and size budgets
-- affected Playwright projects across Chromium, Firefox, and WebKit
+- all configured Playwright projects across Chromium, Firefox, and WebKit
 - self-hosted and installed-tarball proof
 - documentation examples and links affected by the change
 - one machine-readable report on green or red
@@ -323,7 +354,7 @@ applying changed-path selectors.
 
 - clean clone and `npm ci`
 - all browser, device, reduced-motion, forced-color, touch, no-JavaScript, and accessibility lanes
-- repeated unit, property, and browser runs with recorded seeds to expose flakes
+- repeated cross-engine browser and property runs with recorded seeds to expose flakes
 - full package consumer matrix, reproducible build comparison, SBOM, and provenance checks
 - CodeQL and full Semgrep/security policy
 - manual assistive-technology charter for release-critical interaction changes
@@ -348,11 +379,9 @@ side-effect imports do. A source-census test independently compares the configur
 with every assignment. Type-only exclusions keep their named type-check evidence without synthetic
 counters credited as covered.
 
-After the census is corrected, the first enforced floors equal the measured result rounded down no
-more than one percentage point. They never decrease. Changed production lines and functions require
-100% coverage immediately. Security, request encoding, patching, lifecycle ownership, expression,
-and parser modules target 100% line and function coverage plus at least 95% branch coverage. The
-whole production census ratchets toward the same bar.
+The former coverage floors and changed-code targets are retained as diagnostic history. They no
+longer decide fast, delivery, or full-audit status. Use browser behavior and focused direct contract
+checks to choose evidence for each change.
 
 ## Mutation-testing policy
 
@@ -366,9 +395,21 @@ development. It may return only after an explicit user request and a separate qu
 The quality program exposes `quality:census`, `test:coverage`, `test:property`,
 `test:property:audit`, and `test:quality:self`. The coverage census enrolls runtime TypeScript,
 server handlers, and executable registry blocks while mapping non-instrumented artifacts to named
-evidence. Its initial enforced floors are 89% lines/statements, 88% functions, and 75% branches
-globally, plus committed subsystem ratchets. Changed executable lines and functions remain an exact
-100% gate.
+evidence. Its former floors were 89% lines/statements, 88% functions, and 75% branches globally,
+plus committed subsystem ratchets. They remain in reports for diagnosis, without a delivery
+threshold.
+
+The optional coverage runner derives its full file roster from the filesystem census, independently
+of the Git diff. Both raw hit maps and per-file summaries must contain exactly that roster. A
+missing unchanged file, unexpected file, duplicate normalized path or empty expected roster fails
+before a passing diagnostic report can be accepted. Changed-line and function findings remain
+visible but do not define a passing score.
+
+V8 sometimes maps an executed multiline `const` initializer only to the line after its declaration
+header. The diagnostic evaluator credits that header only when a raw statement map starts inside its
+own initializer syntax, and records the statement IDs, lines and hit counts. A zero-hit initializer,
+an explicitly zero-hit header, an unrelated statement or a declaration with no mapped initializer
+still appears as uncovered in diagnostics. This attribution does not change the coverage roster.
 
 The deterministic property lane uses seed 430043. The acknowledged audit lane generates a fresh
 signed 32-bit seed and records it with the test result; discovered minimized cases remain in
@@ -467,8 +508,11 @@ Ceilings use the next 4 KiB boundary for package bytes, the next 1 KiB boundary 
 bundles, the next group of five files, the next 100 DOM nodes, and a narrow measured boundary for
 owned operations. Clean builds have a zero changed-file budget. `budget-ratchet.mjs` compares every
 numeric ceiling with `JQS_QUALITY_BASE_SHA` or the runner's immutable scope. Removing a ceiling or
-raising it fails. The initial revision is reported as `first-baseline` when the base has no budget
-file. There is no environment override that can loosen a ceiling.
+raising it fails except for ticket 0055's nine exact, measured UI bundle and installed-consumer
+transitions. Each exception requires the recorded old ceiling and rejects any value above its
+reviewed next-1-KiB maximum; unrelated increases still fail. The initial revision is reported as
+`first-baseline` when the base has no budget file. There is no environment override that can loosen
+a ceiling.
 
 ## Reports and evidence
 

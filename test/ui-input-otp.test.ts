@@ -71,6 +71,39 @@ describe("jQuery Star Input OTP", () => {
     expect(completed).toHaveBeenCalledTimes(2);
   });
 
+  it("uses an explicit native root in the set action and rejects a different component", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Input OTP application did not start.");
+    await app.run("ui.input-otp.set", { args: [root(), "123456"] });
+    expect(control().value).toBe("123456");
+    const form = document.querySelector<HTMLFormElement>("#form");
+    if (!form) throw new Error("Missing Input OTP form.");
+    expect(new FormData(form).get("code")).toBe("123456");
+    const foreign = document.getElementById("external");
+    if (!foreign) throw new Error("Missing Input OTP external action.");
+    await expect(
+      app.run("ui.input-otp.set", { element: control(), args: [foreign, "999999"] }),
+    ).rejects.toThrow('Input OTP target did not match data-jqs="input-otp"');
+    expect(control().value).toBe("123456");
+    await app.run("ui.input-otp.set", { element: control(), args: ["654321"] });
+    expect(control().value).toBe("654321");
+  });
+
+  it("stops a native edit when its before-change listener replaces the value", () => {
+    const changes = vi.fn();
+    root().addEventListener("jquery-star:input-otp:change", changes);
+    root().addEventListener("jquery-star:input-otp:before-change", () => {
+      control().value = "456";
+    });
+    control().value = "123";
+    control().dispatchEvent(new Event("input", { bubbles: true }));
+    expect(control().value).toBe("456");
+    expect(changes).not.toHaveBeenCalled();
+    expect(root().dataset.value).toBe("");
+    $.star.ui.enhance(root());
+    expect($.star.ui.inputOTP.value(root())).toBe("456");
+  });
+
   it("dispatches native events, supports cancellation, and serializes normally", () => {
     const input = vi.fn();
     const change = vi.fn();

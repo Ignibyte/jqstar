@@ -86,6 +86,22 @@ describe("jQuery Star Data Table", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without paging the nearby table", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Data Table application did not start.");
+    const foreign = sortButton("name");
+    await expect(
+      app.run("ui.dataTable.next", { element: foreign, args: [foreign] }),
+    ).rejects.toThrow('Data Table target did not match data-jqs="data-table"');
+    expect(visibleRowIds()).toEqual(["alpha", "beta"]);
+    await app.run("ui.dataTable.next", { args: [root()] });
+    expect(visibleRowIds()).toEqual(["gamma", "delta"]);
+    await app.run("ui.dataTable.previous", { args: ["#data-table"] });
+    expect(visibleRowIds()).toEqual(["alpha", "beta"]);
+    await app.run("ui.dataTable.next", { element: foreign });
+    expect(visibleRowIds()).toEqual(["gamma", "delta"]);
+  });
+
   it("keeps native table semantics and initializes pagination controls", () => {
     expect(table().caption?.textContent).toBe("UI systems");
     expect(table().querySelector('th[data-key="name"]')?.getAttribute("scope")).toBe("col");

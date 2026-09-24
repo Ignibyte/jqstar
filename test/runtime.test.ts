@@ -329,19 +329,9 @@ describe("jQuery Star", () => {
       .map(({ owner }) => owner)
       .sort();
 
-    expect(services).toEqual([
-      "ui:auto-enhancement",
-      "ui:combobox:active-records",
-      "ui:hover-card:active-records",
-      "ui:menu:active-records",
-      "ui:multi-select:active-records",
-      "ui:popover:active-records",
-      "ui:select:active-records",
-      "ui:toast:active-records",
-      "ui:tooltip:active-records",
-    ]);
+    expect(services).toEqual(["ui:auto-enhancement", "ui:lifecycle", "ui:toast:lifetime"]);
     expect(resources.some(({ kind }) => kind === "listener")).toBe(true);
-    expect(resources.filter(({ kind }) => kind === "observer")).toHaveLength(2);
+    expect(resources.filter(({ kind }) => kind === "observer")).toHaveLength(1);
   });
 
   it("records application observers with their exact owner and full subtree scope", async () => {

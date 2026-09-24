@@ -1,13 +1,37 @@
-export function isElementNode(node: Node): node is Element {
-  return node.nodeType === 1;
+let nodeTypeDescriptor: PropertyDescriptor | undefined;
+
+function nodeType(value: unknown): unknown {
+  try {
+    nodeTypeDescriptor ??= Object.getOwnPropertyDescriptor(Node.prototype, "nodeType");
+    return nodeTypeDescriptor?.get?.call(value);
+  } catch {
+    return undefined;
+  }
+}
+
+export function isNode(value: unknown): value is Node {
+  return typeof nodeType(value) === "number";
+}
+
+export function isElementNode(value: unknown): value is Element {
+  return nodeType(value) === 1;
+}
+
+export function isHTMLElement(value: unknown): value is HTMLElement {
+  return isElementNode(value) && value.namespaceURI === "http://www.w3.org/1999/xhtml";
+}
+
+export function isHTMLTag<Tag extends keyof HTMLElementTagNameMap>(
+  value: unknown,
+  tag: Tag,
+): value is HTMLElementTagNameMap[Tag] {
+  return isHTMLElement(value) && value.localName === tag;
 }
 
 export function isInputElement(element: Element): element is HTMLInputElement {
-  const Input = element.ownerDocument.defaultView?.HTMLInputElement;
-  return Input ? element instanceof Input : element.localName === "input";
+  return isHTMLTag(element, "input");
 }
 
 export function isSelectElement(element: Element): element is HTMLSelectElement {
-  const Select = element.ownerDocument.defaultView?.HTMLSelectElement;
-  return Select ? element instanceof Select : element.localName === "select";
+  return isHTMLTag(element, "select");
 }

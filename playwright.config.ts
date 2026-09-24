@@ -11,6 +11,7 @@ const artifactDirectory = resolve(
   process.env.JQS_PLAYWRIGHT_ARTIFACT_DIRECTORY ?? ".git/jqstar/standalone/playwright",
 );
 const selfTest = process.env.JQS_PLAYWRIGHT_SELF_TEST;
+const componentFast = process.env.JQS_COMPONENT_FAST === "1";
 
 const requiredProjects = [
   {
@@ -102,51 +103,67 @@ export default defineConfig({
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
-  projects: selfTest
+  projects: componentFast
     ? [
         {
-          name: "quality-selftest",
-          testMatch: /quality-contracts\.spec\.ts/,
-          grep: /@selftest/,
+          name: "desktop-chromium",
+          testMatch: /components\.spec\.ts/,
           use: { ...devices["Desktop Chrome"] },
         },
       ]
-    : requiredProjects,
-  webServer: [
-    {
-      command: "npm run demo -- --host 127.0.0.1 --port 4173",
-      url: "http://127.0.0.1:4173",
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/network-proof-server.mjs",
-      url: `http://127.0.0.1:${networkProofPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/interoperability-server.mjs",
-      url: `http://127.0.0.1:${interoperabilityPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/jquery-ui-migration-server.mjs",
-      url: `http://127.0.0.1:${jqueryUiMigrationPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/jquery-mobile-migration-server.mjs",
-      url: `http://127.0.0.1:${jqueryMobileMigrationPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/resource-strategy-server.mjs",
-      url: `http://127.0.0.1:${resourceStrategyPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/navigation-decision-server.mjs",
-      url: `http://127.0.0.1:${navigationDecisionPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
+    : selfTest
+      ? [
+          {
+            name: "quality-selftest",
+            testMatch: /quality-contracts\.spec\.ts/,
+            grep: /@selftest/,
+            use: { ...devices["Desktop Chrome"] },
+          },
+        ]
+      : requiredProjects,
+  webServer: componentFast
+    ? [
+        {
+          command: "npm run demo -- --host 127.0.0.1 --port 4173",
+          url: "http://127.0.0.1:4173",
+          reuseExistingServer: !process.env.CI,
+        },
+      ]
+    : [
+        {
+          command: "npm run demo -- --host 127.0.0.1 --port 4173",
+          url: "http://127.0.0.1:4173",
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/network-proof-server.mjs",
+          url: `http://127.0.0.1:${networkProofPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/interoperability-server.mjs",
+          url: `http://127.0.0.1:${interoperabilityPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/jquery-ui-migration-server.mjs",
+          url: `http://127.0.0.1:${jqueryUiMigrationPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/jquery-mobile-migration-server.mjs",
+          url: `http://127.0.0.1:${jqueryMobileMigrationPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/resource-strategy-server.mjs",
+          url: `http://127.0.0.1:${resourceStrategyPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/navigation-decision-server.mjs",
+          url: `http://127.0.0.1:${navigationDecisionPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+      ],
 });
