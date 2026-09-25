@@ -240,7 +240,7 @@ One document uses one jQStar installation and one canonical jQuery instance. Loa
 copy or trying to install against a second jQuery instance in that document is unsupported and fails
 before it can install competing document behavior.
 
-The jQuery peer is required. A strict package installation rejects jQuery outside `>=4.0.0 <5`. If
+The jQuery peer is required. A strict package installation rejects jQuery outside `>=3.7.1 <5`. If
 peer installation is deliberately bypassed and jQuery is absent, importing `jquery-star` fails
 because the `jquery` module cannot be resolved.
 
@@ -1757,6 +1757,10 @@ state.count++;
 await $.star.nextUpdate();
 ```
 
+Named computed values are enumerable state keys. Changing or removing a `data-computed:name`
+attribute updates bindings that read the key. Removing it restores an earlier signal with the same
+name, or removes the computed-only key. An empty computed name is ignored.
+
 ## Directives
 
 | Directive         | Example                                      | Effect                         |
@@ -1800,13 +1804,15 @@ Modifiers follow the event name with a double underscore.
 Supported modifiers are:
 
 - `prevent`, `stop`, `once`, and `self`
-- `debounce`, `debounce.250ms`, and `debounce.1s`
-- `throttle`, `throttle.100ms`, and `throttle.1s`
+- `debounce`, `debounce.50`, `debounce.250ms`, and `debounce.0.05s`
+- `throttle`, `throttle.50`, `throttle.100ms`, and `throttle.0.1s`
 - `outside`, `window`, and `document`
 - `capture` and `passive`
 - `enter`, `escape`, `space`, `tab`, `up`, `down`, `left`, and `right`
 
-`prevent` and `passive` cannot be combined.
+`prevent` and `passive` cannot be combined. Debounce and throttle durations accept whole or
+fractional numbers in milliseconds (`ms`) or seconds (`s`). A missing unit means milliseconds. The
+default is 250ms.
 
 ## Dynamic markup and cleanup
 

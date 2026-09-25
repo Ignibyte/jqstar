@@ -26,8 +26,8 @@
     },
     "checks": {
       "type": "array",
-      "minItems": 13,
-      "maxItems": 13,
+      "minItems": 14,
+      "maxItems": 14,
       "prefixItems": [
         { "$ref": "#/$defs/buildCheck" },
         { "$ref": "#/$defs/apiReportCheck" },
@@ -41,7 +41,8 @@
         { "$ref": "#/$defs/qunitConsumerCheck" },
         { "$ref": "#/$defs/browserConsumersCheck" },
         { "$ref": "#/$defs/bundleSentinelCheck" },
-        { "$ref": "#/$defs/copyInRegistryCheck" }
+        { "$ref": "#/$defs/copyInRegistryCheck" },
+        { "$ref": "#/$defs/jquery371ConsumerCheck" }
       ],
       "items": false
     },
@@ -261,6 +262,55 @@
         { "type": "object", "properties": { "name": { "const": "copy-in-registry" } } }
       ]
     },
+    "jquery371ConsumerCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "jquery-3.7.1-consumer" } },
+          "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+          "then": { "properties": { "detail": { "$ref": "#/$defs/jquery371ConsumerEvidence" } } }
+        }
+      ]
+    },
+    "jquery371ConsumerEvidence": {
+      "type": "object",
+      "required": [
+        "subject",
+        "jqueryVersion",
+        "peerRange",
+        "tarballSha256",
+        "nodeConsumers",
+        "browserConsumers",
+        "browserModuleAdapter",
+        "cspPolicy",
+        "engines"
+      ],
+      "properties": {
+        "subject": { "const": "installed-tarball" },
+        "jqueryVersion": { "const": "3.7.1" },
+        "peerRange": { "const": ">=3.7.1 <5" },
+        "tarballSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "nodeConsumers": { "const": ["esm", "commonjs"] },
+        "browserConsumers": { "const": ["module", "umd", "csp"] },
+        "browserModuleAdapter": { "const": "test-only-umd-module" },
+        "cspPolicy": {
+          "const": "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'"
+        },
+        "engines": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "$ref": "#/$defs/chromiumEvidence" },
+            { "$ref": "#/$defs/firefoxEvidence" },
+            { "$ref": "#/$defs/webkitEvidence" }
+          ],
+          "items": false
+        }
+      },
+      "additionalProperties": false
+    },
     "browserConsumerEvidence": {
       "type": "object",
       "required": ["subject", "consumers", "lifecycle", "engines", "csp"],
@@ -328,7 +378,7 @@
             "incompatible"
           ],
           "properties": {
-            "jqueryRange": { "const": ">=4.0.0 <5" },
+            "jqueryRange": { "const": ">=3.7.1 <5" },
             "htmxRange": { "const": ">=2.0.0 <2.1.0" },
             "htmxOptional": { "const": true },
             "turboRange": { "const": ">=8.0.21 <8.1.0" },

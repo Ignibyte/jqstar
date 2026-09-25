@@ -418,6 +418,10 @@ describe("CSP expression engine", () => {
     const current = harness();
     const engine = createCSPExpressionEngine();
     current.state.items = ["first", "second", null];
+    Object.assign(current.state.items as unknown[], { "1x": "private", x1: "private" });
+    const longItems = Array.from({ length: 11 }, (_, index) => `item-${index}`);
+    Object.assign(longItems, { "-1": "private" });
+    current.state.longItems = longItems;
     const element = current.context.element as HTMLElement;
     element.dataset.role = "save";
     const event = new Event("click", { bubbles: true, cancelable: true });
@@ -436,6 +440,9 @@ describe("CSP expression engine", () => {
       ["'abcdef'.substring(1,3)", "bc"],
       ["'abcdef'.charAt()", "a"],
       ["args.at(-1)", "second"],
+      ["args.at(-2)", "input"],
+      ["args.at(-3)", undefined],
+      ["args.at(2)", undefined],
       ["args.at(99)", undefined],
       ["args.includes('second')", true],
       ["args.indexOf('second',1)", 1],
@@ -443,7 +450,12 @@ describe("CSP expression engine", () => {
       ["[null,true,2].join('-')", "-true-2"],
       ["state.items.length", 3],
       ["state.items[1]", "second"],
+      ["state.items[3]", undefined],
       ["state.items[99]", undefined],
+      ["state.items['1x']", undefined],
+      ["state.items['x1']", undefined],
+      ["state.longItems[10]", "item-10"],
+      ["state.longItems.at(-12)", undefined],
       ["evt.target.id", ""],
       ["evt.currentTarget", null],
       ["el.dataset.role", "save"],
@@ -473,6 +485,29 @@ describe("CSP expression engine", () => {
     expect(engine.compileStatement("evt.stopPropagation(); return evt.type")(current.context)).toBe(
       "click",
     );
+
+    current.release();
+    engine.dispose();
+  });
+
+  it("keeps array method results read-only while indexed state remains writable", () => {
+    const current = harness();
+    const engine = createCSPExpressionEngine();
+    const stateRecord = { value: "before" };
+    const argumentRecord = { value: "before" };
+    current.state.records = [stateRecord];
+    (current.context as unknown as { args: unknown[] }).args = [argumentRecord];
+
+    engine.compileStatement("state.records[0].value = 'after'")(current.context);
+    expect(stateRecord.value).toBe("after");
+    expect(() =>
+      engine.compileStatement("state.records.at(0).value = 'wrong'")(current.context),
+    ).toThrow(expect.objectContaining({ code: "CSP_CAPABILITY_LVALUE" }));
+    expect(() => engine.compileStatement("args.at(0).value = 'wrong'")(current.context)).toThrow(
+      expect.objectContaining({ code: "CSP_CAPABILITY_LVALUE" }),
+    );
+    expect(stateRecord.value).toBe("after");
+    expect(argumentRecord.value).toBe("before");
 
     current.release();
     engine.dispose();

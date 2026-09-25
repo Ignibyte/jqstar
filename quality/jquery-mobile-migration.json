@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "reviewedAt": "2026-09-24T04:32:00Z",
   "policy": {
-    "ecosystemSha256": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718",
+    "ecosystemSha256": "aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609",
     "runtime": "absent",
     "fixtureRuntime": "forbidden",
     "defaultNavigation": "full-document",
@@ -1706,7 +1706,7 @@
       },
       "assetBytes": {
         "jquery": 255967,
-        "jqueryStar": 558894,
+        "jqueryStar": 559006,
         "application": 3680,
         "styles": 3393
       },

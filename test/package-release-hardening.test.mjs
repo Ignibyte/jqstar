@@ -143,7 +143,7 @@ function packageReport() {
     peerDependencies: {
       htmxRange: ">=2.0.0 <2.1.0",
       htmxOptional: true,
-      jqueryRange: ">=4.0.0 <5",
+      jqueryRange: ">=3.7.1 <5",
       turboRange: ">=8.0.21 <8.1.0",
       turboOptional: true,
       missing: { exitCode: 1, markers: ["jquery"] },
@@ -277,6 +277,22 @@ function packageReport() {
       modules: 1,
       unrelatedOptionalModules: "absent",
     },
+  };
+  checks[13].detail = {
+    subject: "installed-tarball",
+    jqueryVersion: "3.7.1",
+    peerRange: ">=3.7.1 <5",
+    tarballSha256: "c".repeat(64),
+    nodeConsumers: ["esm", "commonjs"],
+    browserConsumers: ["module", "umd", "csp"],
+    browserModuleAdapter: "test-only-umd-module",
+    cspPolicy:
+      "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'",
+    engines: ["chromium", "firefox", "webkit"].map((name) => ({
+      name,
+      version: "1.2.3",
+      status: "pass",
+    })),
   };
   return {
     schema: "jqstar-package-quality/1",
@@ -624,6 +640,18 @@ describe("package and release quality contracts", () => {
       expect(evaluateBudgetRatchet(reviewed, wrongBase, revision).status).toBe("fail");
     }
 
+    const auditBudget = structuredClone(reviewed);
+    auditBudget.consumerBundles.rootImportBytes = 634881;
+    auditBudget.consumerBundles.storesImportGzipBytes = 67623;
+    expect(evaluateBudgetRatchet(auditBudget, reviewed, revision).status).toBe("pass");
+    for (const key of ["rootImportBytes", "storesImportGzipBytes"]) {
+      const excessive = structuredClone(auditBudget);
+      excessive.consumerBundles[key] += 1;
+      expect(evaluateBudgetRatchet(excessive, reviewed, revision).failures).toContain(
+        `consumerBundles.${key} ${excessive.consumerBundles[key]} loosens immutable-base ceiling ${reviewed.consumerBundles[key]}.`,
+      );
+    }
+
     const unrelated = structuredClone(reviewed);
     unrelated.consumerBundles.coreImportBytes += 1;
     expect(evaluateBudgetRatchet(unrelated, baseline, revision).status).toBe("fail");
@@ -667,6 +695,10 @@ describe("package and release quality contracts", () => {
       (report) => report.checks[4].detail.documentation.push("docs/tickets/0044.md"),
       (report) => delete report.checks[11].detail.htmx,
       (report) => delete report.checks[11].detail.turbo,
+      (report) => delete report.checks[13].detail.jqueryVersion,
+      (report) => (report.checks[13].detail.jqueryVersion = "4.0.0"),
+      (report) => (report.checks[13].detail.engines[0].status = "fail"),
+      (report) => report.checks[13].detail.browserConsumers.pop(),
     ]) {
       const sabotaged = structuredClone(valid);
       mutate(sabotaged);

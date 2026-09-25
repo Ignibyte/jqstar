@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from "node
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { validateConfig } from "../bin/doctor/configuration.mjs";
 import { packageReport, runDoctor } from "../bin/doctor/index.mjs";
 import { createSchemaValidator } from "../scripts/quality/validate-json.mjs";
 
@@ -29,7 +30,7 @@ async function project(installed = true) {
     await write(root, "node_modules/jquery-star/package.json", {
       name: "jquery-star",
       version: "1.1.0",
-      peerDependencies: { jquery: ">=4.0.0 <5" },
+      peerDependencies: { jquery: ">=3.7.1 <5" },
       main: "./index.cjs",
       exports: {
         ".": { import: "./index.js", require: "./index.cjs" },
@@ -63,6 +64,153 @@ function codes(result) {
 
 afterEach(async () => {
   for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true });
+});
+
+describe("doctor configuration validation", () => {
+  it.each([
+    ["minimal", { output: "components/jquery-star" }],
+    ["current directory output", { output: "." }],
+    ["legacy version", { output: "components/jquery-star", configVersion: 0 }],
+    [
+      "all supported fields",
+      {
+        $schema: "https://example.test/jquery-star.schema.json",
+        output: "components/jquery-star",
+        blocksOutput: "blocks/jquery-star",
+        registry: "https://example.test/registry",
+        configVersion: 1,
+      },
+    ],
+  ])("accepts a %s configuration without changing it", (_label, value) => {
+    expect(validateConfig(value)).toBe(value);
+  });
+
+  it.each([
+    ["a missing output", {}, "JQS_INPUT_INVALID"],
+    [
+      "an unknown field",
+      { output: "components/jquery-star", secret: "value" },
+      "JQS_INPUT_INVALID",
+    ],
+    ["an empty output", { output: "" }, "JQS_INPUT_INVALID"],
+    ["a whitespace-only output", { output: "  " }, "JQS_INPUT_INVALID"],
+    ["a nontext output", { output: 42 }, "JQS_INPUT_INVALID"],
+    [
+      "an empty blocks output",
+      { output: "components/jquery-star", blocksOutput: "" },
+      "JQS_INPUT_INVALID",
+    ],
+    [
+      "a nontext blocks output",
+      { output: "components/jquery-star", blocksOutput: 42 },
+      "JQS_INPUT_INVALID",
+    ],
+    ["an unsafe output", { output: "/outside" }, "JQS_PATH_UNSAFE"],
+    [
+      "an unsafe blocks output",
+      { output: "components/jquery-star", blocksOutput: "../outside" },
+      "JQS_PATH_UNSAFE",
+    ],
+    ["an empty schema", { output: "components/jquery-star", $schema: "" }, "JQS_INPUT_INVALID"],
+    [
+      "a whitespace-only schema",
+      { output: "components/jquery-star", $schema: "  " },
+      "JQS_INPUT_INVALID",
+    ],
+    ["an empty registry", { output: "components/jquery-star", registry: "" }, "JQS_INPUT_INVALID"],
+    [
+      "a whitespace-only registry",
+      { output: "components/jquery-star", registry: "  " },
+      "JQS_INPUT_INVALID",
+    ],
+    [
+      "an unsupported version",
+      { output: "components/jquery-star", configVersion: 2 },
+      "JQS_CONFIG_UNSUPPORTED",
+    ],
+  ])("rejects %s", (_label, value, code) => {
+    expect(() => validateConfig(value)).toThrowError(code);
+  });
+
+  it("names the configuration file in a validation failure", () => {
+    let error;
+    try {
+      validateConfig({});
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toMatchObject({ code: "JQS_INPUT_INVALID", path: "jquery-star.json" });
+  });
+});
+
+describe("doctor command options", () => {
+  it.each([
+    ["a missing mode", ["doctor"]],
+    ["an extra positional", ["doctor", "--packages", "extra"]],
+    ["an unknown option", ["doctor", "--packages", "--surprise"]],
+    ["a repeated mode", ["doctor", "--packages", "--packages"]],
+    ["a missing cwd", ["doctor", "--packages", "--cwd"]],
+    ["a flag as cwd", ["doctor", "--packages", "--cwd", "--quiet"]],
+    ["a repeated cwd", ["doctor", "--packages", "--cwd", ".", "--cwd", "."]],
+    ["a missing entrypoint", ["doctor", "--packages", "--entrypoint"]],
+    ["a flag as entrypoint", ["doctor", "--packages", "--entrypoint", "--quiet"]],
+    [
+      "more than 32 entrypoints",
+      [
+        "doctor",
+        "--packages",
+        ...Array.from({ length: 33 }, (_, index) => ["--entrypoint", `entry-${index}`]).flat(),
+      ],
+    ],
+    ["an unsupported format", ["doctor", "--packages", "--format", "amd"]],
+    ["a format without package mode", ["doctor", "--upgrade-config", "--format", "esm"]],
+    ["an entrypoint without package mode", ["doctor", "--upgrade-config", "--entrypoint", "core"]],
+    [
+      "a migrate summary without package mode",
+      ["doctor", "--upgrade-config", "--migrate-summary", "summary.json"],
+    ],
+    ["dry run in package mode", ["doctor", "--packages", "--dry-run"]],
+    ["two selected modes", ["doctor", "--packages", "--upgrade-config"]],
+    ["apply and rollback modes", ["doctor", "--apply", "plan.json", "--rollback", "journal.json"]],
+  ])("rejects %s without reading project data", async (_label, argv) => {
+    let stdout = "";
+    let stderr = "";
+    const code = await runDoctor(argv, {
+      stdout: { write: (value) => (stdout += value) },
+      stderr: { write: (value) => (stderr += value) },
+    });
+    expect(code).toBe(2);
+    expect(stdout).toBe("");
+    expect(stderr).toContain("JQS_INPUT_INVALID");
+    expect(stderr).not.toContain("summary.json");
+  });
+
+  it("prints help without loading rules", async () => {
+    let stdout = "";
+    let stderr = "";
+    const code = await runDoctor(["doctor", "--packages", "--help"], {
+      stdout: { write: (value) => (stdout += value) },
+      stderr: { write: (value) => (stderr += value) },
+    });
+    expect(code).toBe(0);
+    expect(stdout).toContain("jqstar doctor --packages --cwd <project>");
+    expect(stderr).toBe("");
+  });
+
+  it("rejects JSON and quiet together with a value-free JSON diagnostic", async () => {
+    let stdout = "";
+    let stderr = "";
+    const code = await runDoctor(["doctor", "--packages", "--json", "--quiet"], {
+      stdout: { write: (value) => (stdout += value) },
+      stderr: { write: (value) => (stderr += value) },
+    });
+    const result = JSON.parse(stdout);
+    expect(code).toBe(2);
+    expect(validate(result)).toBe(true);
+    expect(result.complete).toBe(false);
+    expect(codes(result)).toContain("JQS_INPUT_INVALID");
+    expect(stderr).toBe("");
+  });
 });
 
 describe("offline package doctor", () => {
@@ -145,7 +293,7 @@ describe("offline package doctor", () => {
     const compatible = await report(root);
     expect(compatible.exitCode).toBe(0);
     expect(codes(compatible)).toContain("JQS_PACKAGE_DUPLICATE");
-    await write(root, "node_modules/jquery/package.json", { name: "jquery", version: "3.7.1" });
+    await write(root, "node_modules/jquery/package.json", { name: "jquery", version: "3.7.0" });
     const incompatible = await report(root);
     expect(incompatible.exitCode).toBe(1);
     expect(codes(incompatible)).toContain("JQS_PACKAGE_VERSION");
@@ -162,7 +310,7 @@ describe("offline package doctor", () => {
       });
     await write(root, "packages/b/node_modules/jquery/package.json", {
       name: "jquery",
-      version: "3.7.1",
+      version: "3.7.0",
     });
     const result = await report(root);
     expect(result.scan.workspaceManifests).toBe(3);
@@ -181,7 +329,7 @@ describe("offline package doctor", () => {
         lockfileVersion,
         packages: {
           "": { name: "application" },
-          "node_modules/jquery": { version: "3.7.1" },
+          "node_modules/jquery": { version: "3.7.0" },
           "node_modules/jquery-star": { version: "1.1.0" },
         },
       });
@@ -189,7 +337,7 @@ describe("offline package doctor", () => {
       expect(result.exitCode).toBe(1);
       expect(
         result.diagnostics.find((entry) => entry.code === "JQS_PACKAGE_VERSION"),
-      ).toMatchObject({ package: "jquery", evidence: "lock", observed: "3.7.1" });
+      ).toMatchObject({ package: "jquery", evidence: "lock", observed: "3.7.0" });
     },
   );
 
@@ -315,6 +463,15 @@ snapshots: {}
     expect(codes(escaped)).toContain("JQS_PATH_UNSAFE");
   });
 
+  it("reports a malformed workspace declaration as invalid scan input", async () => {
+    const root = await project(false);
+    await write(root, "package.json", { name: "application", workspaces: "packages/*" });
+    const invalid = await report(root);
+    expect(invalid.exitCode).toBe(2);
+    expect(invalid.complete).toBe(false);
+    expect(codes(invalid)).toContain("JQS_INPUT_INVALID");
+  });
+
   it("stops at file and package budgets with an explicit incomplete result", async () => {
     const root = await project();
     for (const limits of [{ packages: 2 }, { fileBytes: 5 }]) {
@@ -327,7 +484,7 @@ snapshots: {}
 
   it("keeps human, JSON, and quiet exit contracts including invalid usage", async () => {
     const root = await project();
-    await write(root, "node_modules/jquery/package.json", { name: "jquery", version: "3.7.1" });
+    await write(root, "node_modules/jquery/package.json", { name: "jquery", version: "3.7.0" });
     for (const flags of [[], ["--json"], ["--quiet"]]) {
       let stdout = "";
       let stderr = "";

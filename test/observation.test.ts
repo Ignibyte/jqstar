@@ -352,6 +352,51 @@ describe("operation observations", () => {
     }
   });
 
+  it("normalizes nonfinite request counters in public observation records", () => {
+    const instance = application();
+    const observations: StarOperationObservation[] = [];
+    observe((observation) => {
+      observations.push(observation);
+    });
+
+    const request = beginRequestOperation(
+      detachedContext(instance),
+      "GET",
+      new URL("https://example.test/count"),
+    );
+    request.progress(Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY);
+    request.completed(Number.POSITIVE_INFINITY, Number.NaN);
+
+    expect(observations.filter(({ kind }) => kind === "request")).toMatchObject([
+      { phase: "started", request: { attempt: 0 } },
+      { phase: "progress", request: { attempt: 0 }, loaded: 0, total: 0 },
+      { phase: "completed", request: { attempt: 0, status: 0 } },
+    ]);
+    expect(JSON.parse(JSON.stringify(observations))).toEqual(observations);
+  });
+
+  it("preserves finite request counters while bounding negative and fractional values", () => {
+    const instance = application();
+    const observations: StarOperationObservation[] = [];
+    observe((observation) => {
+      observations.push(observation);
+    });
+
+    const request = beginRequestOperation(
+      detachedContext(instance),
+      "GET",
+      new URL("https://example.test/count"),
+    );
+    request.progress(2.8, 3.9, -4.2);
+    request.completed(2.8, 201.9);
+
+    expect(observations.filter(({ kind }) => kind === "request")).toMatchObject([
+      { phase: "started", request: { attempt: 0 } },
+      { phase: "progress", request: { attempt: 2 }, loaded: 3, total: 0 },
+      { phase: "completed", request: { attempt: 2, status: 201 } },
+    ]);
+  });
+
   it("supports a root request and classifies external cancellation", async () => {
     const instance = application();
     const observations: StarOperationObservation[] = [];
@@ -601,6 +646,36 @@ describe("operation observations", () => {
     hub.dispose();
   });
 
+  it("keeps the inner action as request parent until that action settles", () => {
+    const hub = detachedHub();
+    const instance = detachedApplication();
+    const currentContext = detachedContext(instance);
+    const records: StarOperationObservation[] = [];
+    hub.trackApplication(instance);
+    hub.observeKernel((observation) => {
+      records.push(observation);
+    });
+
+    const outer = hub.startAction(instance, "outer", () => undefined, currentContext);
+    const inner = hub.startAction(instance, "inner", () => undefined, currentContext);
+    outer.completed();
+    hub
+      .beginRequest(instance, currentContext, "GET", new URL("https://example.test/inner"))
+      .completed(0, 200);
+    inner.completed();
+    hub
+      .beginRequest(instance, currentContext, "GET", new URL("https://example.test/root"))
+      .completed(0, 200);
+
+    const startedRequests = records.filter(
+      ({ kind, phase }) => kind === "request" && phase === "started",
+    );
+    expect(startedRequests).toHaveLength(2);
+    expect(startedRequests[0]).toHaveProperty("parentId", inner.id);
+    expect(startedRequests[1]).not.toHaveProperty("parentId");
+    hub.dispose();
+  });
+
   it("exposes parent-request cancellation through raw action liveness", () => {
     const hub = detachedHub();
     const instance = detachedApplication();
@@ -811,6 +886,9 @@ describe("operation observations", () => {
   it("validates observer inputs and kind filters", () => {
     expect(() => $.star.observeOperations(null as never)).toThrow(
       "An operation observer must be a function.",
+    );
+    expect(() => $.star.observeOperations(vi.fn(), null as never)).toThrow(
+      "Operation subscription options must be an object.",
     );
     expect(() => $.star.observeOperations(vi.fn(), { kinds: [] })).toThrow(
       "Operation subscription kinds must be a non-empty array.",

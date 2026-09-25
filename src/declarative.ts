@@ -18,7 +18,7 @@ import type {
   StarOperationSubscriptionOptions,
   StarOperationUnsubscribe,
 } from "./observation";
-import { effect, reactive, stop, type ReactiveEffect } from "./reactivity";
+import { effect, notifyPropertyChange, reactive, stop, type ReactiveEffect } from "./reactivity";
 import type { ComputedRecord, StarAction, StarContext, StarInstance, StateRecord } from "./types";
 
 // An unchecked radio does not replace the selected model value.
@@ -146,7 +146,9 @@ function parseEvent(attribute: string): ParsedEvent {
   };
 
   for (const modifier of modifiers) {
-    const [name, argument] = modifier.split(".", 2);
+    const separator = modifier.indexOf(".");
+    const name = separator < 0 ? modifier : modifier.slice(0, separator);
+    const argument = separator < 0 ? undefined : modifier.slice(separator + 1);
     if (name === "prevent") parsed.prevent = true;
     else if (name === "stop") parsed.stop = true;
     else if (name === "once") parsed.once = true;
@@ -158,10 +160,8 @@ function parseEvent(attribute: string): ParsedEvent {
     else if (name === "passive") parsed.passive = true;
     else if (name === "debounce") parsed.debounce = milliseconds(argument ?? "250ms") ?? 250;
     else if (name === "throttle") parsed.throttle = milliseconds(argument ?? "250ms") ?? 250;
-    else if (
-      ["enter", "escape", "space", "tab", "up", "down", "left", "right"].includes(name ?? "")
-    ) {
-      parsed.key = name!;
+    else if (["enter", "escape", "space", "tab", "up", "down", "left", "right"].includes(name)) {
+      parsed.key = name;
     }
   }
   return parsed;
@@ -372,10 +372,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         get,
       });
       this.computedGetters.set(get, key);
+      notifyPropertyChange(this.state, key);
       this.setCleanup(element, attributeName, () => {
         this.computedGetters.delete(get);
-        if (previous) Object.defineProperty(this.state, key, previous);
-        else delete this.state[key];
+        if (previous) {
+          Object.defineProperty(this.state, key, previous);
+          notifyPropertyChange(this.state, key);
+        } else delete this.state[key];
       });
     } catch (error) {
       this.report(error, element, attributeName, source);

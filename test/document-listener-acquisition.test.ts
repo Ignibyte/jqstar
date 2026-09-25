@@ -254,6 +254,21 @@ it.each(["capture", "once", "passive", "signal"])(
     expect(callback).not.toHaveBeenCalled();
   },
 );
+it("does not remove an unregistered listener after the signal getter retires the kernel", () => {
+  const { root, host, kernel } = fixture();
+  const add = vi.spyOn(root, "addEventListener");
+  const remove = vi.spyOn(root, "removeEventListener");
+  const signal = new AbortController().signal;
+  const options = {
+    get signal() {
+      kernel.dispose();
+      return signal;
+    },
+  };
+  expect(() => host.listen(root, "probe", vi.fn(), options)).toThrow();
+  expect(add).not.toHaveBeenCalled();
+  expect(remove).not.toHaveBeenCalled();
+});
 it("guards delivery before native cleanup even when removal dispatches synchronously", () => {
   const { root, owner, host } = fixture();
   const callback = vi.fn();

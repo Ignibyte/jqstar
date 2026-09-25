@@ -245,7 +245,7 @@ jquery-star/ui.css
 CSS
 Optional stylesheet
 Supported environments
-- jQuery >=4.0.0 <5 .
+- jQuery >=3.7.1 <5 .
 - Node 24 or newer and npm 11 or newer for Node consumers and project tooling.
 - Current installed Chromium, Firefox, and WebKit browser fixtures.
 - ESM, CommonJS, browser modules, and the root UMD/no-build distribution.

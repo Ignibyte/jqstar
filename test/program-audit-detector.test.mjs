@@ -424,6 +424,7 @@ function fixture() {
     "browser-consumers",
     "bundle-sentinel",
     "copy-in-registry",
+    "jquery-3.7.1-consumer",
   ];
   artifacts.package = {
     schema: "jqstar-package-quality/1",

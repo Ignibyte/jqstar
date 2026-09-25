@@ -183,6 +183,12 @@ selected native-element browser case passes once in Chromium, Firefox and WebKit
 password value/visibility, Sidebar state and wrong-kind rejection. Fixed package and remaining
 changed-code checks still block delivery.
 
+`test/ui-sidebar.test.ts` now also checks that a trigger click reflects the documented collapsed
+value in `data-value`. Its owning suite passes eight cases. A frozen-source one-worker mutation
+probe of the value-write condition confirms that forcing the write on every enhancement reaches a
+MutationObserver feedback loop and Stryker's hit-count limit. That original runner error remains
+open; the production guard and source are unchanged.
+
 The shared UI lifecycle and preserved-focus audit adds native-host tests for reset cancellation
 reentry, combined acquisition/cleanup failures, detached-Document rejection and disposal during
 focus-listener registration. The two focused suites pass 41 cases. Standalone delivery-mode coverage
@@ -330,8 +336,12 @@ match and invalid, child-Menu and foreign-document targets. Its saved pre-correc
 failures and one passing compatibility control. A follow-up negative confirms that a missing target
 in a two-argument local action must fail. The real-browser document fixture checks exact value,
 explicit action and facade selection, native popup state and focus in Chromium, Firefox and WebKit.
-Focused Menubar/Menu/document tests and the complete gates remain separate evidence layers. The
-bounded Menubar checkpoint passes 4,927 units, all six fast/23 static gates, 1,248 complete
+The owning `test/ui-menubar.test.ts` suite also checks that an outside press preserves the focused
+top-level trigger's tab stop when another menu closes, and that opening a child through the Menu API
+updates the tab stop. Its focused frozen-source mutation rerun killed six of nine original survivors
+on the menu-event synchronization line; the other three remain open for review. Focused
+Menubar/Menu/document tests and the complete gates remain separate evidence layers. The bounded
+Menubar checkpoint passes 4,927 units, all six fast/23 static gates, 1,248 complete
 document/component browser cases and 30 actual Turbo/htmx baseline cases on one source fingerprint.
 The isolated build verifies all entries and source maps; twelve API reports match their baselines.
 Fixed package-size budgets, the full host matrix and delivery still require passing evidence. The
@@ -599,11 +609,13 @@ rejection, exact spans and one-past limits, immutable AST shape, capability tran
 accessors/proxies/thenables, async disposal, cache eviction, and real kernel lifecycle integration.
 Inspection regressions also prove fixed jQuery arity/primitive arguments, non-invocation of
 callback/conversion hooks and state setters, uniform inert-data classification, raw-result failure
-ordering, and cancellation liveness. `test/property/csp.property.test.ts` adds seeded bounded UTF-16
-parser totality, finite arithmetic-model parity, and isolated signal-write properties.
-`e2e/csp-engine.spec.ts` runs the engine and foreign-realm boundaries in Chromium, Firefox, and
-WebKit. The source-policy gate rejects a CSP import of the trusted compiler or inline quality
-suppressions.
+ordering, cancellation liveness, and array boundaries: a two-digit index resolves while an
+out-of-range negative `.at()` position cannot read an own `"-1"` property. Indexed state objects
+remain writable, while `.at()` results from state and argument arrays remain read-only.
+`test/property/csp.property.test.ts` adds seeded bounded UTF-16 parser totality, finite
+arithmetic-model parity, and isolated signal-write properties. `e2e/csp-engine.spec.ts` runs the
+engine and foreign-realm boundaries in Chromium, Firefox, and WebKit. The source-policy gate rejects
+a CSP import of the trusted compiler or inline quality suppressions.
 
 Package quality adds the public proof. It packs `jquery-star/csp`, resolves its ESM, CommonJS,
 NodeNext, and Bundler contracts, then runs the complete frozen corpus through both installed code
@@ -728,8 +740,9 @@ outcome, callback, registrar, and error declaration. Mutation testing remains ex
 ## Protocol-profile conformance
 
 `test/protocol.test.ts` covers official and external profile registration, plugin namespace and
-reserved-ID rules, matcher validation and overlap, atomic commit/rollback/disposal, frozen request
-input, the bounded writer, generic and Datastar request bytes, deterministic response selection,
+reserved-ID rules, equal and distinct exact/suffix matcher overlap in both orders, atomic
+commit/rollback/disposal, frozen request input, default-profile restoration and stale-cleanup
+isolation, the bounded writer, generic and Datastar request bytes, deterministic response selection,
 empty responses, exactly one text or stream claim, progress, cancellation, abort detachment, closed
 late capabilities, and zero active body owners after every terminal path.
 
@@ -928,9 +941,12 @@ request, render transaction, explicit incoming boot, and public disposal while g
 proves UI, Datastar, registry, server, and later optional modules are absent. The installed browser
 consumers run in Chromium, Firefox, and WebKit. Each module and UMD page boots one declarative
 application, reads its rendered state, disposes it, and records the engine version. The positive
-Node consumers install jQuery 4. An isolated missing-peer consumer must fail to import
-`jquery-star`, and a strict install with jQuery 3.7 must fail with npm's peer resolution error. The
-build step is mandatory. Source-adjacent imports do not satisfy this check.
+Node consumers install jQuery 4. A separate strict consumer installs exact jQuery 3.7.1 from the
+same tarball and exercises Node ESM and CommonJS plus module, UMD, and strict-CSP pages in Chromium,
+Firefox, and WebKit. Its native-browser module page uses a test-only adapter for jQuery 3.7.1's
+published UMD file. An isolated missing-peer consumer must fail to import `jquery-star`, and a
+strict install with jQuery 3.7.0 must fail with npm's peer resolution error. The build step is
+mandatory. Source-adjacent imports do not satisfy this check.
 
 Each installed-package browser must launch within 30 seconds and finish its proof within 90 seconds.
 Cleanup has a separate 5-second bound. A stalled engine is killed and reported by name so the
@@ -1271,6 +1287,34 @@ after unchanged enhancement. Native and fallback popover cases verify that repla
 its native control releases the former floating element, search timer and active-record viewport
 work even with a before-close veto. Tests observe rendered output, timer cancellation and public
 resize behavior; they do not infer heap collection from a WeakMap.
+
+`test/ui-multi-select.test.ts` also removes an authored status and re-enhances the root. The
+replacement status is a generated `p` with live-region metadata; generated content and tags are
+`div` elements. A focused frozen-source mutation pass kills six original survivors on the generated
+tag selection. Two other mutants on that line return the same `div` for every allowed part and are
+reviewed as equivalent individually in ticket 0053. The same owning suite checks ArrowUp and
+ArrowDown wrapping around a disabled final option while leaving the native selection unchanged. Its
+focused frozen-source pass kills all seven selected enabled-option filter mutants, including four
+original survivors. It also checks the generated disabled option's `aria-disabled="true"` and empty
+`data-disabled` attributes. A focused pass kills four original survivors on that rendering branch;
+one originally killed mutant times out in the focused rerun and retains its original classification.
+The owning suite also rejects a nested select, a wrong direct control element, a select with the
+wrong `data-part`, and a select without `multiple`. Its frozen-source control-validation pass kills
+five original survivors and two originally uncovered mutants while retaining nine original kills.
+Pointer cases also verify that an enabled option click changes selection, while clicks on the
+listbox background or a disabled option leave selection and focus unchanged and emit no window
+error. The test captures jsdom's error event during dispatch so a removed null guard fails as a test
+instead of surfacing only as a runner error. Its repaired-tool frozen-source pass kills four
+original runner-error mutants. A further case marks an otherwise enabled rendered option
+`aria-disabled="true"`, then verifies that clicking it leaves the native selection and active option
+unchanged. The source-matched rerun kills all ten click-guard mutants, including the last three
+original survivors.
+
+`test/ui-input-otp.test.ts` also checks that six authored HTML slot elements retain their identity
+and receive the code characters when unrelated HTML and SVG children appear in the slots container.
+Its one-worker frozen-source pass kills three original survivors in the slot filter. The other four
+mutants on that line time out in the focused run and remain open; a timeout is not credited as a
+test kill.
 
 ### Queued native reset replacement
 
@@ -1779,6 +1823,14 @@ removal. A fixture lint correction replaces FormData entry stringification with 
 comparisons. Fresh full browser and fast reports must match final documented inputs before
 checkpoint acceptance.
 
+The current Questionnaire owning suite also rejects duplicate `data-value` entries patched into an
+already enhanced root, selects a whitespace-padded authored value, and retains selection when that
+optional value is removed. The owning suite passes 12 cases, and the isolated three-file baseline
+passes 111. Frozen-source one-worker mutation follow-ups kill the original validation-call survivor
+at `src/ui/questionnaire.ts:1001` and five original authored-value survivors at lines 1002–1003. One
+value condition still survives, and two guard mutations still produce runner errors outside a test
+run; all remain open.
+
 ### Toast document and interaction continuation
 
 `test/ui-toast-document.test.ts` contains 84 cases covering local and independent foreign documents,
@@ -1895,7 +1947,11 @@ capture options, method/option getter retirement, deterministic setup/cleanup er
 callback injection, duplicate identity, native once/passive/signal behavior, replacement during
 removal and nested registration. Installed-plugin controls include late native listener and observer
 setup followed by disposal on both return and throw. Passing observer controls do not imply an
-observer implementation change.
+observer implementation change. The 50-case owning suite also checks that a `signal` option getter
+which disposes the kernel cannot trigger native removal for a listener that was never added. A
+one-worker frozen-source pass killed the original `src/kernel.ts:911` call-removal survivor. The
+getter returns a real `AbortSignal` for the typed options contract; a second frozen pass retained
+the same kill.
 
 The document browser suite includes eighteen listener scenarios per engine. Six acquisition modes
 verify actual native non-delivery after cleanup. Six identity modes cover duplicates, once, abort,
@@ -1924,3 +1980,237 @@ files. Eleven browser scenarios per engine exercise ordinary cancellation, each 
 value that is not callable), native add return/throw and completed/canceled duplicates. All 33 pass
 in Chromium, Firefox and WebKit with zero skips or flakes. This focused result precedes the full
 current-tree quality gate.
+
+## Declarative event duration regression
+
+`test/declarative.test.ts` checks all eight documented keyboard event modifiers against matching and
+nonmatching keys. It also uses fake time to distinguish `debounce.0.05s` from an immediate call, to
+verify unitless milliseconds and the 250ms fallback for invalid prefixes or suffixes, and to check
+`throttle.0.05s` at the 49ms and 50ms boundaries. The fractional debounce case failed before the
+parser preserved the complete argument after the first dot; the owning suite now passes 47 cases.
+The nested-application and detached-cleanup suites pass another eleven cases after this correction.
+
+The owning suite also starts `data-show` false, toggles it both ways, ignores a non-object
+`data-class` value, and removes classes when keys disappear from the bound object. Its frozen-source
+one-worker rerun kills six originally surviving or uncovered directive mutants; one condition on
+class removal still survives and remains open. The suite also checks `data-attr:disabled` through
+false, true, null, and undefined against the native button state. That frozen-source pass kills five
+original survivors and all 17 selected attribute mutants. A bound color style also clears when its
+value becomes null or undefined, then applies another concrete value. Its frozen-source pass kills
+one original survivor and one originally uncovered mutant, with all 11 selected style mutants
+killed. The suite also covers computed attribute removal and replacement, restoration of an earlier
+signal, rendered binding updates, empty names, error location, and enumeration. The rendered output
+stayed at `4` after the underlying signal returned to `9` before the computed descriptor change
+notified its dependents. With that correction, the main owning suite passes 54 cases. The
+frozen-source follow-up kills four original computed-setup survivors and all 18 selected mutants;
+the separate corrected-source pass kills all 13 mutants in the descriptor notification path. Its
+frozen checkout skips only the rendered-value regression and two duration cases that require the
+separately corrected source.
+
+## Reactive dependency regression
+
+`test/reactivity.test.ts` checks reads outside an effect, branch-dependent subscriptions, no-op and
+rejected writes, deletion of present and absent keys, stopped effects after later writes, and direct
+invocation of a stopped runner. Its frozen-source one-worker pass killed ten original survivors
+across dependency cleanup, write notification, and property deletion. One duplicate
+dependency-registration mutation remains open; that pass killed 29 of 30 selected mutants. A
+separate stopped-effect pass killed one more original survivor and four of seven selected mutants;
+three cleanup or guard mutants remain open. The owning and isolated frozen suites pass 12 cases.
+
+## Select navigation and reset regression
+
+`test/ui-select.test.ts` opens the native-backed Select, moves its active option with a pointer, and
+checks that moving over a disabled option leaves the enabled option active without committing a new
+form value. It also checks initial focus with a selected disabled value, a selected enabled value
+later in the list, and no enabled options. Form-reset cases check change detail, cancelability,
+unchanged resets, and suppression of stale input after a change callback starts newer work or
+silently edits the native value. Named-action cases check implicit values, explicit element roots,
+missing values, and wrong-kind targets. The main and frozen owning suites pass 17 cases. One-worker
+frozen reruns kill five original survivors in the pointer active-option guard, six in initial
+active-option choice, eight in reset notifications, and seven in named-action argument handling. A
+separate undefined-value mutation remains open. These focused results supplement the unchanged
+full-run denominator.
+
+## Doctor discovery input regression
+
+`test/doctor-discovery.test.mjs` exercises workspace expansion and installed package enumeration on
+temporary filesystems. A scalar `workspaces` declaration was silently skipped before the new input
+guard; the owning test failed on that behavior and now confirms `JQS_INPUT_INVALID`. The suite also
+checks accepted workspace arrays, pnpm workspace patterns, ignored directories, duplicate package
+aliases, and scan bounds. The five affected doctor suites pass 146 cases together.
+
+## Doctor open-failure regression
+
+`test/doctor-data.test.mjs` removes a file after path resolution and before `MetadataReader.read()`
+opens it. The reader must report `JQS_INPUT_INVALID` without masking it during cleanup. The owning
+suite passes 13 cases. A one-worker frozen-source rerun of `bin/doctor/data.mjs:185` killed the
+original optional-cleanup survivor; the separate original cleanup `RuntimeError` remains open.
+
+## Doctor input and resource limits
+
+`test/doctor-data.test.mjs` accepts ordinary spaces and exact path, file-size, file-count,
+workspace-file, cumulative-byte, and directory-entry limits, then checks the next item is rejected.
+It also rejects malformed UTF-8 and BOM-prefixed JSON. The reader must avoid allocating the full
+configured file limit for a small file. The four affected doctor suites pass 138 cases. An initial
+one-worker frozen-source pass over the limit checks killed 19 original survivors and one originally
+uncovered mutant. A later pass over `bin/doctor/data.mjs:164` killed all three allocation mutants,
+including the original `Math.min` to `Math.max` survivor.
+
+## Doctor path and canonical safety
+
+`test/doctor-data.test.mjs` sorts object keys inside arrays, rejects a symlink to the scan root's
+immediate parent, and, where `O_NOFOLLOW` is available, rejects a symlink swapped in after path
+resolution. The owning suite passes 13 cases; four related doctor suites pass 138. A one-worker
+frozen-source pass over `bin/doctor/data.mjs:70-74`, `:83`, and `:155` killed six original
+survivors. Two redundant root-suffix mutations are reviewed individually; Windows-style parent
+traversal and nonblocking FIFO guards remain open.
+
+## Runtime root event routing regression
+
+`test/runtime.test.ts` checks that a UI rule using `&` handles an event on the application root. Its
+delegated-action case also clicks an unrelated child and verifies that a selector-bound action does
+not run for that child. The owning suite passes 31 cases. A one-worker frozen-source rerun of
+`src/runtime.ts:409-412` kills all six selected mutants, including four original survivors and two
+originally uncovered mutations. The narrower first pass is retained separately; both cases run
+against the frozen source without changing the original full-run denominator.
+
+## Runtime preserved-root lifecycle regression
+
+`test/runtime.test.ts` also checks that releasing a tree retains mounted elements and active backend
+requests inside a preserved root while releasing siblings. Remounting skips both already mounted
+descendants and new matching descendants under that root. Separate cases check an unmount-only UI
+rule and destruction from a mount callback. The runtime suite passes 36 cases. A one-worker
+frozen-source pass over `src/runtime.ts:210-218` and `:482-489` killed 13 original survivors. Two
+surviving self-equality mutations are individually reviewed as equivalent because
+`Element.contains(self)` remains true; one mounted-ownership guard remains open. The original
+full-run statuses and denominator are retained.
+
+## Signal patch boundary regression
+
+`test/patch.test.ts` checks `onlyIfMissing` with existing scalar and null-removal targets, existing
+nested values, a missing nested object, and an absent null key. The owning suite passes 22 cases. A
+one-worker frozen-source pass over `src/patch.ts:26-35` matched all 18 original mutants and killed
+four original survivors in the null and nested-object guards. It classified 17 Killed and one
+Timeout; that timed-out mutant was already Killed in the original full run, whose status remains the
+denominator authority.
+
+## Selector-free patch target scope
+
+`test/patch.test.ts` also patches its application root by ID when another element with the same ID
+appears earlier in the document. It verifies the document lookup returns the external element first,
+then confirms the patch still replaces the supplied root. A separate case rejects an ID match that
+exists only outside the application. The owning suite passes 24 cases. A one-worker frozen-source
+pass over `src/patch.ts:73-77` kills all seven selected mutants, including three original survivors
+in root preference and containment. Two narrower passes remain archived because the first lacked
+duplicate-ID coverage and the second fixture did not actually shadow the root in jsdom.
+
+## Malformed SVG patch rejection
+
+`test/patch.test.ts` rejects an unterminated SVG fragment before it can change the selected target.
+The owning suite passes 25 cases. A one-worker frozen-source pass over `src/patch.ts:59-61` killed
+all four selected mutants, including one original survivor that removed the parser-error guard and
+one originally uncovered markup-error mutation.
+
+## Selector-free patches with mixed IDs
+
+`test/patch.test.ts` supplies text, a no-ID element, an unmatched nonempty ID, and a matching ID in
+one selector-free patch. Only the matching element changes; the unmatched element is not inserted.
+The owning suite passes 25 cases. A one-worker frozen-source pass over `src/patch.ts:220-223` killed
+all four selected mutants, including the original survivor that removed the unmatched-target guard.
+
+## Unowned-document patch transactions
+
+`test/patch.test.ts` runs replace, selector-free morph, and remove patches in a same-realm document
+without a registered kernel. The owning suite passes 26 cases. A one-worker frozen-source pass over
+`src/patch.ts:100`, `src/patch.ts:160`, and `src/patch.ts:192` killed all three original survivors
+that required a transaction where one was absent.
+
+## Selector-required element patch modes
+
+`test/patch.test.ts` rejects `inner`, `append`, `prepend`, `before`, and `after` without a selector
+and checks that the target remains unchanged. The owning suite passes 31 cases. A one-worker
+frozen-source pass over `src/patch.ts:142-146` killed all five original survivors in the mode guard.
+Three other mutants survived this narrower pass but were already Killed in the original full run.
+
+## Select option-click commit and cancellation
+
+`test/ui-select.test.ts` checks that an option click with canceled `before-change` leaves the native
+value and open popup intact, while a committed click changes the value and closes the popup. The
+owning suite passes 19 cases. A one-worker frozen-source pass over `src/ui/select.ts:602` killed all
+seven selected mutants, which were all Survived in the original full-run event stream. The frozen
+source and embedded report bytes have the same SHA-256; the full-run denominator remains unchanged.
+
+## Dynamic backend-request argument rejection
+
+`test/fetch.test.ts` rejects missing, non-string, empty, and whitespace-only dynamic `@get` URLs and
+non-object options before a request reaches `fetch`. The owning suite passes 18 cases. A one-worker
+frozen-source pass over `src/fetch.ts:587-590` killed all 17 selected mutants, including seven
+original survivors and four originally uncovered mutations. The original full-run denominator is
+unchanged.
+
+## Overlapping action observation scopes
+
+`test/observation.test.ts` settles an outer action while an inner action shares its context. A
+request remains parented to the inner action, and a later request has no parent after the inner
+action settles. The owning suite passes 23 cases. A one-worker frozen-source pass over
+`src/observation.ts:472` killed all four original survivors in the action-scope cleanup guard.
+
+## Persistence field-codec boundaries
+
+`test/persist-data.test.ts` accepts 128 distinct fields, a 256-character path, two distinct fields
+in unsorted order, and a valid `undefined.child` path. It rejects 129 fields, non-string paths,
+malformed leading or trailing characters, and a parent/child overlap declared in reverse order. The
+owning suite passes 43 cases. A one-worker frozen-source pass over `src/persist/codec.ts:26-40`
+killed all 64 selected mutants, including 12 original survivors matched by source and mutation
+signature. The original full-run denominator remains unchanged.
+
+The same owning suite checks that persistence options reject an invalid codec identifier, default to
+`flushOnDispose: true`, and preserve an explicit `false`. A one-worker frozen-source pass over
+`src/persist/envelope.ts:33,71` killed all three original survivors at those lines.
+
+The suite also checks zero and invalid clock values, an expiry equal to save time, malformed
+revision origins, mismatched codec identity, and migration failure, checkpoint, and output-size
+behavior. It passes 44 cases. A second one-worker frozen-source pass over the affected envelope
+lines killed eight more original survivors. Four remaining mutations are individually reviewed as
+equivalent in the mutation audit: the object-type guard is followed by exact named-field checks, the
+missing-migration path produces the same migration error through the pipeline, and equality is
+handled before both revision comparisons.
+
+## Stable plugin version ranges
+
+`test/plugin.test.ts` accepts multi-digit stable version segments and padded caret ranges, rejects
+letters in any version segment, and checks precise diagnostics for invalid versions and composite
+ranges. The owning suite passes 62 cases. A one-worker frozen-source pass over
+`src/plugin.ts:140,193-201` killed all 36 selected mutants. Exact signature matching links five
+original survivors, three original timeouts, and one originally uncovered mutant to those kills; the
+original full-run classifications remain visible in its report.
+
+The same suite rejects leading/trailing punctuation in ordinary and official plugin names and
+accepts an official single-segment name. A separate one-worker frozen-source pass over
+`src/plugin.ts:138-139` killed all 18 selected mutants, including four original survivors in the
+name-pattern anchors.
+
+A candidate that places the same target in both `before` and `after` fails before installation and
+does not remain in the host. A one-worker frozen-source pass over `src/plugin.ts:290-291` killed all
+four selected mutants, including one original survivor, one timeout, and one uncovered mutant.
+
+## Final mutation audit
+
+The one-time, full-scope Stryker 10.0.0 audit of the frozen 2026-09-24 source generated 56,731
+mutants across 136 selected source files and finished in 18 hours 38 minutes with eight workers. Its
+final JSON reports 38,814 Killed, 14,233 Survived, 2,860 NoCoverage, 693 Timeout, and 131
+RuntimeError; none are Pending or Ignored. Stryker's JSON contains 123 files with mutants and omits
+13 selected files with zero reported mutants. The validator checks every selected source hash and
+the exact omitted-file list. The resource watchdog observed 61–80% free memory without a stop.
+
+The preserved report is the denominator authority. Signature-linked, source-matched results from 97
+focused reports close 1,415 original non-killed mutants; 38 further mutants have individual
+equivalence reviews. The disposition register retains 16,464 open original outcomes: 13,499
+Survived, 2,172 NoCoverage, 666 Timeout, and 127 RuntimeError. An open mutant marks a remaining test
+or analysis gap; it is not by itself proof of a product defect. The audit also used separate
+command-runner passes for CLI and built-server entry points that the full Vitest process could not
+cover. Ticket 0053 records the source-bound reports, confirmed fixes, selected follow-ups,
+equivalence reasoning, and limits. Local machine and HTML reports are kept under
+`.git/jqstar/mutation-audit/final/` and are not shipped with the package.
+
+Mutation testing remains outside `npm run check` and the ordinary delivery and release gates.

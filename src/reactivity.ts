@@ -98,6 +98,10 @@ function trigger(target: object, key: Key): void {
   }
 }
 
+export function notifyPropertyChange(target: object, key: Key): void {
+  trigger(rawValues.get(target) ?? target, key);
+}
+
 function isObject(value: unknown): value is object {
   return typeof value === "object" && value !== null;
 }

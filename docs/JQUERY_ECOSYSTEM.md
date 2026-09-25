@@ -25,8 +25,10 @@ A recent maintenance release does not change an OpenJS status by itself.
 
 ## jQuery Core is the foundation
 
-`jquery` is the sole package peer, with the tested range `>=4.0.0 <5` and exact current test version
-4.0.0. The application owns that instance. jQStar does not vendor, fork, wrap, or replace it.
+`jquery` is the sole required package peer, with range `>=3.7.1 <5` and exact tested versions 3.7.1
+and 4.0.0. The application owns that instance. jQStar does not vendor, fork, wrap, or replace it.
+jQuery 4.0.0 remains the development version; the package gate installs exact 3.7.1 separately under
+strict peer resolution and exercises Node and three browser engines.
 
 The expression boundary remains exact: `$ is real jQuery` and `$name` is the reactive signal named
 `name`. Selector behavior, `$.fn`, events, Ajax, effects, and installed jQuery plugins remain the

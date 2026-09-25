@@ -100,6 +100,7 @@ describe("jQuery Star Sidebar", () => {
     expect(trigger().getAttribute("aria-expanded")).toBe("true");
 
     trigger().click();
+    expect(sidebar().dataset.value).toBe("collapsed");
     expect(sidebar().dataset.state).toBe("collapsed");
     expect(trigger().getAttribute("aria-expanded")).toBe("false");
     $.star.ui.sidebar.open(sidebar());

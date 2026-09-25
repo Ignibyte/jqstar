@@ -14,7 +14,7 @@ import {
   storageKey,
   sync,
 } from "../src/persist/data";
-import { compareRevision, normalize, readEnvelope } from "../src/persist/envelope";
+import { compareRevision, migrate, normalize, readEnvelope, time } from "../src/persist/envelope";
 
 describe("canonical persistence data", () => {
   it("sorts records deterministically, preserves Unicode/null, and parses without prototypes", () => {
@@ -153,13 +153,44 @@ describe("field codecs and options", () => {
     }
   });
 
+  it("accepts the field and path limits with distinct declarations", () => {
+    const fields = Array.from({ length: 128 }, (_, index) => ({
+      path: `field${index}`,
+      validate: number,
+    }));
+    const source = Object.fromEntries(fields.map(({ path }, index) => [path, index]));
+    expect(createFieldCodec(fields).encode(source)).toEqual(source);
+
+    const longPath = "a".repeat(256);
+    expect(
+      createFieldCodec([{ path: longPath, validate: number }]).encode({ [longPath]: 1 }),
+    ).toEqual({
+      [longPath]: 1,
+    });
+    expect(
+      createFieldCodec([
+        { path: "second", validate: number },
+        { path: "first", validate: number },
+      ]).encode({ first: 1, second: 2 }),
+    ).toEqual({ first: 1, second: 2 });
+    expect(
+      createFieldCodec([{ path: "undefined.child", validate: number }]).encode({
+        undefined: { child: 3 },
+      }),
+    ).toEqual({ "undefined.child": 3 });
+  });
+
   it.each(
     [
       [],
+      Array.from({ length: 129 }, (_, index) => ({ path: `field${index}`, validate: number })),
+      [{ path: 1 as never, validate: number }],
       [{ path: "__proto__.x", validate: number }],
       [{ path: "prefs.constructor", validate: number }],
       [{ path: "prefs..count", validate: number }],
       [{ path: "x".repeat(257), validate: number }],
+      [{ path: "!count", validate: number }],
+      [{ path: "count!", validate: number }],
       [
         { path: "count", validate: number },
         { path: "count", validate: number },
@@ -167,6 +198,10 @@ describe("field codecs and options", () => {
       [
         { path: "prefs", validate: number },
         { path: "prefs.count", validate: number },
+      ],
+      [
+        { path: "prefs.count", validate: number },
+        { path: "prefs", validate: number },
       ],
       [{ path: "a.0", validate: number }],
       [{ path: "count", validate: null }],
@@ -218,12 +253,16 @@ describe("field codecs and options", () => {
       maxDelayMs: 1000,
       strict: false,
       ttlMs: null,
+      flushOnDispose: true,
     });
+    expect(normalize({ ...options, flushOnDispose: false }).flushOnDispose).toBe(false);
     for (const override of [
+      { namespace: "__proto__" },
       { version: 0 },
       { version: 1.1 },
       { codec: null },
       { codec: { ...codec, version: -1 } },
+      { codec: { ...codec, id: "__proto__" } },
       { codec: { ...codec, encode: null } },
       { codec: { ...codec, decode: null } },
       { throttleMs: -1 },
@@ -282,6 +321,7 @@ describe("envelope boundaries", () => {
       { revision: [] },
       { revision: { counter: 0, origin: "a" } },
       { revision: { counter: 1.1, origin: "a" } },
+      { revision: { counter: 1, origin: 123 } },
       { revision: { counter: 1, origin: "" } },
       { revision: { counter: 1, origin: "a".repeat(65) } },
       { codec: null },
@@ -293,6 +333,68 @@ describe("envelope boundaries", () => {
     expect(() =>
       readEnvelope(JSON.stringify({ ...envelope, version: 3 }), "prefs", options),
     ).toThrow("future-version");
+    for (const codec of [
+      { id: "other", version: 1 },
+      { id: "fields", version: 2 },
+    ]) {
+      expect(() => readEnvelope(JSON.stringify({ ...envelope, codec }), "prefs", options)).toThrow(
+        "decode",
+      );
+    }
+    expect(
+      readEnvelope(JSON.stringify({ ...envelope, expiresAt: envelope.savedAt }), "prefs", options)
+        .expiresAt,
+    ).toBe(envelope.savedAt);
+  });
+
+  it("accepts a zero clock and checks every migration result", () => {
+    expect(time(() => 0)).toBe(0);
+    for (const value of [
+      -1,
+      1.5,
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]) {
+      expect(() => time(() => value)).toThrow("clock");
+    }
+    expect(() =>
+      time(() => {
+        throw new Error("private clock failure");
+      }),
+    ).toThrow("clock");
+
+    const stored = readEnvelope(JSON.stringify(envelope), "prefs", options);
+    expect(() => migrate(stored, options)).toThrow("migration");
+    const withMigration = normalize({
+      namespace: "test",
+      version: 2,
+      codec,
+      migrations: { 1: (data) => data },
+    });
+    expect(migrate(stored, withMigration)).toEqual({});
+    const checkpoint = vi.fn();
+    expect(migrate(stored, withMigration, checkpoint)).toEqual({});
+    expect(checkpoint).toHaveBeenCalledOnce();
+    const throwingMigration = normalize({
+      namespace: "test",
+      version: 2,
+      codec,
+      migrations: {
+        1: () => {
+          throw new Error("private migration failure");
+        },
+      },
+    });
+    expect(() => migrate(stored, throwingMigration)).toThrow("migration");
+    const oversized = normalize({
+      namespace: "test",
+      version: 2,
+      codec,
+      maxBytes: 256,
+      migrations: { 1: () => "x".repeat(256) },
+    });
+    expect(() => migrate(stored, oversized)).toThrow("limit");
   });
 
   it("orders Lamport revisions without consulting wall-clock time", () => {

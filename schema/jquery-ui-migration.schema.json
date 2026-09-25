@@ -31,7 +31,7 @@
       "required": ["path", "sha256"],
       "properties": {
         "path": { "const": "quality/jquery-ecosystem.json" },
-        "sha256": { "const": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718" }
+        "sha256": { "const": "aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609" }
       }
     },
     "packages": {

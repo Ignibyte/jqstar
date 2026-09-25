@@ -174,18 +174,20 @@ application investigations; public inspection and browser tools remain the suppo
 Package diagnostics (0032) and the quality review (0052) are complete. The full program audit (0033)
 waits for real accessibility evidence in 0035/0039, the 0017 private-reporting setting correction,
 and its complete evidence review. The 0044 detector process-result and 0051 candidate-copy
-corrections pass complete delivery. Mutation testing remains separately deferred.
+corrections pass complete delivery. The separately authorized mutation audit is now complete, while
+mutation testing stays outside ordinary quality gates.
 
-## Final quality review and deferred mutation audit
+## Final quality review, mutation audit, and jQuery compatibility
 
-| Ticket                                                 | Outcome                                                                                                                 | Depends on                                         |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [0052](0052-audit-and-strengthen-quality-standards.md) | Review actual JavaScript quality scopes, rules, thresholds, and detectors; correct gaps before the final program audit. | Existing quality program                           |
-| [0053](0053-run-final-mutation-audit.md)               | Deferred final mutation audit; planning only until explicit later user authorization.                                   | 0031–0033, 0052, and later execution authorization |
+| Ticket                                                 | Outcome                                                                                                                 | Depends on                                    |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [0052](0052-audit-and-strengthen-quality-standards.md) | Review actual JavaScript quality scopes, rules, thresholds, and detectors; correct gaps before the final program audit. | Existing quality program                      |
+| [0053](0053-run-final-mutation-audit.md)               | Complete one-time, source-bound mutation audit with preserved open findings.                                            | 0052 and explicit later user authorization    |
+| [0057](0057-verify-jquery-3-7-1-support.md)            | Verify exact jQuery 3.7.1 and maintain both 3.7.1 and 4.0.0 installed-package evidence.                                 | Completed 0053 audit and requested 3.7.1 test |
 
-The user requested completion of 0031–0033 and the quality review while explicitly deferring the
-mutation run. Ticket 0033 includes 0052 as a prerequisite and records 0053 as planned follow-up
-assurance. It must not claim mutation evidence or require execution of 0053 to close.
+The later user instruction authorized 0053 before finishing 0033 and requested jQuery 3.7.1 testing
+afterward. Ticket 0053 records that one-time exception and its complete report. Ticket 0033 does not
+claim the mutation evidence as its own or require it to close.
 
 ## Dependency graph
 
@@ -221,7 +223,7 @@ assurance. It must not claim mutation evidence or require execution of 0053 to c
 completed service decisions + implementations -> 0030 -> [usage decision] -> 0031
 0013 + 0017 -> 0032
 completed tracks + 0052 -> 0033
-0031 + 0032 + 0033 + 0052 -> [later authorization] -> 0053
+0052 + explicit later authorization -> 0053 -> 0057
 ```
 
 ## Evidence required from every ticket

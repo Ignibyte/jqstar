@@ -133,7 +133,7 @@ describe("jQuery ecosystem evidence", () => {
     expect(packageManifest.peerDependencies).toEqual({
       "@hotwired/turbo": ">=8.0.21 <8.1.0",
       "htmx.org": ">=2.0.0 <2.1.0",
-      jquery: ">=4.0.0 <5",
+      jquery: ">=3.7.1 <5",
     });
     expect(
       (packageManifest as { peerDependenciesMeta?: Record<string, { optional?: boolean }> })
@@ -144,11 +144,11 @@ describe("jQuery ecosystem evidence", () => {
     );
     expect(project("jquery-core")).toMatchObject({
       runtimePolicy: "peer-foundation",
-      supportedRange: ">=4.0.0 <5",
-      testedVersions: ["4.0.0"],
+      supportedRange: ">=3.7.1 <5",
+      testedVersions: ["3.7.1", "4.0.0"],
     });
     const packageQuality = read("scripts/quality-package.mjs");
-    expect(packageQuality).toContain('jqueryPeer === ">=4.0.0 <5"');
+    expect(packageQuality).toContain('jqueryPeer === ">=3.7.1 <5"');
     expect(packageQuality).toContain('"jquery@4.0.0"');
     for (const path of ["README.md", "docs/PROJECT.md", "docs/JQUERY_ECOSYSTEM.md"]) {
       const source = read(path);

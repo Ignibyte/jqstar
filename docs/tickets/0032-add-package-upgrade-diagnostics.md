@@ -47,7 +47,7 @@ policy. Plan-validate the list; the CLI must not fetch changing compatibility ru
 
 Ticket 0038 supplies mapping `jquery-ecosystem.migrate.doctor-input` in
 `quality/jquery-ecosystem.json` at SHA-256
-`2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718`. Activation must consume that
+`aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609`. Activation must consume that
 exact matrix or refresh its primary sources and every downstream digest first.
 
 ### Scope

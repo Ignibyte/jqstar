@@ -103,7 +103,7 @@ export async function doctorConsumer(cli, root) {
     assert.deepEqual(await snapshot(root), before);
     await rm(join(root, name));
   }
-  await writeFile(join(root, "package-lock.json"), locks[0][1].replace('"4.0.0"', '"3.7.1"'));
+  await writeFile(join(root, "package-lock.json"), locks[0][1].replace('"4.0.0"', '"3.7.0"'));
   assert(
     run(["--packages", "--json"], 1).diagnostics.some(({ code }) => code === "JQS_PACKAGE_VERSION"),
   );

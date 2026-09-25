@@ -144,6 +144,7 @@ export const failedGateExpectations = {
       "browser-consumers",
       "bundle-sentinel",
       "copy-in-registry",
+      "jquery-3.7.1-consumer",
     ],
     failure: "package-budgets",
     error: /^Packed bytes \d+ exceed the base and optional-entry allowances\.$/u,

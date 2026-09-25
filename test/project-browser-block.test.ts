@@ -201,6 +201,49 @@ describe("Project Browser source block", () => {
     vi.unstubAllGlobals();
   });
 
+  it("applies a saved layout when a new block root enters the document", async () => {
+    const storageKey = "jquery-star:project-browser:columns:v1";
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    };
+    vi.stubGlobal("localStorage", storage);
+    const inserted = document.createElement("section");
+    inserted.dataset.block = "project-browser";
+    inserted.innerHTML = `<table data-part="table"><thead><tr><th>Selection</th><th data-column="name">Name</th><th data-column="owner">Owner</th><th data-column="status">Status</th><th data-column="updated">Updated</th></tr></thead></table><button data-column-pin="updated" type="button">Pin left</button>`;
+
+    try {
+      storage.setItem(
+        storageKey,
+        JSON.stringify({
+          hidden: ["owner"],
+          order: ["updated", "name", "status", "owner"],
+          pinned: ["updated"],
+          version: 1,
+        }),
+      );
+      document.body.append(inserted);
+
+      await vi.waitFor(() => {
+        expect(
+          Array.from(inserted.querySelectorAll("thead [data-column]"), (cell) =>
+            cell.getAttribute("data-column"),
+          ),
+        ).toEqual(["updated", "name", "status", "owner"]);
+        expect(inserted.querySelector<HTMLElement>('[data-column="owner"]')?.hidden).toBe(true);
+        expect(inserted.querySelector<HTMLElement>('[data-column="updated"]')?.dataset.pinned).toBe(
+          "left",
+        );
+        expect(
+          inserted.querySelector('[data-column-pin="updated"]')?.getAttribute("aria-pressed"),
+        ).toBe("true");
+      });
+    } finally {
+      inserted.remove();
+    }
+  });
+
   it("keeps the latest virtual window when an aborted older response arrives last", async () => {
     const pending = deferredQueries();
     const instance = blockInstance();
@@ -510,8 +553,13 @@ describe("Project Browser source block", () => {
     await vi.waitFor(() => expect(requests).toHaveLength(2));
     expect(requests[1]).toMatchObject({
       projectBrowserMode: "virtual",
+      projectBrowserGroupBy: "none",
       projectBrowserWindowSize: 40,
     });
+    await vi.waitFor(() =>
+      expect(root().querySelector('[data-project-browser-group-toggle="Platform"]')).toBeNull(),
+    );
+    expect(root().querySelector<HTMLTableRowElement>('[data-row-id="jqstar"]')?.hidden).toBe(false);
     const viewport = root().querySelector<HTMLElement>('[data-part="viewport"]')!;
     viewport.scrollTop = 1_040;
     viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
@@ -530,6 +578,16 @@ describe("Project Browser source block", () => {
         cell.getAttribute("data-column"),
       ),
     ).toEqual(["name", "owner", "updated", "status"]);
+    expect(
+      root().querySelector<HTMLButtonElement>(
+        '[data-column-item="name"] [data-column-move="previous"]',
+      )?.disabled,
+    ).toBe(true);
+    expect(
+      root().querySelector<HTMLButtonElement>(
+        '[data-column-item="status"] [data-column-move="next"]',
+      )?.disabled,
+    ).toBe(true);
 
     const pin = root().querySelector<HTMLButtonElement>('[data-column-pin="owner"]')!;
     pin.click();
@@ -537,12 +595,56 @@ describe("Project Browser source block", () => {
     expect(root().querySelector('th[data-column="owner"]')?.getAttribute("data-pinned")).toBe(
       "left",
     );
+    expect(
+      root()
+        .querySelector<HTMLElement>('th[data-column="name"]')
+        ?.style.getPropertyValue("--project-column-left"),
+    ).toBe("44px");
+    expect(
+      root()
+        .querySelector<HTMLElement>('th[data-column="owner"]')
+        ?.style.getPropertyValue("--project-column-left"),
+    ).toBe("220px");
 
     pin.click();
     expect(pin.getAttribute("aria-pressed")).toBe("false");
     expect(root().querySelector('th[data-column="owner"]')?.hasAttribute("data-pinned")).toBe(
       false,
     );
+  });
+
+  it("ignores a column move action with an invalid direction", async () => {
+    const move = root().querySelector<HTMLButtonElement>(
+      '[data-column-item="owner"] [data-column-move="next"]',
+    );
+    if (!move) throw new Error("Missing owner column move control");
+    const before = Array.from(root().querySelectorAll("thead [data-column]"), (cell) =>
+      cell.getAttribute("data-column"),
+    );
+    move.dataset.columnMove = "sideways";
+
+    await blockInstance().run("projectBrowser.columnMove", { element: move });
+
+    expect(
+      Array.from(root().querySelectorAll("thead [data-column]"), (cell) =>
+        cell.getAttribute("data-column"),
+      ),
+    ).toEqual(before);
+  });
+
+  it("moves a column forward through the next action", async () => {
+    const move = root().querySelector<HTMLButtonElement>(
+      '[data-column-item="owner"] [data-column-move="next"]',
+    );
+    if (!move) throw new Error("Missing owner column move control");
+
+    await blockInstance().run("projectBrowser.columnMove", { element: move });
+
+    expect(
+      Array.from(root().querySelectorAll("thead [data-column]"), (cell) =>
+        cell.getAttribute("data-column"),
+      ),
+    ).toEqual(["name", "status", "owner", "updated"]);
   });
 
   it("reorders columns through drag actions and the event-target fallback", async () => {
@@ -577,6 +679,17 @@ describe("Project Browser source block", () => {
     expect(dataTransfer.dropEffect).toBe("move");
 
     const drop = { target } as unknown as DragEvent;
+    await instance.run("projectBrowser.columnDrop", { element: target, event: drop });
+    expect(
+      Array.from(root().querySelectorAll<HTMLTableCellElement>("thead [data-column]"), (cell) =>
+        cell.getAttribute("data-column"),
+      ),
+    ).toEqual(["name", "updated", "owner", "status"]);
+    await instance.run("projectBrowser.columnDrop", { element: target, event: drop });
+    await instance.run("projectBrowser.columnDragStart", {
+      element: target,
+      event: { dataTransfer, target } as unknown as DragEvent,
+    });
     await instance.run("projectBrowser.columnDrop", { element: target, event: drop });
     expect(
       Array.from(root().querySelectorAll<HTMLTableCellElement>("thead [data-column]"), (cell) =>

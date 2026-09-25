@@ -568,12 +568,23 @@ it("suppresses a queued observer callback during earlier disposal cleanup", () =
 });
 
 it("retires provisional ownership when the native constructor getter throws", () => {
-  const { owner, host, root, kernel } = setup();
+  const { host, root, kernel } = setup();
   const error = new Error("constructor lookup failed");
-  vi.spyOn(owner, "MutationObserver", "get").mockImplementationOnce(() => {
-    throw error;
+  const original = host.window;
+  Object.defineProperty(host, "window", {
+    configurable: true,
+    value: new Proxy(original, {
+      get(target, name) {
+        if (name === "MutationObserver") throw error;
+        return Reflect.get(target, name);
+      },
+    }),
   });
-  expect(() => host.observe(root, () => undefined, { childList: true })).toThrow(error);
+  try {
+    expect(() => host.observe(root, () => undefined, { childList: true })).toThrow(error);
+  } finally {
+    Object.defineProperty(host, "window", { configurable: true, value: original });
+  }
   expect(kernel.resourceSummary().filter(({ kind }) => kind === "observer")).toHaveLength(0);
 });
 

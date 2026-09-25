@@ -76,7 +76,7 @@ source/browser tests, `quality:fast`, full `npm run check`, all remaining phase 
 
 Ticket 0038 supplies mapping `jquery-ecosystem.ui.coexistence-migration` in
 `quality/jquery-ecosystem.json` at SHA-256
-`2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718`. Activation must consume that
+`aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609`. Activation must consume that
 exact matrix or refresh its primary sources and every downstream digest first.
 
 Before Code, recheck official jQuery UI release/maintenance/API/catalog and jQuery peer facts, pin
@@ -90,7 +90,7 @@ change thresholds.
 ### Activation evidence
 
 - `quality/jquery-ecosystem.json` still has the required SHA-256
-  `2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718`. Its
+  `aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609`. Its
   `jquery-ecosystem.ui.coexistence-migration` assignment requires exact-package coexistence,
   complete gap mapping, and absence of jQuery UI from shipped jQStar code and bundles.
 - The official

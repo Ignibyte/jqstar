@@ -12,6 +12,7 @@ export const packageCheckNames = Object.freeze([
   "browser-consumers",
   "bundle-sentinel",
   "copy-in-registry",
+  "jquery-3.7.1-consumer",
 ]);
 
 export const releaseCheckNames = Object.freeze([

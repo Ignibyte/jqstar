@@ -45,6 +45,8 @@ lockfile v1, and modern Yarn metadata versions 4 through 8. Workspace patterns a
 segments and single `*` directory segments. Unsupported formats, patterns, dependency protocols, or
 unresolved packages produce unknown evidence. Parent workspaces outside `--cwd` are never searched.
 Select the workspace root when applications use dependencies hoisted above their own directory.
+Malformed `workspaces` declarations, including scalar or null values instead of an array or object,
+fail the scan with `JQS_INPUT_INVALID`.
 
 CDN scripts, import maps, generated bundles, runtime globals, and dynamically installed plugins
 remain unknown. An optional package manifest field `jqstar.pluginApiVersion` can declare a semantic

@@ -140,6 +140,25 @@ describe("jQuery Star Combobox", () => {
     expect(document.activeElement).toBe(control());
   });
 
+  it("keeps inside interactions open and closes on outside pointer or focus", () => {
+    const outside = document.querySelector<HTMLButtonElement>("#external");
+    if (!outside) throw new Error("Missing external Combobox action.");
+
+    $.star.ui.combobox.open(root());
+    control().dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    expect(root().dataset.state).toBe("open");
+    expect(content().hidden).toBe(false);
+
+    outside.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    expect(root().dataset.state).toBe("closed");
+    expect(content().hidden).toBe(true);
+
+    $.star.ui.combobox.open(root());
+    outside.focus();
+    expect(root().dataset.state).toBe("closed");
+    expect(content().hidden).toBe(true);
+  });
+
   it("supports an inline listbox for command and dialog compositions", () => {
     root().setAttribute("data-inline", "");
     $.star.ui.enhance(root());

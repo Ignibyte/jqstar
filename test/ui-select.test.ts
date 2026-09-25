@@ -73,6 +73,33 @@ describe("jQuery Star Select", () => {
     expect(content().hidden).toBe(false);
   });
 
+  it("selects by implicit value and explicit root element actions", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Select application did not start.");
+
+    await app.run("ui.select.select", { element: trigger(), args: ["radix"] });
+    expect(control().value).toBe("radix");
+
+    await app.run("ui.select.select", { args: [root(), "datastar"] });
+    expect(control().value).toBe("datastar");
+  });
+
+  it("rejects a missing value and a wrong-kind selection target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Select application did not start.");
+
+    await expect(
+      app.run("ui.select.select", { element: trigger(), args: ["#select"] }),
+    ).rejects.toThrow("ui.select.select needs an option value.");
+    await expect(
+      app.run("ui.select.select", { element: trigger(), args: [root()] }),
+    ).rejects.toThrow("ui.select.select needs an option value.");
+    await expect(
+      app.run("ui.select.select", { element: trigger(), args: [trigger(), "datastar"] }),
+    ).rejects.toThrow('Select target did not match data-jqs="select"');
+    expect(control().value).toBe("jquery-star");
+  });
+
   it("generates combobox and listbox anatomy while retaining the native form value", () => {
     expect(control().dataset.enhanced).toBe("true");
     expect(control().hidden).toBe(true);
@@ -132,6 +159,46 @@ describe("jQuery Star Select", () => {
     expect(trigger()).toBe(document.activeElement);
   });
 
+  it("does not highlight disabled options on pointer movement", () => {
+    trigger().click();
+    option("datastar").dispatchEvent(new Event("pointermove", { bubbles: true }));
+    expect(trigger().getAttribute("aria-activedescendant")).toBe(option("datastar").id);
+
+    option("disabled").dispatchEvent(new Event("pointermove", { bubbles: true }));
+    expect(trigger().getAttribute("aria-activedescendant")).toBe(option("datastar").id);
+    expect(option("disabled").hasAttribute("data-highlighted")).toBe(false);
+    expect(control().value).toBe("jquery-star");
+  });
+
+  it("starts exploration at an enabled option when the native value is disabled", () => {
+    control().value = "disabled";
+    control().dispatchEvent(new Event("change", { bubbles: true }));
+    trigger().click();
+
+    expect(control().value).toBe("disabled");
+    expect(trigger().getAttribute("aria-activedescendant")).toBe(option("jquery-star").id);
+    expect(option("disabled").hasAttribute("data-highlighted")).toBe(false);
+  });
+
+  it("starts exploration at the selected enabled option", () => {
+    control().value = "datastar";
+    control().dispatchEvent(new Event("change", { bubbles: true }));
+    trigger().click();
+
+    expect(trigger().getAttribute("aria-activedescendant")).toBe(option("datastar").id);
+    expect(control().value).toBe("datastar");
+  });
+
+  it("has no active option when every native option is disabled", () => {
+    for (const nativeOption of control().options) nativeOption.disabled = true;
+    $.star.ui.enhance(root());
+    $.star.ui.select.open(root());
+
+    expect(root().dataset.state).toBe("open");
+    expect(trigger().hasAttribute("aria-activedescendant")).toBe(false);
+    expect(content().querySelector("[data-highlighted]")).toBeNull();
+  });
+
   it("supports typeahead while closed and the named selection action", async () => {
     trigger().focus();
     key("r");
@@ -162,6 +229,29 @@ describe("jQuery Star Select", () => {
     expect(root().dataset.state).toBe("open");
   });
 
+  it("keeps the list open when an option click's change is canceled", () => {
+    $.star.ui.select.open(root());
+    root().addEventListener("jquery-star:select:before-change", (event) => event.preventDefault(), {
+      once: true,
+    });
+
+    option("radix").click();
+
+    expect(control().value).toBe("jquery-star");
+    expect(root().dataset.state).toBe("open");
+    expect(content().hidden).toBe(false);
+  });
+
+  it("closes the list after an option click commits its value", () => {
+    $.star.ui.select.open(root());
+
+    option("radix").click();
+
+    expect(control().value).toBe("radix");
+    expect(root().dataset.state).toBe("closed");
+    expect(content().hidden).toBe(true);
+  });
+
   it("synchronizes signal writes, form reset, and server-patched options", async () => {
     const state = $("#app").star<{ foundation: string }>("state")!;
     state.foundation = "radix";
@@ -186,6 +276,55 @@ describe("jQuery Star Select", () => {
     expect(control().value).toBe("new-system");
     expect(state.foundation).toBe("new-system");
   });
+
+  it("emits a change only when form reset changes the native value", async () => {
+    const changes: Array<{ previousValue: string; value: string }> = [];
+    const input = vi.fn();
+    $.star.ui.select.select(root(), "datastar");
+    await $.star.nextUpdate();
+    control().addEventListener("input", input);
+    root().addEventListener("jquery-star:select:change", (event) => {
+      expect(event.cancelable).toBe(false);
+      const { previousValue, value } = (event as CustomEvent).detail;
+      changes.push({ previousValue, value });
+    });
+
+    const form = document.querySelector<HTMLFormElement>("#form");
+    if (!form) throw new Error("The Select form was not found.");
+    form.reset();
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    expect(control().value).toBe("jquery-star");
+    expect(changes).toEqual([{ previousValue: "datastar", value: "jquery-star" }]);
+    expect(input).toHaveBeenCalledOnce();
+
+    form.reset();
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    expect(changes).toHaveLength(1);
+  });
+
+  it.each(["newer selection", "silent native edit"] as const)(
+    "does not emit stale reset input after a %s during change notification",
+    async (mode) => {
+      $.star.ui.select.select(root(), "datastar");
+      await $.star.nextUpdate();
+      const input = vi.fn();
+      control().addEventListener("input", input);
+      root().addEventListener(
+        "jquery-star:select:change",
+        () => {
+          if (mode === "newer selection") $.star.ui.select.select(root(), "daisyui");
+          else control().value = "daisyui";
+        },
+        { once: true },
+      );
+
+      const form = document.querySelector<HTMLFormElement>("#form");
+      if (!form) throw new Error("The Select form was not found.");
+      form.reset();
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      expect(input).toHaveBeenCalledTimes(mode === "newer selection" ? 1 : 0);
+    },
+  );
 
   it("rejects duplicate option values", () => {
     const invalid = document.createElement("div");

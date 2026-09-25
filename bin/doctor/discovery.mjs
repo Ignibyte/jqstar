@@ -48,6 +48,8 @@ async function expandWorkspace(reader, pattern, unknown) {
 
 async function workspaces(reader, manifest, unknown) {
   const value = field(manifest, "workspaces");
+  if (value !== undefined && !Array.isArray(value) && !record(value))
+    throw new DoctorFault("JQS_INPUT_INVALID", "package.json");
   let patterns = Array.isArray(value) ? value : field(value, "packages");
   if (patterns !== undefined && !Array.isArray(patterns))
     throw new DoctorFault("JQS_INPUT_INVALID", "package.json");

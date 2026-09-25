@@ -206,6 +206,29 @@ describe("jQuery Star Data Table", () => {
     expect(sortButton("score").hasAttribute("data-generated-sort-label")).toBe(false);
   });
 
+  it("sorts date values in both directions and places invalid dates last when descending", () => {
+    const header = table().querySelector<HTMLElement>('th[data-key="score"]');
+    if (!header) throw new Error("Missing score column header.");
+    header.dataset.type = "date";
+    root().dataset.pageSize = "4";
+    for (const [id, date] of Object.entries({
+      alpha: "2024-05-10",
+      beta: "1965-01-01",
+      gamma: "not-a-date",
+      delta: "1960-01-01",
+    })) {
+      const cell = row(id).querySelector<HTMLTableCellElement>('[data-key="score"]');
+      if (!cell) throw new Error(`Missing score cell for ${id}.`);
+      cell.dataset.value = date;
+    }
+    $.star.ui.enhance(root());
+
+    sortButton("score").click();
+    expect(visibleRowIds()).toEqual(["gamma", "delta", "beta", "alpha"]);
+    sortButton("score").click();
+    expect(visibleRowIds()).toEqual(["alpha", "beta", "delta", "gamma"]);
+  });
+
   it("builds an ordered multi-column sort with Shift or the additive API", () => {
     sortButton("score").dispatchEvent(new MouseEvent("click", { bubbles: true }));
     sortButton("name").dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }));

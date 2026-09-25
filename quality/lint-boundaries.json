@@ -247,7 +247,7 @@
     {
       "path": "src/declarative.ts",
       "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 3
+      "count": 2
     },
     {
       "path": "src/directive.ts",
@@ -1198,11 +1198,6 @@
       "path": "test/ui-calendar.test.ts",
       "rule": "@typescript-eslint/no-non-null-assertion",
       "count": 7
-    },
-    {
-      "path": "test/ui-carousel.test.ts",
-      "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 5
     },
     {
       "path": "test/ui-chart.test.ts",

@@ -1031,7 +1031,7 @@ try {
     const jqueryPeer = installedManifest.peerDependencies?.jquery;
     const htmxPeer = installedManifest.peerDependencies?.["htmx.org"];
     const turboPeer = installedManifest.peerDependencies?.["@hotwired/turbo"];
-    assert(jqueryPeer === ">=4.0.0 <5", "Packed jQuery peer range changed.");
+    assert(jqueryPeer === ">=3.7.1 <5", "Packed jQuery peer range changed.");
     assert(htmxPeer === ">=2.0.0 <2.1.0", "Packed htmx peer range changed.");
     assert(turboPeer === ">=8.0.21 <8.1.0", "Packed Turbo peer range changed.");
     assert(
@@ -1110,7 +1110,7 @@ try {
         "--no-audit",
         "--no-fund",
         "--package-lock=false",
-        "jquery@3.7.1",
+        "jquery@3.7.0",
         tarball,
       ],
       ["ERESOLVE", "jquery"],
@@ -2801,6 +2801,21 @@ export default { build: { modulePreload: { polyfill: false }, rollupOptions: { e
     );
     const doctor = await doctorConsumer(cli, join(consumer, "doctor-project"));
     return { copied: copied.slice(project.length + 1), doctor };
+  });
+
+  await record("jquery-3.7.1-consumer", () => {
+    const result = command("jQuery 3.7.1 installed consumer", process.execPath, [
+      "scripts/quality/jquery-371-consumer.mjs",
+      tarball,
+      temporary,
+    ]);
+    const detail = JSON.parse(result.stdout);
+    const browser = report.checks.find(({ name }) => name === "browser-consumers")?.detail;
+    assert(
+      detail.tarballSha256 === browser?.csp?.tarballDigest,
+      "jQuery 3.7.1 consumer did not use the installed browser proof tarball.",
+    );
+    return detail;
   });
 
   assertExactCheckSet(report.checks, packageCheckNames);

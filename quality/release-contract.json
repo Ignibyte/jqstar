@@ -111,7 +111,7 @@
   "support": {
     "node": ">=24",
     "npm": ">=11",
-    "jquery": ">=4.0.0 <5",
+    "jquery": ">=3.7.1 <5",
     "browsers": ["chromium", "firefox", "webkit"],
     "moduleFormats": ["browser-module", "commonjs", "esm", "umd"],
     "documents": ["ordinary-html-document", "same-origin-frame-document"],

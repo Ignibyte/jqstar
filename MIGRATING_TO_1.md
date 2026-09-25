@@ -17,7 +17,7 @@ numbers describe development tracks and are not a claim that each number was pub
    renderer.
 
 The supported package ranges are Node `>=24`, npm `>=11` for release tooling, and application-owned
-`jquery >=4.0.0 <5`.
+`jquery >=3.7.1 <5`.
 
 ## Install 1.0
 

@@ -44,7 +44,7 @@ undeclared package subpaths are unsupported.
 | Boundary             | Supported contract                                                                    |
 | -------------------- | ------------------------------------------------------------------------------------- |
 | Node and CLI         | Node `>=24`; release construction uses npm `>=11`.                                    |
-| jQuery               | Application-owned `jquery >=4.0.0 <5`.                                                |
+| jQuery               | Application-owned `jquery >=3.7.1 <5`; exact 3.7.1 and 4.0.0 tested.                  |
 | Browsers             | The Chromium, Firefox, and WebKit engines installed by the locked Playwright version. |
 | Documents            | Ordinary HTML documents and explicitly supplied same-origin frame documents.          |
 | Unsupported document | Shadow-root applications.                                                             |
@@ -55,6 +55,12 @@ undeclared package subpaths are unsupported.
 Browser support is tied to executed engine builds rather than a guessed browser-brand range. Each
 release candidate records the exact three engine versions that passed. Applications remain
 responsible for any older browser policy they choose to carry.
+
+jQuery 3.7.1 publishes a classic UMD file, not a native browser module. For a no-build page, load
+the application's jQuery 3.7.1 script before the jQStar UMD bundle. Native browser-module pages need
+an application-owned adapter that loads that script and exports the same global jQuery instance. The
+package's cross-browser proof uses such a test-only adapter; jQStar has no runtime shim or global
+jQuery patch. Node ESM and CommonJS consumers import the published npm package normally.
 
 ## Document and lifecycle compatibility
 

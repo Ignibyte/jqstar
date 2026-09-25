@@ -7,7 +7,7 @@
     {
       "path": "quality/release-contract.json",
       "pointer": "/support",
-      "sha256": "4f4edde89131fcc1b92b35c24384bac57a2c09f9d59eec3ba1c0641415f3c707"
+      "sha256": "d93e2f696573afe46bd24816eb9b0950ebcae7ee42af54719879b83d981c7fa3"
     },
     {
       "path": "quality/release-contract.json",
@@ -22,7 +22,7 @@
     {
       "path": "quality/jquery-ecosystem.json",
       "pointer": "",
-      "sha256": "2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718"
+      "sha256": "aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609"
     }
   ],
   "compatibility": {
@@ -31,7 +31,7 @@
     "pluginApi": "0.1.0",
     "node": ">=24",
     "npmForReleaseConstruction": ">=11",
-    "jquery": ">=4.0.0 <5",
+    "jquery": ">=3.7.1 <5",
     "bridges": {
       "turbo": ">=8.0.21 <8.1.0",
       "htmx": ">=2.0.0 <2.1.0"

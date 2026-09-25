@@ -692,7 +692,7 @@
     "releaseSha256": "a04f153365acd8ea61dd486c886d66ea61e965c32d78907883a6c42128cd2cf3"
   },
   "support": {
-    "jquery": ">=4.0.0 <5",
+    "jquery": ">=3.7.1 <5",
     "node": ">=24",
     "browsers": ["chromium", "firefox", "webkit"],
     "moduleFormats": ["browser-module", "commonjs", "esm", "umd"],

@@ -119,6 +119,196 @@ describe("declarative jQuery Star", () => {
     expect($("i").attr("data-seen")).toBe("2");
   });
 
+  it("updates visibility and removes object classes whose keys disappear", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ visible: false, classes: { old: true } }">
+        <p data-show="$visible" data-class="$classes">Status</p>
+      </section>
+    `;
+
+    $("#app").star();
+    const paragraph = $("#app p");
+    const state = $("#app").star<{
+      visible: boolean;
+      classes: Record<string, boolean> | null;
+    }>("state");
+    if (!state) throw new Error("Missing declarative application state.");
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => errors.push(detail));
+
+    expect(paragraph.css("display")).toBe("none");
+    expect(paragraph.hasClass("old")).toBe(true);
+
+    state.classes = null;
+    await settled();
+    expect(errors).toHaveLength(0);
+    expect(paragraph.hasClass("old")).toBe(true);
+
+    state.visible = true;
+    state.classes = { fresh: true };
+    await settled();
+    expect(paragraph.css("display")).not.toBe("none");
+    expect(paragraph.hasClass("old")).toBe(false);
+    expect(paragraph.hasClass("fresh")).toBe(true);
+
+    state.visible = false;
+    state.classes = {};
+    await settled();
+    expect(paragraph.css("display")).toBe("none");
+    expect(paragraph.hasClass("fresh")).toBe(false);
+  });
+
+  it("reflects boolean attribute values through the native disabled state", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ disabled: false }">
+        <button data-attr:disabled="$disabled">Submit</button>
+      </section>
+    `;
+
+    $("#app").star();
+    const button = $("#app button");
+    const state = $("#app").star<{ disabled: boolean | null | undefined }>("state");
+    if (!state) throw new Error("Missing declarative application state.");
+    expect(button.is(":disabled")).toBe(false);
+    expect(button.attr("disabled")).toBeUndefined();
+
+    state.disabled = true;
+    await settled();
+    expect(button.attr("disabled")).toBe("disabled");
+    expect(button.is(":disabled")).toBe(true);
+
+    state.disabled = false;
+    await settled();
+    expect(button.attr("disabled")).toBeUndefined();
+    expect(button.is(":disabled")).toBe(false);
+
+    state.disabled = null;
+    await settled();
+    expect(button.attr("disabled")).toBeUndefined();
+    expect(button.is(":disabled")).toBe(false);
+
+    state.disabled = undefined;
+    await settled();
+    expect(button.attr("disabled")).toBeUndefined();
+    expect(button.is(":disabled")).toBe(false);
+  });
+
+  it("clears a bound style when its value becomes nullish", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ color: 'red' }">
+        <p data-style:color="$color">Status</p>
+      </section>
+    `;
+
+    $("#app").star();
+    const paragraph = $("#app p").get(0);
+    const state = $("#app").star<{ color: string | null | undefined }>("state");
+    if (!paragraph || !state) throw new Error("Missing declarative style fixture.");
+    expect(paragraph.style.color).toBe("red");
+
+    state.color = null;
+    await settled();
+    expect(paragraph.style.color).toBe("");
+
+    state.color = "green";
+    await settled();
+    expect(paragraph.style.color).toBe("green");
+
+    state.color = undefined;
+    await settled();
+    expect(paragraph.style.color).toBe("");
+  });
+
+  it("restores a signal when a computed attribute is removed and replaced", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1, total: 9 }">
+        <output data-computed:total="$count * 2"></output>
+      </section>
+    `;
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => errors.push(detail));
+    $("#app").star();
+    const output = document.querySelector("#app output");
+    const state = $("#app").star<{ count: number; total: number }>("state");
+    if (!output || !state) throw new Error("Missing declarative computed fixture.");
+    expect(state.total).toBe(2);
+
+    state.count = 2;
+    await settled();
+    expect(state.total).toBe(4);
+
+    output.removeAttribute("data-computed:total");
+    await settled();
+    expect(errors).toHaveLength(0);
+    expect(state.total).toBe(9);
+
+    output.setAttribute("data-computed:total", "$count * 3");
+    await settled();
+    expect(errors).toHaveLength(0);
+    expect(state.total).toBe(6);
+  });
+
+  it("updates rendered computed values when the attribute is replaced", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1, total: 9 }">
+        <output data-computed:total="$count * 2" data-text="$total"></output>
+      </section>
+    `;
+    $("#app").star();
+    const output = document.querySelector("#app output");
+    if (!output) throw new Error("Missing declarative computed output.");
+    expect(output.textContent).toBe("2");
+
+    output.removeAttribute("data-computed:total");
+    await settled();
+    expect(output.textContent).toBe("9");
+
+    output.setAttribute("data-computed:total", "$count * 3");
+    await settled();
+    expect(output.textContent).toBe("3");
+  });
+
+  it("enumerates named computed state and ignores an empty computed name", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1 }">
+        <output data-computed:double="$count * 2"></output>
+        <i></i>
+      </section>
+    `;
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => errors.push(detail));
+    $("#app").star();
+    const state = $("#app").star<{ count: number; double: number }>("state");
+    const unnamed = document.querySelector("#app i");
+    if (!state || !unnamed) throw new Error("Missing declarative computed fixture.");
+    expect(Object.keys(state)).toContain("double");
+    expect(state.double).toBe(2);
+
+    unnamed.setAttribute("data-computed:", "$count * 3");
+    await settled();
+    expect(Object.prototype.hasOwnProperty.call(state, "")).toBe(false);
+    expect(errors).toHaveLength(0);
+  });
+
+  it("reports a malformed computed expression with its attribute name", () => {
+    document.body.innerHTML = `
+      <section id="app"><output data-computed:bad="("></output></section>
+    `;
+    const errors: unknown[] = [];
+    $("#app").on("jquery-star:error", (_event, detail) => errors.push(detail));
+    $("#app").star();
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({
+      attribute: "data-computed:bad",
+      expression: "(",
+      error: {
+        name: "StarExpressionError",
+        location: { attribute: "data-computed:bad" },
+      },
+    });
+  });
+
   it("provides two-way nested bindings for text and checkboxes", async () => {
     document.body.innerHTML = `
       <section id="app" data-signals="{ user: { name: 'Ada', subscribed: false } }">
@@ -165,6 +355,81 @@ describe("declarative jQuery Star", () => {
     document.body.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
     await $.star.nextUpdate();
     expect($("output").text()).toBe("111");
+  });
+
+  it.each([
+    ["enter", "Enter"],
+    ["escape", "Escape"],
+    ["space", " "],
+    ["tab", "Tab"],
+    ["up", "ArrowUp"],
+    ["down", "ArrowDown"],
+    ["left", "ArrowLeft"],
+    ["right", "ArrowRight"],
+  ])("runs the %s keyboard modifier only for %s", async (modifier, key) => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0 }">
+        <input data-on:keydown__${modifier}="$count++">
+        <output data-text="$count"></output>
+      </section>
+    `;
+    $("#app").star();
+
+    $("input").trigger($.Event("keydown", { key: "Unidentified" }));
+    await settled();
+    expect($("output").text()).toBe("0");
+
+    $("input").trigger($.Event("keydown", { key }));
+    await settled();
+    expect($("output").text()).toBe("1");
+  });
+
+  it("parses fractional and unitless durations and rejects surrounding text", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0 }">
+        <button class="fraction" data-on:click__debounce.0.05s="$count++">Fraction</button>
+        <button class="unitless" data-on:click__debounce.50="$count += 100">Unitless</button>
+        <button class="invalid" data-on:click__debounce.25msx="$count += 10">Invalid</button>
+        <button class="prefixed" data-on:click__debounce.x25ms="$count += 1000">Prefixed</button>
+        <output data-text="$count"></output>
+      </section>
+    `;
+    $("#app").star();
+    $(".fraction, .unitless, .invalid, .prefixed").trigger("click");
+
+    await vi.advanceTimersByTimeAsync(49);
+    expect($("output").text()).toBe("0");
+    await vi.advanceTimersByTimeAsync(1);
+    await $.star.nextUpdate();
+    expect($("output").text()).toBe("101");
+    await vi.advanceTimersByTimeAsync(200);
+    await $.star.nextUpdate();
+    expect($("output").text()).toBe("1111");
+  });
+
+  it("throttles events for a fractional number of seconds", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0 }">
+        <button data-on:click__throttle.0.05s="$count++">Throttle</button>
+        <output data-text="$count"></output>
+      </section>
+    `;
+    $("#app").star();
+    $("button").trigger("click");
+    await $.star.nextUpdate();
+    expect($("output").text()).toBe("1");
+
+    await vi.advanceTimersByTimeAsync(49);
+    $("button").trigger("click");
+    await $.star.nextUpdate();
+    expect($("output").text()).toBe("1");
+
+    await vi.advanceTimersByTimeAsync(1);
+    $("button").trigger("click");
+    await $.star.nextUpdate();
+    expect($("output").text()).toBe("2");
   });
 
   it("initializes changed and dynamically inserted directives exactly once", async () => {

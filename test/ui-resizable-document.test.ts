@@ -15,7 +15,7 @@ const stars: ReturnType<typeof installStarCore>["star"][] = [];
 function setup(foreign = false) {
   const frame = document.createElement("iframe");
   if (foreign) document.body.append(frame);
-  const owner = foreign ? (required(frame.contentWindow) as Owner) : window;
+  const owner = foreign ? (required(frame.contentWindow) as Owner) : required(document.defaultView);
   const jquery = installStarCore(jQueryFactory(owner), { document: owner.document });
   stars.push(jquery.star);
   return { owner, jquery, star: jquery.star, ui: jquery.star.use(uiPlugin) };
@@ -407,12 +407,14 @@ describe.each([false, true])("Resizable interrupted work foreign=%s", (foreign) 
   it("does not persist an older request after a storage getter starts a newer one", () => {
     const { ui, owner, root } = fixture();
     root.dataset.storageKey = "reentrant";
-    const storage = owner.localStorage;
-    const writes = vi.spyOn(owner.Storage.prototype, "setItem");
-    vi.spyOn(owner, "localStorage", "get").mockImplementationOnce(() => {
-      ui.resizable.set(root, [70, 30]);
-      return storage;
-    });
+    const writes = vi.fn();
+    const storage = { setItem: writes } as unknown as Storage;
+    vi.spyOn(owner, "localStorage", "get")
+      .mockImplementationOnce(() => {
+        ui.resizable.set(root, [70, 30]);
+        return storage;
+      })
+      .mockImplementation(() => storage);
     const changed = vi.fn();
     root.addEventListener("jquery-star:resizable:change", changed);
     ui.resizable.set(root, [25, 75]);

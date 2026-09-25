@@ -138,6 +138,38 @@ describe("htmx lifecycle bridge", () => {
     expectHostMethodsUntouched(htmx);
   });
 
+  it.each([
+    ["version", { version: 2 }],
+    ["configuration", { config: undefined }],
+    ["configuration shape", { config: "innerHTML" }],
+    ["default swap style", { config: { defaultSwapStyle: undefined } }],
+    ["ajax", { ajax: undefined }],
+    ["off", { off: undefined }],
+    ["on", { on: undefined }],
+    ["process", { process: undefined }],
+    ["swap", { swap: undefined }],
+    ["trigger", { trigger: undefined }],
+  ])("rejects malformed htmx %s before invoking the host", (_field, override) => {
+    const host = capability();
+    expect(() =>
+      createHtmxBridge({
+        $,
+        htmx: { ...host, ...override } as unknown as StarHtmxCapability,
+        version: "2.0.10",
+      }),
+    ).toThrow("The htmx capability must expose");
+    expectHostMethodsUntouched(host);
+  });
+
+  it.each([null, 2, "htmx", () => undefined])(
+    "rejects a non-object htmx capability before installation",
+    (value) => {
+      expect(() => createHtmxBridge({ $, htmx: value as never, version: "2.0.10" })).toThrow(
+        "An htmx capability object is required",
+      );
+    },
+  );
+
   it("releases one inner swap at cleanup and commits explicit incoming roots after host mutation", async () => {
     const owner = realm(
       '<button id="source"></button><main id="target"><section id="old" data-jqs data-signals="{ old: true }"></section></main>',
@@ -188,6 +220,136 @@ describe("htmx lifecycle bridge", () => {
       targetCategory: "region",
     });
     expectHostMethodsUntouched(htmx);
+  });
+
+  it("treats an outer swap of the body as child removal", async () => {
+    const owner = realm(
+      '<button id="source"></button><section id="old" data-jqs data-signals="{ old: true }"></section>',
+    );
+    const { bridge } = install(owner);
+    const source = owner.document.querySelector("#source");
+    const old = owner.document.querySelector("#old");
+    if (!source || !old) throw new Error("Missing body swap fixture elements");
+    const target = owner.document.body;
+    $(old).star();
+    const oldApplication = $(old).star("instance");
+    if (!oldApplication) throw new Error("Missing old application");
+    const incoming = owner.document.createElement("section");
+    incoming.id = "new";
+    incoming.setAttribute("data-jqs", "");
+    incoming.setAttribute("data-signals", "{ fresh: true }");
+    const detail = requestDetail(
+      source,
+      target,
+      {},
+      {
+        shouldSwap: true,
+        swapOverride: "outerHTML",
+        serverResponse: incoming.outerHTML,
+      },
+    );
+
+    dispatch(owner, source, "htmx:beforeRequest", detail);
+    dispatch(owner, target, "htmx:beforeSwap", detail);
+    dispatch(owner, old, "htmx:beforeCleanupElement", {});
+    old.replaceWith(incoming);
+    dispatch(owner, target, "htmx:afterSwap", detail);
+    dispatch(owner, source, "htmx:afterRequest", detail);
+    dispatch(owner, target, "htmx:afterSettle", detail);
+    await bridge.whenIdle();
+
+    expect(oldApplication.destroyed).toBe(true);
+    expect($(incoming).star("state")).toEqual({ fresh: true });
+    expect(bridge.observations().at(-1)).toMatchObject({
+      flowId: "htmx.swap.outer",
+      outcome: "completed",
+      removalCount: 1,
+      swapStyle: "outerHTML",
+    });
+  });
+
+  it("treats an outer swap of an element as target removal", async () => {
+    const owner = realm(
+      '<button id="source"></button><main id="old" data-jqs data-signals="{ old: true }"></main>',
+    );
+    const { bridge } = install(owner);
+    const source = owner.document.querySelector("#source");
+    const target = owner.document.querySelector("#old");
+    if (!source || !target) throw new Error("Missing outer swap fixture elements");
+    $(target).star();
+    const oldApplication = $(target).star("instance");
+    if (!oldApplication) throw new Error("Missing old application");
+    const incoming = owner.document.createElement("main");
+    incoming.id = "new";
+    incoming.setAttribute("data-jqs", "");
+    incoming.setAttribute("data-signals", "{ fresh: true }");
+    const detail = requestDetail(
+      source,
+      target,
+      {},
+      {
+        shouldSwap: true,
+        swapOverride: "outerHTML",
+        serverResponse: incoming.outerHTML,
+      },
+    );
+
+    dispatch(owner, source, "htmx:beforeRequest", detail);
+    dispatch(owner, target, "htmx:beforeSwap", detail);
+    dispatch(owner, target, "htmx:beforeCleanupElement", {});
+    target.replaceWith(incoming);
+    dispatch(owner, incoming, "htmx:afterSwap", detail);
+    dispatch(owner, source, "htmx:afterRequest", detail);
+    dispatch(owner, incoming, "htmx:afterSettle", detail);
+    await bridge.whenIdle();
+
+    expect(oldApplication.destroyed).toBe(true);
+    expect($(incoming).star("state")).toEqual({ fresh: true });
+    expect(bridge.observations().at(-1)).toMatchObject({
+      flowId: "htmx.swap.outer",
+      outcome: "completed",
+      removalCount: 1,
+      swapStyle: "outerHTML",
+    });
+  });
+
+  it("treats deletion of the body as target removal", async () => {
+    const owner = realm(
+      '<button id="source"></button><section id="old" data-jqs data-signals="{ old: true }"></section>',
+    );
+    const { bridge } = install(owner);
+    const source = owner.document.querySelector("#source");
+    const old = owner.document.querySelector("#old");
+    if (!source || !old) throw new Error("Missing body delete fixture elements");
+    const target = owner.document.body;
+    $(old).star();
+    const oldApplication = $(old).star("instance");
+    if (!oldApplication) throw new Error("Missing old application");
+    const detail = requestDetail(
+      source,
+      target,
+      {},
+      {
+        shouldSwap: true,
+        swapOverride: "delete",
+        serverResponse: "",
+      },
+    );
+
+    dispatch(owner, source, "htmx:beforeRequest", detail);
+    dispatch(owner, target, "htmx:beforeSwap", detail);
+    dispatch(owner, target, "htmx:beforeCleanupElement", {});
+    target.remove();
+    dispatch(owner, owner.document.documentElement, "htmx:afterRequest", detail);
+    await bridge.whenIdle();
+
+    expect(oldApplication.destroyed).toBe(true);
+    expect(bridge.observations().at(-1)).toMatchObject({
+      flowId: "htmx.swap.delete",
+      outcome: "completed",
+      removalCount: 1,
+      swapStyle: "delete",
+    });
   });
 
   it("commits delete at afterRequest without inventing swap or settle events", async () => {

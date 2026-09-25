@@ -74,7 +74,7 @@
       "properties": {
         "node": { "const": ">=24" },
         "npm": { "const": ">=11" },
-        "jquery": { "const": ">=4.0.0 <5" },
+        "jquery": { "const": ">=3.7.1 <5" },
         "browsers": {
           "type": "array",
           "minItems": 3,

@@ -381,6 +381,97 @@ describe("jqstar CLI", () => {
     expect(result.stderr).toContain("Path must stay inside the project");
   });
 
+  it.each([
+    ["missing cwd", ["list", "--cwd"], "--cwd needs a directory"],
+    ["missing type", ["list", "--type"], "--type needs one of"],
+    ["unsupported type", ["list", "--type", "other"], "--type needs one of"],
+    ["unknown option", ["list", "--unknown"], "Unknown option"],
+    ["unknown command", ["unknown"], "Unknown command"],
+  ])("rejects %s without writing a result", (_label, args, message) => {
+    const result = run(...args);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(message);
+    expect(result.stdout).toBe("");
+  });
+
+  it.each([
+    ["missing output", {}, 'non-empty string "output"'],
+    ["nontext output", { output: 3 }, 'non-empty string "output"'],
+    ["blank output", { output: "   " }, 'non-empty string "output"'],
+    ["nontext blocks output", { output: "components", blocksOutput: 3 }, '"blocksOutput"'],
+    ["blank blocks output", { output: "components", blocksOutput: " " }, '"blocksOutput"'],
+    ["nontext registry", { output: "components", registry: 3 }, '"registry"'],
+  ])("rejects a config with %s before adding files", async (_label, config, message) => {
+    const cwd = await project();
+    await writeFile(join(cwd, "jquery-star.json"), JSON.stringify(config), "utf8");
+
+    const result = run("add", "button", "--cwd", cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(message);
+    await expect(readFile(join(cwd, "components/button.html"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  it("reports a missing configured registry before writing project files", async () => {
+    const cwd = await project();
+    const registry = join(cwd, "missing-registry.json");
+    await writeFile(
+      join(cwd, "jquery-star.json"),
+      JSON.stringify({ output: "components", registry: "./missing-registry.json" }),
+      "utf8",
+    );
+
+    const result = run("add", "button", "--cwd", cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`Component registry was not found: ${registry}`);
+    expect(result.stdout).toBe("");
+    await expect(readFile(join(cwd, "components/button.html"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  it.each([
+    [
+      "duplicate names",
+      [
+        { name: "button", files: [{ path: "button.html" }] },
+        { name: "button", files: [{ path: "button.html" }] },
+      ],
+      "unique string name",
+    ],
+    ["missing name", [{ files: [{ path: "button.html" }] }], "unique string name"],
+    ["missing files", [{ name: "button", files: [] }], "has no files"],
+    ["invalid file", [{ name: "button", files: [null] }], "Invalid file entry"],
+    ["escaping source", [{ name: "button", files: [{ path: "../outside" }] }], "escapes its root"],
+    [
+      "escaping target",
+      [{ name: "button", files: [{ path: "button.html", target: "../outside" }] }],
+      "stay inside the project",
+    ],
+    [
+      "invalid dependency",
+      [{ name: "button", files: [{ path: "button.html" }], registryDependencies: [""] }],
+      "Invalid registry dependency",
+    ],
+  ])("rejects registry metadata with %s before adding files", async (_label, items, message) => {
+    const cwd = await project();
+    await writeFile(join(cwd, "button.html"), "<button>Button</button>\n", "utf8");
+    await writeFile(join(cwd, "registry.json"), JSON.stringify({ items }), "utf8");
+    await writeFile(
+      join(cwd, "jquery-star.json"),
+      JSON.stringify({ output: "components", registry: "./registry.json" }),
+      "utf8",
+    );
+
+    const result = run("add", "button", "--cwd", cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(message);
+    await expect(readFile(join(cwd, "components/button.html"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
   it("reports a healthy configured consumer project", async () => {
     const cwd = await project();
     await writeFile(

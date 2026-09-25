@@ -682,7 +682,7 @@ Plan, then repeat fast verification. Coverage and complete delivery remain requi
 
 Post-completion ecosystem provenance: this ticket supplies mapping
 `jquery-ecosystem.qunit.testing-consumer` in `quality/jquery-ecosystem.json` at SHA-256
-`2b6550a824aa495c58f21948260a6ab504e9da355072aca8cd8999a06f8cb718`. This records the already
+`aa2630146c4a86228e9cb864a47859bc37528ef05d812ac113e14efe55392609`. This records the already
 completed QUnit consumer boundary and does not reopen runtime behavior.
 
 - `README.md` documents preview imports, harness lifecycle, response queues, Datastar fixtures,

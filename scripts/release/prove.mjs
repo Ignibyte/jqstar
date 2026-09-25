@@ -123,6 +123,13 @@ export async function proveRelease(arguments_ = process.argv.slice(2)) {
     "Installed browser consumers did not use the prepared tarball bytes.",
   );
   const installedConsumers = check(packageReport, "installed-consumer");
+  const jquery371Consumer = check(packageReport, "jquery-3.7.1-consumer");
+  assert(
+    jquery371Consumer.subject === "installed-tarball" &&
+      jquery371Consumer.jqueryVersion === "3.7.1" &&
+      jquery371Consumer.tarballSha256 === prepared.artifact.sha256,
+    "jQuery 3.7.1 consumer did not use the prepared tarball bytes.",
+  );
   check(packageReport, "qunit-consumer");
   check(packageReport, "copy-in-registry");
   check(releaseReport, "packed-self-hosted");
@@ -132,6 +139,7 @@ export async function proveRelease(arguments_ = process.argv.slice(2)) {
     ...browserConsumers.consumers.map((name) => `browser-${name}`),
     "qunit",
     "copy-in-registry",
+    "jquery-3.7.1",
     "packed-self-hosted",
   ];
   assert(new Set(names).size === names.length, "Candidate consumer names are not unique.");
