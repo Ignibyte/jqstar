@@ -42,7 +42,7 @@
     {
       "path": "e2e/components.spec.ts",
       "rule": "@typescript-eslint/no-non-null-assertion",
-      "count": 32
+      "count": 30
     },
     {
       "path": "e2e/csp-engine.spec.ts",

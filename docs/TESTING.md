@@ -2214,3 +2214,21 @@ equivalence reasoning, and limits. Local machine and HTML reports are kept under
 `.git/jqstar/mutation-audit/final/` and are not shipped with the package.
 
 Mutation testing remains outside `npm run check` and the ordinary delivery and release gates.
+
+## Website integration and fixed ownership workload
+
+The complete live Lab is authored once in `example/lab-content.html` and composed into home,
+Components, and the legacy Lab route. `e2e/site.spec.ts` checks all three documents for every
+registry recipe, all seven blocks, unique IDs, signal ownership, JSON and SDK streams, server
+validation, exact inert code copying, responsive layouts, and accessibility in both themes. The
+existing component suite still runs against the live legacy route and covers active component
+states. Build-time composition and code escaping have separate unit coverage.
+
+The ownership test in `e2e/quality-contracts.spec.ts` uses the fixed
+`e2e/fixtures/ownership-lab.html` workload through Vite's development-only
+`/__quality__/ownership-lab/` route. That snapshot preserves the earlier Lab and three copied blocks
+so expanding the website does not change the benchmark denominator. It retains the same instrumented
+mount, twenty repeated enhancements, two disposal cycles, keyboard proof, operation ceilings, and
+negative detector control. Do not regenerate this fixture from the live site as part of normal
+website changes. The unchanged 2,300-node ceiling covers its measured 2,294 mounted nodes; the
+larger live site remains covered by the full website and component suites.

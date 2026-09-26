@@ -16,8 +16,8 @@
     <article class="docs-article">
       <h1>Datastar Integration</h1>
       <p class="docs-lede">
-        jQStar keeps localized browser behavior beside the HTML while the server can update signals
-        and page regions through JSON, HTML, or Datastar server-sent events.
+        Keep local behavior beside server-rendered HTML. The server can patch signals and regions
+        with JSON, HTML, or Datastar SSE.
       </p>
       <div class="docs-callout">
         <p>
@@ -29,8 +29,8 @@
 
       <h2>Call the backend from HTML</h2>
       <p>
-        Built-in request actions serialize the current public signals and interpret the response by
-        its content type.
+        The root defaults to <code>core.datastar</code>. Core alone uses <code>core.generic</code>
+        with explicit inputs and JSON/HTML. Select the generic profile for ordinary endpoints.
       </p>
       <div class="code-block">
         <div class="code-heading">
@@ -39,15 +39,17 @@
         </div>
         <pre><code>&lt;button data-on:click="@get('/items')"&gt;Refresh&lt;/button&gt;
 
-&lt;form data-on:submit__prevent="@post('/items', { contentType: 'form' })"&gt;
+&lt;form method="post" action="/items"
+  data-on:submit__prevent="@post('/items', { contentType: 'form' })"&gt;
   &lt;input name="title" required /&gt;
   &lt;button&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
       </div>
       <p>
-        GET places signals in a <code>datastar</code> query parameter. POST, PUT, PATCH, and DELETE
-        use the documented JSON or form contract. Every request includes
-        <code>Datastar-Request: true</code>.
+        Datastar GET sends filtered signals in the <code>datastar</code> query; JSON DELETE uses
+        both query and body. Datastar requests include <code>Datastar-Request: true</code>. Form
+        mode uses native form encoding. For submission without JavaScript, the endpoint must return
+        useful HTML or a redirect.
       </p>
 
       <h2>Response behavior</h2>
@@ -133,13 +135,12 @@ await ServerSentEventGenerator.stream(request, response, (stream) =&gt; {
 
       <h2>Enhancement after a patch</h2>
       <p>
-        Inserted HTML is scanned immediately. New directives, bindings, component roots, named
-        actions, and cleanup hooks work without calling <code>.star()</code> again. Outer morphs
-        preserve matching elements, focused controls, unsaved values, and existing jQuery handlers.
-        Use <code>data-ignore-morph</code> for a general subtree the server must not change. Use
-        <code>data-jqs-preserve</code> when a live jQStar application root must survive the patch,
-        and await <code>$.star.whenEnhanced()</code> before reading newly inserted directive or
-        component DOM.
+        New directives and components are enhanced without another <code>.star()</code> call. Morphs
+        retain matching nodes and their handlers, restore focus, and protect the active input's
+        value. Other values can receive server updates; removed nodes lose their state. Use
+        <code>data-ignore-morph</code> for an unchanged subtree and
+        <code>data-jqs-preserve</code> for a retained live application root. Await
+        <code>$.star.whenEnhanced()</code> before reading enhanced DOM.
       </p>
       <p>
         The repository's <a href="%BASE_URL%components/lab/">Component Lab</a> includes real JSON,

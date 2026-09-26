@@ -107,12 +107,21 @@ describe("jQStar website structure", () => {
     }
   });
 
-  it("keeps the exhaustive proof at the isolated Component Lab route", async () => {
-    const lab = await readFile(resolve(root, "example/components/lab/index.html"), "utf8");
-    expect(lab).toContain('src="/main.ts"');
-    expect(lab).toContain("Open verified dialog");
-    expect(lab).toContain("Backend account proof");
-    expect(lab).not.toContain('src="/site.ts"');
+  it("integrates one authoritative Lab fragment into the site and preserves the direct route", async () => {
+    const fragment = await readFile(resolve(root, "example/lab-content.html"), "utf8");
+    expect(fragment).toContain("Open verified dialog");
+    expect(fragment).toContain("Backend account proof");
+    expect(fragment).toContain('class="component-lab"');
+    for (const route of [
+      "example/index.html",
+      "example/docs/components/index.html",
+      "example/components/lab/index.html",
+    ]) {
+      const page = await readFile(resolve(root, route), "utf8");
+      expect(page).toContain("data-component-lab");
+      expect(page).toContain('src="/site.ts"');
+      expect(page).not.toContain("<iframe");
+    }
   });
 
   it("does not import the downloaded React repository or its metadata", async () => {
@@ -172,7 +181,7 @@ describe("jQStar website structure", () => {
     expect(full).toContain("@starfederation/datastar-sdk");
     expect(JSON.parse(index)).toMatchObject({
       schema: "jqstar-agent-index/1",
-      corpusVersion: 6,
+      corpusVersion: 8,
       package: { name: "jquery-star", version: "1.1.0" },
     });
   });

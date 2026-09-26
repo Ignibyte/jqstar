@@ -295,6 +295,132 @@ test("site copy controls expose authored source", async ({ page }) => {
   expect(clipboard).toBe("npm install jquery-star jquery");
 });
 
+test("the complete embedded Lab owns its actions and backend updates on each site route", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const corpus = (await (await page.request.get("/jqstar-agent-index.json")).json()) as {
+    components: { name: string; roots: string[] }[];
+  };
+  for (const route of ["/", "/docs/components/", "/components/lab/"]) {
+    await page.goto(route);
+    const lab = page.locator(".component-lab");
+    await expect(lab).toHaveCount(1);
+    await expect(lab.locator("[data-block]")).toHaveCount(7);
+    await expect(page.locator("iframe")).toHaveCount(0);
+    await lab.getByRole("button", { name: "Show verified toast" }).click();
+    const roots = await lab
+      .locator("[data-jqs]")
+      .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-jqs")));
+    expect(corpus.components).toHaveLength(109);
+    for (const recipe of corpus.components) {
+      for (const root of recipe.roots) expect(roots, `${route}: ${recipe.name}`).toContain(root);
+    }
+    const ids = await page
+      .locator("[id]")
+      .evaluateAll((elements) => elements.map((element) => element.id));
+    expect(new Set(ids).size).toBe(ids.length);
+    const trigger = lab.getByRole("button", { name: "Open verified dialog" });
+    await trigger.click();
+    await expect(lab.locator("#proof-dialog-cancel")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+    await lab.getByRole("button", { name: "Add 10 on the server" }).click();
+    await expect(lab.locator(".server-count")).toHaveText("10");
+    await lab.getByRole("button", { name: "Stream from the Datastar SDK" }).click();
+    await expect(lab.locator("#server-feed li")).toHaveCount(1);
+    const form = lab.getByRole("form", { name: "Backend account proof" });
+    await form.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(form.getByText("That account already exists. Try another email.")).toBeVisible();
+    const dashboard = lab.locator('[data-block="operations-dashboard"]');
+    await dashboard.getByRole("button", { name: "Refresh dashboard snapshot" }).click();
+    await expect(dashboard.locator('[data-dashboard-part="logs"] [data-part="entry"]')).toHaveCount(
+      3,
+    );
+    await dashboard.getByRole("button", { name: "Stream dashboard logs" }).click();
+    await expect(dashboard.locator('[data-dashboard-part="logs"] [data-part="entry"]')).toHaveCount(
+      6,
+    );
+    await expect(lab.locator("#runtime-log-entries [data-part='entry']")).toHaveCount(3);
+    const profile = lab.locator('[data-block="profile-settings"]');
+    await profile.getByRole("button", { name: "Rotate invite URL" }).click();
+    await expect(profile.getByRole("textbox", { name: "Team invite URL" })).not.toHaveValue(
+      "https://jqstar.dev/invite/example-0",
+    );
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
+        `${route} at ${width}px`,
+      ).toBeLessThanOrEqual(1);
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  expect(errors).toEqual([]);
+});
+
+test("all public code examples are framed, colored, and copy their exact inert source", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    let copied = "";
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (value: string) => {
+          copied = value;
+          return Promise.resolve();
+        },
+        readText: () => Promise.resolve(copied),
+      },
+    });
+  });
+  for (const route of ["/", ...documentationRoutes.map(([path]) => path), "/components/lab/"]) {
+    await page.goto(route);
+    for (const pre of await page.locator("pre").all()) {
+      await expect(pre.locator("code")).toHaveCount(1);
+      expect(await pre.evaluate((element) => Boolean(element.closest(".code-block")))).toBe(true);
+      await expect(pre.locator("button, input, dialog, script")).toHaveCount(0);
+      const code = pre.locator("code");
+      if ((await code.getAttribute("data-language")) !== "text")
+        expect(await code.locator('[class^="syntax-"]').count()).toBeGreaterThan(0);
+    }
+  }
+  await page.goto("/docs/components/dialog/");
+  const block = page.locator(".code-block").first();
+  await page.getByRole("tab", { name: "Code", exact: true }).click();
+  const expected = await block.locator("code").textContent();
+  await block.getByRole("button", { name: "Copy", exact: true }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(expected);
+  await expect(block.locator(".syntax-tag").first()).toHaveCSS("color", "rgb(126, 219, 255)");
+});
+
+test("the integrated Lab is accessible in both themes", async ({ page }) => {
+  for (const theme of ["dark", "light"]) {
+    await page.addInitScript((value) => localStorage.setItem("jqstar-site-theme", value), theme);
+    await page.goto("/docs/components/");
+    await expect(page.locator("[data-block]")).toHaveCount(7);
+    await expect(page.locator('#architecture-tabs [role="tab"]')).toHaveCount(3);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    const workflow = page.locator(".workflow-components-card");
+    await workflow.getByRole("textbox", { name: "Project name" }).fill("Accessible project");
+    await workflow.getByRole("button", { name: "Continue" }).click();
+    await workflow.locator('input[type="file"]').setInputFiles({
+      name: "accessible.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("accessible proof"),
+    });
+    const account = page.getByRole("form", { name: "Backend account proof" });
+    await account.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(
+      account.getByText("That account already exists. Try another email."),
+    ).toBeVisible();
+    const result = await new AxeBuilder({ page }).include("main").analyze();
+    expect(result.violations).toEqual([]);
+  }
+});
+
 test("every public route registers the read-only WebMCP catalog through the draft boundary", async ({
   page,
 }) => {

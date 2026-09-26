@@ -109,6 +109,24 @@ describe("self-hosted proof API", () => {
     expect(body).toContain("appended 3 log entries");
   });
 
+  it("routes dashboard logs to a fixed target and rejects arbitrary stream selectors", async () => {
+    const response = await fetch(
+      `${origin}/api/demo/runtime/stream?target=dashboard&datastar=%7B%7D`,
+    );
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("selector #dashboard-runtime-log-entries");
+    expect(body).not.toContain("selector #runtime-log-entries");
+    expect(body.match(/event: datastar-patch-elements/g)).toHaveLength(3);
+    for (const target of ["#main", "", "dashboard-extra"]) {
+      const rejected = await fetch(
+        `${origin}/api/demo/runtime/stream?target=${encodeURIComponent(target)}&datastar=%7B%7D`,
+      );
+      expect(rejected.status).toBe(400);
+      expect(await rejected.text()).toBe("Unknown runtime stream target.");
+    }
+  });
+
   it("filters and paginates the shared feed contract", async () => {
     const response = await fetch(`${origin}/api/demo/feed?query=official%20sdk&cursor=0`);
     const body = await response.json();

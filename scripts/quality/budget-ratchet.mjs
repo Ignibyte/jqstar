@@ -25,6 +25,13 @@ const REVIEWED_REBASELINE_0053 = new Map([
   ["consumerBundles.storesImportGzipBytes", { from: 67584, to: 67623 }],
 ]);
 
+function reviewedCeiling(path, baselineValue) {
+  return [REVIEWED_REBASELINE_0055, REVIEWED_REBASELINE_0053].reduce((ceiling, transitions) => {
+    const reviewed = transitions.get(path);
+    return reviewed?.from === ceiling ? reviewed.to : ceiling;
+  }, baselineValue);
+}
+
 function numericLeaves(value, prefix = "") {
   const leaves = new Map();
   if (!value || typeof value !== "object" || Array.isArray(value)) return leaves;
@@ -72,13 +79,9 @@ export function evaluateBudgetRatchet(current, baseline, baseRevision) {
   const currentValues = numericLeaves(current);
   for (const [path, baselineValue] of numericLeaves(baseline)) {
     const currentValue = currentValues.get(path);
-    const reviewed = [REVIEWED_REBASELINE_0055.get(path), REVIEWED_REBASELINE_0053.get(path)];
     if (typeof currentValue !== "number") {
       failures.push(`${path} was removed from the immutable-base budgets.`);
-    } else if (
-      currentValue > baselineValue &&
-      !reviewed.some((limit) => limit?.from === baselineValue && currentValue <= limit.to)
-    ) {
+    } else if (currentValue > reviewedCeiling(path, baselineValue)) {
       failures.push(`${path} ${currentValue} loosens immutable-base ceiling ${baselineValue}.`);
     }
   }

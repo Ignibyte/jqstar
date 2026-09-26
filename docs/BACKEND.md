@@ -149,6 +149,14 @@ const response = ServerSentEventGenerator.stream((stream) => {
 Do not construct SSE fields by hand. The SDK owns protocol event names, data encoding, retry
 metadata, and event IDs.
 
+## Integrated Lab runtime stream
+
+`GET /api/demo/runtime/stream` reads signals with the official SDK and appends three log entries to
+`#runtime-log-entries`. The integrated Operations Dashboard uses `?target=dashboard` to select the
+fixed `#dashboard-runtime-log-entries` target. Both viewers can therefore coexist in one document.
+Every other target value returns `400`; requests cannot supply an arbitrary selector. The SDK event
+format and default route behavior remain the same.
+
 ## Actual-host backend coexistence
 
 The opt-in actual Turbo/htmx fixture runs `core.generic` JSON and HTML plus `core.datastar` SSE

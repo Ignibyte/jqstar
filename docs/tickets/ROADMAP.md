@@ -189,6 +189,26 @@ The later user instruction authorized 0053 before finishing 0033 and requested j
 afterward. Ticket 0053 records that one-time exception and its complete report. Ticket 0033 does not
 claim the mutation evidence as its own or require it to close.
 
+## Website documentation completion review
+
+Ticket [0058](0058-review-website-and-agent-documentation.md) reviews the reference website and
+agent instructions in three passes, corrects current usage contracts, and verifies the combined
+reference without introducing another corpus or a remote service. It depends on the design and agent
+surfaces in 0049 and 0050 and the tested jQuery floor in 0057.
+
+## Complete website Component Lab
+
+Ticket [0059](0059-integrate-component-lab-and-code-examples.md) embeds the complete Lab on home and
+Components, shares the legacy route shell, frames and colors code, and explains the server-first
+jQuery philosophy. It follows 0058 and preserves the runtime, registry, SDK, and agent-corpus
+boundaries.
+
+## Default-branch budget comparison
+
+Ticket [0060](0060-compose-reviewed-budget-transitions.md) follows the existing approved package
+size transitions from 0055 and 0053 when the default branch predates both. It supports the 0059
+website handoff without changing numeric limits or bypassing any required checks.
+
 ## Dependency graph
 
 ```text

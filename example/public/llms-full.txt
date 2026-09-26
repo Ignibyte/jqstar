@@ -1,7 +1,7 @@
 # jQStar reviewed agent corpus
 
 Package: jquery-star@1.1.0
-Corpus version: 6
+Corpus version: 8
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Framework invariants
@@ -67,48 +67,45 @@ Datastar.
 HTML is the API
 Your backend renders the markup. Standard attributes declare behavior while jQStar
 keeps real jQuery available.
-The framework promise
-A complete server-rendered development experience.
-jQStar is for teams that want modern interaction without moving their entire application
-into a client runtime.
-Keep the server in charge
-- Keep routes, validation, permissions, and data on the server.
-- Keep HTML readable and useful before JavaScript runs.
-- Add reactivity and rich components where they are needed.
-- Update regions through HTML, JSON, or Datastar streams.
-- Avoid JSX, hydration, virtual DOM ownership, and duplicated client routes.
-- Continue using existing backend templates and jQuery plugins.
-- Adopt it incrementally instead of rewriting the application.
-What we are building for
-- An excellent server-rendered development experience.
-- Predictable enhancement and cleanup after HTML replacement.
-- Examples for PHP, Rails, Django, Node, and similar stacks.
-- Strong no-build and modular-package support.
-- Accessible components that solve real application workflows.
-- Optional navigation and shared state without making them mandatory.
-- Migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.
+TLDR · why jQStar
+Bring jQuery back. Keep the server in charge.
+jQuery got a bad name from sprawling event handlers and hidden DOM state. jQStar brings
+it back with explicit signals, owned behavior, and cleanup. For server-rendered apps,
+React can add more machinery than the interaction needs. Write HTML. Enhance what moves.
+Server side is king: keep data, permissions, and validation on the backend. Our bet for
+the AI future is strong servers with focused browser work. Give people and coding agents
+the same inspectable HTML, contracts, and working examples. Measure performance against
+your own workload.
+Features you can use today
+- Real jQuery for selectors, plugins, and existing application code.
+- Reactive signals and named actions declared through HTML attributes.
+- 102 source-owned component recipes and seven composed application blocks.
+- Native controls, keyboard behavior, focus management, and form submission.
+- HTML and JSON updates, plus Datastar streams from the official SDK.
+- Enhancement and disposal when the server replaces a region.
+- Script-tag setup or modular packages, with incremental adoption.
+Built for people and coding agents
+- Readable HTML that the backend and an agent can both inspect.
+- Documented component roots, parts, state, and ownership.
+- Copy-in recipes that your application owns and can edit.
+- A complete live Component Lab on this page.
+- One reviewed reference through llms.txt and llms-full.txt.
+- Optional read-only WebMCP tools for supported browsers.
+- Optional stores, persistence, and inspection for larger applications.
 $ is real jQuery. $name is a reactive signal. Named actions move
 longer behavior back into JavaScript.
+No virtual DOM or duplicated client routes. jQStar is not an official successor to jQuery
+UI or jQuery Mobile.
 Built with itself
 This website is a jQStar application.
-The theme control, dialogs, responsive documentation, code previews, component examples,
-and Component Lab all run on the same public model documented here. React is not hiding
-behind the page.
-Component documentation
-Learn the native markup, actions, state attributes, and keyboard contract.
-Read the guides →
-Component Lab
-Exercise the exhaustive UI, forms, data, blocks, and backend integration proof.
-Open the live system →
-1.0 compatibility
-Review stable entries, environments, formats, host ranges, and support policy.
-Read the contract →
-Migration and download
-Move from the 0.1 baseline, then verify the exact package you install.
-Plan the upgrade →
+The navigation, theme, code previews, and full Component Lab use the public runtime.
+Inspect the markup and try the controls below.
+Read the component guides ,
+compatibility contract , and
+migration instructions .
 
 ### Introduction [getting-started]
-Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.
+Install, boot jQuery with signals, copy recipes, and find the combined reference.
 Citation: https://ignibyte.github.io/jqstar/docs/
 Source: example/docs/index.html
 
@@ -120,9 +117,9 @@ Design philosophy: your backend generates HTML, jQStar enhances local
 interaction, and Datastar can stream server changes. No virtual DOM or duplicated browser
 router is required.
 Install the package
-jQStar 1.1 supports jQuery 4 and Node 24 or newer for package consumers and tooling. Review
-the complete compatibility contract before
-adopting an optional entry.
+Use jQuery >=3.7.1 <5 and Node >=24 for package tooling.
+Exact jQuery 3.7.1 and 4.0.0 are tested. See the
+compatibility contract .
 Terminal
 Copy
 ```
@@ -138,12 +135,12 @@ import "jquery-star/ui.css";
 $("#app").star();
 ```
 Write reactive HTML
-A data-signals root owns local state. Directive expressions can read and write
-signals and call the installed jQuery instance in the same expression.
+An enhanced application root owns local state. Expressions combine signal access with real
+jQuery.
 counter.html
 Copy
 ```
-<section id="counter" data-signals="{ count: 0 }">
+<section id="app" data-jqs data-signals="{ count: 0 }">
 <button data-on:click="$count++; $(el).fadeOut()">
 Increment and disappear
 </button>
@@ -183,6 +180,10 @@ inspection and tracing , follow the
 package upgrade diagnostics , read
 the 1.0 migration guide , or open the
 complete Component Lab .
+The combined usage reference joins reviewed guides,
+examples, and registry contracts. Discover it through
+llms.txt or the
+agent tools .
 
 ### Compatibility [compatibility]
 Stable jQStar 1.1 entries, formats, package doctor, support ranges, document topology, and lifecycle policy.
@@ -421,25 +422,27 @@ Citation: https://ignibyte.github.io/jqstar/docs/datastar/
 Source: example/docs/datastar/index.html
 
 Datastar Integration
-jQStar keeps localized browser behavior beside the HTML while the server can update signals
-and page regions through JSON, HTML, or Datastar server-sent events.
+Keep local behavior beside server-rendered HTML. The server can patch signals and regions
+with JSON, HTML, or Datastar SSE.
 One protocol boundary: jQStar consumes Datastar-compatible events. Your
 server must generate SSE with @starfederation/datastar-sdk , never handwritten
 event strings.
 Call the backend from HTML
-Built-in request actions serialize the current public signals and interpret the response by
-its content type.
+The root defaults to core.datastar . Core alone uses core.generic
+with explicit inputs and JSON/HTML. Select the generic profile for ordinary endpoints.
 application.html Copy
 ```
 <button data-on:click="@get('/items')">Refresh</button>
-<form data-on:submit__prevent="@post('/items', { contentType: 'form' })">
+<form method="post" action="/items"
+data-on:submit__prevent="@post('/items', { contentType: 'form' })">
 <input name="title" required />
 <button>Save</button>
 </form>
 ```
-GET places signals in a datastar query parameter. POST, PUT, PATCH, and DELETE
-use the documented JSON or form contract. Every request includes
-Datastar-Request: true .
+Datastar GET sends filtered signals in the datastar query; JSON DELETE uses
+both query and body. Datastar requests include Datastar-Request: true . Form
+mode uses native form encoding. For submission without JavaScript, the endpoint must return
+useful HTML or a redirect.
 Response behavior
 Response
 jQStar result
@@ -488,13 +491,12 @@ work, but correctness must hold when a browser requests the record again. Applic
 needing a shared JSON cache can evaluate an external core in an application-owned plugin
 with explicit lifecycle cleanup.
 Enhancement after a patch
-Inserted HTML is scanned immediately. New directives, bindings, component roots, named
-actions, and cleanup hooks work without calling .star() again. Outer morphs
-preserve matching elements, focused controls, unsaved values, and existing jQuery handlers.
-Use data-ignore-morph for a general subtree the server must not change. Use
-data-jqs-preserve when a live jQStar application root must survive the patch,
-and await $.star.whenEnhanced() before reading newly inserted directive or
-component DOM.
+New directives and components are enhanced without another .star() call. Morphs
+retain matching nodes and their handlers, restore focus, and protect the active input's
+value. Other values can receive server updates; removed nodes lose their state. Use
+data-ignore-morph for an unchanged subtree and
+data-jqs-preserve for a retained live application root. Await
+$.star.whenEnhanced() before reading enhanced DOM.
 The repository's Component Lab includes real JSON,
 HTML, multipart, and official-SDK stream endpoints when run through the local proof server.
 
@@ -504,12 +506,13 @@ Citation: https://ignibyte.github.io/jqstar/docs/api/
 Source: example/docs/api/index.html
 
 Core API
-jQStar is HTML-driven, but its installed jQuery surface exposes explicit application,
-action, request, lifecycle, and UI methods for code that needs programmatic control.
-The root surface preserves the 0.1 compatibility contract. The core ,
+Use the installed jQuery surface for application, action, request, lifecycle, and UI
+control.
+The root auto-installs core, Datastar, and UI. The explicit core ,
 ui , datastar , csp , testing ,
 datastar/testing , turbo , and htmx package subpaths
-are stable in 1.0.
+are stable from 1.0. stores , persist , and inspect
+are stable in 1.1. Install structural plugins before boot.
 Applications
 API
 Purpose
@@ -824,12 +827,9 @@ installation rolls back, disposal runs once, later cleanup still runs after a fa
 the frozen public disposal report names the failed plugin owner. The functions contain no
 runner imports or suite registration.
 External navigation
-Navigation and page-transition plugins replace DOM through
-createRenderAdapter() from jquery-star/core . The adapter destroys
-outgoing application roots deepest-first while they remain connected, retains explicit
-data-jqs-preserve identities and control state, validates the committed roots,
-restores focus, boots incoming data-jqs roots, and waits for enhancement. The
-caller performs the actual DOM mutation.
+Use createRenderAdapter() from jquery-star/core around external
+DOM mutation. It releases outgoing roots, checks explicit preservation, boots incoming
+roots, and waits for enhancement. The host owns DOM mutation and focus.
 Wrap each navigation in one public operation observation. Keep the same operation ID from
 started through exactly one completed or
 failed terminal record, and do not expose markup, signal values, or live nodes
@@ -1337,10 +1337,9 @@ npx jqstar list --type component
 npx jqstar add dialog dropdown-menu tabs toast
 npx jqstar list --type block
 ```
-Explore the complete system
-The first hand-authored guides establish the documentation pattern. The
-Component Lab remains the exhaustive live proof for
-all recipes, composed blocks, forms, data tables, backend requests, and Datastar streams.
+The complete system runs below: every recipe, all seven blocks, native forms, data tables,
+backend requests, and Datastar streams. Choose a section and interact with the examples
+here.
 
 ### Dialog [component-dialog]
 Native modal dialog markup, focus containment and return, lifecycle events, and named actions.
@@ -1594,11 +1593,11 @@ are @ui.toast.show , @ui.toast.dismiss , and
 @ui.toast.clear .
 
 ### Component Lab [component-lab]
-The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.
+The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.
 Citation: https://ignibyte.github.io/jqstar/components/lab/
 Source: example/components/lab/index.html
 
-The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.
+The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.
 
 ### Agent support [agent-support]
 Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.
@@ -1685,7 +1684,7 @@ Citation: https://ignibyte.github.io/jqstar/docs/
 Source: example/docs/index.html
 
 ```html
-<section id="counter" data-signals="{ count: 0 }">
+<section id="app" data-jqs data-signals="{ count: 0 }">
   <button data-on:click="$count++; $(el).fadeOut()">
     Increment and disappear
   </button>

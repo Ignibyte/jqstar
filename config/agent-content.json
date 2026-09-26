@@ -1,6 +1,6 @@
 {
   "$schema": "jqstar-agent-content/1",
-  "corpusVersion": 6,
+  "corpusVersion": 8,
   "canonicalBaseUrl": "https://ignibyte.github.io/jqstar/",
   "webMcpDraft": "2026-08-26",
   "limits": {
@@ -55,8 +55,18 @@
       "id": "getting-started",
       "title": "Introduction",
       "path": "docs/",
-      "summary": "Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.",
-      "keywords": ["install", "npm", "boot", "signals", "$", "$name", "registry", "cli"],
+      "summary": "Install, boot jQuery with signals, copy recipes, and find the combined reference.",
+      "keywords": [
+        "install",
+        "npm",
+        "boot",
+        "signals",
+        "$",
+        "$name",
+        "registry",
+        "cli",
+        "combined reference"
+      ],
       "source": "example/docs/index.html",
       "contentRoot": "article"
     },
@@ -289,7 +299,7 @@
       "id": "component-lab",
       "title": "Component Lab",
       "path": "components/lab/",
-      "summary": "The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.",
+      "summary": "The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.",
       "keywords": ["component lab", "registry", "examples", "browser", "datastar", "accessibility"],
       "source": "example/components/lab/index.html",
       "contentRoot": "summary"
@@ -407,7 +417,7 @@
       "language": "html",
       "path": "docs/",
       "source": "example/docs/index.html",
-      "code": "<section id=\"counter\" data-signals=\"{ count: 0 }\">\n  <button data-on:click=\"$count++; $(el).fadeOut()\">\n    Increment and disappear\n  </button>\n\n  <output data-text=\"$count\"></output>\n</section>",
+      "code": "<section id=\"app\" data-jqs data-signals=\"{ count: 0 }\">\n  <button data-on:click=\"$count++; $(el).fadeOut()\">\n    Increment and disappear\n  </button>\n\n  <output data-text=\"$count\"></output>\n</section>",
       "keywords": ["signals", "$", "$count", "jquery", "data-on", "data-text"]
     },
     {
@@ -558,6 +568,34 @@
       "expectedIds": ["persistence"],
       "requiredTerms": ["jquery-star/persist", "before", "reset()", "secrets"],
       "path": "docs/persistence/"
+    },
+    {
+      "id": "request-profiles",
+      "question": "Does core.generic send implicit Datastar signals and which profile should ordinary JSON endpoints use?",
+      "expectedIds": ["datastar-integration"],
+      "requiredTerms": ["core.generic", "core.datastar", "explicit inputs"],
+      "path": "docs/datastar/"
+    },
+    {
+      "id": "morph-preservation",
+      "question": "Does a Datastar morph preserve every unsaved input value or only the active input value?",
+      "expectedIds": ["datastar-integration"],
+      "requiredTerms": ["active", "Other values can receive server updates", "removed nodes"],
+      "path": "docs/datastar/"
+    },
+    {
+      "id": "combined-reference",
+      "question": "Where is the combined jQStar usage reference with guides examples and registry contracts for headless agents?",
+      "expectedIds": ["getting-started"],
+      "requiredTerms": ["combined usage reference", "llms.txt", "registry contracts"],
+      "path": "docs/"
+    },
+    {
+      "id": "external-focus",
+      "question": "When a navigation plugin uses createRenderAdapter who owns DOM mutation and focus?",
+      "expectedIds": ["plugin-conformance"],
+      "requiredTerms": ["host owns DOM mutation and focus"],
+      "path": "docs/plugins/"
     }
   ],
   "agentGuide": {

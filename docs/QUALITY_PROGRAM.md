@@ -499,20 +499,33 @@ measures 542,455 bytes, an increase of 2,174 bytes each. The tree-shaken core co
 the first-baseline ceilings follow the next-1-KiB rule: 464,896 UMD bytes, 542,720 root-import
 bytes, and 197,632 core-import bytes. No other ceiling moves.
 
-The repeated-enhancement fixture starts with 2,263 DOM nodes on Chromium, Firefox, and WebKit. One
-owned mutation observer and one owned event listener remain active while mounted. Both return to
-zero after destroy and removal. Both mount/destroy cycles end with zero owned timers and requests,
-1,141 DOM queries, four patch mutations, and no DOM-node delta.
+The original repeated-enhancement fixture started with 2,263 DOM nodes on Chromium, Firefox, and
+WebKit. One owned mutation observer and one owned event listener remain active while mounted. Both
+return to zero after destroy and removal. Both mount/destroy cycles end with zero owned timers and
+requests, 1,141 DOM queries, four patch mutations, and no DOM-node delta.
+
+Ticket 0059 fixes the ownership workload in `e2e/fixtures/ownership-lab.html`, based on the
+pre-integration Lab and its three copied blocks at commit `60f8263`. Vite serves it only at the
+development route `/__quality__/ownership-lab/`; it is excluded from the production website and
+package. The current fixture starts at 2,292 nodes and mounts at 2,294 in all three desktop engines,
+under the unchanged 2,300 ceiling. Both disposal cycles return to the baseline with zero owned
+observers, listeners, timers, requests, or node delta; the complete measurement uses 1,092 queries
+and four patch mutations. Keep the fixture markup fixed when testing runtime changes. The live
+website is separately checked in full for all recipes, seven blocks, backend workflows, themes,
+responsive layouts, and accessibility.
 
 Ceilings use the next 4 KiB boundary for package bytes, the next 1 KiB boundary for individual
 bundles, the next group of five files, the next 100 DOM nodes, and a narrow measured boundary for
 owned operations. Clean builds have a zero changed-file budget. `budget-ratchet.mjs` compares every
 numeric ceiling with `JQS_QUALITY_BASE_SHA` or the runner's immutable scope. Removing a ceiling or
-raising it fails except for ticket 0055's nine exact, measured UI bundle and installed-consumer
-transitions. Each exception requires the recorded old ceiling and rejects any value above its
-reviewed next-1-KiB maximum; unrelated increases still fail. The initial revision is reported as
-`first-baseline` when the base has no budget file. There is no environment override that can loosen
-a ceiling.
+raising it fails except for the exact measured transitions recorded in tickets 0055 and 0053. Each
+transition requires its recorded starting ceiling. Ticket 0060 composes those approved transitions
+when the immutable base predates both: root-import bytes can move from 542,720 through 634,880 to
+634,881, and stores-import gzip bytes from 66,560 through 67,584 to 67,623. An increase from an
+unmatched starting value, an unrelated increase, a removed ceiling, or a value above the final
+approved endpoint still fails. The configuration and reviewed transition values remain unchanged.
+The initial revision is reported as `first-baseline` when the base has no budget file. There is no
+environment override that can loosen a ceiling.
 
 ## Reports and evidence
 

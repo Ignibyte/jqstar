@@ -3,7 +3,7 @@
 > HTML-first reactive framework for server-rendered applications, powered by jQuery.
 
 Package: jquery-star@1.1.0
-Corpus: jqstar-agent-content/6
+Corpus: jqstar-agent-content/8
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Agent surfaces
@@ -16,7 +16,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 ## Documentation
 
 - [jQStar framework](https://ignibyte.github.io/jqstar/): What jQStar is, what stays on the server, and the boundaries of the current framework.
-- [Introduction](https://ignibyte.github.io/jqstar/docs/): Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.
+- [Introduction](https://ignibyte.github.io/jqstar/docs/): Install, boot jQuery with signals, copy recipes, and find the combined reference.
 - [Compatibility](https://ignibyte.github.io/jqstar/docs/compatibility/): Stable jQStar 1.1 entries, formats, package doctor, support ranges, document topology, and lifecycle policy.
 - [Migrate to 1.0](https://ignibyte.github.io/jqstar/docs/migration/): Upgrade the 0.1 compatibility root or adopt stable modular, testing, CSP, Turbo, and htmx entries.
 - [Security](https://ignibyte.github.io/jqstar/docs/security/): Private vulnerability reporting, maintained versions, application responsibilities, CSP boundaries, and release response.
@@ -36,7 +36,7 @@ Canonical site: https://ignibyte.github.io/jqstar/
 - [Dropdown](https://ignibyte.github.io/jqstar/docs/components/dropdown/): Menu-button markup with roving focus, typeahead, selection, and collision-aware positioning.
 - [Tabs](https://ignibyte.github.io/jqstar/docs/components/tabs/): Keyboard-accessible tabs with stable values and automatic or manual activation.
 - [Toast](https://ignibyte.github.io/jqstar/docs/components/toast/): Accessible non-modal notifications with timers, actions, focus, and swipe dismissal.
-- [Component Lab](https://ignibyte.github.io/jqstar/components/lab/): The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.
+- [Component Lab](https://ignibyte.github.io/jqstar/components/lab/): The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.
 - [Agent support](https://ignibyte.github.io/jqstar/docs/agents/): Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.
 - [Persisted preferences](https://ignibyte.github.io/jqstar/docs/persistence/): Persist selected browser preferences with synchronous hydration before boot, codecs, migrations, explicit recovery, and revision ordering.
 

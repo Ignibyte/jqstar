@@ -32,7 +32,7 @@
     <link rel="alternate" type="text/plain" href="%BASE_URL%llms.txt" title="jQStar agent index" />
     <link rel="stylesheet" href="/site.css" />
   </head>
-  <body class="home-page" data-signals="{ siteSearch: '' }">
+  <body class="home-page" data-jqs data-signals="{ siteSearch: '' }">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="site-header-inner">
@@ -41,6 +41,7 @@
           <span class="brand-name">jQStar</span>
         </a>
         <nav class="site-nav" aria-label="Primary navigation">
+          <a href="#component-lab">Components</a>
           <a href="%BASE_URL%docs/">Documentation</a>
           <a href="https://github.com/Ignibyte/jqstar">GitHub</a>
         </nav>
@@ -106,44 +107,55 @@
         </div>
       </section>
 
-      <section class="section" aria-labelledby="promise-title">
+      <section class="section" aria-labelledby="philosophy-title">
         <div class="section-heading">
-          <p class="eyebrow">The framework promise</p>
-          <h2 id="promise-title">A complete server-rendered development experience.</h2>
+          <p class="eyebrow">TLDR · why jQStar</p>
+          <h2 id="philosophy-title">Bring jQuery back. Keep the server in charge.</h2>
           <p>
-            jQStar is for teams that want modern interaction without moving their entire application
-            into a client runtime.
+            jQuery got a bad name from sprawling event handlers and hidden DOM state. jQStar brings
+            it back with explicit signals, owned behavior, and cleanup. For server-rendered apps,
+            React can add more machinery than the interaction needs. Write HTML. Enhance what moves.
+          </p>
+          <p>
+            Server side is king: keep data, permissions, and validation on the backend. Our bet for
+            the AI future is strong servers with focused browser work. Give people and coding agents
+            the same inspectable HTML, contracts, and working examples. Measure performance against
+            your own workload.
           </p>
         </div>
         <div class="promise-grid">
           <article class="promise-card">
-            <h3>Keep the server in charge</h3>
+            <h3>Features you can use today</h3>
             <ul>
-              <li>Keep routes, validation, permissions, and data on the server.</li>
-              <li>Keep HTML readable and useful before JavaScript runs.</li>
-              <li>Add reactivity and rich components where they are needed.</li>
-              <li>Update regions through HTML, JSON, or Datastar streams.</li>
-              <li>Avoid JSX, hydration, virtual DOM ownership, and duplicated client routes.</li>
-              <li>Continue using existing backend templates and jQuery plugins.</li>
-              <li>Adopt it incrementally instead of rewriting the application.</li>
+              <li>Real jQuery for selectors, plugins, and existing application code.</li>
+              <li>Reactive signals and named actions declared through HTML attributes.</li>
+              <li>102 source-owned component recipes and seven composed application blocks.</li>
+              <li>Native controls, keyboard behavior, focus management, and form submission.</li>
+              <li>HTML and JSON updates, plus Datastar streams from the official SDK.</li>
+              <li>Enhancement and disposal when the server replaces a region.</li>
+              <li>Script-tag setup or modular packages, with incremental adoption.</li>
             </ul>
           </article>
           <article class="promise-card">
-            <h3>What we are building for</h3>
-            <ol>
-              <li>An excellent server-rendered development experience.</li>
-              <li>Predictable enhancement and cleanup after HTML replacement.</li>
-              <li>Examples for PHP, Rails, Django, Node, and similar stacks.</li>
-              <li>Strong no-build and modular-package support.</li>
-              <li>Accessible components that solve real application workflows.</li>
-              <li>Optional navigation and shared state without making them mandatory.</li>
-              <li>Migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.</li>
-            </ol>
+            <h3>Built for people and coding agents</h3>
+            <ul>
+              <li>Readable HTML that the backend and an agent can both inspect.</li>
+              <li>Documented component roots, parts, state, and ownership.</li>
+              <li>Copy-in recipes that your application owns and can edit.</li>
+              <li>A complete live Component Lab on this page.</li>
+              <li>One reviewed reference through llms.txt and llms-full.txt.</li>
+              <li>Optional read-only WebMCP tools for supported browsers.</li>
+              <li>Optional stores, persistence, and inspection for larger applications.</li>
+            </ul>
           </article>
         </div>
         <p class="syntax-rule">
           <code>$</code> is real jQuery. <code>$name</code> is a reactive signal. Named actions move
           longer behavior back into JavaScript.
+        </p>
+        <p>
+          No virtual DOM or duplicated client routes. jQStar is not an official successor to jQuery
+          UI or jQuery Mobile.
         </p>
       </section>
 
@@ -152,33 +164,18 @@
           <p class="eyebrow">Built with itself</p>
           <h2 id="proof-title">This website is a jQStar application.</h2>
           <p>
-            The theme control, dialogs, responsive documentation, code previews, component examples,
-            and Component Lab all run on the same public model documented here. React is not hiding
-            behind the page.
+            The navigation, theme, code previews, and full Component Lab use the public runtime.
+            Inspect the markup and try the controls below.
           </p>
         </div>
-        <div class="component-grid">
-          <a class="component-link" href="%BASE_URL%docs/components/">
-            <h3>Component documentation</h3>
-            <p>Learn the native markup, actions, state attributes, and keyboard contract.</p>
-            <span>Read the guides →</span>
-          </a>
-          <a class="component-link" href="%BASE_URL%components/lab/">
-            <h3>Component Lab</h3>
-            <p>Exercise the exhaustive UI, forms, data, blocks, and backend integration proof.</p>
-            <span>Open the live system →</span>
-          </a>
-          <a class="component-link" href="%BASE_URL%docs/compatibility/">
-            <h3>1.0 compatibility</h3>
-            <p>Review stable entries, environments, formats, host ranges, and support policy.</p>
-            <span>Read the contract →</span>
-          </a>
-          <a class="component-link" href="%BASE_URL%docs/migration/">
-            <h3>Migration and download</h3>
-            <p>Move from the 0.1 baseline, then verify the exact package you install.</p>
-            <span>Plan the upgrade →</span>
-          </a>
-        </div>
+        <p>
+          Read the <a href="%BASE_URL%docs/components/">component guides</a>,
+          <a href="%BASE_URL%docs/compatibility/">compatibility contract</a>, and
+          <a href="%BASE_URL%docs/migration/">migration instructions</a>.
+        </p>
+      </section>
+      <section class="section lab-section" id="component-lab" aria-labelledby="lab-title">
+        <div data-component-lab></div>
       </section>
     </main>
 

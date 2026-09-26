@@ -1122,12 +1122,18 @@ The public framework website is hosted at
 planned `jqstar.com` domain is owned and connected. The site is itself a jQStar application: native
 multi-page HTML, the real runtime, and no React client. Its main routes are:
 
-- `/` for the framework position and installation path
+- `/` for the framework position, installation path, and complete interactive Component Lab
 - `/docs/` for Getting Started, Datastar, API, CSP expression, and component guides
 - `/docs/compatibility/`, `/docs/migration/`, `/docs/security/`, and `/docs/download/` for the
   stable release contract
 - `/docs/agents/` for agent surfaces, provenance, limits, and reporting guidance
-- `/components/lab/` for the exhaustive component, block, backend, and accessibility proof
+- `/docs/components/` for component contracts and the complete embedded Lab
+- `/components/lab/` for the same exhaustive component, block, backend, and accessibility proof
+
+The home page and Components guide embed every Lab recipe and all seven composed blocks. Code frames
+and syntax colors are built into the HTML, so examples remain readable without JavaScript and
+copying keeps the original text. Static previews label the dashboard and profile controls that
+require the proof backend.
 
 ### Agent-readable website
 
@@ -1136,7 +1142,8 @@ The four source-backed surfaces are:
 
 - `/docs/agents/` is the human-readable capability guide.
 - `/llms.txt` is the short discovery map.
-- `/llms-full.txt` is the bounded reviewed corpus.
+- `/llms-full.txt` is the combined usage reference: reviewed guides, examples, and registry
+  contracts.
 - `/jqstar-agent-index.json` is the versioned machine-readable index.
 
 The index drives documentation search and five optional read-only WebMCP tools. WebMCP requires a
@@ -1156,9 +1163,9 @@ That command runs both local proof suites, builds every website route with `/jqs
 and static backend fallbacks, then publishes `demo-dist` to `gh-pages`.
 
 For visual review, run `npm run demo -- --host 127.0.0.1 --port 5174`, then open
-`http://127.0.0.1:5174/`. The Component Lab is at `/components/lab/`. Local development runs the
-real JSON and SSE routes, including streams generated with the official Datastar SDK. A future
-hosted API can use the same component markup and public action names.
+`http://127.0.0.1:5174/`. The complete Lab is on home, `/docs/components/`, and `/components/lab/`.
+Local development runs the real JSON and SSE routes, including streams generated with the official
+Datastar SDK. A future hosted API can use the same component markup and public action names.
 
 ## Expression context
 

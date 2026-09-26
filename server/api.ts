@@ -847,6 +847,14 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       response.end(read.error);
       return true;
     }
+    const target = new URL(request.url ?? "/", "http://localhost").searchParams.get("target");
+    if (target !== null && target !== "dashboard") {
+      response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("Unknown runtime stream target.");
+      return true;
+    }
+    const selector =
+      target === "dashboard" ? "#dashboard-runtime-log-entries" : "#runtime-log-entries";
     runtimeStreamRevision += 1;
     const revision = runtimeStreamRevision;
     const timestamp = Date.now();
@@ -877,7 +885,7 @@ export function createProofApi(options: ProofApiOptions = {}): ProofApi {
       for (const entry of logs) {
         await new Promise<void>((resolve) => setTimeout(resolve, 90));
         stream.patchElements(logEntryHtml(entry), {
-          selector: "#runtime-log-entries",
+          selector,
           mode: "append",
           eventId: entry.id,
         });

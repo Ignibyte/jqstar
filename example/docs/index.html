@@ -37,9 +37,9 @@
 
       <h2>Install the package</h2>
       <p>
-        jQStar 1.1 supports jQuery 4 and Node 24 or newer for package consumers and tooling. Review
-        the <a href="%BASE_URL%docs/compatibility/">complete compatibility contract</a> before
-        adopting an optional entry.
+        Use jQuery <code>&gt;=3.7.1 &lt;5</code> and Node <code>&gt;=24</code> for package tooling.
+        Exact jQuery 3.7.1 and 4.0.0 are tested. See the
+        <a href="%BASE_URL%docs/compatibility/">compatibility contract</a>.
       </p>
       <div class="code-block">
         <div class="code-heading">
@@ -66,15 +66,15 @@ $("#app").star();</code></pre>
 
       <h2>Write reactive HTML</h2>
       <p>
-        A <code>data-signals</code> root owns local state. Directive expressions can read and write
-        signals and call the installed jQuery instance in the same expression.
+        An enhanced application root owns local state. Expressions combine signal access with real
+        jQuery.
       </p>
       <div class="code-block">
         <div class="code-heading">
           <span>counter.html</span>
           <button type="button" data-on:click="@site.copyCode">Copy</button>
         </div>
-        <pre><code>&lt;section id="counter" data-signals="{ count: 0 }"&gt;
+        <pre><code>&lt;section id="app" data-jqs data-signals="{ count: 0 }"&gt;
   &lt;button data-on:click="$count++; $(el).fadeOut()"&gt;
     Increment and disappear
   &lt;/button&gt;
@@ -129,6 +129,12 @@ npx jqstar doctor</code></pre>
         <a href="%BASE_URL%docs/compatibility/#package-doctor">package upgrade diagnostics</a>, read
         the <a href="%BASE_URL%docs/migration/">1.0 migration guide</a>, or open the
         <a href="%BASE_URL%components/lab/">complete Component Lab</a>.
+      </p>
+      <p>
+        The <a href="%BASE_URL%llms-full.txt">combined usage reference</a> joins reviewed guides,
+        examples, and registry contracts. Discover it through
+        <a href="%BASE_URL%llms.txt">llms.txt</a> or the
+        <a href="%BASE_URL%docs/agents/">agent tools</a>.
       </p>
     </article>
     <script type="module" src="/site.ts"></script>

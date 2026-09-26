@@ -16,15 +16,16 @@
     <article class="docs-article">
       <h1>Core API</h1>
       <p class="docs-lede">
-        jQStar is HTML-driven, but its installed jQuery surface exposes explicit application,
-        action, request, lifecycle, and UI methods for code that needs programmatic control.
+        Use the installed jQuery surface for application, action, request, lifecycle, and UI
+        control.
       </p>
       <div class="docs-callout">
         <p>
-          The root surface preserves the 0.1 compatibility contract. The <code>core</code>,
+          The root auto-installs core, Datastar, and UI. The explicit <code>core</code>,
           <code>ui</code>, <code>datastar</code>, <code>csp</code>, <code>testing</code>,
           <code>datastar/testing</code>, <code>turbo</code>, and <code>htmx</code> package subpaths
-          are stable in 1.0.
+          are stable from 1.0. <code>stores</code>, <code>persist</code>, and <code>inspect</code>
+          are stable in 1.1. Install structural plugins before boot.
         </p>
       </div>
 

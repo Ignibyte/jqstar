@@ -209,6 +209,8 @@ for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-doc-link]
     link.setAttribute("aria-current", "page");
 }
 
+if (document.querySelector(".component-lab")) await import("./main");
+
 $("body").star();
 
 void installJqStarWebMcp().catch(() => undefined);

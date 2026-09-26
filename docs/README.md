@@ -25,6 +25,14 @@ The package has two public layers:
   disposal ownership.
 - [DEVELOPMENT.md](DEVELOPMENT.md): local commands and change rules.
 - [BACKEND.md](BACKEND.md): JSON and Datastar SDK server contracts.
+- [BACKEND_EVOLUTION_DISCUSSION.md](BACKEND_EVOLUTION_DISCUSSION.md): discussion proposals for live
+  backend views, versioned recovery, shared WASM computation, and production stream handling.
+- [Website documentation review](tickets/0058-review-website-and-agent-documentation.md): three-pass
+  accuracy, coverage, and discovery review of the reference website and combined agent corpus.
+- [Integrated Component Lab](tickets/0059-integrate-component-lab-and-code-examples.md): complete
+  home/Components proof, shared Lab authoring, code formatting, and positioning.
+- [Reviewed budget transitions](tickets/0060-compose-reviewed-budget-transitions.md): exact
+  composition of approved package limits when updating an older default branch.
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
@@ -95,6 +103,13 @@ The package has two public layers:
 | Proof backend    | `server/`                                           | Node HTTP routes using the official Datastar SDK.                                  |
 | Tests            | `test/`, `e2e/`                                     | Unit, integration, server, browser, responsive, and accessibility evidence.        |
 | Release contract | `quality/release-contract.json`, `scripts/release/` | Stable surface and non-publishing candidate proof.                                 |
+
+The website composes `example/lab-content.html` and five registry HTML blocks into home, Components,
+and the legacy Lab route. Two more blocks are authored within the fragment. `scripts/site-html.mjs`
+performs composition and inert code formatting through the Vite HTML transform. `example/site.ts`
+owns the shared shell and loads `example/main.ts` only when a Lab is present. Lab layout styles are
+scoped to `.component-lab`; runtime behavior still belongs in `src/` and registry orchestration
+stays in the copied blocks.
 
 ## Current invariants
 

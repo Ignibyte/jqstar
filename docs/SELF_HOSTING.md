@@ -1,10 +1,16 @@
 # Self-host jQStar
 
 The production build is a static multi-page framework website served by a small Node HTTP process.
-The home page is `/`, documentation begins at `/docs/`, and the exhaustive backend-enabled proof is
-`/components/lab/`. The same process exposes `/health`, JSON proof routes, and Datastar SSE routes.
-It binds to `127.0.0.1:4173` by default, so put an HTTPS reverse proxy in front of it for public
-traffic.
+The home page is `/` and documentation begins at `/docs/`. The complete Component Lab is embedded on
+home and `/docs/components/`; `/components/lab/` serves the same proof in the shared documentation
+shell. Each route includes all recipes and seven source-owned blocks. The same process exposes
+`/health`, JSON proof routes, and Datastar SSE routes. It binds to `127.0.0.1:4173` by default, so
+put an HTTPS reverse proxy in front of it for public traffic.
+
+The build composes Lab and registry markup into native HTML and adds code frames and syntax colors
+before serving it. Static Pages previews retain the existing simulated examples and label the new
+dashboard/profile controls as backend-only. Those controls stay disabled in the enhanced static
+preview; use the Node proof server for their JSON and SSE actions.
 
 ## Build a release
 

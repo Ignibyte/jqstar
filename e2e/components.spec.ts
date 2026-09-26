@@ -113,6 +113,11 @@ test.describe("jQStar components", () => {
   });
 
   test("OTP, resizable panels, and scroll area retain platform behavior", async ({ page }) => {
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      // Animated focus scrolling moves the handle between hover and pointerdown.
+      document.documentElement.style.scrollBehavior = "auto";
+    });
     const card = page.getByRole("region", { name: "Verification and layout primitives" });
     const otpForm = card.getByRole("form", { name: "Verification code proof" });
     const otp = card.getByRole("textbox", { name: "Verification code", exact: true });
@@ -141,11 +146,14 @@ test.describe("jQStar components", () => {
 
     await card.getByRole("button", { name: "Reset panels" }).click();
     await expect(splitter).toHaveAttribute("aria-valuenow", "50");
+    await splitter.hover();
     const splitterBox = await splitter.boundingBox();
     expect(splitterBox).not.toBeNull();
-    await page.mouse.move(splitterBox!.x + splitterBox!.width / 2, splitterBox!.y + 20);
     await page.mouse.down();
-    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + 20, { steps: 4 });
+    await expect(splitter).toHaveAttribute("data-state", "dragging");
+    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + splitterBox!.height / 2, {
+      steps: 4,
+    });
     await page.mouse.up();
     await expect
       .poll(async () => Number(await splitter.getAttribute("aria-valuenow")))
@@ -336,12 +344,14 @@ test.describe("jQStar components", () => {
     const scroller = card.locator("#support-thread");
     const viewport = scroller.getByRole("log", { name: "Support" });
     const messages = viewport.locator('[data-jqs="message"]');
+    await page.evaluate(() => document.fonts.ready);
     await viewport.evaluate((element) => {
       element.style.maxHeight = "10rem";
-      element.scrollTop = 0;
+      element.scrollTo({ top: 0, behavior: "instant" });
       element.dispatchEvent(new Event("scroll"));
     });
     await expect(scroller).toHaveAttribute("data-state", "paused");
+    await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBe(0);
     await viewport.locator(':scope > [data-part="content"]').evaluate((element) => {
       element.insertAdjacentHTML(
         "beforeend",

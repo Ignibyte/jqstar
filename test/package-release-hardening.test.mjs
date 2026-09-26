@@ -584,7 +584,7 @@ describe("package and release quality contracts", () => {
     expect(evaluateBudgetRatchet(baseline, null, "a".repeat(40)).status).toBe("first-baseline");
   });
 
-  it("permits only ticket 0055's nine measured UI size transitions", () => {
+  it("composes only reviewed size transitions from their exact approved baselines", () => {
     const baseline = {
       $schema: "jqstar-quality-budgets/1",
       ratchet: {
@@ -619,6 +619,12 @@ describe("package and release quality contracts", () => {
     const revision = "a".repeat(40);
     expect(evaluateBudgetRatchet(reviewed, baseline, revision).status).toBe("pass");
 
+    const auditBudget = structuredClone(reviewed);
+    auditBudget.consumerBundles.rootImportBytes = 634881;
+    auditBudget.consumerBundles.storesImportGzipBytes = 67623;
+    expect(evaluateBudgetRatchet(auditBudget, baseline, revision).status).toBe("pass");
+    expect(evaluateBudgetRatchet(auditBudget, reviewed, revision).status).toBe("pass");
+
     for (const [section, key] of [
       ["bundles", "dist/jquery-star.umd.cjs"],
       ["bundles", "dist/ui.cjs"],
@@ -631,7 +637,7 @@ describe("package and release quality contracts", () => {
       ["consumerBundles", "storesImportGzipBytes"],
     ]) {
       const excessive = structuredClone(reviewed);
-      excessive[section][key] += 1;
+      excessive[section][key] = auditBudget[section][key] + 1;
       expect(evaluateBudgetRatchet(excessive, baseline, revision).failures).toContain(
         `${section}.${key} ${excessive[section][key]} loosens immutable-base ceiling ${baseline[section][key]}.`,
       );
@@ -640,11 +646,12 @@ describe("package and release quality contracts", () => {
       expect(evaluateBudgetRatchet(reviewed, wrongBase, revision).status).toBe("fail");
     }
 
-    const auditBudget = structuredClone(reviewed);
-    auditBudget.consumerBundles.rootImportBytes = 634881;
-    auditBudget.consumerBundles.storesImportGzipBytes = 67623;
-    expect(evaluateBudgetRatchet(auditBudget, reviewed, revision).status).toBe("pass");
     for (const key of ["rootImportBytes", "storesImportGzipBytes"]) {
+      const unmatchedIntermediate = structuredClone(reviewed);
+      unmatchedIntermediate.consumerBundles[key] -= 1;
+      expect(evaluateBudgetRatchet(auditBudget, unmatchedIntermediate, revision).status).toBe(
+        "fail",
+      );
       const excessive = structuredClone(auditBudget);
       excessive.consumerBundles[key] += 1;
       expect(evaluateBudgetRatchet(excessive, reviewed, revision).failures).toContain(

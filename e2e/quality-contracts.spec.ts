@@ -266,7 +266,7 @@ test("@shared repeated enhancement stays inside structural ownership budgets", a
     }).observe(document, { childList: true, subtree: true, attributes: true });
   });
 
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ownership-lab/");
   await page.waitForLoadState("networkidle");
   const observed = await page.evaluate(async (runtimePath) => {
     const metrics = window.__jqstarQualityMetrics;
