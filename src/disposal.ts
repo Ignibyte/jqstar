@@ -1,3 +1,5 @@
+import { errorFields } from "./value-checks";
+
 export type StarDisposalCategory =
   | "application"
   | "effect"
@@ -38,30 +40,9 @@ export interface StarDisposalReportController {
   remain(resource: StarDisposalResource): void;
 }
 
-function bounded(value: string, maximum: number): string {
-  return value.length <= maximum ? value : value.slice(0, maximum);
-}
-
 function normalizedError(error: unknown): Readonly<{ message: string; name: string }> {
-  if (error instanceof Error) {
-    let name = "Error";
-    let message = "Cleanup failed.";
-    try {
-      if (typeof error.name === "string" && error.name) name = error.name;
-    } catch {
-      // A hostile error accessor cannot escape the disposal report boundary.
-    }
-    try {
-      if (typeof error.message === "string" && error.message) message = error.message;
-    } catch {
-      // A hostile error accessor cannot escape the disposal report boundary.
-    }
-    return Object.freeze({ name: bounded(name, 120), message: bounded(message, 1_024) });
-  }
-  return Object.freeze({
-    name: "ThrownValue",
-    message: bounded(String(error), 1_024),
-  });
+  const { name, message } = errorFields(error, "Cleanup failed.", String, false);
+  return Object.freeze({ name: name.slice(0, 120), message: message.slice(0, 1_024) });
 }
 
 function snapshot<Resource extends StarDisposalResource>(

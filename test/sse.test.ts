@@ -46,4 +46,19 @@ describe("SSE parser", () => {
     expect(fields.get("selector")).toEqual(["#feed"]);
     expect(fields.get("elements")?.join("\n")).toBe("<div>\n  Item\n</div>");
   });
+
+  it("ignores malformed metadata and preserves the last valid event ID", () => {
+    expect(parseSSE("id: valid\nid: invalid\0id\nretry: nope\nunknown\ndata: kept\r")).toEqual([
+      { event: "message", id: "valid", data: "kept" },
+    ]);
+    expect(parseSSE("retry: 12\nevent: discarded\n\ndata\n\n")).toEqual([
+      { event: "message", data: "" },
+    ]);
+    expect(sseDataFields("flag\nvalue ready")).toEqual(
+      new Map([
+        ["flag", [""]],
+        ["value", ["ready"]],
+      ]),
+    );
+  });
 });

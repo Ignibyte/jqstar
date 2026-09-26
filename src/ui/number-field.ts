@@ -1,8 +1,20 @@
+import { isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { NumberFieldTarget, StarContext, StarNumberFieldStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  listenUIReset,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface NumberFieldRecord {
-  cleanup: () => void;
+interface NumberFieldRecord extends UIResources {
+  form: HTMLFormElement | null;
   control: HTMLInputElement;
   decrement: HTMLButtonElement;
   increment: HTMLButtonElement;
@@ -23,18 +35,17 @@ interface NumberFieldCollection {
 }
 
 const records = new WeakMap<HTMLElement, NumberFieldRecord>();
+const reflected = new WeakMap<HTMLElement, string>();
 let numberFieldId = 0;
 
 function numberFieldRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="number-field"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="number-field"]') ? value : undefined;
 }
 
 function directControl(root: HTMLElement): HTMLInputElement {
   const control = Array.from(root.children).find(
     (child): child is HTMLInputElement =>
-      child instanceof HTMLInputElement && child.dataset.part === "control",
+      isHTMLTag(child, "input") && child.dataset.part === "control",
   );
   if (!control) {
     throw new Error(`Number Field #${root.id} needs a direct <input data-part="control">.`);
@@ -48,7 +59,7 @@ function directControl(root: HTMLElement): HTMLInputElement {
 function directButton(root: HTMLElement, part: "decrement" | "increment"): HTMLButtonElement {
   const button = Array.from(root.children).find(
     (child): child is HTMLButtonElement =>
-      child instanceof HTMLButtonElement && child.dataset.part === part,
+      isHTMLTag(child, "button") && child.dataset.part === part,
   );
   if (!button) {
     throw new Error(`Number Field #${root.id} needs a direct <button data-part="${part}">.`);
@@ -60,6 +71,17 @@ function numericValue(value: string): number | undefined {
   if (value === "") return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function current(record: NumberFieldRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.querySelector(':scope > input[data-part="control"]') === record.control &&
+    record.root.querySelector(':scope > button[data-part="decrement"]') === record.decrement &&
+    record.root.querySelector(':scope > button[data-part="increment"]') === record.increment &&
+    record.control.form === record.form
+  );
 }
 
 function isUnavailable(record: NumberFieldRecord): boolean {
@@ -85,11 +107,14 @@ function emit(
     value: numericValue(nextValue),
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:number-field:${name}`, {
-      bubbles: true,
-      cancelable,
-      detail,
-    }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:number-field:${name}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail,
+      },
+    ),
   );
 }
 
@@ -114,6 +139,8 @@ function canStep(record: NumberFieldRecord, direction: 1 | -1): boolean {
 }
 
 function sync(record: NumberFieldRecord): void {
+  record.value = record.control.value;
+  reflected.set(record.root, record.value);
   const unavailable = isUnavailable(record);
   const decrementDisabled = unavailable || !canStep(record, -1);
   const incrementDisabled = unavailable || !canStep(record, 1);
@@ -127,25 +154,41 @@ function sync(record: NumberFieldRecord): void {
   record.root.dataset.state = unavailable ? "disabled" : "ready";
 }
 
+function constraints(control: HTMLInputElement): string {
+  return [control.min, control.max, control.step, control.type].join("\0");
+}
+
 function commit(record: NumberFieldRecord, nextValue: string): HTMLElement {
+  const revision = ++record.revision;
   const previousValue = record.control.value;
+  const signature = constraints(record.control);
   if (
     nextValue === previousValue ||
-    !emit(record, "before-change", nextValue, previousValue, true)
+    !emit(record, "before-change", nextValue, previousValue, true) ||
+    !current(record, revision) ||
+    isUnavailable(record) ||
+    record.control.value !== previousValue ||
+    constraints(record.control) !== signature
   ) {
     return record.root;
   }
   record.control.value = nextValue;
   record.value = nextValue;
   sync(record);
-  record.control.dispatchEvent(new Event("input", { bubbles: true }));
-  record.control.dispatchEvent(new Event("change", { bubbles: true }));
+  record.control.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("input", { bubbles: true }),
+  );
+  if (!current(record, revision) || record.control.value !== nextValue) return record.root;
+  record.control.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+  );
+  if (!current(record, revision) || record.control.value !== nextValue) return record.root;
   emit(record, "change", nextValue, previousValue);
   return record.root;
 }
 
 function requestStep(root: HTMLElement, direction: 1 | -1, amount = 1): HTMLElement {
-  const record = records.get(root) ?? enhanceNumberField(root);
+  const record = recordFor(root);
   if (isUnavailable(record) || !Number.isFinite(amount) || amount <= 0) return root;
   let nextValue: string;
   try {
@@ -157,32 +200,41 @@ function requestStep(root: HTMLElement, direction: 1 | -1, amount = 1): HTMLElem
 }
 
 function requestSet(root: HTMLElement, value: number | string): HTMLElement {
-  const record = records.get(root) ?? enhanceNumberField(root);
+  const record = recordFor(root);
   if (isUnavailable(record)) return root;
-  const nextValue =
-    typeof value === "number" && Number.isFinite(value) ? String(value) : String(value);
   const probe = record.control.cloneNode() as HTMLInputElement;
-  probe.value = nextValue;
+  probe.value = String(value);
   return commit(record, probe.value);
 }
 
 function enhanceNumberField(root: HTMLElement): NumberFieldRecord {
   const existing = records.get(root);
-  if (existing) {
-    if (root.dataset.value !== undefined && root.dataset.value !== existing.control.value) {
+  const control = directControl(root);
+  const decrement = directButton(root, "decrement");
+  const increment = directButton(root, "increment");
+  if (
+    existing?.control === control &&
+    current(existing) &&
+    existing.decrement === decrement &&
+    existing.increment === increment
+  ) {
+    if (existing.resetRevision === existing.revision && root.dataset.value === reflected.get(root))
+      return existing;
+    if (root.dataset.value !== undefined && root.dataset.value !== reflected.get(root)) {
       const probe = existing.control.cloneNode() as HTMLInputElement;
       probe.value = root.dataset.value;
       existing.control.value = probe.value;
     }
+    if (existing.value !== control.value) existing.revision += 1;
     sync(existing);
     existing.value = existing.control.value;
     return existing;
   }
 
+  existing?.cleanup();
+  const replacement = records.get(root);
+  if (replacement) return replacement;
   root.id ||= `jqs-number-field-${++numberFieldId}`;
-  const control = directControl(root);
-  const decrement = directButton(root, "decrement");
-  const increment = directButton(root, "increment");
   control.id ||= `${root.id}-control`;
   decrement.type = "button";
   increment.type = "button";
@@ -192,7 +244,8 @@ function enhanceNumberField(root: HTMLElement): NumberFieldRecord {
   if (!increment.hasAttribute("aria-label")) increment.setAttribute("aria-label", "Increase value");
 
   const record: NumberFieldRecord = {
-    cleanup: () => undefined,
+    ...uiResources(root),
+    form: control.form,
     control,
     decrement,
     increment,
@@ -203,22 +256,35 @@ function enhanceNumberField(root: HTMLElement): NumberFieldRecord {
   const incrementClick = (): void => void requestStep(root, 1);
   const nativeInput = (): void => {
     const previousValue = record.value;
-    record.value = control.value;
+    if (previousValue !== control.value) record.revision += 1;
     sync(record);
     if (previousValue !== record.value) emit(record, "change", record.value, previousValue);
   };
-  decrement.addEventListener("click", decrementClick);
-  increment.addEventListener("click", incrementClick);
-  control.addEventListener("input", nativeInput);
-  control.addEventListener("change", () => sync(record));
-  record.cleanup = () => {
-    decrement.removeEventListener("click", decrementClick);
-    increment.removeEventListener("click", incrementClick);
-    control.removeEventListener("input", nativeInput);
-  };
-  records.set(root, record);
-  sync(record);
+  const nativeChange = (): void => sync(record);
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    const listen = listenUI.bind(undefined, record, () => current(record));
+    listen(decrement, "click", decrementClick);
+    listen(increment, "click", incrementClick);
+    listen(control, "input", nativeInput);
+    listen(control, "change", nativeChange);
+    listenUIReset(
+      record,
+      () => current(record),
+      record.form,
+      () => sync(record),
+    );
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    sync(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
+}
+
+function recordFor(root: HTMLElement): NumberFieldRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceNumberField(root);
 }
 
 function resolveNumberField(target: NumberFieldTarget, root: ParentNode = document): HTMLElement {
@@ -231,12 +297,12 @@ function resolveNumberField(target: NumberFieldTarget, root: ParentNode = docume
 }
 
 function controlledNumberField(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="number-field"]')) return target;
+  if (isHTMLElement(target)) return resolveNumberField(target);
   if (typeof target === "string" && target.startsWith("#")) {
     return resolveNumberField(target, context.root);
   }
   const closest = context.element?.closest('[data-jqs="number-field"]');
-  return resolveNumberField(closest instanceof HTMLElement ? closest : String(target));
+  return resolveNumberField(isHTMLElement(closest) ? closest : String(target));
 }
 
 function registerActions(api: StarNumberFieldStatic, registerAction: ActionRegistrar): void {
@@ -246,7 +312,7 @@ function registerActions(api: StarNumberFieldStatic, registerAction: ActionRegis
   ] as const) {
     registerAction(`ui.number-field.${name}`, (context) => {
       const first = context.args?.[0];
-      const explicit = typeof first === "string" && first.startsWith("#");
+      const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
       const target = controlledNumberField(context, explicit ? first : undefined);
       const amount = explicit ? context.args?.[1] : first;
       return direction === 1
@@ -256,7 +322,7 @@ function registerActions(api: StarNumberFieldStatic, registerAction: ActionRegis
   }
   registerAction("ui.number-field.set", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlledNumberField(context, explicit ? first : undefined);
     const value = explicit ? context.args?.[1] : first;
     if (typeof value !== "string" && typeof value !== "number") {
@@ -267,9 +333,7 @@ function registerActions(api: StarNumberFieldStatic, registerAction: ActionRegis
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="number-field"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="number-field"]')) {
     const field = numberFieldRoot(element);
     if (field) enhanceNumberField(field);
   }
@@ -282,7 +346,7 @@ export function createNumberFields(registerAction: ActionRegistrar): NumberField
     set: (target, value) => requestSet(resolveNumberField(target), value),
     value: (target) => {
       const root = resolveNumberField(target);
-      const record = records.get(root) ?? enhanceNumberField(root);
+      const record = recordFor(root);
       return numericValue(record.control.value);
     },
   };

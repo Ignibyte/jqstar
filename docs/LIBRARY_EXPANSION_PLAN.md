@@ -92,13 +92,14 @@ timeouts, result-recording failures, and stale worktree state. Delivery writes a
 only when every enforced gate passes and the start/end content fingerprints match.
 
 The JavaScript stack includes strict TypeScript and typed ESLint, architecture and dead-code checks,
-security and secret scanning, production coverage, property tests, Chromium/Firefox/WebKit behavior,
-accessibility, installed-package consumers, API and type reports, bundle budgets, generated-output
-drift, documentation validation, and detector sabotage fixtures.
+security and secret scanning, optional production coverage diagnostics, property tests,
+Chromium/Firefox/WebKit behavior, accessibility, installed-package consumers, API and type reports,
+bundle budgets, generated-output drift, documentation validation, and detector sabotage fixtures.
 
-Coverage thresholds are ratchets. Changed production lines and functions require 100% coverage. No
-generated baseline or blanket suppression can make a red gate green. Mutation testing is excluded
-unless a future ticket is explicitly requested for it.
+Browser component behavior is the primary UI proof. Coverage percentages and changed-code misses
+remain diagnostic; they do not gate delivery. No generated baseline or blanket suppression can make
+a red gate green. Mutation testing is excluded unless a future ticket is explicitly requested for
+it.
 
 ## Supported topology
 
@@ -376,7 +377,7 @@ historical jQuery project inside one package.
 | jQuery UI      | Keep out of the runtime. Test coexistence and publish incremental component migration guidance.   |
 | Sizzle         | Add no package or selector layer. Use the selector behavior supplied by jQuery Core.              |
 | jQuery Mobile  | Keep out of the runtime. Preserve progressive-enhancement lessons in a no-runtime migration path. |
-| QUnit          | Test one installed consumer without replacing internal Vitest and Playwright coverage.            |
+| QUnit          | Test one installed consumer alongside browser and focused direct contract checks.                 |
 | jQuery Migrate | Use as an opt-in upgrade aid and diagnostic input. Never bundle or auto-load it.                  |
 
 The dated releases, OpenJS statuses, primary sources, and expiry policy live in
@@ -487,6 +488,15 @@ handled by a small bridge.
 
 ## Optional application-service tracks
 
+### Recorded resource decision
+
+[Ticket 0020](tickets/0020-prove-resource-strategy.md) selected server patches with no official
+resource package. The [comparison](decisions/RESOURCE_STRATEGY.md) found a one-point nominal
+external advantage, within the frozen two-point inconclusive range; reasonable weight changes alter
+the ranking. Native did not meet the additional approval conditions. Tickets 0021 and 0022 are
+declined. Later conditional designs in this plan remain historical proposals, not available APIs or
+authorization to implement them. New evidence and a new decision are required to reopen that track.
+
 ### Stores and persistence
 
 `jquery-star/stores` is the first post-1.0 service because multiple application roots have a direct
@@ -536,6 +546,11 @@ Persistent offline queues remain deferred.
 
 ### Native navigation decision and implementation
 
+Ticket 0023 selected browser navigation plus the existing optional Turbo/htmx bridges. The
+[measured decision](decisions/NATIVE_NAVIGATION.md) declines tickets 0024–0029 and records public
+configuration/recovery patterns, the rapid Turbo programmatic-history limitation, privacy evidence
+and reopening criteria. The conditional design below remains history; it is not an available API.
+
 Conditional `jquery-star/navigation` work begins only after lifecycle transactions, the
 render-commit barrier, the browser matrix, installed-package proof, and Turbo/htmx bridges exist.
 
@@ -571,10 +586,12 @@ credentialed responses by default.
 
 ## Diagnostics and later tooling
 
-After store/persistence and resource/navigation decisions are terminal, `jquery-star/inspect` adds a
-bounded, redacted trace buffer and serializers for every published official service. Trace metadata
-is off by default in production. Request headers, bodies, state values, errors, and HTML are
-redacted unless a user explicitly enables them.
+Ticket 0030 adds `jquery-star/inspect` to the unpublished 1.1 candidate after the service decisions
+became terminal. The version headings above remain the original sequencing plan. Inspection has
+immutable snapshots and a bounded trace, disabled by default in every environment. Each official
+service has a counts serializer or documented no-serializer disposition. Headers, bodies, state
+values, arbitrary errors and HTML are always excluded. Only bounded action/store identifiers can
+receive explicit, expiring retention/export permission. See [INSPECTION.md](INSPECTION.md).
 
 The stable inspection API returns serializable summaries. It never returns mutable kernel,
 application, store, resource, or navigation internals.
@@ -613,7 +630,7 @@ documented smoke matrix covers each cross-browser primitive.
 
 - Install the public evidence-gated workflow, CI, quality report, worktree fingerprint, and receipt.
 - Install strict static, architecture, security, dependency, style, and documentation gates.
-- Correct the production census and enforce coverage and property tests.
+- Correct the production census, retain optional coverage diagnostics, and enforce property tests.
 - Freeze public behavior and environment support.
 - Record the jQuery Core, UI, Mobile, Sizzle, QUnit, and Migrate stewardship and naming policy.
 - Install and test real package tarballs.
@@ -674,8 +691,8 @@ passes its browser matrix, and does not expand the root compatibility bundle.
       receipt matches the exact gated worktree.
 - [ ] Static, architecture, security, dependency, documentation, source-policy, and gate-liveness
       checks fail closed without hidden baselines or blanket suppressions.
-- [ ] The complete production artifact census has coverage or named non-unit evidence. Changed
-      production lines/functions have 100% coverage.
+- [ ] The complete production artifact census has named browser, package, static, direct-test or
+      optional coverage evidence appropriate to its behavior, without a percentage target.
 - [ ] Property, three-browser, accessibility, package API/type, reproducibility, and size audits run
       at their documented delivery or release cadence.
 - [ ] The 0.1 root behavior, request bytes, event payloads, exports, package contents, and side

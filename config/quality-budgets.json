@@ -17,6 +17,14 @@
     "packedBytes": 32000,
     "unpackedBytes": 120000
   },
+  "htmxPackage": {
+    "packedBytes": 60000,
+    "unpackedBytes": 240000
+  },
+  "storesPackage": {
+    "packedBytes": 52000,
+    "unpackedBytes": 190000
+  },
   "bundles": {
     "dist/core.cjs": 1024,
     "dist/core.js": 1024,
@@ -26,30 +34,50 @@
     "dist/datastar.js": 512,
     "dist/datastar-testing.cjs": 6000,
     "dist/datastar-testing.js": 6000,
+    "dist/htmx.cjs": 18000,
+    "dist/htmx.js": 18000,
     "dist/jquery-star.cjs": 2048,
     "dist/jquery-star.js": 2048,
-    "dist/jquery-star.umd.cjs": 464896,
+    "dist/jquery-star.umd.cjs": 559104,
+    "dist/stores.cjs": 13312,
+    "dist/stores.js": 13312,
     "dist/testing.cjs": 13000,
     "dist/testing.js": 13000,
     "dist/turbo.cjs": 8192,
     "dist/turbo.js": 8192,
-    "dist/ui.cjs": 318464,
-    "dist/ui.js": 318464,
-    "dist/jquery-star-ui.css": 169984
+    "dist/ui.cjs": 408576,
+    "dist/ui.js": 410624,
+    "dist/jquery-star-ui.css": 171008,
+    "dist/persist.js": 16384,
+    "dist/persist.cjs": 16384,
+    "dist/inspect.js": 24576,
+    "dist/inspect.cjs": 24576
   },
   "consumerBundles": {
     "coreImportBytes": 197632,
-    "coreImportGzipBytes": 63000,
+    "coreImportGzipBytes": 64512,
     "cspImportBytes": 156000,
-    "cspImportGzipBytes": 45000,
-    "cspImportBrotliBytes": 39000,
-    "rootImportBytes": 542720,
+    "cspImportGzipBytes": 46080,
+    "cspImportBrotliBytes": 40960,
+    "rootImportBytes": 634881,
+    "storesImportBytes": 208896,
+    "storesImportGzipBytes": 67623,
     "testingImportBytes": 260000,
     "testingImportGzipBytes": 85000,
     "datastarTestingImportBytes": 80000,
     "datastarTestingImportGzipBytes": 30000,
+    "htmxImportBytes": 240000,
+    "htmxImportGzipBytes": 75000,
     "turboImportBytes": 220000,
-    "turboImportGzipBytes": 70000
+    "turboImportGzipBytes": 70000,
+    "persistImportBytes": 245760,
+    "persistImportGzipBytes": 78000,
+    "inspectImportBytes": 24576,
+    "inspectImportGzipBytes": 8192,
+    "coreInspectImportBytes": 229376,
+    "coreInspectImportGzipBytes": 73728,
+    "cspInspectImportBytes": 180224,
+    "cspInspectImportGzipBytes": 54000
   },
   "browser": {
     "domNodes": 2300,
@@ -62,5 +90,13 @@
   },
   "generatedOutputs": {
     "changedFiles": 0
+  },
+  "persistPackage": {
+    "packedBytes": 64000,
+    "unpackedBytes": 240000
+  },
+  "inspectPackage": {
+    "packedBytes": 96000,
+    "unpackedBytes": 384000
   }
 }

@@ -193,7 +193,7 @@ test("@shared repeated enhancement stays inside structural ownership budgets", a
 
     for (const prototype of [Document.prototype, Element.prototype]) {
       for (const name of ["querySelector", "querySelectorAll"] as const) {
-        const nativeQuery = Reflect.get(prototype, name) as (...args: unknown[]) => unknown;
+        const nativeQuery = Reflect.get(prototype, name);
         Object.defineProperty(prototype, name, {
           configurable: true,
           value(this: Document | Element, ...args: unknown[]) {
@@ -242,7 +242,7 @@ test("@shared repeated enhancement stays inside structural ownership budgets", a
     window.clearTimeout = ((id?: number) => {
       if (id !== undefined) pending.delete(id);
       metrics.pendingTimers = pending.size;
-      return nativeClearTimeout(id);
+      nativeClearTimeout(id);
     }) as typeof window.clearTimeout;
 
     Object.defineProperty(window, "__jqstarResetQualityCounters", {
@@ -266,7 +266,7 @@ test("@shared repeated enhancement stays inside structural ownership budgets", a
     }).observe(document, { childList: true, subtree: true, attributes: true });
   });
 
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ownership-lab/");
   await page.waitForLoadState("networkidle");
   const observed = await page.evaluate(async (runtimePath) => {
     const metrics = window.__jqstarQualityMetrics;

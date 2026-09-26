@@ -72,9 +72,16 @@ interface PackageManifest {
   peerDependencies: { jquery: string };
 }
 
+interface ReleaseContract {
+  version: string;
+}
+
 interface QualityBudgets {
   package: { files: number; packedBytes: number; unpackedBytes: number };
   cspPackage: { packedBytes: number; unpackedBytes: number };
+  htmxPackage: { packedBytes: number; unpackedBytes: number };
+  storesPackage: { packedBytes: number; unpackedBytes: number };
+  persistPackage: { packedBytes: number; unpackedBytes: number };
   turboPackage: { packedBytes: number; unpackedBytes: number };
   bundles: Record<string, number>;
 }
@@ -87,7 +94,19 @@ function readJSON<T>(path: string): T {
   return JSON.parse(readText(path)) as T;
 }
 
+// Ticket 0030 adds these names without rewriting the historical baseline artifact.
+const inspectionTypes = [
+  "StarKernelMetadataAccess",
+  "StarMetadataBoundary",
+  "StarMetadataCountKey",
+  "StarPluginMetadataVisitor",
+  "StarServiceMetadataRegistration",
+  "StarServiceMetadataSummary",
+  "StarServiceMetadataView",
+];
+
 const baseline = readJSON<PublicBaseline>("quality/public-baseline.json");
+const release = readJSON<ReleaseContract>("quality/release-contract.json");
 const manifest = readJSON<PackageManifest>("package.json");
 const budgets = readJSON<QualityBudgets>("config/quality-budgets.json");
 
@@ -120,14 +139,19 @@ function exportedNames(typeOnly: boolean): string[] {
 describe("public 0.1 baseline", () => {
   it("freezes the root, declaration, jQuery, UI, and action names", () => {
     expect(baseline.schema).toBe("jqstar-public-baseline/1");
-    expect(baseline.version).toBe($.star.version);
+    expect(baseline.version).toBe("0.1.0");
+    expect($.star.version).toBe(release.version);
     expect(baseline.runtime.autoInstall).toBe(true);
     expect(typeof $.fn.star).toBe("function");
     expect(typeof $.star).toBe("object");
     expect(Object.keys(publicRuntime).sort()).toEqual(baseline.runtime.rootExports);
     expect(exportedNames(false)).toEqual(baseline.runtime.rootExports);
-    expect(exportedNames(true)).toEqual(baseline.runtime.typeExports);
-    expect(Object.keys($.star).sort()).toEqual(baseline.runtime.starStaticMembers);
+    expect(exportedNames(true)).toEqual(
+      [...baseline.runtime.typeExports, ...inspectionTypes].sort(),
+    );
+    expect(Object.keys($.star).sort()).toEqual(
+      [...baseline.runtime.starStaticMembers, "metadata"].sort(),
+    );
     expect(Object.keys($.star.ui).sort()).toEqual(baseline.runtime.uiMembers);
     expect(kernelForDocument(document)?.actions.names()).toEqual(
       baseline.runtime.registeredActions,
@@ -142,7 +166,7 @@ describe("public 0.1 baseline", () => {
 
   it("binds every declared type to the reviewed API report", () => {
     const report = readText(baseline.evidence.apiReport);
-    for (const name of baseline.runtime.typeExports) {
+    for (const name of [...baseline.runtime.typeExports, ...inspectionTypes]) {
       expect(report, `API report is missing ${name}`).toMatch(
         new RegExp(`(?:interface|type) ${name.replaceAll("$", "\\$")}\\b`),
       );
@@ -172,19 +196,27 @@ describe("public 0.1 baseline", () => {
   });
 
   it("matches the published package, support matrix, and measured budget envelope", () => {
-    expect(manifest.version).toBe(baseline.version);
-    expect(Object.keys(manifest.exports).sort()).toEqual(baseline.package.exports);
+    expect(manifest.version).toBe(release.version);
+    expect(Object.keys(manifest.exports).sort()).toEqual(
+      [...baseline.package.exports, "./inspect"].sort(),
+    );
     expect(manifest.peerDependencies.jquery).toBe(baseline.support.jquery);
     expect(manifest.engines.node).toBe(baseline.support.node);
     expect(baseline.package.observedArtifact.files).toBeLessThanOrEqual(budgets.package.files);
     expect(baseline.package.observedArtifact.packedBytes).toBeLessThanOrEqual(
       budgets.package.packedBytes +
         budgets.cspPackage.packedBytes +
+        budgets.htmxPackage.packedBytes +
+        budgets.storesPackage.packedBytes +
+        budgets.persistPackage.packedBytes +
         budgets.turboPackage.packedBytes,
     );
     expect(baseline.package.observedArtifact.unpackedBytes).toBeLessThanOrEqual(
       budgets.package.unpackedBytes +
         budgets.cspPackage.unpackedBytes +
+        budgets.htmxPackage.unpackedBytes +
+        budgets.storesPackage.unpackedBytes +
+        budgets.persistPackage.unpackedBytes +
         budgets.turboPackage.unpackedBytes,
     );
     for (const [path, bytes] of Object.entries(baseline.package.bundleBytes)) {

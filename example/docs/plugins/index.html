@@ -102,12 +102,9 @@ const report = await runPluginConformance({
 
       <h2>External navigation</h2>
       <p>
-        Navigation and page-transition plugins replace DOM through
-        <code>createRenderAdapter()</code> from <code>jquery-star/core</code>. The adapter destroys
-        outgoing application roots deepest-first while they remain connected, retains explicit
-        <code>data-jqs-preserve</code> identities and control state, validates the committed roots,
-        restores focus, boots incoming <code>data-jqs</code> roots, and waits for enhancement. The
-        caller performs the actual DOM mutation.
+        Use <code>createRenderAdapter()</code> from <code>jquery-star/core</code> around external
+        DOM mutation. It releases outgoing roots, checks explicit preservation, boots incoming
+        roots, and waits for enhancement. The host owns DOM mutation and focus.
       </p>
       <p>
         Wrap each navigation in one public operation observation. Keep the same operation ID from

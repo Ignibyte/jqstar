@@ -60,6 +60,21 @@ describe("jQuery Star JSON Viewer", () => {
     );
   });
 
+  it("rejects a wrong-kind element action target without collapsing nearby branches", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The JSON Viewer application did not start.");
+    const button = root().querySelector<HTMLButtonElement>("button");
+    if (!button) throw new Error("Missing JSON Viewer action button.");
+    await expect(
+      app.run("ui.json-viewer.collapse-all", { element: button, args: [button] }),
+    ).rejects.toThrow('JSON Viewer target did not match data-jqs="json-viewer"');
+    expect(root().querySelector('details[data-path=""]')?.hasAttribute("open")).toBe(true);
+    await app.run("ui.json-viewer.collapse-all", { args: [root()] });
+    expect(root().querySelector('details[data-path=""]')?.hasAttribute("open")).toBe(false);
+    await app.run("ui.json-viewer.expand-all", { element: button });
+    expect(root().querySelector('details[data-path=""]')?.hasAttribute("open")).toBe(true);
+  });
+
   it("sets and returns structured values without interpreting strings as HTML", () => {
     const update = vi.fn();
     root().addEventListener("jquery-star:json-viewer:update", update);

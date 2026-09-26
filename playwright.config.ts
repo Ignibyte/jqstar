@@ -3,10 +3,15 @@ import { join, resolve } from "node:path";
 
 const networkProofPort = Number(process.env.JQS_NETWORK_PROOF_PORT ?? 4174);
 const interoperabilityPort = Number(process.env.JQS_INTEROP_PORT ?? 4175);
+const jqueryUiMigrationPort = Number(process.env.JQS_JQUERY_UI_MIGRATION_PORT ?? 4176);
+const jqueryMobileMigrationPort = Number(process.env.JQS_JQUERY_MOBILE_MIGRATION_PORT ?? 4177);
+const resourceStrategyPort = Number(process.env.JQS_RESOURCE_STRATEGY_PORT ?? 4178);
+const navigationDecisionPort = Number(process.env.JQS_NAVIGATION_DECISION_PORT ?? 4179);
 const artifactDirectory = resolve(
   process.env.JQS_PLAYWRIGHT_ARTIFACT_DIRECTORY ?? ".git/jqstar/standalone/playwright",
 );
 const selfTest = process.env.JQS_PLAYWRIGHT_SELF_TEST;
+const componentFast = process.env.JQS_COMPONENT_FAST === "1";
 
 const requiredProjects = [
   {
@@ -34,13 +39,15 @@ const requiredProjects = [
   },
   {
     name: "mobile-touch",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@mobile/,
     use: { ...devices["Pixel 7"] },
   },
   {
     name: "reduced-motion",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@motion/,
     use: {
       ...devices["Desktop Chrome"],
@@ -49,7 +56,8 @@ const requiredProjects = [
   },
   {
     name: "forced-colors",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@color/,
     use: {
       ...devices["Desktop Chrome"],
@@ -58,13 +66,14 @@ const requiredProjects = [
   },
   {
     name: "zoom-reflow",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch: /(resource-strategy|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@zoom/,
     use: { ...devices["Desktop Chrome"] },
   },
   {
     name: "javascript-disabled",
-    testMatch: /quality-contracts\.spec\.ts/,
+    testMatch:
+      /(resource-strategy|jquery-mobile-migration|jquery-ui-migration|quality-contracts)\.spec\.ts/,
     grep: /@nojs/,
     use: { ...devices["Desktop Chrome"], javaScriptEnabled: false },
   },
@@ -94,31 +103,67 @@ export default defineConfig({
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
-  projects: selfTest
+  projects: componentFast
     ? [
         {
-          name: "quality-selftest",
-          testMatch: /quality-contracts\.spec\.ts/,
-          grep: /@selftest/,
+          name: "desktop-chromium",
+          testMatch: /components\.spec\.ts/,
           use: { ...devices["Desktop Chrome"] },
         },
       ]
-    : requiredProjects,
-  webServer: [
-    {
-      command: "npm run demo -- --host 127.0.0.1 --port 4173",
-      url: "http://127.0.0.1:4173",
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/network-proof-server.mjs",
-      url: `http://127.0.0.1:${networkProofPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: "node e2e/fixtures/interoperability-server.mjs",
-      url: `http://127.0.0.1:${interoperabilityPort}/health`,
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
+    : selfTest
+      ? [
+          {
+            name: "quality-selftest",
+            testMatch: /quality-contracts\.spec\.ts/,
+            grep: /@selftest/,
+            use: { ...devices["Desktop Chrome"] },
+          },
+        ]
+      : requiredProjects,
+  webServer: componentFast
+    ? [
+        {
+          command: "npm run demo -- --host 127.0.0.1 --port 4173",
+          url: "http://127.0.0.1:4173",
+          reuseExistingServer: !process.env.CI,
+        },
+      ]
+    : [
+        {
+          command: "npm run demo -- --host 127.0.0.1 --port 4173",
+          url: "http://127.0.0.1:4173",
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/network-proof-server.mjs",
+          url: `http://127.0.0.1:${networkProofPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/interoperability-server.mjs",
+          url: `http://127.0.0.1:${interoperabilityPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/jquery-ui-migration-server.mjs",
+          url: `http://127.0.0.1:${jqueryUiMigrationPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/jquery-mobile-migration-server.mjs",
+          url: `http://127.0.0.1:${jqueryMobileMigrationPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/resource-strategy-server.mjs",
+          url: `http://127.0.0.1:${resourceStrategyPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+        {
+          command: "node e2e/fixtures/navigation-decision-server.mjs",
+          url: `http://127.0.0.1:${navigationDecisionPort}/health`,
+          reuseExistingServer: !process.env.CI,
+        },
+      ],
 });

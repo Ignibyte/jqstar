@@ -3,7 +3,7 @@ id: 0045
 title: Lead with the server-rendered framework promise
 status: done
 created: 2026-08-31
-updated: 2026-08-31
+updated: 2026-09-06
 ---
 
 # 0045: Lead with the server-rendered framework promise
@@ -128,6 +128,42 @@ current capability.
 - Run `npm run quality:delivery` on the completed ticket tree.
 - Run ticket phase validation and `git diff --check`.
 
+### Reopened by program audit: README priorities, 2026-09-06
+
+Return to Plan because commit `71e8363dfebca301982d5b243660a34e754fd780` removed the seven
+development priorities from the README during stable-release preparation. Ticket 0017 records
+release guidance changes but no decision to retire AC-02. The homepage and `docs/PROJECT.md` still
+contain both intended seven-item lists. The README also gained a separate request-profile benefit,
+bringing its first list to eight items. Preserve that content by combining it with page updates and
+restore all seven priorities before the syntax example and Setup. Label them as development
+priorities so the list does not imply that every optional roadmap feature ships.
+
+The existing website test verifies both homepage lists, metadata, semantics and desktop
+accessibility. Its narrow-width assertion targets documentation rather than the homepage. Extend
+that same homepage case with a 390-pixel viewport, both cards present, no horizontal page overflow,
+vertically stacked cards and aligned left edges. Restore its original desktop viewport before the
+existing documentation interactions. A read-only built-site diagnostic already passes those
+observations in Chromium 151.0.7922.34, Firefox 153.0 and WebKit 26.5, with seven items in each list
+and zero page errors. No CSS or runtime behavior correction is needed.
+
+Planned corrective files are `README.md`, `e2e/site.spec.ts`, this ticket,
+`docs/tickets/0033-audit-full-library-program.md`, `docs/tickets/ROADMAP.md`, and
+`docs/PROGRAM_AUDIT.md` for coordinated audit status. README expression locations will move.
+Regenerate `test/fixtures/csp/conformance-map.json`, review that only locations change, and repin
+the aggregate digest in `src/csp/contract.ts`, `test/csp-entrypoint.test.ts`,
+`scripts/quality-package.mjs` and the reviewed `etc/jquery-star-csp.api.md`. This updates
+public-source identity without changing the grammar, capabilities,
+accepted/denied/adversarial/context corpora or package ceilings. Keep the completed 0034
+implementation evidence tied to its tested commit; its parser/evaluator behavior is unchanged by
+this documentation inventory refresh.
+
+Before Code, validate this Plan. Then inspect the README's two seven-item lists and syntax order,
+run the CSP contract and focused website cases in all three browsers, and pass formatting/static,
+fast, full delivery and phase validation. Retain the previous missing-list state and the diagnostic
+under `.git/jqstar/program-audit/0045-positioning-review/`. Mutation testing stays excluded. The
+original first-baseline measurement is independently confirmed by retained package report
+`2026-08-31T15-06-12-375Z-44248`: 261 files, 1,852,528 packed and 6,069,206 unpacked bytes.
+
 ### Planned files
 
 - `README.md`: Lead the GitHub project page with the framework promise and both lists.
@@ -144,6 +180,13 @@ current capability.
 ## Code
 
 ### Changed-file ledger
+
+The 2026-09-06 Plan validator passes before Code. The corrective README restores the seven
+development priorities and keeps all existing benefits in seven items. The existing website browser
+case adds direct narrow-home overflow, stacking and alignment assertions. Audit status records name
+the remaining owners accurately. The CSP inventory and digest pins track the shifted README
+expression locations without changing language behavior. The table below retains the original
+implementation ledger.
 
 | File                                                         | Purpose                                           |
 | ------------------------------------------------------------ | ------------------------------------------------- |
@@ -165,6 +208,30 @@ current capability.
   measures rendered zero-size controls and preserves the 24-pixel threshold and sabotage path.
 
 ## Test
+
+Focused correction checks pass: four CSP contract tests, four CSP entrypoint tests, strict types,
+focused ESLint, complete browser-fixture/package preparation and the updated homepage case in all
+three desktop engines. The browser report records three passes with zero retries, skips or flaky
+results (`0045-positioning-review/browser-after/results.json`). The rebuilt CSP consumer measures
+149,733 raw / 44,349 gzip / 38,912 Brotli bytes under unchanged limits. The first browser selector
+was anchored before Playwright's full title prefix and selected zero tests; its failed selection is
+retained separately, and the corrected unique title executes all three required cases.
+
+The restored README contains seven benefits and seven priorities before syntax and setup. All
+existing benefit content remains present. Inventory review confirms that exactly 46 README
+occurrences move twelve lines across 41 expression forms; all other conformance fields and the five
+other manifest files remain unchanged. The aggregate digest is
+`64ad4716f84e6180d7873c3f658f8d42eed32c6fbc6b8524823e2e850f573345`, still with 34 accepted, 57
+denied, 46 adversarial, 33 contexts and 240 sources/421 occurrences. All four digest pins are
+updated. Fast run `2026-09-06T16-32-41-383Z-35250` passes all five selected gates with identical
+start/end fingerprints; the runner self-test is explicitly skipped because its inputs are unchanged.
+Code-phase validation passes against that exact report before entering Test. Complete delivery
+verification passes in delivery `2026-09-06T16-35-46-844Z-42041`: all twelve selected gates pass,
+including 1,334 unit tests, 487 browser executions, thirteen package checks, seven release checks
+and sixteen detector controls. The unchanged runner self-test is explicitly skipped. The start/end
+fingerprint is `99696baef75a02fbefdc56431a5fad4b321686f47577ebba63fed11eed20fb57`; receipt and
+Test-phase validation pass before closure edits. The reproducible artifact is
+`c309e20b418b89417d9bfbea598ada1709bdc083e063a3408d50dea761e9f5a3`.
 
 | Command                                                      | Result        | Evidence                                                                                                                                                      |
 | ------------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -214,22 +281,32 @@ current capability.
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                               | Result |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| AC-01 | `README.md` opens with the full-featured server-rendered, non-SPA promise.                                                             | Pass   |
-| AC-02 | Both seven-item lists appear before `## Setup` in `README.md`.                                                                         | Pass   |
-| AC-03 | The homepage hero and two semantic list cards precede the unchanged component proof; desktop and 390-pixel inspection passed.          | Pass   |
-| AC-04 | `example/index.html` title, description, Open Graph, and Twitter fields share the new position.                                        | Pass   |
-| AC-05 | The README syntax proof and homepage callout state that `$` is real jQuery and `$name` is a reactive signal.                           | Pass   |
-| AC-06 | `docs/PROJECT.md` separates the public product promise from the seven-item development direction.                                      | Pass   |
-| AC-07 | Focused checks passed, and delivery run `2026-08-31T15-06-12-375Z-44248` passed all 13 gates.                                          | Pass   |
-| AC-08 | The 1,852,528 packed and 6,069,206 unpacked byte artifact fits only the next 4-KiB ceilings recorded in `config/quality-budgets.json`. | Pass   |
-| AC-09 | Twenty retry-free mobile runs passed, and the existing 10,000-pixel sabotage remained red after atomic sampling.                       | Pass   |
+| ID    | Evidence                                                                                                                                                                                | Result |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| AC-01 | `README.md` opens with the full-featured server-rendered, non-SPA promise.                                                                                                              | Pass   |
+| AC-02 | `README.md` contains seven benefits and seven development priorities before syntax and Setup; the 2026-09-06 source review preserves all prior benefit content.                         | Pass   |
+| AC-03 | The named homepage case in `e2e/site.spec.ts` verifies both lists, desktop semantics/axe, and 390-pixel overflow, stacking and alignment in all three engines; current delivery passes. | Pass   |
+| AC-04 | `example/index.html` title, description, Open Graph, and Twitter fields share the new position.                                                                                         | Pass   |
+| AC-05 | The README syntax proof and homepage callout state that `$` is real jQuery and `$name` is a reactive signal.                                                                            | Pass   |
+| AC-06 | `docs/PROJECT.md` separates the public product promise from the seven-item development direction.                                                                                       | Pass   |
+| AC-07 | Delivery `2026-09-06T16-35-46-844Z-42041` passes every selected gate, with matching fingerprints and valid receipt; Test-phase validation passes before closure edits.                  | Pass   |
+| AC-08 | The 1,852,528 packed and 6,069,206 unpacked byte artifact fits only the next 4-KiB ceilings recorded in `config/quality-budgets.json`.                                                  | Pass   |
+| AC-09 | Twenty retry-free mobile runs passed, and the existing 10,000-pixel sabotage remained red after atomic sampling.                                                                        | Pass   |
 
 ### Completion audit
+
+The restored README and current three-engine homepage test satisfy the reopened requirements. All
+nine criteria have direct Pass evidence. Current delivery passes the selected quality gates, package
+budgets, browser checks and failure detectors; receipt and Test validation bind the result to the
+exact tested tree. The inventory change only moves README expression locations. No runtime behavior,
+grammar, capability, budget or threshold changed.
+
+Status: Complete
+
+### Historical completion audit (2026-08-31)
 
 The current tree satisfies every criterion, retains both repair failures, and has one direct Pass
 row for every checked criterion. No criterion is deferred and no public capability is presented as
 shipped merely because it appears in the development-priority list.
 
-Status: Complete
+Historical status: Complete

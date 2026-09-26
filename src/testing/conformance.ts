@@ -21,10 +21,12 @@ interface NamedCase {
   readonly run: () => void | PromiseLike<void>;
 }
 
+const freeze = Object.freeze;
+
 function failure(error: unknown, name: string): StarConformanceFailure {
-  return Object.freeze({
+  return freeze({
     case: name,
-    error: Object.freeze({
+    error: freeze({
       name: error instanceof Error ? error.name.slice(0, 120) : "ThrownValue",
       message: (error instanceof Error ? error.message : String(error)).slice(0, 1_024),
     }),
@@ -52,16 +54,16 @@ async function casesReport(cases: readonly NamedCase[]): Promise<StarConformance
   for (const testCase of cases) {
     try {
       await testCase.run();
-      passed.push(Object.freeze({ name: testCase.name, status: "pass" }));
+      passed.push(freeze({ name: testCase.name, status: "pass" }));
     } catch (error) {
       errors.push(error);
       failures.push(failure(error, testCase.name));
     }
   }
   if (failures.length > 0) throw new StarConformanceError(errors, failures);
-  return Object.freeze({
+  return freeze({
     schema: "jquery-star-conformance/1",
-    cases: Object.freeze(passed),
+    cases: freeze(passed),
     passed: passed.length,
   });
 }
@@ -102,15 +104,44 @@ export function assertStarDisposal(
   JSON.stringify(report);
 }
 
+async function withCaseHarness(
+  createHarness: StarHarnessFactory,
+  work: (harness: StarHarness, dispose: () => StarDisposalReport) => void | PromiseLike<void>,
+): Promise<void> {
+  const harness = await createHarness();
+  let disposed: true | undefined;
+  const dispose = (): StarDisposalReport => {
+    disposed = true;
+    return harness.dispose();
+  };
+  try {
+    const result = work(harness, dispose);
+    if (result) await result;
+  } catch (error) {
+    if (!disposed) {
+      try {
+        harness.dispose();
+      } catch (cleanupError) {
+        if (cleanupError !== error) {
+          throw new AggregateError([error, cleanupError], "Case and cleanup failed.", {
+            cause: cleanupError,
+          });
+        }
+      }
+    }
+    throw error;
+  }
+  if (!disposed) dispose();
+}
+
 export async function runCoreConformance(
   createHarness: StarHarnessFactory,
 ): Promise<StarConformanceReport> {
   return casesReport([
     {
       name: "behavior-application-and-events",
-      async run() {
-        const harness = await createHarness();
-        try {
+      run: () =>
+        withCaseHarness(createHarness, async (harness, dispose) => {
           const root = applicationRoot(
             harness,
             '<button type="button">Increment</button><output></output>',
@@ -144,9 +175,7 @@ export async function runCoreConformance(
           assert(application.destroyed, "The behavior application did not report destruction.");
           const disposalRoot = applicationRoot(harness, "<p>Dispose this root.</p>");
           harness.mountBehavior(disposalRoot, { state: {} });
-        } finally {
-          const report = harness.dispose();
-          assertStarDisposal(report, [
+          assertStarDisposal(dispose(), [
             "application",
             "effect",
             "listener",
@@ -155,14 +184,12 @@ export async function runCoreConformance(
             "service",
             "subscription",
           ]);
-        }
-      },
+        }),
     },
     {
       name: "declarative-application-and-jquery-event",
-      async run() {
-        const harness = await createHarness();
-        try {
+      run: () =>
+        withCaseHarness(createHarness, async (harness) => {
           const root = applicationRoot(
             harness,
             '<button type="button" data-on:click="$count += 1">Increment</button><output data-text="$count"></output>',
@@ -179,22 +206,22 @@ export async function runCoreConformance(
             root.querySelector("output")?.textContent === "2",
             "The declarative UI did not settle.",
           );
-        } finally {
-          harness.dispose();
-        }
-      },
+        }),
     },
     {
       name: "finite-task-and-idempotent-disposal",
-      async run() {
-        const harness = await createHarness();
-        harness.task("conformance:microtask", Promise.resolve());
-        const settled = await harness.flush();
-        assert(settled.schema === "jquery-star-flush/1", "The flush result schema is unsupported.");
-        const first = harness.dispose();
-        const second = harness.dispose();
-        assert(first === second, "Harness disposal did not return the same terminal report.");
-      },
+      run: () =>
+        withCaseHarness(createHarness, async (harness, dispose) => {
+          harness.task("conformance:microtask", Promise.resolve());
+          const settled = await harness.flush();
+          assert(
+            settled.schema === "jquery-star-flush/1",
+            "The flush result schema is unsupported.",
+          );
+          const first = dispose();
+          const second = dispose();
+          assert(first === second, "Harness disposal did not return the same terminal report.");
+        }),
     },
   ]);
 }
@@ -202,13 +229,12 @@ export async function runCoreConformance(
 export async function runPluginConformance(
   options: StarPluginConformanceOptions,
 ): Promise<StarConformanceReport> {
+  const createHarness = () => options.createHarness();
   const cases: NamedCase[] = [
     {
       name: "install-use-and-dispose",
-      async run() {
-        const harness = await options.createHarness();
-        let terminal: StarDisposalReport | undefined;
-        try {
+      run: () =>
+        withCaseHarness(createHarness, async (harness, dispose) => {
           const facade = harness.install(options.plugin);
           assert(
             harness.install(options.plugin) === facade,
@@ -216,21 +242,17 @@ export async function runPluginConformance(
           );
           await options.exercise?.(harness, facade);
           await harness.flush();
-          terminal = harness.dispose();
+          const terminal = dispose();
           assertStarDisposal(terminal, ["plugin", "service", "subscription"]);
-          assert(harness.dispose() === terminal, "Plugin disposal was not idempotent.");
-        } finally {
-          if (!terminal) harness.dispose();
-        }
-      },
+          assert(dispose() === terminal, "Plugin disposal was not idempotent.");
+        }),
     },
   ];
   if (options.failingPlugin) {
     cases.push({
       name: "failed-install-rolls-back",
-      async run() {
-        const harness = await options.createHarness();
-        try {
+      run: () =>
+        withCaseHarness(createHarness, (harness) => {
           let rejected = false;
           try {
             harness.install(options.failingPlugin!);
@@ -239,44 +261,41 @@ export async function runPluginConformance(
           }
           assert(rejected, "The failing plugin installation did not reject.");
           harness.install(options.plugin);
-        } finally {
-          harness.dispose();
-        }
-      },
+        }),
     });
   }
   if (options.cleanupFailingPlugin) {
     cases.push({
       name: "failed-cleanup-is-reported",
-      async run() {
-        const harness = await options.createHarness();
-        harness.install(options.cleanupFailingPlugin!);
-        let firstError: unknown;
-        try {
-          harness.dispose();
-        } catch (error) {
-          firstError = error;
-        }
-        assert(firstError, "The cleanup-failing plugin did not fail harness disposal.");
-        const failure = disposalFailure(firstError);
-        assert(failure, "Plugin cleanup failure did not retain its public disposal report.");
-        assert(Object.isFrozen(failure.report), "The failed disposal report must be frozen.");
-        assert(
-          failure.report.failed.some(
-            ({ category, owner }) =>
-              category === "plugin" && owner === options.cleanupFailingPlugin!.name,
-          ),
-          "The disposal report did not identify the cleanup-failing plugin.",
-        );
-        JSON.stringify(failure.report);
-        let repeatedError: unknown;
-        try {
-          harness.dispose();
-        } catch (error) {
-          repeatedError = error;
-        }
-        assert(repeatedError === firstError, "Failed harness disposal was not idempotent.");
-      },
+      run: () =>
+        withCaseHarness(createHarness, (harness, dispose) => {
+          harness.install(options.cleanupFailingPlugin!);
+          let firstError: unknown;
+          try {
+            dispose();
+          } catch (error) {
+            firstError = error;
+          }
+          assert(firstError, "The cleanup-failing plugin did not fail harness disposal.");
+          const failure = disposalFailure(firstError);
+          assert(failure, "Plugin cleanup failure did not retain its public disposal report.");
+          assert(Object.isFrozen(failure.report), "The failed disposal report must be frozen.");
+          assert(
+            failure.report.failed.some(
+              ({ category, owner }) =>
+                category === "plugin" && owner === options.cleanupFailingPlugin!.name,
+            ),
+            "The disposal report did not identify the cleanup-failing plugin.",
+          );
+          JSON.stringify(failure.report);
+          let repeatedError: unknown;
+          try {
+            dispose();
+          } catch (error) {
+            repeatedError = error;
+          }
+          assert(repeatedError === firstError, "Failed harness disposal was not idempotent.");
+        }),
     });
   }
   return casesReport(cases);

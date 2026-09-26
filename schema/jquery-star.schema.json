@@ -4,7 +4,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "output": {
       "type": "string",
       "minLength": 1,
@@ -19,6 +21,10 @@
       "type": "string",
       "minLength": 1,
       "description": "Optional path to a compatible source registry."
+    },
+    "configVersion": {
+      "enum": [0, 1],
+      "description": "Optional explicit schema version. Legacy unversioned configuration is schema 0; doctor can plan the version 1 metadata upgrade."
     }
   },
   "required": ["output"]

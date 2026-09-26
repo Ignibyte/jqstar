@@ -4,17 +4,26 @@ import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolve } from "node:path";
 import { createProofApi } from "./server/api";
+import { composeSiteHtml } from "./scripts/site-html.mjs";
 
 const exampleRoot = resolve(__dirname, "example");
 const siteEntries = [
   "index.html",
   "docs/index.html",
   "docs/agents/index.html",
+  "docs/compatibility/index.html",
+  "docs/migration/index.html",
+  "docs/security/index.html",
+  "docs/download/index.html",
   "docs/datastar/index.html",
   "docs/api/index.html",
   "docs/csp/index.html",
+  "docs/stores/index.html",
+  "docs/persistence/index.html",
   "docs/interoperability/index.html",
   "docs/ecosystem/index.html",
+  "docs/ecosystem/jquery-ui/index.html",
+  "docs/ecosystem/jquery-mobile/index.html",
   "docs/plugins/index.html",
   "docs/testing/index.html",
   "docs/components/index.html",
@@ -38,6 +47,42 @@ function documentationShell(): Plugin {
         const article = /<article class="docs-article">[\s\S]*<\/article>/.exec(html)?.[0];
         return article ? html.replace(article, docsShell.replace("<slot></slot>", article)) : html;
       },
+    },
+  };
+}
+
+function integratedSite(): Plugin {
+  const labPath = resolve(exampleRoot, "lab-content.html");
+  const blockPaths = [
+    "project-browser",
+    "access-manager",
+    "audit-log",
+    "operations-dashboard",
+    "profile-settings",
+  ].map((name) => [name, resolve(__dirname, `registry/blocks/${name}.html`)] as const);
+  return {
+    name: "jquery-star-integrated-site",
+    transformIndexHtml: {
+      order: "pre",
+      handler(html) {
+        if (!html.includes("data-component-lab")) return composeSiteHtml(html, "");
+        const blocks = Object.fromEntries(
+          blockPaths.map(([name, path]) => [name, readFileSync(path, "utf8")]),
+        );
+        return composeSiteHtml(html, readFileSync(labPath, "utf8"), blocks);
+      },
+    },
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        if (request.url !== "/__quality__/ownership-lab/") return next();
+        response.setHeader("Content-Type", "text/html; charset=utf-8");
+        response.end(readFileSync(resolve(__dirname, "e2e/fixtures/ownership-lab.html"), "utf8"));
+      });
+      const paths = new Set([labPath, ...blockPaths.map(([, path]) => path)]);
+      server.watcher.add([...paths]);
+      server.watcher.on("change", (path) => {
+        if (paths.has(path)) server.ws.send({ type: "full-reload" });
+      });
     },
   };
 }
@@ -88,7 +133,7 @@ export default defineConfig({
   define: {
     __JQS_STATIC_DEMO__: JSON.stringify(process.env.JQS_STATIC_DEMO === "true"),
   },
-  plugins: [documentationShell(), tailwindcss(), proofBackend()],
+  plugins: [documentationShell(), integratedSite(), tailwindcss(), proofBackend()],
   build: {
     outDir: resolve(__dirname, "demo-dist"),
     emptyOutDir: true,

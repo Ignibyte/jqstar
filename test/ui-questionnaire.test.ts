@@ -187,6 +187,36 @@ describe("jQuery Star Questionnaire", () => {
     );
   });
 
+  it("rejects duplicate values patched into an already enhanced questionnaire", () => {
+    const patched = item("constraints");
+    patched.dataset.value = "direction";
+    try {
+      expect(() => $.star.ui.enhance(root())).toThrow("item values must be unique");
+    } finally {
+      patched.dataset.value = "constraints";
+    }
+  });
+
+  it("selects a whitespace-padded authored active value when enhanced again", () => {
+    root().dataset.value = "  constraints  ";
+
+    $.star.ui.enhance(root());
+
+    expect($.star.ui.questionnaire.value(root())).toBe("constraints");
+    expect(root().dataset.value).toBe("constraints");
+  });
+
+  it("keeps the active question when an optional authored value is removed", () => {
+    root().dataset.value = "constraints";
+    $.star.ui.enhance(root());
+    expect($.star.ui.questionnaire.value(root())).toBe("constraints");
+
+    root().removeAttribute("data-value");
+    $.star.ui.enhance(root());
+
+    expect($.star.ui.questionnaire.value(root())).toBe("constraints");
+  });
+
   it("removes an explicitly skipped conditional question from native submission", () => {
     $.star.ui.questionnaire.answer(root(), "direction", "workflow");
     $.star.ui.questionnaire.next(root());
@@ -216,5 +246,28 @@ describe("jQuery Star Questionnaire", () => {
     root().addEventListener("jquery-star:questionnaire:before-change", cancel);
     $.star.ui.questionnaire.go(root(), "constraints");
     expect($.star.ui.questionnaire.value(root())).toBe("direction");
+  });
+  it("applies named answers to native fields with explicit and implicit questionnaire roots", async () => {
+    const instance = $("#app").star("instance");
+    if (!instance) throw new Error("Application was not created.");
+    await instance.run("ui.questionnaire.answer", {
+      args: ["#build-brief", "direction", "component"],
+      element: root(),
+    });
+    expect(control("direction", "component").checked).toBe(true);
+    await instance.run("ui.questionnaire.answer", {
+      args: ["constraints", ["accessible", "server"]],
+      element: root(),
+    });
+    expect(new FormData(form()).getAll("constraints")).toEqual(["accessible", "server"]);
+    await instance.run("ui.questionnaire.answer", {
+      args: ["constraints", undefined],
+      element: root(),
+    });
+    expect(new FormData(form()).getAll("constraints")).toEqual([]);
+    await expect(
+      instance.run("ui.questionnaire.answer", { args: ["direction", 42], element: root() }),
+    ).rejects.toThrow("needs a string, string array, or undefined value");
+    expect(new FormData(form()).get("direction")).toBe("component");
   });
 });

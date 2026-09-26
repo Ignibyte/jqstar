@@ -1,3 +1,7 @@
+import {
+  assertCSPApplicationResult,
+  assertCSPProfileEvidence,
+} from "../scripts/quality/csp-accessibility.mjs";
 import { spawn } from "node:child_process";
 import { access, cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -32,6 +36,49 @@ function passingChecks(names) {
   return names.map((name) => ({ name, status: "pass", detail: `${name} passed` }));
 }
 
+function cspApplicationObservations() {
+  return {
+    runtimeErrors: 0,
+    computed: { initial: "2", afterIncrement: "4", final: "16" },
+    behavior: {
+      initial: { count: "1", double: "2" },
+      afterKeyboard: { count: "2", double: "4", activations: 1 },
+      afterPatches: { count: "2", double: "4" },
+      afterRootDestroy: { count: "3", double: "6", activations: 2, mainCount: 8, survived: true },
+      destroyedOnDispose: true,
+    },
+  };
+}
+
+function cspProfileObservation(profile) {
+  return {
+    profile,
+    status: "pass",
+    viewportWidth: profile === "zoom-reflow" ? 640 : 900,
+    documentWidth: profile === "zoom-reflow" ? 640 : 900,
+    reducedMotion: profile === "reduced-motion",
+    forcedColors: profile === "forced-colors",
+    rootFontPixels: profile === "zoom-reflow" ? 32 : 16,
+    zoom: profile === "zoom-reflow" ? 2 : 1,
+    inputWidth: 180,
+    bodyWidth: 500,
+    scrollBehavior: "auto",
+    supportsForcedColorAdjust: true,
+    forcedColorAdjust: "auto",
+    borderStyle: "outset",
+    outlineStyle: "auto",
+    headerResponses: 18,
+    unexpectedErrors: 0,
+    unexpectedPolicyEvents: 0,
+    unexpectedPolicyReports: 0,
+    ...cspApplicationObservations(),
+    axeViolations: 0,
+    keyboard: "behavior-increment-save-toggle",
+    tabKey: "Tab",
+    disposal: { attempted: 1, failed: 0, released: 1, remaining: 0 },
+  };
+}
+
 function packageReport() {
   const checks = passingChecks(packageCheckNames);
   checks[3].detail = {
@@ -56,11 +103,15 @@ function packageReport() {
       "./ui",
       "./datastar",
       "./testing",
+      "./htmx",
+      "./stores",
       "./turbo",
       "./datastar/testing",
       "./ui.css",
+      "./persist",
+      "./inspect",
     ],
-    version: "0.1.0",
+    version: "1.0.0",
     documentation: [...packageDocumentationPaths],
   };
   checks[8].detail = {
@@ -83,9 +134,16 @@ function packageReport() {
       "typescript-testing-bundler",
       "typescript-csp-nodenext",
       "typescript-csp-bundler",
+      "inspection-esm",
+      "inspection-commonjs",
+      "inspection-inert",
+      "typescript-inspection-negative-nodenext",
+      "typescript-inspection-negative-bundler",
     ],
     peerDependencies: {
-      jqueryRange: ">=4.0.0 <5",
+      htmxRange: ">=2.0.0 <2.1.0",
+      htmxOptional: true,
+      jqueryRange: ">=3.7.1 <5",
       turboRange: ">=8.0.21 <8.1.0",
       turboOptional: true,
       missing: { exitCode: 1, markers: ["jquery"] },
@@ -94,7 +152,7 @@ function packageReport() {
   };
   checks[10].detail = {
     subject: "installed-tarball",
-    consumers: ["module", "umd", "testing", "csp"],
+    consumers: ["module", "umd", "testing", "stores", "persist", "inspect", "csp"],
     lifecycle: "boot-and-dispose",
     engines: ["chromium", "firefox", "webkit"].map((name) => ({
       name,
@@ -104,7 +162,7 @@ function packageReport() {
     csp: {
       schema: "jqstar-csp-browser/1",
       policy: "default-src 'none'",
-      packageVersion: "0.1.0",
+      packageVersion: "1.0.0",
       grammarVersion: "jqstar-csp-expression/1",
       corpusDigest: "a".repeat(64),
       sourceDigest: "b".repeat(64),
@@ -123,11 +181,33 @@ function packageReport() {
         unexpectedPolicyReports: 0,
         operationCount: 1,
         disposal: { attempted: 1, failed: 0, released: 1, remaining: 0 },
-        noJavaScript: "native-link-and-form",
+        noJavaScript: {
+          link: "navigated",
+          form: "submitted",
+          scriptRequests: 0,
+          policy: "unchanged",
+          linkStatus: 200,
+          formStatus: 200,
+          receivedName: "CSP <native> & proof",
+        },
+        ...cspApplicationObservations(),
+        accessibilityProfiles: ["reduced-motion", "forced-colors", "zoom-reflow"].map(
+          cspProfileObservation,
+        ),
+        runtimeErrorDetector: { stage: "before-install", events: 1, rejected: true },
       })),
     },
   };
   checks[11].detail = {
+    inspection: {
+      unimported: "absent",
+      ...Object.fromEntries(
+        ["inspect", "core-inspect", "csp-inspect"].map((name) => [
+          name,
+          { bytes: 1, gzipBytes: 1, budget: 1, gzipBudget: 1, modules: 1 },
+        ]),
+      ),
+    },
     root: { bytes: 1, budget: 1 },
     core: {
       bytes: 1,
@@ -165,6 +245,14 @@ function packageReport() {
       modules: 1,
       externalDOMAndRunners: "absent",
     },
+    htmx: {
+      bytes: 1,
+      budget: 1,
+      gzipBytes: 1,
+      gzipBudget: 1,
+      modules: 1,
+      hostPackage: "absent",
+    },
     turbo: {
       bytes: 1,
       budget: 1,
@@ -173,6 +261,38 @@ function packageReport() {
       modules: 1,
       hostPackage: "absent",
     },
+    stores: {
+      bytes: 1,
+      budget: 1,
+      gzipBytes: 1,
+      gzipBudget: 1,
+      modules: 1,
+      unrelatedOptionalModules: "absent",
+    },
+    persist: {
+      bytes: 1,
+      budget: 1,
+      gzipBytes: 1,
+      gzipBudget: 1,
+      modules: 1,
+      unrelatedOptionalModules: "absent",
+    },
+  };
+  checks[13].detail = {
+    subject: "installed-tarball",
+    jqueryVersion: "3.7.1",
+    peerRange: ">=3.7.1 <5",
+    tarballSha256: "c".repeat(64),
+    nodeConsumers: ["esm", "commonjs"],
+    browserConsumers: ["module", "umd", "csp"],
+    browserModuleAdapter: "test-only-umd-module",
+    cspPolicy:
+      "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'",
+    engines: ["chromium", "firefox", "webkit"].map((name) => ({
+      name,
+      version: "1.2.3",
+      status: "pass",
+    })),
   };
   return {
     schema: "jqstar-package-quality/1",
@@ -180,7 +300,7 @@ function packageReport() {
     mode: "package",
     status: "pass",
     package: {
-      filename: "jquery-star-0.1.0.tgz",
+      filename: "jquery-star-1.0.0.tgz",
       files: 1,
       packedBytes: 1,
       unpackedBytes: 1,
@@ -345,6 +465,27 @@ describe("package and release quality contracts", () => {
     }
   }, 10_000);
 
+  it("removes an owned release workspace when its supervised command times out", async () => {
+    const parent = await mkdtemp(join(resolve(root, ".git/jqstar"), "release-timeout-"));
+    try {
+      const result = await runChild({
+        command: process.execPath,
+        args: [resolve(root, "test/fixtures/owned-temporary-directory-signal.mjs"), parent],
+        cwd: root,
+        timeoutMs: 500,
+        env: process.env,
+      });
+      expect(result.timedOut).toBe(true);
+      expect(result.signal).toBe("SIGTERM");
+      const directory = result.stdout.trim();
+      expect(directory).toContain(parent);
+      await expect(access(directory)).rejects.toMatchObject({ code: "ENOENT" });
+      expect(await readdir(parent)).toEqual([]);
+    } finally {
+      await rm(parent, { force: true, recursive: true });
+    }
+  }, 10_000);
+
   it("ships exactly the public guides linked from the package README", async () => {
     const manifest = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
     expect(manifest.files).not.toContain("docs");
@@ -443,6 +584,89 @@ describe("package and release quality contracts", () => {
     expect(evaluateBudgetRatchet(baseline, null, "a".repeat(40)).status).toBe("first-baseline");
   });
 
+  it("composes only reviewed size transitions from their exact approved baselines", () => {
+    const baseline = {
+      $schema: "jqstar-quality-budgets/1",
+      ratchet: {
+        comparison: "immutable-delivery-base",
+        firstBaseline: "establish-when-base-has-no-budgets",
+      },
+      bundles: {
+        "dist/jquery-star.umd.cjs": 464896,
+        "dist/ui.cjs": 318464,
+        "dist/ui.js": 318464,
+        "dist/jquery-star-ui.css": 169984,
+      },
+      consumerBundles: {
+        rootImportBytes: 542720,
+        coreImportBytes: 197632,
+        coreImportGzipBytes: 63000,
+        cspImportGzipBytes: 45000,
+        cspImportBrotliBytes: 39000,
+        storesImportGzipBytes: 66560,
+      },
+    };
+    const reviewed = structuredClone(baseline);
+    reviewed.bundles["dist/jquery-star.umd.cjs"] = 559104;
+    reviewed.bundles["dist/ui.cjs"] = 408576;
+    reviewed.bundles["dist/ui.js"] = 410624;
+    reviewed.bundles["dist/jquery-star-ui.css"] = 171008;
+    reviewed.consumerBundles.rootImportBytes = 634880;
+    reviewed.consumerBundles.coreImportGzipBytes = 64512;
+    reviewed.consumerBundles.cspImportGzipBytes = 46080;
+    reviewed.consumerBundles.cspImportBrotliBytes = 40960;
+    reviewed.consumerBundles.storesImportGzipBytes = 67584;
+    const revision = "a".repeat(40);
+    expect(evaluateBudgetRatchet(reviewed, baseline, revision).status).toBe("pass");
+
+    const auditBudget = structuredClone(reviewed);
+    auditBudget.consumerBundles.rootImportBytes = 634881;
+    auditBudget.consumerBundles.storesImportGzipBytes = 67623;
+    expect(evaluateBudgetRatchet(auditBudget, baseline, revision).status).toBe("pass");
+    expect(evaluateBudgetRatchet(auditBudget, reviewed, revision).status).toBe("pass");
+
+    for (const [section, key] of [
+      ["bundles", "dist/jquery-star.umd.cjs"],
+      ["bundles", "dist/ui.cjs"],
+      ["bundles", "dist/ui.js"],
+      ["bundles", "dist/jquery-star-ui.css"],
+      ["consumerBundles", "rootImportBytes"],
+      ["consumerBundles", "coreImportGzipBytes"],
+      ["consumerBundles", "cspImportGzipBytes"],
+      ["consumerBundles", "cspImportBrotliBytes"],
+      ["consumerBundles", "storesImportGzipBytes"],
+    ]) {
+      const excessive = structuredClone(reviewed);
+      excessive[section][key] = auditBudget[section][key] + 1;
+      expect(evaluateBudgetRatchet(excessive, baseline, revision).failures).toContain(
+        `${section}.${key} ${excessive[section][key]} loosens immutable-base ceiling ${baseline[section][key]}.`,
+      );
+      const wrongBase = structuredClone(baseline);
+      wrongBase[section][key] -= 1;
+      expect(evaluateBudgetRatchet(reviewed, wrongBase, revision).status).toBe("fail");
+    }
+
+    for (const key of ["rootImportBytes", "storesImportGzipBytes"]) {
+      const unmatchedIntermediate = structuredClone(reviewed);
+      unmatchedIntermediate.consumerBundles[key] -= 1;
+      expect(evaluateBudgetRatchet(auditBudget, unmatchedIntermediate, revision).status).toBe(
+        "fail",
+      );
+      const excessive = structuredClone(auditBudget);
+      excessive.consumerBundles[key] += 1;
+      expect(evaluateBudgetRatchet(excessive, reviewed, revision).failures).toContain(
+        `consumerBundles.${key} ${excessive.consumerBundles[key]} loosens immutable-base ceiling ${reviewed.consumerBundles[key]}.`,
+      );
+    }
+
+    const unrelated = structuredClone(reviewed);
+    unrelated.consumerBundles.coreImportBytes += 1;
+    expect(evaluateBudgetRatchet(unrelated, baseline, revision).status).toBe("fail");
+    const removed = structuredClone(reviewed);
+    delete removed.bundles["dist/ui.js"];
+    expect(evaluateBudgetRatchet(removed, baseline, revision).status).toBe("fail");
+  });
+
   it("rejects missing, duplicate, misbound, and false-green package evidence", async () => {
     const validate = await compileSchema("schema/package-report.schema.json");
     const valid = packageReport();
@@ -469,17 +693,76 @@ describe("package and release quality contracts", () => {
       (report) => (report.checks[10].detail.engines[0].version = ""),
       (report) => delete report.checks[10].detail.lifecycle,
       (report) => delete report.checks[8].detail.peerDependencies.missing,
+      (report) => delete report.checks[8].detail.peerDependencies.htmxOptional,
       (report) => delete report.checks[8].detail.peerDependencies.turboOptional,
       (report) => (report.checks[8].detail.peerDependencies.incompatible.exitCode = 0),
       (report) => report.checks[8].detail.consumers.pop(),
       (report) => (report.checks[3].detail.ratchet.status = "fail"),
       (report) => report.checks[4].detail.documentation.pop(),
       (report) => report.checks[4].detail.documentation.push("docs/tickets/0044.md"),
+      (report) => delete report.checks[11].detail.htmx,
       (report) => delete report.checks[11].detail.turbo,
+      (report) => delete report.checks[13].detail.jqueryVersion,
+      (report) => (report.checks[13].detail.jqueryVersion = "4.0.0"),
+      (report) => (report.checks[13].detail.engines[0].status = "fail"),
+      (report) => report.checks[13].detail.browserConsumers.pop(),
     ]) {
       const sabotaged = structuredClone(valid);
       mutate(sabotaged);
       expect(validate(sabotaged), JSON.stringify(sabotaged)).toBe(false);
+    }
+  });
+
+  it("rejects incomplete CSP profiles, handled errors, broken isolation and native fallbacks", async () => {
+    const validate = await compileSchema("schema/package-report.schema.json");
+    const valid = packageReport();
+    const accept = (report) => {
+      if (!validate(report)) throw new Error("Invalid CSP report schema");
+      for (const engine of report.checks[10].detail.csp.engines) {
+        assertCSPApplicationResult(engine);
+        assertCSPProfileEvidence(engine.accessibilityProfiles);
+      }
+    };
+    expect(() => accept(valid)).not.toThrow();
+    const controls = [
+      ["absent runtime detector", (v) => delete v.runtimeErrorDetector],
+      ["missed pre-install error", (v) => (v.runtimeErrorDetector.events = 0)],
+      ["missing profile", (v) => v.accessibilityProfiles.pop()],
+      [
+        "duplicate profile",
+        (v) => (v.accessibilityProfiles[1] = structuredClone(v.accessibilityProfiles[0])),
+      ],
+      ["unknown profile", (v) => (v.accessibilityProfiles[1].profile = "ordinary")],
+      ["inactive motion", (v) => (v.accessibilityProfiles[0].reducedMotion = false)],
+      ["inactive colors", (v) => (v.accessibilityProfiles[1].forcedColors = false)],
+      ["inactive zoom", (v) => (v.accessibilityProfiles[2].zoom = 1)],
+      ["overflow", (v) => (v.accessibilityProfiles[2].documentWidth = 900)],
+      ["input overflow", (v) => (v.accessibilityProfiles[2].inputWidth = 900)],
+      ["missing computed", (v) => delete v.computed],
+      ["blank computed", (v) => (v.accessibilityProfiles[0].computed.initial = "")],
+      ["wrong SDK computed", (v) => (v.computed.final = "4")],
+      ["handled error", (v) => (v.runtimeErrors = 1)],
+      ["profile handled error", (v) => (v.accessibilityProfiles[1].runtimeErrors = 1)],
+      ["duplicate handler", (v) => (v.behavior.afterKeyboard.activations = 2)],
+      ["cross root state", (v) => (v.behavior.afterPatches.count = "8")],
+      ["destroyed opposite root", (v) => (v.behavior.afterRootDestroy.survived = false)],
+      ["live behavior after disposal", (v) => (v.behavior.destroyedOnDispose = false)],
+      ["retained resources", (v) => (v.accessibilityProfiles[1].disposal.remaining = 1)],
+      ["unreleased resources", (v) => (v.accessibilityProfiles[1].disposal.released -= 1)],
+      ["native 404", (v) => (v.noJavaScript.linkStatus = 404)],
+      ["form 404", (v) => (v.noJavaScript.formStatus = 404)],
+      ["missing receipt", (v) => delete v.noJavaScript.receivedName],
+      ["wrong receipt", (v) => (v.noJavaScript.receivedName = "wrong")],
+      ["native scripts", (v) => (v.noJavaScript.scriptRequests = 1)],
+      ["missing headers", (v) => (v.accessibilityProfiles[0].headerResponses = 0)],
+      ["changed native policy", (v) => (v.noJavaScript.policy = "changed")],
+      ["unexpected report", (v) => (v.accessibilityProfiles[0].unexpectedPolicyReports = 1)],
+      ["extra observation", (v) => (v.accessibilityProfiles[0].inferredPass = true)],
+    ];
+    for (const [name, alter] of controls) {
+      const report = structuredClone(valid);
+      alter(report.checks[10].detail.csp.engines[0]);
+      expect(() => accept(report), name).toThrow();
     }
   });
 
@@ -520,7 +803,7 @@ describe("package and release quality contracts", () => {
       command: process.execPath,
       args: ["scripts/build-types.mjs"],
       cwd: root,
-      timeoutMs: 15_000,
+      timeoutMs: 60_000,
       env: process.env,
     });
     const buildOutput = `${build.stdout}${build.stderr}`;
@@ -581,7 +864,7 @@ describe("package and release quality contracts", () => {
         command: npx,
         args: ["--no-install", "api-extractor", "run", "--config", configuration],
         cwd: root,
-        timeoutMs: 10_000,
+        timeoutMs: 30_000,
         env: process.env,
       });
       const driftOutput = `${drift.stdout}${drift.stderr}`;
@@ -593,5 +876,5 @@ describe("package and release quality contracts", () => {
     } finally {
       await rm(directory, { force: true, recursive: true });
     }
-  }, 30_000);
+  }, 120_000);
 });

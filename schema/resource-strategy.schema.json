@@ -1,0 +1,2347 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "phase",
+    "decision",
+    "contract",
+    "external",
+    "measurements",
+    "scores",
+    "sensitivity",
+    "downstream",
+    "inspection",
+    "browserProof"
+  ],
+  "properties": {
+    "schema": {
+      "const": "jqstar-resource-strategy/1"
+    },
+    "phase": {
+      "enum": ["collecting", "decided"]
+    },
+    "decision": {
+      "enum": [null, "server-patches", "external-integration", "native-client"]
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "frozenAt",
+        "baseline",
+        "document",
+        "sha256",
+        "freshnessMs",
+        "gcMs",
+        "readDelayMs",
+        "slowDelayMs",
+        "repetitions",
+        "scenarios"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "frozenAt": {
+          "type": "string"
+        },
+        "baseline": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "freshnessMs": {
+          "type": "number"
+        },
+        "gcMs": {
+          "type": "number"
+        },
+        "readDelayMs": {
+          "type": "number"
+        },
+        "slowDelayMs": {
+          "type": "number"
+        },
+        "repetitions": {
+          "type": "number"
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "external": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "retrievedAt",
+        "publishedAt",
+        "modifiedAt",
+        "registryUrl",
+        "repository",
+        "gitHead",
+        "license",
+        "runtimeDependencies",
+        "optionalDependencies",
+        "peerDependencies",
+        "tarball",
+        "integrity",
+        "tarballBytes",
+        "unpackedBytes",
+        "fileCount",
+        "attestations",
+        "audit",
+        "sources",
+        "browserTargets",
+        "reviewedApiCalls",
+        "apiInspectionPaths",
+        "advisoryConclusion"
+      ],
+      "properties": {
+        "name": {
+          "const": "@tanstack/query-core"
+        },
+        "version": {
+          "const": "5.102.8"
+        },
+        "retrievedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "modifiedAt": {
+          "type": "string"
+        },
+        "registryUrl": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "type", "directory"],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "directory": {
+              "type": "string"
+            }
+          }
+        },
+        "gitHead": {
+          "type": "null"
+        },
+        "license": {
+          "type": "string"
+        },
+        "runtimeDependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        },
+        "optionalDependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        },
+        "peerDependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        },
+        "tarball": {
+          "type": "string"
+        },
+        "integrity": {
+          "const": "sha512-ZNjkJ33CqvPNec/6lZBnHqLc3EVGPZ9ySLhYahU9TcuRFdmwXewuj0c4hwSWcGHqEUwcSrKeZ+oGcvPBqXcQcg=="
+        },
+        "tarballBytes": {
+          "type": "number"
+        },
+        "unpackedBytes": {
+          "type": "number"
+        },
+        "fileCount": {
+          "type": "number"
+        },
+        "attestations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "provenance"],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["predicateType"],
+              "properties": {
+                "predicateType": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["auditReportVersion", "vulnerabilities", "metadata"],
+          "properties": {
+            "auditReportVersion": {
+              "type": "number"
+            },
+            "vulnerabilities": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["vulnerabilities", "dependencies"],
+              "properties": {
+                "vulnerabilities": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["info", "low", "moderate", "high", "critical", "total"],
+                  "properties": {
+                    "info": {
+                      "type": "number"
+                    },
+                    "low": {
+                      "type": "number"
+                    },
+                    "moderate": {
+                      "type": "number"
+                    },
+                    "high": {
+                      "type": "number"
+                    },
+                    "critical": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "dependencies": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["prod", "dev", "optional", "peer", "peerOptional", "total"],
+                  "properties": {
+                    "prod": {
+                      "type": "number"
+                    },
+                    "dev": {
+                      "type": "number"
+                    },
+                    "optional": {
+                      "type": "number"
+                    },
+                    "peer": {
+                      "type": "number"
+                    },
+                    "peerOptional": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url", "purpose"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "browserTargets": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceScope", "chrome", "firefox", "edge", "safari", "ios", "opera"],
+          "properties": {
+            "sourceScope": {
+              "type": "string"
+            },
+            "chrome": {
+              "type": "number"
+            },
+            "firefox": {
+              "type": "number"
+            },
+            "edge": {
+              "type": "number"
+            },
+            "safari": {
+              "type": "number"
+            },
+            "ios": {
+              "type": "number"
+            },
+            "opera": {
+              "type": "number"
+            }
+          }
+        },
+        "reviewedApiCalls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "apiInspectionPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "advisoryConclusion": {
+          "type": "string"
+        }
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema",
+          "createdAt",
+          "contractDigest",
+          "sourceDigest",
+          "environment",
+          "sourceInventory",
+          "graphs",
+          "samples",
+          "summaries",
+          "supportInventory"
+        ],
+        "properties": {
+          "schema": {
+            "const": "resource-strategy-measurement/1"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "contractDigest": {
+            "type": "string"
+          },
+          "sourceDigest": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["node", "os", "release", "arch", "vite", "playwright"],
+            "properties": {
+              "node": {
+                "type": "string"
+              },
+              "os": {
+                "type": "string"
+              },
+              "release": {
+                "type": "string"
+              },
+              "arch": {
+                "type": "string"
+              },
+              "vite": {
+                "type": "string"
+              },
+              "playwright": {
+                "type": "string"
+              }
+            }
+          },
+          "sourceInventory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "bytes", "sha256", "lines", "nonblankNoncommentLines"],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "number"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "lines": {
+                  "type": "number"
+                },
+                "nonblankNoncommentLines": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "graphs": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["baseline", "server", "external", "native"],
+            "properties": {
+              "baseline": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["raw", "gzip", "sha256", "modules"],
+                "properties": {
+                  "raw": {
+                    "type": "number"
+                  },
+                  "gzip": {
+                    "type": "number"
+                  },
+                  "sha256": {
+                    "type": "string"
+                  },
+                  "modules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "server": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["raw", "gzip", "sha256", "modules"],
+                "properties": {
+                  "raw": {
+                    "type": "number"
+                  },
+                  "gzip": {
+                    "type": "number"
+                  },
+                  "sha256": {
+                    "type": "string"
+                  },
+                  "modules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "external": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["raw", "gzip", "sha256", "modules"],
+                "properties": {
+                  "raw": {
+                    "type": "number"
+                  },
+                  "gzip": {
+                    "type": "number"
+                  },
+                  "sha256": {
+                    "type": "string"
+                  },
+                  "modules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "native": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["raw", "gzip", "sha256", "modules"],
+                "properties": {
+                  "raw": {
+                    "type": "number"
+                  },
+                  "gzip": {
+                    "type": "number"
+                  },
+                  "sha256": {
+                    "type": "string"
+                  },
+                  "modules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "samples": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "engine",
+                "browserVersion",
+                "strategy",
+                "iteration",
+                "coldMs",
+                "awayMs",
+                "warmMs",
+                "coldOriginReads",
+                "awayOriginReads",
+                "warmOriginReads",
+                "counters",
+                "client",
+                "terminal",
+                "disposal"
+              ],
+              "properties": {
+                "engine": {
+                  "enum": ["chromium", "firefox", "webkit"]
+                },
+                "browserVersion": {
+                  "type": "string"
+                },
+                "strategy": {
+                  "enum": ["server", "external", "native"]
+                },
+                "iteration": {
+                  "type": "number"
+                },
+                "coldMs": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "awayMs": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "warmMs": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "coldOriginReads": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "awayOriginReads": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "warmOriginReads": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "counters": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "reads",
+                    "aborted",
+                    "completed",
+                    "conditional",
+                    "active",
+                    "writes",
+                    "conflicts",
+                    "invalid",
+                    "forbidden"
+                  ],
+                  "properties": {
+                    "reads": {
+                      "type": "number"
+                    },
+                    "aborted": {
+                      "type": "number"
+                    },
+                    "completed": {
+                      "type": "number"
+                    },
+                    "conditional": {
+                      "type": "number"
+                    },
+                    "active": {
+                      "type": "number"
+                    },
+                    "writes": {
+                      "type": "number"
+                    },
+                    "conflicts": {
+                      "type": "number"
+                    },
+                    "invalid": {
+                      "type": "number"
+                    },
+                    "forbidden": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "client": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "records",
+                    "observers",
+                    "tasks",
+                    "timers",
+                    "fetches",
+                    "pending",
+                    "states"
+                  ],
+                  "properties": {
+                    "records": {
+                      "type": "number"
+                    },
+                    "observers": {
+                      "type": "number"
+                    },
+                    "tasks": {
+                      "type": "number"
+                    },
+                    "timers": {
+                      "type": ["number", "null"]
+                    },
+                    "fetches": {
+                      "type": "number"
+                    },
+                    "pending": {
+                      "type": "number"
+                    },
+                    "states": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "terminal": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "records",
+                    "observers",
+                    "tasks",
+                    "timers",
+                    "fetches",
+                    "pending",
+                    "states",
+                    "browserTimers"
+                  ],
+                  "properties": {
+                    "records": {
+                      "type": "number"
+                    },
+                    "observers": {
+                      "type": "number"
+                    },
+                    "tasks": {
+                      "type": "number"
+                    },
+                    "timers": {
+                      "type": ["number", "null"]
+                    },
+                    "fetches": {
+                      "type": "number"
+                    },
+                    "pending": {
+                      "type": "number"
+                    },
+                    "states": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "browserTimers": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "disposal": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["schema", "attempted", "released", "failed", "remaining"],
+                  "properties": {
+                    "schema": {
+                      "const": "jquery-star-disposal/1"
+                    },
+                    "attempted": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["category", "owner"],
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "owner": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "minItems": 1
+                    },
+                    "released": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["category", "owner"],
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "owner": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "minItems": 1
+                    },
+                    "failed": {
+                      "type": "array",
+                      "maxItems": 0
+                    },
+                    "remaining": {
+                      "type": "array",
+                      "maxItems": 0
+                    }
+                  }
+                }
+              }
+            },
+            "minItems": 45,
+            "maxItems": 45
+          },
+          "summaries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "engine",
+                "strategy",
+                "repetitions",
+                "coldMedianMs",
+                "coldP95Ms",
+                "warmMedianMs",
+                "warmP95Ms",
+                "warmOriginReads"
+              ],
+              "properties": {
+                "engine": {
+                  "type": "string"
+                },
+                "strategy": {
+                  "type": "string"
+                },
+                "repetitions": {
+                  "type": "number"
+                },
+                "coldMedianMs": {
+                  "type": "number"
+                },
+                "coldP95Ms": {
+                  "type": "number"
+                },
+                "warmMedianMs": {
+                  "type": "number"
+                },
+                "warmP95Ms": {
+                  "type": "number"
+                },
+                "warmOriginReads": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "minItems": 9,
+            "maxItems": 9
+          },
+          "supportInventory": {
+            "type": "array",
+            "minItems": 9,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["category", "path", "bytes", "lines", "sha256"],
+              "properties": {
+                "category": {
+                  "enum": ["tests", "tooling", "documentation"]
+                },
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lines": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scores": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["server", "external", "native"],
+          "properties": {
+            "server": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lines",
+                "annualHours",
+                "annualHoursRange",
+                "incrementalGzipBytes",
+                "categories",
+                "contributions",
+                "total",
+                "hardGatesPass"
+              ],
+              "properties": {
+                "lines": {
+                  "type": "number"
+                },
+                "annualHours": {
+                  "type": "number"
+                },
+                "annualHoursRange": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "incrementalGzipBytes": {
+                  "type": "number"
+                },
+                "categories": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "benefit",
+                    "authority",
+                    "lifecycle",
+                    "cost",
+                    "complexity",
+                    "maintenance",
+                    "interoperability",
+                    "accessibility"
+                  ],
+                  "properties": {
+                    "benefit": {
+                      "type": "number"
+                    },
+                    "authority": {
+                      "type": "number"
+                    },
+                    "lifecycle": {
+                      "type": "number"
+                    },
+                    "cost": {
+                      "type": "number"
+                    },
+                    "complexity": {
+                      "type": "number"
+                    },
+                    "maintenance": {
+                      "type": "number"
+                    },
+                    "interoperability": {
+                      "type": "number"
+                    },
+                    "accessibility": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "contributions": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "benefit",
+                    "authority",
+                    "lifecycle",
+                    "cost",
+                    "complexity",
+                    "maintenance",
+                    "interoperability",
+                    "accessibility"
+                  ],
+                  "properties": {
+                    "benefit": {
+                      "type": "number"
+                    },
+                    "authority": {
+                      "type": "number"
+                    },
+                    "lifecycle": {
+                      "type": "number"
+                    },
+                    "cost": {
+                      "type": "number"
+                    },
+                    "complexity": {
+                      "type": "number"
+                    },
+                    "maintenance": {
+                      "type": "number"
+                    },
+                    "interoperability": {
+                      "type": "number"
+                    },
+                    "accessibility": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "total": {
+                  "type": "number"
+                },
+                "hardGatesPass": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "external": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lines",
+                "annualHours",
+                "annualHoursRange",
+                "incrementalGzipBytes",
+                "categories",
+                "contributions",
+                "total",
+                "hardGatesPass"
+              ],
+              "properties": {
+                "lines": {
+                  "type": "number"
+                },
+                "annualHours": {
+                  "type": "number"
+                },
+                "annualHoursRange": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "incrementalGzipBytes": {
+                  "type": "number"
+                },
+                "categories": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "benefit",
+                    "authority",
+                    "lifecycle",
+                    "cost",
+                    "complexity",
+                    "maintenance",
+                    "interoperability",
+                    "accessibility"
+                  ],
+                  "properties": {
+                    "benefit": {
+                      "type": "number"
+                    },
+                    "authority": {
+                      "type": "number"
+                    },
+                    "lifecycle": {
+                      "type": "number"
+                    },
+                    "cost": {
+                      "type": "number"
+                    },
+                    "complexity": {
+                      "type": "number"
+                    },
+                    "maintenance": {
+                      "type": "number"
+                    },
+                    "interoperability": {
+                      "type": "number"
+                    },
+                    "accessibility": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "contributions": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "benefit",
+                    "authority",
+                    "lifecycle",
+                    "cost",
+                    "complexity",
+                    "maintenance",
+                    "interoperability",
+                    "accessibility"
+                  ],
+                  "properties": {
+                    "benefit": {
+                      "type": "number"
+                    },
+                    "authority": {
+                      "type": "number"
+                    },
+                    "lifecycle": {
+                      "type": "number"
+                    },
+                    "cost": {
+                      "type": "number"
+                    },
+                    "complexity": {
+                      "type": "number"
+                    },
+                    "maintenance": {
+                      "type": "number"
+                    },
+                    "interoperability": {
+                      "type": "number"
+                    },
+                    "accessibility": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "total": {
+                  "type": "number"
+                },
+                "hardGatesPass": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "native": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lines",
+                "annualHours",
+                "annualHoursRange",
+                "incrementalGzipBytes",
+                "categories",
+                "contributions",
+                "total",
+                "hardGatesPass"
+              ],
+              "properties": {
+                "lines": {
+                  "type": "number"
+                },
+                "annualHours": {
+                  "type": "number"
+                },
+                "annualHoursRange": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "incrementalGzipBytes": {
+                  "type": "number"
+                },
+                "categories": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "benefit",
+                    "authority",
+                    "lifecycle",
+                    "cost",
+                    "complexity",
+                    "maintenance",
+                    "interoperability",
+                    "accessibility"
+                  ],
+                  "properties": {
+                    "benefit": {
+                      "type": "number"
+                    },
+                    "authority": {
+                      "type": "number"
+                    },
+                    "lifecycle": {
+                      "type": "number"
+                    },
+                    "cost": {
+                      "type": "number"
+                    },
+                    "complexity": {
+                      "type": "number"
+                    },
+                    "maintenance": {
+                      "type": "number"
+                    },
+                    "interoperability": {
+                      "type": "number"
+                    },
+                    "accessibility": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "contributions": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "benefit",
+                    "authority",
+                    "lifecycle",
+                    "cost",
+                    "complexity",
+                    "maintenance",
+                    "interoperability",
+                    "accessibility"
+                  ],
+                  "properties": {
+                    "benefit": {
+                      "type": "number"
+                    },
+                    "authority": {
+                      "type": "number"
+                    },
+                    "lifecycle": {
+                      "type": "number"
+                    },
+                    "cost": {
+                      "type": "number"
+                    },
+                    "complexity": {
+                      "type": "number"
+                    },
+                    "maintenance": {
+                      "type": "number"
+                    },
+                    "interoperability": {
+                      "type": "number"
+                    },
+                    "accessibility": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "total": {
+                  "type": "number"
+                },
+                "hardGatesPass": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sensitivity": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "weightMultipliers",
+            "maintenanceMultipliers",
+            "trials",
+            "strictScoreWins",
+            "exactTies",
+            "existingCompositionWithinTwo",
+            "eligiblePolicyWins",
+            "nativeApproved",
+            "eligibilityAssumption"
+          ],
+          "properties": {
+            "weightMultipliers": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "maintenanceMultipliers": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "trials": {
+              "type": "number"
+            },
+            "strictScoreWins": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["server", "external", "native"],
+              "properties": {
+                "server": {
+                  "type": "number"
+                },
+                "external": {
+                  "type": "number"
+                },
+                "native": {
+                  "type": "number"
+                }
+              }
+            },
+            "exactTies": {
+              "type": "number"
+            },
+            "existingCompositionWithinTwo": {
+              "type": "number"
+            },
+            "eligiblePolicyWins": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["server", "external"],
+              "properties": {
+                "server": {
+                  "type": "number"
+                },
+                "external": {
+                  "type": "number"
+                }
+              }
+            },
+            "nativeApproved": {
+              "type": "boolean"
+            },
+            "eligibilityAssumption": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "downstream": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["0021", "0022", "supportedComposition", "absenceEvidence"],
+          "properties": {
+            "0021": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "ticket"],
+              "properties": {
+                "status": {
+                  "enum": ["planned", "declined"]
+                },
+                "ticket": {
+                  "const": "docs/tickets/0021-build-resource-client.md"
+                }
+              }
+            },
+            "0022": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "ticket"],
+              "properties": {
+                "status": {
+                  "enum": ["planned", "declined"]
+                },
+                "ticket": {
+                  "const": "docs/tickets/0022-add-resource-mutations.md"
+                }
+              }
+            },
+            "supportedComposition": {
+              "type": "string",
+              "minLength": 1
+            },
+            "absenceEvidence": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "inspection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "strategies",
+        "evidence",
+        "modelAccounting",
+        "maintenanceOwner",
+        "maintenanceCadence",
+        "maintenanceInterpretation",
+        "nativeApproval"
+      ],
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "strategies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["server", "external", "native"],
+          "properties": {
+            "server": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceFiles",
+                "concepts",
+                "ownedAsyncTransitions",
+                "externalPackages",
+                "semanticMatrix",
+                "initialHtmlAndNoJs",
+                "serverWriteAuthority",
+                "clientReadRenderer",
+                "lifecycle",
+                "interoperability",
+                "accessibility",
+                "hardGates"
+              ],
+              "properties": {
+                "sourceFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ownedAsyncTransitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "externalPackages": {
+                  "type": "array",
+                  "items": {}
+                },
+                "semanticMatrix": {
+                  "type": "boolean"
+                },
+                "initialHtmlAndNoJs": {
+                  "type": "boolean"
+                },
+                "serverWriteAuthority": {
+                  "type": "boolean"
+                },
+                "clientReadRenderer": {
+                  "type": "boolean"
+                },
+                "lifecycle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "oneConsumer",
+                    "lastConsumer",
+                    "terminalDisposal",
+                    "identitySeparation",
+                    "inactiveRetention"
+                  ],
+                  "properties": {
+                    "oneConsumer": {
+                      "type": "boolean"
+                    },
+                    "lastConsumer": {
+                      "type": "boolean"
+                    },
+                    "terminalDisposal": {
+                      "type": "boolean"
+                    },
+                    "identitySeparation": {
+                      "type": "boolean"
+                    },
+                    "inactiveRetention": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "interoperability": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "publicApisOnly",
+                    "perKernel",
+                    "preservedRendering",
+                    "noGlobalManagerChanges",
+                    "noFrameworkAdapter"
+                  ],
+                  "properties": {
+                    "publicApisOnly": {
+                      "type": "boolean"
+                    },
+                    "perKernel": {
+                      "type": "boolean"
+                    },
+                    "preservedRendering": {
+                      "type": "boolean"
+                    },
+                    "noGlobalManagerChanges": {
+                      "type": "boolean"
+                    },
+                    "noFrameworkAdapter": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "accessibility": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "nativeLinksForms",
+                    "stableFocus",
+                    "announcementsErrorsEmpty",
+                    "noJavaScript",
+                    "responsiveChecks"
+                  ],
+                  "properties": {
+                    "nativeLinksForms": {
+                      "type": "boolean"
+                    },
+                    "stableFocus": {
+                      "type": "boolean"
+                    },
+                    "announcementsErrorsEmpty": {
+                      "type": "boolean"
+                    },
+                    "noJavaScript": {
+                      "type": "boolean"
+                    },
+                    "responsiveChecks": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "hardGates": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "correctness",
+                    "serverAuthority",
+                    "noJavaScript",
+                    "accessibleEquivalence",
+                    "ownershipCleanup",
+                    "exactPackageAdvisories"
+                  ],
+                  "properties": {
+                    "correctness": {
+                      "type": "boolean"
+                    },
+                    "serverAuthority": {
+                      "type": "boolean"
+                    },
+                    "noJavaScript": {
+                      "type": "boolean"
+                    },
+                    "accessibleEquivalence": {
+                      "type": "boolean"
+                    },
+                    "ownershipCleanup": {
+                      "type": "boolean"
+                    },
+                    "exactPackageAdvisories": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+            "external": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceFiles",
+                "concepts",
+                "ownedAsyncTransitions",
+                "externalPackages",
+                "semanticMatrix",
+                "initialHtmlAndNoJs",
+                "serverWriteAuthority",
+                "clientReadRenderer",
+                "lifecycle",
+                "interoperability",
+                "accessibility",
+                "hardGates"
+              ],
+              "properties": {
+                "sourceFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ownedAsyncTransitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "externalPackages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "semanticMatrix": {
+                  "type": "boolean"
+                },
+                "initialHtmlAndNoJs": {
+                  "type": "boolean"
+                },
+                "serverWriteAuthority": {
+                  "type": "boolean"
+                },
+                "clientReadRenderer": {
+                  "type": "boolean"
+                },
+                "lifecycle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "oneConsumer",
+                    "lastConsumer",
+                    "terminalDisposal",
+                    "identitySeparation",
+                    "inactiveRetention"
+                  ],
+                  "properties": {
+                    "oneConsumer": {
+                      "type": "boolean"
+                    },
+                    "lastConsumer": {
+                      "type": "boolean"
+                    },
+                    "terminalDisposal": {
+                      "type": "boolean"
+                    },
+                    "identitySeparation": {
+                      "type": "boolean"
+                    },
+                    "inactiveRetention": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "interoperability": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "publicApisOnly",
+                    "perKernel",
+                    "preservedRendering",
+                    "noGlobalManagerChanges",
+                    "noFrameworkAdapter"
+                  ],
+                  "properties": {
+                    "publicApisOnly": {
+                      "type": "boolean"
+                    },
+                    "perKernel": {
+                      "type": "boolean"
+                    },
+                    "preservedRendering": {
+                      "type": "boolean"
+                    },
+                    "noGlobalManagerChanges": {
+                      "type": "boolean"
+                    },
+                    "noFrameworkAdapter": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "accessibility": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "nativeLinksForms",
+                    "stableFocus",
+                    "announcementsErrorsEmpty",
+                    "noJavaScript",
+                    "responsiveChecks"
+                  ],
+                  "properties": {
+                    "nativeLinksForms": {
+                      "type": "boolean"
+                    },
+                    "stableFocus": {
+                      "type": "boolean"
+                    },
+                    "announcementsErrorsEmpty": {
+                      "type": "boolean"
+                    },
+                    "noJavaScript": {
+                      "type": "boolean"
+                    },
+                    "responsiveChecks": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "hardGates": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "correctness",
+                    "serverAuthority",
+                    "noJavaScript",
+                    "accessibleEquivalence",
+                    "ownershipCleanup",
+                    "exactPackageAdvisories"
+                  ],
+                  "properties": {
+                    "correctness": {
+                      "type": "boolean"
+                    },
+                    "serverAuthority": {
+                      "type": "boolean"
+                    },
+                    "noJavaScript": {
+                      "type": "boolean"
+                    },
+                    "accessibleEquivalence": {
+                      "type": "boolean"
+                    },
+                    "ownershipCleanup": {
+                      "type": "boolean"
+                    },
+                    "exactPackageAdvisories": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+            "native": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceFiles",
+                "concepts",
+                "ownedAsyncTransitions",
+                "externalPackages",
+                "semanticMatrix",
+                "initialHtmlAndNoJs",
+                "serverWriteAuthority",
+                "clientReadRenderer",
+                "lifecycle",
+                "interoperability",
+                "accessibility",
+                "hardGates"
+              ],
+              "properties": {
+                "sourceFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ownedAsyncTransitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "externalPackages": {
+                  "type": "array",
+                  "items": {}
+                },
+                "semanticMatrix": {
+                  "type": "boolean"
+                },
+                "initialHtmlAndNoJs": {
+                  "type": "boolean"
+                },
+                "serverWriteAuthority": {
+                  "type": "boolean"
+                },
+                "clientReadRenderer": {
+                  "type": "boolean"
+                },
+                "lifecycle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "oneConsumer",
+                    "lastConsumer",
+                    "terminalDisposal",
+                    "identitySeparation",
+                    "inactiveRetention"
+                  ],
+                  "properties": {
+                    "oneConsumer": {
+                      "type": "boolean"
+                    },
+                    "lastConsumer": {
+                      "type": "boolean"
+                    },
+                    "terminalDisposal": {
+                      "type": "boolean"
+                    },
+                    "identitySeparation": {
+                      "type": "boolean"
+                    },
+                    "inactiveRetention": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "interoperability": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "publicApisOnly",
+                    "perKernel",
+                    "preservedRendering",
+                    "noGlobalManagerChanges",
+                    "noFrameworkAdapter"
+                  ],
+                  "properties": {
+                    "publicApisOnly": {
+                      "type": "boolean"
+                    },
+                    "perKernel": {
+                      "type": "boolean"
+                    },
+                    "preservedRendering": {
+                      "type": "boolean"
+                    },
+                    "noGlobalManagerChanges": {
+                      "type": "boolean"
+                    },
+                    "noFrameworkAdapter": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "accessibility": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "nativeLinksForms",
+                    "stableFocus",
+                    "announcementsErrorsEmpty",
+                    "noJavaScript",
+                    "responsiveChecks"
+                  ],
+                  "properties": {
+                    "nativeLinksForms": {
+                      "type": "boolean"
+                    },
+                    "stableFocus": {
+                      "type": "boolean"
+                    },
+                    "announcementsErrorsEmpty": {
+                      "type": "boolean"
+                    },
+                    "noJavaScript": {
+                      "type": "boolean"
+                    },
+                    "responsiveChecks": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "hardGates": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "correctness",
+                    "serverAuthority",
+                    "noJavaScript",
+                    "accessibleEquivalence",
+                    "ownershipCleanup",
+                    "exactPackageAdvisories"
+                  ],
+                  "properties": {
+                    "correctness": {
+                      "type": "boolean"
+                    },
+                    "serverAuthority": {
+                      "type": "boolean"
+                    },
+                    "noJavaScript": {
+                      "type": "boolean"
+                    },
+                    "accessibleEquivalence": {
+                      "type": "boolean"
+                    },
+                    "ownershipCleanup": {
+                      "type": "boolean"
+                    },
+                    "exactPackageAdvisories": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["browser", "ownership", "server", "isolation"],
+          "properties": {
+            "browser": {
+              "type": "string"
+            },
+            "ownership": {
+              "type": "string"
+            },
+            "server": {
+              "type": "string"
+            },
+            "isolation": {
+              "type": "string"
+            }
+          }
+        },
+        "modelAccounting": {
+          "type": "string"
+        },
+        "maintenanceOwner": {
+          "type": "string"
+        },
+        "maintenanceCadence": {
+          "type": "string"
+        },
+        "maintenanceInterpretation": {
+          "type": "string"
+        },
+        "nativeApproval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "serverMaterialWorkflowGap",
+            "externalMateriallyUnsuitable",
+            "nativeRobustAdvantage"
+          ],
+          "properties": {
+            "serverMaterialWorkflowGap": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pass", "evidence"],
+              "properties": {
+                "pass": {
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              }
+            },
+            "externalMateriallyUnsuitable": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pass", "evidence"],
+              "properties": {
+                "pass": {
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              }
+            },
+            "nativeRobustAdvantage": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pass", "evidence"],
+              "properties": {
+                "pass": {
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "browserProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reportPath", "sha256", "startedAt", "durationMs", "executions", "observations"],
+      "properties": {
+        "reportPath": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "executions": {
+          "const": 87
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "schema",
+              "strategy",
+              "browser",
+              "scenario",
+              "status",
+              "metrics",
+              "client",
+              "disposal"
+            ],
+            "properties": {
+              "schema": {
+                "const": "resource-strategy-observation/1"
+              },
+              "strategy": {
+                "enum": ["server", "external", "native"]
+              },
+              "browser": {
+                "enum": [
+                  "desktop-chromium",
+                  "desktop-firefox",
+                  "desktop-webkit",
+                  "mobile-touch",
+                  "reduced-motion",
+                  "forced-colors",
+                  "zoom-reflow",
+                  "javascript-disabled"
+                ]
+              },
+              "scenario": {
+                "type": "string"
+              },
+              "status": {
+                "const": "passed"
+              },
+              "metrics": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reads",
+                  "aborted",
+                  "completed",
+                  "conditional",
+                  "active",
+                  "writes",
+                  "conflicts",
+                  "invalid",
+                  "forbidden"
+                ],
+                "properties": {
+                  "reads": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "aborted": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "completed": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "conditional": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "active": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "writes": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "conflicts": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "invalid": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "forbidden": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              },
+              "client": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "records",
+                      "observers",
+                      "tasks",
+                      "timers",
+                      "fetches",
+                      "pending",
+                      "states",
+                      "browserTimers"
+                    ],
+                    "properties": {
+                      "records": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "observers": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "tasks": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "timers": {
+                        "anyOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        ]
+                      },
+                      "fetches": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "pending": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "states": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "browserTimers": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "disposal": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["schema", "attempted", "released", "failed", "remaining"],
+                    "properties": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "attempted": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["category", "owner"],
+                          "properties": {
+                            "category": {
+                              "type": "string"
+                            },
+                            "owner": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "released": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["category", "owner"],
+                          "properties": {
+                            "category": {
+                              "type": "string"
+                            },
+                            "owner": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "failed": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false
+                        }
+                      },
+                      "remaining": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "minItems": 87,
+          "maxItems": 87
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "jqstar-resource-strategy/1",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "decided"
+          }
+        },
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "decision": {
+            "enum": ["server-patches", "external-integration", "native-client"]
+          },
+          "scores": {
+            "type": "object"
+          },
+          "sensitivity": {
+            "type": "object"
+          },
+          "downstream": {
+            "type": "object"
+          }
+        },
+        "required": ["decision", "scores", "sensitivity", "downstream"],
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "enum": ["server-patches", "external-integration"]
+          }
+        },
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "downstream": {
+            "type": "object",
+            "properties": {
+              "0021": {
+                "properties": {
+                  "status": {
+                    "const": "declined"
+                  }
+                },
+                "type": "object"
+              },
+              "0022": {
+                "properties": {
+                  "status": {
+                    "const": "declined"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "native-client"
+          }
+        },
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "inspection": {
+            "properties": {
+              "nativeApproval": {
+                "properties": {
+                  "serverMaterialWorkflowGap": {
+                    "properties": {
+                      "pass": {
+                        "const": true
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "externalMateriallyUnsuitable": {
+                    "properties": {
+                      "pass": {
+                        "const": true
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "nativeRobustAdvantage": {
+                    "properties": {
+                      "pass": {
+                        "const": true
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "downstream": {
+            "type": "object",
+            "properties": {
+              "0021": {
+                "properties": {
+                  "status": {
+                    "const": "planned"
+                  }
+                },
+                "type": "object"
+              },
+              "0022": {
+                "properties": {
+                  "status": {
+                    "const": "planned"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "type": "object"
+      }
+    }
+  ]
+}

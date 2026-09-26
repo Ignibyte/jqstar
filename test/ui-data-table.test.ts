@@ -86,6 +86,22 @@ describe("jQuery Star Data Table", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without paging the nearby table", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Data Table application did not start.");
+    const foreign = sortButton("name");
+    await expect(
+      app.run("ui.dataTable.next", { element: foreign, args: [foreign] }),
+    ).rejects.toThrow('Data Table target did not match data-jqs="data-table"');
+    expect(visibleRowIds()).toEqual(["alpha", "beta"]);
+    await app.run("ui.dataTable.next", { args: [root()] });
+    expect(visibleRowIds()).toEqual(["gamma", "delta"]);
+    await app.run("ui.dataTable.previous", { args: ["#data-table"] });
+    expect(visibleRowIds()).toEqual(["alpha", "beta"]);
+    await app.run("ui.dataTable.next", { element: foreign });
+    expect(visibleRowIds()).toEqual(["gamma", "delta"]);
+  });
+
   it("keeps native table semantics and initializes pagination controls", () => {
     expect(table().caption?.textContent).toBe("UI systems");
     expect(table().querySelector('th[data-key="name"]')?.getAttribute("scope")).toBe("col");
@@ -188,6 +204,29 @@ describe("jQuery Star Data Table", () => {
     expect(sortButton("score").hasAttribute("data-sort-order")).toBe(false);
     expect(sortButton("score").hasAttribute("aria-label")).toBe(false);
     expect(sortButton("score").hasAttribute("data-generated-sort-label")).toBe(false);
+  });
+
+  it("sorts date values in both directions and places invalid dates last when descending", () => {
+    const header = table().querySelector<HTMLElement>('th[data-key="score"]');
+    if (!header) throw new Error("Missing score column header.");
+    header.dataset.type = "date";
+    root().dataset.pageSize = "4";
+    for (const [id, date] of Object.entries({
+      alpha: "2024-05-10",
+      beta: "1965-01-01",
+      gamma: "not-a-date",
+      delta: "1960-01-01",
+    })) {
+      const cell = row(id).querySelector<HTMLTableCellElement>('[data-key="score"]');
+      if (!cell) throw new Error(`Missing score cell for ${id}.`);
+      cell.dataset.value = date;
+    }
+    $.star.ui.enhance(root());
+
+    sortButton("score").click();
+    expect(visibleRowIds()).toEqual(["gamma", "delta", "beta", "alpha"]);
+    sortButton("score").click();
+    expect(visibleRowIds()).toEqual(["alpha", "beta", "delta", "gamma"]);
   });
 
   it("builds an ordered multi-column sort with Shift or the additive API", () => {

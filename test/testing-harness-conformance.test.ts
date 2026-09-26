@@ -521,6 +521,6 @@ describe("harness failure boundaries", () => {
         expect.objectContaining({ message: "fetch restore failed" }),
       ]),
     });
-    expect(() => active.dispose()).toThrow(first as Error);
+    expect(() => active.dispose()).toThrow(first);
   });
 });

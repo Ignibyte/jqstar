@@ -1,12 +1,13 @@
+import { boundedText, diagnosticError } from "./value-checks";
 import type { BackendMethod, StarAction, StarContext, StarInstance } from "./types";
 
-export type StarOperationKind = "action" | "request";
+export type StarOperationKind = "action" | "request" | "store";
 export type StarOperationTerminalPhase = "completed" | "cancelled" | "failed";
 export type StarOperationCancellationReason = "superseded" | "cleanup" | "external" | "aborted";
 
 export interface StarOperationOwner {
   readonly id: string;
-  readonly mode: "attributes" | "behavior";
+  readonly mode: "attributes" | "behavior" | "kernel";
 }
 
 export interface StarOperationError {
@@ -100,8 +101,40 @@ export type StarRequestOperationObservation =
   | StarRequestCancelledObservation
   | StarRequestFailedObservation;
 
+export type StarStoreOperationCategory =
+  "cleanup" | "definition" | "effect" | "setup" | "subscription" | "task" | "change";
+
+export interface StarStoreOperationMetadata {
+  readonly category: StarStoreOperationCategory;
+  readonly name: string;
+  readonly resource: string;
+}
+
+interface StarStoreOperationBase extends StarOperationBase {
+  readonly kind: "store";
+  readonly phase: StarOperationTerminalPhase;
+  readonly store: StarStoreOperationMetadata;
+}
+
+export interface StarStoreCompletedObservation extends StarStoreOperationBase {
+  readonly phase: "completed";
+}
+
+export interface StarStoreCancelledObservation extends StarStoreOperationBase {
+  readonly phase: "cancelled";
+  readonly reason: "cleanup";
+}
+
+export interface StarStoreFailedObservation extends StarStoreOperationBase {
+  readonly phase: "failed";
+  readonly error: StarOperationError;
+}
+
+export type StarStoreOperationObservation =
+  StarStoreCompletedObservation | StarStoreCancelledObservation | StarStoreFailedObservation;
+
 export type StarOperationObservation =
-  StarActionOperationObservation | StarRequestOperationObservation;
+  StarActionOperationObservation | StarRequestOperationObservation | StarStoreOperationObservation;
 
 export type StarOperationObserver = (
   observation: StarOperationObservation,
@@ -155,7 +188,7 @@ interface ActionScope {
 }
 
 interface InternalObservation {
-  readonly application: StarInstance;
+  readonly application?: StarInstance;
   readonly value: StarOperationObservation;
 }
 
@@ -185,7 +218,7 @@ export interface ActionOperation {
 const applicationHubs = new WeakMap<StarInstance, OperationHub>();
 const actionScopes = new WeakMap<object, ActionScope>();
 const operationSubscriptionOwners = new WeakMap<OperationHub, OwnOperationSubscription>();
-const operationKinds = new Set<StarOperationKind>(["action", "request"]);
+const operationKinds = new Set<StarOperationKind>(["action", "request", "store"]);
 const noopRequestOperation: RequestOperation = Object.freeze({
   id: "operation-unobserved",
   progress: () => undefined,
@@ -195,45 +228,10 @@ const noopRequestOperation: RequestOperation = Object.freeze({
   failed: () => undefined,
 });
 
-function boundedText(value: string, maximum: number): string {
-  const normalized = Array.from(value, (character) => {
-    const code = character.charCodeAt(0);
-    return code <= 8 || (code >= 11 && code <= 12) || (code >= 14 && code <= 31) || code === 127
-      ? "�"
-      : character;
-  }).join("");
-  return normalized.length <= maximum ? normalized : `${normalized.slice(0, maximum - 1)}…`;
-}
-
 function errorText(error: unknown): StarOperationError {
-  if (error instanceof Error) {
-    let name = "Error";
-    let message = "An operation failed.";
-    try {
-      if (typeof error.name === "string" && error.name) name = error.name;
-    } catch {
-      // Hostile error accessors must not affect the operation being observed.
-    }
-    try {
-      if (typeof error.message === "string") message = error.message;
-    } catch {
-      // Hostile error accessors must not affect the operation being observed.
-    }
-    return Object.freeze({
-      name: boundedText(name, 120),
-      message: boundedText(message, 1_024),
-    });
-  }
-
-  const kind = error === null ? "null" : typeof error;
-  const article = /^[aeiou]/.test(kind) ? "an" : "a";
-  let message = `An operation failed with ${article} ${kind} value.`;
-  if (["string", "number", "boolean", "bigint", "undefined"].includes(kind)) {
-    message = String(error);
-  }
-  return Object.freeze({
-    name: "ThrownValue",
-    message: boundedText(message, 1_024),
+  return diagnosticError(error, "An operation failed.", (kind) => {
+    const article = /^[aeiou]/.test(kind) ? "an" : "a";
+    return `An operation failed with ${article} ${kind} value.`;
   });
 }
 
@@ -573,6 +571,10 @@ export class OperationHub {
     });
   }
 
+  emit(value: StarOperationObservation): void {
+    this.publish({ value });
+  }
+
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
@@ -629,7 +631,7 @@ export class OperationHub {
     return `operation-${++this.operationId}`;
   }
 
-  private ownerFor(application: StarInstance): StarOperationOwner {
+  ownerFor(application: StarInstance): StarOperationOwner {
     const owner = this.applications.get(application)?.owner;
     if (!owner) throw new Error("This jQStar application is not owned by the active kernel.");
     return owner;

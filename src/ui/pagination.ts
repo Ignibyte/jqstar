@@ -1,5 +1,16 @@
+import { isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { PaginationTarget, StarContext, StarPaginationStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 interface PaginationCollection {
   api: StarPaginationStatic;
@@ -13,25 +24,22 @@ interface PaginationEventDetail {
   previousPage: number;
 }
 
-interface PaginationRecord {
-  cleanup: () => void;
+interface PaginationRecord extends UIResources {
+  parts: HTMLElement[];
   page: number;
   pageCount: number;
-  root: HTMLElement;
 }
 
 const records = new WeakMap<HTMLElement, PaginationRecord>();
 let paginationId = 0;
 
 function paginationRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="pagination"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="pagination"]') ? value : undefined;
 }
 
 function owned(root: HTMLElement, selector: string): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(
-    (element) => element.closest('[data-jqs="pagination"]') === root,
+    (element) => isHTMLElement(element) && element.closest('[data-jqs="pagination"]') === root,
   );
 }
 
@@ -85,11 +93,14 @@ function emit(
     previousPage,
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:pagination:${name}`, {
-      bubbles: true,
-      cancelable,
-      detail,
-    }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:pagination:${name}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail,
+      },
+    ),
   );
 }
 
@@ -99,7 +110,7 @@ function setDisabled(element: HTMLElement, disabled: boolean): void {
   } else if (!disabled && element.hasAttribute("aria-disabled")) {
     element.removeAttribute("aria-disabled");
   }
-  if (element instanceof HTMLButtonElement && element.disabled !== disabled) {
+  if (isHTMLTag(element, "button") && element.disabled !== disabled) {
     element.disabled = disabled;
   }
 }
@@ -149,12 +160,51 @@ function render(record: PaginationRecord): void {
   }
 }
 
+function currentParts(root: HTMLElement): HTMLElement[] {
+  return owned(
+    root,
+    '[data-part="previous"], [data-part="next"], [data-part="page"], [data-part="status"]',
+  );
+}
+
+function current(record: PaginationRecord, revision = record.revision): boolean {
+  const parts = currentParts(record.root);
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    parts.length === record.parts.length &&
+    parts.every((part, index) => part === record.parts[index])
+  );
+}
+
+function signature(record: PaginationRecord): string {
+  return JSON.stringify([
+    record.root.dataset.page,
+    record.root.dataset.pageCount,
+    record.root.dataset.navigation,
+    ...record.parts.map((part) => part.dataset.page),
+  ]);
+}
+
+function recordFor(root: HTMLElement): PaginationRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhancePagination(root);
+}
+
 function change(record: PaginationRecord, requestedPage: number): boolean {
-  if (unavailable(record) || !Number.isFinite(requestedPage)) return false;
+  const revision = ++record.revision;
+  const authored = signature(record);
+  if (!current(record) || unavailable(record) || !Number.isFinite(requestedPage)) return false;
   const page = clamp(requestedPage, record.pageCount);
   const previousPage = record.page;
   if (page === previousPage) return false;
-  if (!emit(record, "before-change", page, previousPage, true)) return false;
+  if (
+    !emit(record, "before-change", page, previousPage, true) ||
+    !current(record, revision) ||
+    unavailable(record) ||
+    signature(record) !== authored
+  )
+    return false;
   record.page = page;
   render(record);
   emit(record, "change", page, previousPage);
@@ -167,28 +217,30 @@ function requestedPage(record: PaginationRecord, control: HTMLElement): number |
   return positiveInteger(control.dataset.page);
 }
 
-function wire(record: PaginationRecord): () => void {
-  const cleanups: Array<() => void> = [];
+function wire(record: PaginationRecord): void {
   const controls = owned(
     record.root,
     '[data-part="previous"], [data-part="next"], [data-part="page"][data-page]',
   );
   for (const control of controls) {
     const click = (event: MouseEvent): void => {
+      if (
+        event.defaultPrevented ||
+        (isHTMLTag(control, "a") &&
+          (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey))
+      )
+        return;
       const page = requestedPage(record, control);
       const blocked = control.getAttribute("aria-disabled") === "true" || page === undefined;
-      const manual =
-        record.root.dataset.navigation === "manual" || control instanceof HTMLButtonElement;
+      const manual = record.root.dataset.navigation === "manual" || isHTMLTag(control, "button");
       if (blocked || manual || page === record.page) event.preventDefault();
       if (!blocked) {
-        const accepted = change(record, page!);
+        const accepted = change(record, page);
         if (!accepted && page !== record.page) event.preventDefault();
       }
     };
-    control.addEventListener("click", click);
-    cleanups.push(() => control.removeEventListener("click", click));
+    listenUI(record, () => current(record), control, "click", click as EventListener);
   }
-  return () => cleanups.forEach((cleanup) => cleanup());
 }
 
 function enhancePagination(root: HTMLElement): PaginationRecord {
@@ -197,18 +249,37 @@ function enhancePagination(root: HTMLElement): PaginationRecord {
   const requestedCount = positiveInteger(root.dataset.pageCount) ?? inferredPageCount(root);
   const requestedCurrent =
     positiveInteger(root.dataset.page) ?? (existing ? existing.page : inferredPage(root));
-  const record: PaginationRecord = existing ?? {
-    cleanup: () => undefined,
-    page: requestedCurrent,
-    pageCount: requestedCount,
-    root,
-  };
-  record.cleanup();
-  record.pageCount = requestedCount;
-  record.page = clamp(requestedCurrent, requestedCount);
-  records.set(root, record);
-  render(record);
-  record.cleanup = wire(record);
+  const reusable = existing && current(existing);
+  if (!reusable) existing?.cleanup();
+  const replacement = records.get(root);
+  if (!reusable && replacement) return replacement;
+  const record: PaginationRecord = reusable
+    ? existing
+    : {
+        ...uiResources(root),
+        parts: currentParts(root),
+        page: clamp(requestedCurrent, requestedCount),
+        pageCount: requestedCount,
+      };
+  if (!reusable)
+    record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    if (!current(record)) return record;
+    if (reusable) {
+      if (
+        record.pageCount !== requestedCount ||
+        record.page !== clamp(requestedCurrent, requestedCount)
+      )
+        record.revision += 1;
+      record.pageCount = requestedCount;
+      record.page = clamp(requestedCurrent, requestedCount);
+    }
+    render(record);
+    if (!reusable) wire(record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
 
@@ -222,16 +293,14 @@ function resolve(target: PaginationTarget, root: ParentNode = document): HTMLEle
 }
 
 function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="pagination"]')) return target;
+  if (isHTMLElement(target)) return resolve(target, context.root);
   if (typeof target === "string" && target.startsWith("#")) return resolve(target, context.root);
   const closest = context.element?.closest('[data-jqs="pagination"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+  return resolve(isHTMLElement(closest) ? closest : String(target), context.root);
 }
 
 function enhanceAll(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="pagination"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="pagination"]')) {
     const pagination = paginationRoot(element);
     if (pagination) enhancePagination(pagination);
   }
@@ -241,26 +310,26 @@ export function createPaginations(registerAction: ActionRegistrar): PaginationCo
   const api: StarPaginationStatic = {
     page: (target) => {
       const root = resolve(target);
-      return (records.get(root) ?? enhancePagination(root)).page;
+      return recordFor(root).page;
     },
     pageCount: (target) => {
       const root = resolve(target);
-      return (records.get(root) ?? enhancePagination(root)).pageCount;
+      return recordFor(root).pageCount;
     },
     goTo: (target, page) => {
       const root = resolve(target);
-      change(records.get(root) ?? enhancePagination(root), page);
+      change(recordFor(root), page);
       return root;
     },
     next: (target) => {
       const root = resolve(target);
-      const record = records.get(root) ?? enhancePagination(root);
+      const record = recordFor(root);
       change(record, record.page + 1);
       return root;
     },
     previous: (target) => {
       const root = resolve(target);
-      const record = records.get(root) ?? enhancePagination(root);
+      const record = recordFor(root);
       change(record, record.page - 1);
       return root;
     },

@@ -1,8 +1,11 @@
+import { isHTMLElement, isHTMLTag, isElementNode, isNode } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { DocumentHost } from "../kernel";
 import type { MultiSelectTarget, StarContext, StarMultiSelectStatic } from "../types";
 import {
-  documentRecordCleanup,
+  copyGeneratedAttributes,
+  identifyControlLabel,
+  identifyLabel,
   documentRecords,
   hideFloating,
   listenToViewportChanges,
@@ -11,11 +14,30 @@ import {
   showFloating,
   usesNativePopover,
 } from "./floating";
+import {
+  acquireUIResource,
+  failUISetup,
+  listenUI,
+  listenUIReset,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface MultiSelectRecord {
+interface MultiSelectRecord extends UIResources {
   activeValue: string | undefined;
-  cleanups: Array<() => void>;
-  committing: boolean;
+  cleanup: () => void;
+  form: HTMLFormElement | null;
+  label: HTMLLabelElement | undefined;
+  window: Window;
+  nativeEvent?: Event;
+  options: HTMLElement[];
+  nativeOptions: HTMLOptionElement[];
+  status: HTMLElement;
   content: HTMLElement;
   control: HTMLSelectElement;
   lastValue: string;
@@ -23,8 +45,8 @@ interface MultiSelectRecord {
   optionsSignature: string;
   root: HTMLElement;
   search: string;
-  searchTimer: number | undefined;
-  tagSignature: string;
+  cancelSearch?: () => void;
+  searchExpires: number;
   tags: HTMLElement;
   trigger: HTMLButtonElement;
   values: string[];
@@ -44,18 +66,29 @@ interface MultiSelectEventDetail {
 
 const records = new WeakMap<HTMLElement, MultiSelectRecord>();
 const activeRecords = new Set<MultiSelectRecord>();
+const reflected = new WeakMap<HTMLElement, string>();
+interface RetainedMultiSelect {
+  control: HTMLSelectElement;
+  content: HTMLElement;
+  open: boolean;
+  activeValue: string | undefined;
+  search: string;
+  searchExpires: number;
+}
+const retained = new WeakMap<HTMLElement, RetainedMultiSelect>();
+const generatedOptions = new WeakMap<HTMLElement, { signature: string; options: HTMLElement[] }>();
+const generatedTags = new WeakMap<HTMLElement, { signature: string; children: Element[] }>();
+const documentRevisions = new WeakMap<Document, number>();
 let multiSelectId = 0;
 
 function multiSelectRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="multi-select"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="multi-select"]') ? value : undefined;
 }
 
 function directControl(root: HTMLElement): HTMLSelectElement {
   const control = Array.from(root.children).find(
     (child): child is HTMLSelectElement =>
-      child instanceof HTMLSelectElement && child.dataset.part === "control",
+      isHTMLTag(child, "select") && child.dataset.part === "control",
   );
   if (!control)
     throw new Error(`Multi Select #${root.id} needs a direct select[data-part="control"].`);
@@ -66,18 +99,18 @@ function directControl(root: HTMLElement): HTMLSelectElement {
 
 function directPart(root: HTMLElement, part: string): HTMLElement | undefined {
   return Array.from(root.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === part,
   );
 }
 
 function createTrigger(root: HTMLElement): HTMLButtonElement {
-  const trigger = document.createElement("button");
+  const trigger = root.ownerDocument.createElement("button");
   trigger.type = "button";
   trigger.dataset.part = "trigger";
   trigger.dataset.generated = "";
-  const value = document.createElement("span");
+  const value = root.ownerDocument.createElement("span");
   value.dataset.part = "value";
-  const indicator = document.createElement("span");
+  const indicator = root.ownerDocument.createElement("span");
   indicator.dataset.part = "indicator";
   indicator.setAttribute("aria-hidden", "true");
   indicator.textContent = "⌄";
@@ -87,7 +120,9 @@ function createTrigger(root: HTMLElement): HTMLButtonElement {
 }
 
 function createPart(root: HTMLElement, part: "content" | "tags" | "status"): HTMLElement {
-  const element = document.createElement(part === "tags" ? "div" : part === "status" ? "p" : "div");
+  const element = root.ownerDocument.createElement(
+    part === "tags" ? "div" : part === "status" ? "p" : "div",
+  );
   element.dataset.part = part;
   element.dataset.generated = "";
   root.append(element);
@@ -97,7 +132,7 @@ function createPart(root: HTMLElement, part: "content" | "tags" | "status"): HTM
 function valuePart(trigger: HTMLElement): HTMLElement {
   let value = trigger.querySelector<HTMLElement>('[data-part="value"]');
   if (!value) {
-    value = document.createElement("span");
+    value = trigger.ownerDocument.createElement("span");
     value.dataset.part = "value";
     trigger.prepend(value);
   }
@@ -105,7 +140,10 @@ function valuePart(trigger: HTMLElement): HTMLElement {
 }
 
 function disabled(option: HTMLOptionElement): boolean {
-  return option.disabled || option.parentElement?.getAttribute("disabled") !== null;
+  return (
+    option.disabled ||
+    (isHTMLTag(option.parentElement, "optgroup") && option.parentElement.disabled)
+  );
 }
 
 function selectedValues(control: HTMLSelectElement): string[] {
@@ -116,17 +154,31 @@ function selectedValues(control: HTMLSelectElement): string[] {
 
 function optionSignature(control: HTMLSelectElement): string {
   return JSON.stringify(
-    Array.from(control.options).map((option) => [
-      option.value,
-      option.label,
-      disabled(option),
-      option.parentElement instanceof HTMLOptGroupElement ? option.parentElement.label : "",
-    ]),
+    Array.from(control.children).map((child) => {
+      if (isHTMLTag(child, "option")) {
+        return ["option", child.value, child.label, disabled(child)];
+      }
+      if (isHTMLTag(child, "optgroup")) {
+        return [
+          "group",
+          child.label,
+          child.disabled,
+          Array.from(child.querySelectorAll<HTMLOptionElement>(":scope > option")).map((option) => [
+            option.value,
+            option.label,
+            disabled(option),
+          ]),
+        ];
+      }
+      return ["ignored", child.tagName];
+    }),
   );
 }
 
 function optionElements(record: MultiSelectRecord): HTMLElement[] {
-  return Array.from(record.content.querySelectorAll<HTMLElement>('[data-part="option"]'));
+  return Array.from(record.content.querySelectorAll<HTMLElement>('[data-part="option"]')).filter(
+    (option) => option.closest('[data-jqs="multi-select"]') === record.root,
+  );
 }
 
 function enabledOptions(record: MultiSelectRecord): HTMLElement[] {
@@ -142,7 +194,7 @@ function optionElement(record: MultiSelectRecord, value: string): HTMLElement | 
 }
 
 function createOption(root: HTMLElement, option: HTMLOptionElement, index: number): HTMLElement {
-  const item = document.createElement("div");
+  const item = root.ownerDocument.createElement("div");
   item.id = `${root.id}-option-${index + 1}`;
   item.dataset.part = "option";
   item.dataset.value = option.value;
@@ -168,23 +220,22 @@ function rebuildOptions(record: MultiSelectRecord): void {
   record.content.replaceChildren();
   let index = 0;
   for (const child of Array.from(record.control.children)) {
-    if (child instanceof HTMLOptionElement) {
+    if (isHTMLTag(child, "option")) {
       record.content.append(createOption(record.root, child, index++));
       continue;
     }
-    if (!(child instanceof HTMLOptGroupElement)) continue;
-    const group = document.createElement("div");
+    if (!isHTMLTag(child, "optgroup")) continue;
+    const group = record.root.ownerDocument.createElement("div");
     group.dataset.part = "group";
     group.setAttribute("role", "group");
-    const label = document.createElement("div");
+    const label = record.root.ownerDocument.createElement("div");
     label.id = `${record.root.id}-group-${index + 1}`;
     label.dataset.part = "label";
     label.textContent = child.label;
     group.setAttribute("aria-labelledby", label.id);
     group.append(label);
     for (const option of Array.from(child.children)) {
-      if (option instanceof HTMLOptionElement)
-        group.append(createOption(record.root, option, index++));
+      if (isHTMLTag(option, "option")) group.append(createOption(record.root, option, index++));
     }
     record.content.append(group);
   }
@@ -204,12 +255,66 @@ function emit(
     value: [...value],
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:multi-select:${name}`, {
-      bubbles: true,
-      cancelable,
-      detail,
-    }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:multi-select:${name}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail,
+      },
+    ),
   );
+}
+
+function current(record: MultiSelectRecord, revision = record.revision): boolean {
+  const present = optionElements(record);
+  const native = Array.from(record.control.options);
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.matches('[data-jqs="multi-select"]') &&
+    directPart(record.root, "control") === record.control &&
+    record.control.multiple &&
+    directPart(record.root, "trigger") === record.trigger &&
+    directPart(record.root, "content") === record.content &&
+    directPart(record.root, "tags") === record.tags &&
+    directPart(record.root, "status") === record.status &&
+    record.control.form === record.form &&
+    record.control.labels[0] === record.label &&
+    optionSignature(record.control) === record.optionsSignature &&
+    native.length === record.nativeOptions.length &&
+    native.every((option, index) => option === record.nativeOptions[index]) &&
+    present.length === record.options.length &&
+    present.every((option, index) => option === record.options[index])
+  );
+}
+
+function currentOpen(record: MultiSelectRecord, revision = record.revision): boolean {
+  return current(record, revision) && record.open;
+}
+
+function unavailable(record: MultiSelectRecord): boolean {
+  return record.control.matches(":disabled");
+}
+
+function serialized(record: MultiSelectRecord): string {
+  return JSON.stringify(selectedValues(record.control));
+}
+
+function unchanged(record: MultiSelectRecord, revision: number, value: string): boolean {
+  return current(record, revision) && serialized(record) === value;
+}
+
+function nativeEvent(record: MultiSelectRecord, type: "input" | "change"): void {
+  const previous = record.nativeEvent;
+  const event = new (record.window as Window & typeof globalThis).Event(type, { bubbles: true });
+  record.nativeEvent = event;
+  try {
+    record.control.dispatchEvent(event);
+  } finally {
+    if (previous) record.nativeEvent = previous;
+    else delete record.nativeEvent;
+  }
 }
 
 function maxSelections(record: MultiSelectRecord): number {
@@ -223,37 +328,45 @@ function status(record: MultiSelectRecord, message: string): void {
 }
 
 function rebuildTags(record: MultiSelectRecord): void {
-  const signature = JSON.stringify(record.values);
-  if (record.tagSignature === signature) return;
-  record.tagSignature = signature;
+  const signature = JSON.stringify([record.values, record.optionsSignature, unavailable(record)]);
+  const previous = generatedTags.get(record.tags);
+  const children = Array.from(record.tags.children);
+  if (
+    previous?.signature === signature &&
+    previous.children.length === children.length &&
+    children.every((child, index) => child === previous.children[index])
+  )
+    return;
   record.tags.replaceChildren();
   for (const value of record.values) {
     const option = nativeOption(record, value);
     if (!option) continue;
-    const tag = document.createElement("span");
+    const tag = record.root.ownerDocument.createElement("span");
     tag.dataset.part = "tag";
     tag.dataset.value = value;
     tag.textContent = option.label;
-    const remove = document.createElement("button");
+    const remove = record.root.ownerDocument.createElement("button");
     remove.type = "button";
     remove.dataset.part = "remove";
     remove.dataset.value = value;
     remove.textContent = "×";
     remove.setAttribute("aria-label", `Remove ${option.label}`);
-    remove.disabled = record.control.disabled;
+    remove.disabled = unavailable(record) || disabled(option);
     tag.append(remove);
     record.tags.append(tag);
   }
+  generatedTags.set(record.tags, { signature, children: Array.from(record.tags.children) });
 }
 
 function render(record: MultiSelectRecord): void {
   record.values = selectedValues(record.control);
   const serialized = JSON.stringify(record.values);
   record.lastValue = serialized;
+  reflected.set(record.root, serialized);
   if (record.root.dataset.value !== serialized) record.root.dataset.value = serialized;
   record.root.dataset.state = record.open ? "open" : record.values.length ? "selected" : "empty";
   record.trigger.setAttribute("aria-expanded", String(record.open));
-  const triggerDisabled = record.control.disabled;
+  const triggerDisabled = unavailable(record);
   if (record.trigger.disabled !== triggerDisabled) record.trigger.disabled = triggerDisabled;
 
   const labels = record.values
@@ -288,6 +401,12 @@ function setActive(record: MultiSelectRecord, value: string | undefined): void {
   }
 }
 
+function clearSearch(record: MultiSelectRecord): void {
+  record.search = "";
+  record.searchExpires = 0;
+  record.cancelSearch?.();
+}
+
 function syncOpen(record: MultiSelectRecord, open: boolean): void {
   record.open = open;
   record.root.dataset.state = open ? "open" : record.values.length ? "selected" : "empty";
@@ -297,68 +416,143 @@ function syncOpen(record: MultiSelectRecord, open: boolean): void {
   else {
     activeRecords.delete(record);
     record.content.removeAttribute("aria-activedescendant");
-    if (record.searchTimer !== undefined) window.clearTimeout(record.searchTimer);
-    record.searchTimer = undefined;
-    record.search = "";
+    clearSearch(record);
   }
 }
 
+function settleFloating(record: MultiSelectRecord, opening: boolean): void {
+  const latest = records.get(record.root);
+  const wantsOpen = latest?.content === record.content && current(latest) && latest.open;
+  if (opening && !wantsOpen) hideFloating(record.content);
+  else if (!opening && wantsOpen) showFloating(record.content);
+}
+
+function nativeOpen(record: MultiSelectRecord): boolean | undefined {
+  if (!usesNativePopover(record.content)) return undefined;
+  try {
+    return record.content.matches(":popover-open");
+  } catch {
+    return undefined;
+  }
+}
+
+function show(record: MultiSelectRecord, revision: number): boolean {
+  syncOpen(record, true);
+  try {
+    showFloating(record.content);
+  } catch (error) {
+    if (current(record, revision)) {
+      syncOpen(record, false);
+      hideFloating(record.content);
+    }
+    throw error;
+  }
+  if (!currentOpen(record, revision)) {
+    settleFloating(record, true);
+    return false;
+  }
+  if (nativeOpen(record) === false) {
+    syncOpen(record, false);
+    return false;
+  }
+  return true;
+}
+
+function initialActive(record: MultiSelectRecord): string | undefined {
+  return (
+    record.values.find((value) => {
+      const option = nativeOption(record, value);
+      return option && !disabled(option);
+    }) ?? enabledOptions(record)[0]?.dataset.value
+  );
+}
+
 function openMultiSelect(root: HTMLElement): HTMLElement {
-  const record = records.get(root) ?? enhanceMultiSelect(root);
+  const record = recordFor(root);
+  const revision = ++record.revision;
+  const documentRevision = (documentRevisions.get(record.document) ?? 0) + 1;
+  documentRevisions.set(record.document, documentRevision);
+  const accepted = (): boolean =>
+    current(record, revision) && documentRevisions.get(record.document) === documentRevision;
   if (
+    !current(record, revision) ||
     record.open ||
-    record.control.disabled ||
-    !emit(record, "before-open", record.values, record.values, true)
+    unavailable(record) ||
+    !emit(record, "before-open", record.values, record.values, true) ||
+    !accepted() ||
+    unavailable(record)
   )
     return root;
-  for (const other of [...activeRecords]) if (other !== record) closeMultiSelect(other.root, false);
-  showFloating(record.content);
-  syncOpen(record, true);
-  const active =
-    record.values.find((value) => !disabled(nativeOption(record, value)!)) ??
-    enabledOptions(record)[0]?.dataset.value;
-  setActive(record, active);
+  for (const other of documentRecords(activeRecords, record.document)) {
+    if (other !== record && current(other)) closeMultiSelect(other.root, false);
+    if (!accepted() || (other !== record && currentOpen(other))) return root;
+  }
+  if (!show(record, revision)) return root;
+  setActive(record, initialActive(record));
+  if (!accepted() || !currentOpen(record, revision)) return root;
   position(record);
+  if (!accepted() || !currentOpen(record, revision)) return root;
   record.content.focus();
-  emit(record, "open");
+  if (accepted() && currentOpen(record, revision)) emit(record, "open");
   return root;
 }
 
 function closeMultiSelect(root: HTMLElement, restoreFocus = true): HTMLElement {
-  const record = records.get(root) ?? enhanceMultiSelect(root);
-  if (!record.open || !emit(record, "before-close", record.values, record.values, true))
+  const record = recordFor(root);
+  const revision = ++record.revision;
+  if (
+    !currentOpen(record, revision) ||
+    !emit(record, "before-close", record.values, record.values, true) ||
+    !current(record, revision)
+  )
     return root;
-  hideFloating(record.content);
   syncOpen(record, false);
+  if (!current(record, revision)) return root;
+  hideFloating(record.content);
+  if (!current(record, revision)) {
+    settleFloating(record, false);
+    return root;
+  }
   if (restoreFocus && record.trigger.isConnected) record.trigger.focus();
-  emit(record, "close");
+  if (current(record, revision) && !currentOpen(record, revision)) emit(record, "close");
   return root;
 }
 
 function commit(record: MultiSelectRecord, values: readonly string[]): HTMLElement {
-  const allowed = new Set(
-    Array.from(record.control.options)
-      .filter((option) => !disabled(option))
-      .map((option) => option.value),
-  );
-  const requested = [...new Set(values)].filter((value) => allowed.has(value));
-  if (requested.length > maxSelections(record)) {
+  const revision = ++record.revision;
+  if (!current(record, revision) || unavailable(record)) return record.root;
+  const requested = new Set(values);
+  const ordered = Array.from(record.control.options)
+    .filter((option) => (disabled(option) ? option.selected : requested.has(option.value)))
+    .map((option) => option.value);
+  if (ordered.length > maxSelections(record)) {
     status(record, `Choose no more than ${maxSelections(record)} options.`);
     return record.root;
   }
-  const ordered = Array.from(record.control.options)
-    .filter((option) => requested.includes(option.value))
-    .map((option) => option.value);
-  const previousValue = [...record.values];
-  if (JSON.stringify(ordered) === JSON.stringify(previousValue)) return record.root;
-  if (!emit(record, "before-change", ordered, previousValue, true)) return record.root;
-  record.committing = true;
-  for (const option of Array.from(record.control.options))
-    option.selected = ordered.includes(option.value);
+  const previousValue = selectedValues(record.control);
+  const previous = JSON.stringify(previousValue);
+  const value = JSON.stringify(ordered);
+  if (value === previous) {
+    render(record);
+    return record.root;
+  }
+  if (
+    !emit(record, "before-change", ordered, previousValue, true) ||
+    !unchanged(record, revision, previous) ||
+    unavailable(record) ||
+    ordered.length > maxSelections(record)
+  )
+    return record.root;
+  for (const option of record.control.options) option.selected = ordered.includes(option.value);
   render(record);
-  record.control.dispatchEvent(new Event("input", { bubbles: true }));
-  record.control.dispatchEvent(new Event("change", { bubbles: true }));
-  record.committing = false;
+  const accepted = (): boolean =>
+    unchanged(record, revision, value) &&
+    !unavailable(record) &&
+    ordered.length <= maxSelections(record);
+  nativeEvent(record, "input");
+  if (!accepted()) return record.root;
+  nativeEvent(record, "change");
+  if (!accepted()) return record.root;
   status(
     record,
     `${record.values.length} option${record.values.length === 1 ? "" : "s"} selected.`,
@@ -368,9 +562,10 @@ function commit(record: MultiSelectRecord, values: readonly string[]): HTMLEleme
 }
 
 function toggleValue(record: MultiSelectRecord, value: string): HTMLElement {
-  const values = record.values.includes(value)
-    ? record.values.filter((candidate) => candidate !== value)
-    : [...record.values, value];
+  const currentValues = selectedValues(record.control);
+  const values = currentValues.includes(value)
+    ? currentValues.filter((candidate) => candidate !== value)
+    : [...currentValues, value];
   return commit(record, values);
 }
 
@@ -382,13 +577,45 @@ function moveActive(record: MultiSelectRecord, offset: number): void {
   setActive(record, options[index]?.dataset.value);
 }
 
+function scheduleSearch(record: MultiSelectRecord, search: string, delay = 500): void {
+  const revision = ++record.revision;
+  record.cancelSearch?.();
+  if (!currentOpen(record, revision)) return;
+  record.search = search;
+  record.searchExpires = Date.now() + delay;
+  let timer: number | undefined;
+  let active = true;
+  const valid = (): boolean => active && currentOpen(record) && record.cancelSearch === cancel;
+  const cancel = (): void => {
+    active = false;
+    if (record.cancelSearch === cancel) delete record.cancelSearch;
+    record.cleanups.delete(cancel);
+    const handle = timer;
+    timer = undefined;
+    if (handle !== undefined) record.window.clearTimeout(handle);
+  };
+  record.cancelSearch = cancel;
+  acquireUIResource(
+    record,
+    valid,
+    () => {
+      timer = record.window.setTimeout(() => {
+        const accepted = valid();
+        cancel();
+        if (accepted && current(record)) {
+          record.search = "";
+          record.searchExpires = 0;
+        }
+      }, delay);
+    },
+    cancel,
+  );
+}
+
 function typeahead(record: MultiSelectRecord, key: string): void {
-  if (record.searchTimer !== undefined) window.clearTimeout(record.searchTimer);
-  record.search += key.toLocaleLowerCase();
-  record.searchTimer = window.setTimeout(() => {
-    record.search = "";
-    record.searchTimer = undefined;
-  }, 500);
+  const revision = record.revision + 1;
+  scheduleSearch(record, record.search + key.toLocaleLowerCase());
+  if (!currentOpen(record, revision)) return;
   const options = enabledOptions(record);
   const current = options.findIndex((option) => option.dataset.value === record.activeValue);
   const ordered = [...options.slice(current + 1), ...options.slice(0, current + 1)];
@@ -399,6 +626,21 @@ function typeahead(record: MultiSelectRecord, key: string): void {
 }
 
 function listboxKeydown(record: MultiSelectRecord, event: KeyboardEvent): void {
+  if (
+    !record.open ||
+    unavailable(record) ||
+    event.isComposing ||
+    event.altKey ||
+    !isElementNode(event.target) ||
+    event.target.closest("[data-jqs]") !== record.root ||
+    event.target.closest(
+      'input, textarea, select, [contenteditable]:not([contenteditable="false"])',
+    )
+  )
+    return;
+  const all = (event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "a";
+  if ((event.ctrlKey || event.metaKey) && !all) return;
+  record.revision += 1;
   if (event.key === "Escape") {
     event.preventDefault();
     closeMultiSelect(record.root);
@@ -429,118 +671,107 @@ function listboxKeydown(record: MultiSelectRecord, event: KeyboardEvent): void {
     const available = Array.from(record.control.options)
       .filter((option) => !disabled(option))
       .map((option) => option.value);
-    commit(
-      record,
-      record.values.length === Math.min(available.length, maxSelections(record))
-        ? []
-        : available.slice(0, maxSelections(record)),
-    );
+    const selected = selectedValues(record.control);
+    const locked = Array.from(record.control.options).filter(
+      (option) => option.selected && disabled(option),
+    ).length;
+    const desired = available.slice(0, Math.max(0, maxSelections(record) - locked));
+    const enabledSelected = selected.filter((value) => available.includes(value));
+    const allSelected =
+      desired.length === enabledSelected.length &&
+      desired.every((value) => enabledSelected.includes(value));
+    commit(record, allSelected ? [] : desired);
     return;
   }
   if (event.key.length === 1 && /\S/.test(event.key)) typeahead(record, event.key);
 }
 
-function labelTrigger(
-  root: HTMLElement,
-  control: HTMLSelectElement,
-  trigger: HTMLElement,
-  content: HTMLElement,
-): void {
-  const label = control.labels?.[0];
-  const labelledBy = control.getAttribute("aria-labelledby");
-  const ariaLabel = control.getAttribute("aria-label") || root.getAttribute("aria-label");
-  if (label) {
-    label.id ||= `${root.id}-label`;
-    trigger.setAttribute("aria-labelledby", label.id);
-    content.setAttribute("aria-labelledby", label.id);
-  } else if (labelledBy) {
-    trigger.setAttribute("aria-labelledby", labelledBy);
-    content.setAttribute("aria-labelledby", labelledBy);
-  } else {
-    const name = ariaLabel || control.name || "Multi Select";
-    trigger.setAttribute("aria-label", name);
-    content.setAttribute("aria-label", name);
-  }
+function syncFromControl(record: MultiSelectRecord, notify: boolean): void {
+  const previous = [...record.values];
+  render(record);
+  if (notify && JSON.stringify(previous) !== record.lastValue)
+    emit(record, "change", record.values, previous);
+}
+
+function ownedTarget(
+  record: MultiSelectRecord,
+  target: EventTarget | null,
+  part: string,
+  container: HTMLElement,
+): HTMLElement | undefined {
+  if (!isElementNode(target) || target.closest("[data-jqs]") !== record.root) return undefined;
+  const element = target.closest(`[data-part="${part}"]`);
+  return isHTMLElement(element) && container.contains(element) ? element : undefined;
 }
 
 function wire(record: MultiSelectRecord): void {
-  const triggerClick = (): void => {
+  const listen = (target: EventTarget | undefined, type: string, callback: EventListener): void =>
+    listenUI(record, () => current(record), target, type, callback);
+  listen(record.trigger, "click", () => {
     if (record.open) closeMultiSelect(record.root);
     else openMultiSelect(record.root);
-  };
-  const triggerKeydown = (event: KeyboardEvent): void => {
-    if (["ArrowDown", "ArrowUp"].includes(event.key)) {
-      event.preventDefault();
+  });
+  listen(record.trigger, "keydown", (event) => {
+    const key = event as KeyboardEvent;
+    if (
+      !key.isComposing &&
+      !key.ctrlKey &&
+      !key.metaKey &&
+      !key.altKey &&
+      ["ArrowDown", "ArrowUp"].includes(key.key)
+    ) {
+      key.preventDefault();
       openMultiSelect(record.root);
     }
-  };
-  const listboxKeys = (event: KeyboardEvent): void => listboxKeydown(record, event);
-  const contentClick = (event: MouseEvent): void => {
-    if (!(event.target instanceof Element)) return;
-    const option = event.target.closest<HTMLElement>('[data-part="option"]');
-    if (!option || option.getAttribute("aria-disabled") === "true") return;
+  });
+  listen(record.content, "keydown", (event) => listboxKeydown(record, event as KeyboardEvent));
+  listen(record.content, "click", (event) => {
+    const option = ownedTarget(record, event.target, "option", record.content);
+    if (!option || unavailable(record) || option.getAttribute("aria-disabled") === "true") return;
     const value = option.dataset.value;
-    if (value !== undefined) {
-      setActive(record, value);
-      toggleValue(record, value);
-    }
-  };
-  const contentPointer = (event: PointerEvent): void => {
-    if (!(event.target instanceof Element)) return;
-    const option = event.target.closest<HTMLElement>('[data-part="option"]');
-    if (option && option.getAttribute("aria-disabled") !== "true")
-      setActive(record, option.dataset.value);
-  };
-  const tagsClick = (event: MouseEvent): void => {
-    if (!(event.target instanceof Element)) return;
-    const remove = event.target.closest<HTMLElement>('[data-part="remove"]');
+    if (value === undefined) return;
+    const revision = ++record.revision;
+    setActive(record, value);
+    if (current(record, revision)) toggleValue(record, value);
+  });
+  listen(record.content, "pointermove", (event) => {
+    const option = ownedTarget(record, event.target, "option", record.content);
+    if (
+      !record.open ||
+      unavailable(record) ||
+      !option ||
+      option.getAttribute("aria-disabled") === "true"
+    )
+      return;
+    record.revision += 1;
+    setActive(record, option.dataset.value);
+  });
+  listen(record.tags, "click", (event) => {
+    const remove = ownedTarget(record, event.target, "remove", record.tags);
     const value = remove?.dataset.value;
     if (value !== undefined)
       commit(
         record,
-        record.values.filter((candidate) => candidate !== value),
+        selectedValues(record.control).filter((candidate) => candidate !== value),
       );
+  });
+  const nativeChange = (event: Event): void => {
+    if (event === record.nativeEvent) return;
+    record.revision += 1;
+    syncFromControl(record, true);
   };
-  const nativeChange = (): void => {
-    if (record.committing) return;
-    const previousValue = [...record.values];
-    render(record);
-    if (JSON.stringify(previousValue) !== JSON.stringify(record.values))
-      emit(record, "change", record.values, previousValue);
-  };
-  const reset = (): void => {
-    window.setTimeout(nativeChange, 0);
-  };
-  record.trigger.addEventListener("click", triggerClick);
-  record.trigger.addEventListener("keydown", triggerKeydown);
-  record.content.addEventListener("keydown", listboxKeys);
-  record.content.addEventListener("click", contentClick);
-  record.content.addEventListener("pointermove", contentPointer);
-  record.tags.addEventListener("click", tagsClick);
-  record.control.addEventListener("change", nativeChange);
-  record.control.addEventListener("jquery-star:model-write", nativeChange);
-  record.control.form?.addEventListener("reset", reset);
-  record.cleanups.push(
-    () => record.trigger.removeEventListener("click", triggerClick),
-    () => record.trigger.removeEventListener("keydown", triggerKeydown),
-    () => record.content.removeEventListener("keydown", listboxKeys),
-    () => record.content.removeEventListener("click", contentClick),
-    () => record.content.removeEventListener("pointermove", contentPointer),
-    () => record.tags.removeEventListener("click", tagsClick),
-    () => record.control.removeEventListener("change", nativeChange),
-    () => record.control.removeEventListener("jquery-star:model-write", nativeChange),
+  listen(record.control, "change", nativeChange);
+  listen(record.control, "jquery-star:model-write", nativeChange);
+  listenUIReset(
+    record,
+    () => current(record),
+    record.form,
+    () => syncFromControl(record, true),
   );
-  if (record.control.form)
-    record.cleanups.push(() => record.control.form?.removeEventListener("reset", reset));
-  const label = record.control.labels?.[0];
-  if (label) {
-    const click = (event: MouseEvent): void => {
-      event.preventDefault();
-      record.trigger.focus();
-    };
-    label.addEventListener("click", click);
-    record.cleanups.push(() => label.removeEventListener("click", click));
-  }
+  listen(record.label, "click", (event) => {
+    event.preventDefault();
+    record.trigger.focus();
+  });
 }
 
 function parseValue(value: string | undefined): string[] | undefined {
@@ -555,88 +786,202 @@ function parseValue(value: string | undefined): string[] | undefined {
   }
 }
 
-function enhanceMultiSelect(root: HTMLElement): MultiSelectRecord {
-  root.id ||= `jqs-multi-select-${++multiSelectId}`;
-  const control = directControl(root);
-  control.id ||= `${root.id}-control`;
-  const triggerElement = directPart(root, "trigger") ?? createTrigger(root);
-  if (!(triggerElement instanceof HTMLButtonElement))
-    throw new Error(`Multi Select #${root.id} trigger must be a button.`);
-  const trigger = triggerElement;
-  const content = directPart(root, "content") ?? createPart(root, "content");
-  const tags = directPart(root, "tags") ?? createPart(root, "tags");
-  const statusElement = directPart(root, "status") ?? createPart(root, "status");
+function metadata(record: MultiSelectRecord): void {
+  const { root, control, trigger, content, status } = record;
   trigger.type = "button";
-  trigger.id ||= `${root.id}-trigger`;
-  content.id ||= `${root.id}-content`;
   content.tabIndex = 0;
   content.setAttribute("role", "listbox");
   content.setAttribute("aria-multiselectable", "true");
   trigger.setAttribute("aria-haspopup", "listbox");
   trigger.setAttribute("aria-controls", content.id);
-  statusElement.setAttribute("aria-live", "polite");
-  statusElement.setAttribute("aria-atomic", "true");
+  status.setAttribute("aria-live", "polite");
+  status.setAttribute("aria-atomic", "true");
   control.dataset.enhanced = "true";
   control.setAttribute("aria-hidden", "true");
   control.tabIndex = -1;
-  prepareFloating(content);
-  labelTrigger(root, control, trigger, content);
+  identifyControlLabel(root, control, trigger, "Multi Select");
+  identifyLabel(
+    content,
+    control.labels[0]?.id || control.getAttribute("aria-labelledby") || undefined,
+    control.getAttribute("aria-label") ||
+      root.getAttribute("aria-label") ||
+      control.name ||
+      "Multi Select",
+  );
+}
 
-  let record = records.get(root);
-  const signature = optionSignature(control);
-  if (!record || record.control !== control || record.content !== content) {
-    record?.cleanups.forEach((cleanup) => cleanup());
-    record = {
-      activeValue: undefined,
-      cleanups: [],
-      committing: false,
-      content,
-      control,
-      lastValue: "",
-      open: false,
-      optionsSignature: "",
-      root,
-      search: "",
-      searchTimer: undefined,
-      tagSignature: "",
-      tags,
-      trigger,
-      values: selectedValues(control),
-    };
-    records.set(root, record);
+function requestedValue(record: MultiSelectRecord): void {
+  const value = record.root.dataset.value;
+  const requested = parseValue(value);
+  if (!requested || value === reflected.get(record.root)) return;
+  record.revision += 1;
+  for (const option of record.control.options) option.selected = requested.includes(option.value);
+}
+
+function refreshOpen(record: MultiSelectRecord): void {
+  const revision = record.revision;
+  if (!currentOpen(record, revision)) return;
+  const active =
+    record.activeValue === undefined ? undefined : optionElement(record, record.activeValue);
+  setActive(
+    record,
+    active && active.getAttribute("aria-disabled") !== "true"
+      ? record.activeValue
+      : initialActive(record),
+  );
+  if (!currentOpen(record, revision)) return;
+  if (nativeOpen(record) === false && !show(record, revision)) return;
+  if (currentOpen(record, revision)) position(record);
+}
+
+function snapshot(record: MultiSelectRecord, open = record.open): RetainedMultiSelect {
+  return {
+    control: record.control,
+    content: record.content,
+    open,
+    activeValue: record.activeValue,
+    search: record.search,
+    searchExpires: record.searchExpires,
+  };
+}
+
+function enhanceMultiSelect(root: HTMLElement): MultiSelectRecord {
+  const existing = records.get(root);
+  if (existing && current(existing)) {
+    metadata(existing);
+    if (
+      existing.resetRevision === existing.revision &&
+      root.dataset.value === reflected.get(root)
+    ) {
+      refreshOpen(existing);
+      return existing;
+    }
+    requestedValue(existing);
+    if (serialized(existing) !== existing.lastValue) existing.revision += 1;
+    render(existing);
+    refreshOpen(existing);
+    return existing;
+  }
+  const previous = existing ? snapshot(existing) : retained.get(root);
+  existing?.cleanup();
+  const replacement = records.get(root);
+  if (replacement) return replacement;
+  if (existing && !uiActive(root)) return existing;
+  root.id ||= `jqs-multi-select-${++multiSelectId}`;
+  const control = directControl(root);
+  control.id ||= `${root.id}-control`;
+  const trigger = directPart(root, "trigger") ?? createTrigger(root);
+  if (!isHTMLTag(trigger, "button"))
+    throw new Error(`Multi Select #${root.id} trigger must be a button.`);
+  const content = directPart(root, "content") ?? createPart(root, "content");
+  const tags = directPart(root, "tags") ?? createPart(root, "tags");
+  const status = directPart(root, "status") ?? createPart(root, "status");
+  trigger.id ||= `${root.id}-trigger`;
+  content.id ||= `${root.id}-content`;
+  prepareFloating(content);
+  if (existing) {
+    copyGeneratedAttributes(existing.trigger, trigger);
+    copyGeneratedAttributes(existing.content, content);
+  }
+  const record: MultiSelectRecord = {
+    ...uiResources(root),
+    activeValue: previous?.activeValue,
+    form: control.form,
+    label: control.labels[0],
+    content,
+    control,
+    lastValue: "",
+    open: false,
+    options: [],
+    nativeOptions: Array.from(control.options),
+    optionsSignature: optionSignature(control),
+    root,
+    search: "",
+    searchExpires: 0,
+    tags,
+    trigger,
+    status,
+    values: selectedValues(control),
+  };
+  record.cleanups.add(() => {
+    retained.set(root, snapshot(record, record.open && record.document !== root.ownerDocument));
+    const wasOpen = record.open;
+    activeRecords.delete(record);
+    record.open = false;
+    const latest = records.get(root);
+    if (!latest || latest.content !== content) {
+      root.dataset.state = record.values.length ? "selected" : "empty";
+      content.dataset.state = "closed";
+      trigger.setAttribute("aria-expanded", "false");
+      content.removeAttribute("aria-activedescendant");
+      if (wasOpen) {
+        hideFloating(content);
+        settleFloating(record, false);
+      }
+    }
+  });
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    if (!record.active) return record;
+    const generated = generatedOptions.get(content);
+    const present = optionElements(record);
+    if (
+      !generated ||
+      generated.signature !== record.optionsSignature ||
+      generated.options.length !== present.length ||
+      generated.options.some((option, index) => option !== present[index])
+    ) {
+      rebuildOptions(record);
+      generatedOptions.set(content, {
+        signature: record.optionsSignature,
+        options: optionElements(record),
+      });
+    }
+    record.options = optionElements(record);
+    metadata(record);
+    requestedValue(record);
+    render(record);
+    syncOpen(record, false);
     if (!usesNativePopover(content)) content.hidden = true;
-  } else {
-    for (const cleanup of record.cleanups) cleanup();
-    record.cleanups = [];
-    record.tags = tags;
-    record.trigger = trigger;
-  }
-  if (record.optionsSignature !== signature) {
-    rebuildOptions(record);
-    record.optionsSignature = signature;
-  }
-  const patched = parseValue(root.dataset.value);
-  if (patched && root.dataset.value !== record.lastValue) {
-    for (const option of Array.from(control.options))
-      option.selected = patched.includes(option.value);
-  }
-  render(record);
-  syncOpen(record, record.open);
-  wire(record);
-  if (record.open) {
-    showFloating(content);
-    setActive(
-      record,
-      record.activeValue ?? record.values[0] ?? enabledOptions(record)[0]?.dataset.value,
-    );
-    position(record);
+    wire(record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    const revision = record.revision;
+    if (
+      previous?.open &&
+      previous.control === control &&
+      previous.content === content &&
+      current(record, revision) &&
+      !unavailable(record) &&
+      show(record, revision)
+    ) {
+      if (previous.search && previous.searchExpires > Date.now())
+        scheduleSearch(record, previous.search, previous.searchExpires - Date.now());
+      refreshOpen(record);
+    }
+  } catch (error) {
+    failUISetup(record, error);
   }
   return record;
 }
 
+function recordFor(root: HTMLElement): MultiSelectRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceMultiSelect(root);
+}
+
 function position(record: MultiSelectRecord): void {
-  record.content.style.minWidth = `${record.trigger.getBoundingClientRect().width}px`;
-  positionFloating(record.root, record.trigger, record.content, { align: "start", side: "bottom" });
+  const revision = record.revision;
+  const width = record.trigger.getBoundingClientRect().width;
+  const accepted = (): boolean => currentOpen(record, revision);
+  if (!accepted()) return;
+  record.content.style.minWidth = `${width}px`;
+  positionFloating(
+    record.root,
+    record.trigger,
+    record.content,
+    { align: "start", side: "bottom" },
+    accepted,
+  );
 }
 
 function installGlobalListeners(host: DocumentHost): void {
@@ -645,9 +990,10 @@ function installGlobalListeners(host: DocumentHost): void {
     document,
     "pointerdown",
     (event) => {
-      if (!(event.target instanceof Node)) return;
+      if (!isNode(event.target)) return;
       for (const record of documentRecords(activeRecords, document)) {
-        if (!record.root.isConnected) activeRecords.delete(record);
+        if (!current(record) || record.document !== document || !record.root.isConnected)
+          activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeMultiSelect(record.root, false);
       }
     },
@@ -655,37 +1001,34 @@ function installGlobalListeners(host: DocumentHost): void {
   );
   const reposition = (): void => {
     for (const record of documentRecords(activeRecords, document)) {
-      if (record.root.isConnected) position(record);
+      if (current(record) && record.document === document && record.root.isConnected)
+        position(record);
       else activeRecords.delete(record);
     }
   };
   listenToViewportChanges(host, reposition);
-  host.own(
-    "service",
-    "ui:multi-select:active-records",
-    documentRecordCleanup(activeRecords, document),
-  );
 }
 
 function resolve(target: MultiSelectTarget, root: ParentNode = document): HTMLElement {
   const resolved =
     typeof target === "string"
-      ? multiSelectRoot(root.querySelector(target))
+      ? multiSelectRoot(
+          isHTMLElement(root) && root.matches(target) ? root : root.querySelector(target),
+        )
       : multiSelectRoot(target);
   if (resolved) return resolved;
   throw new Error(`Multi Select target did not match data-jqs="multi-select": ${String(target)}`);
 }
 
 function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="multi-select"]')) return target;
+  if (isHTMLElement(target)) return resolve(target, context.root);
   if (typeof target === "string" && target.startsWith("#")) return resolve(target, context.root);
   const closest = context.element?.closest('[data-jqs="multi-select"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+  return resolve(isHTMLElement(closest) ? closest : String(target));
 }
 
 function enhanceAll(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="multi-select"]')));
+  const elements = uiElements(root, '[data-jqs="multi-select"]');
   for (const element of elements) {
     const component = multiSelectRoot(element);
     if (component) enhanceMultiSelect(component);
@@ -702,31 +1045,31 @@ export function createMultiSelects(
     close: (target) => closeMultiSelect(resolve(target)),
     toggle: (target) => {
       const root = resolve(target);
-      return (records.get(root) ?? enhanceMultiSelect(root)).open
-        ? closeMultiSelect(root)
-        : openMultiSelect(root);
+      const record = recordFor(root);
+      if (!current(record)) return root;
+      return record.open ? closeMultiSelect(root) : openMultiSelect(root);
     },
     set: (target, values) => {
       const root = resolve(target);
-      return commit(records.get(root) ?? enhanceMultiSelect(root), values);
+      return commit(recordFor(root), values);
     },
     select: (target, value, selected = true) => {
       const root = resolve(target);
-      const record = records.get(root) ?? enhanceMultiSelect(root);
+      const record = recordFor(root);
       return commit(
         record,
         selected
-          ? [...record.values, value]
-          : record.values.filter((candidate) => candidate !== value),
+          ? [...selectedValues(record.control), value]
+          : selectedValues(record.control).filter((candidate) => candidate !== value),
       );
     },
     clear: (target) => {
       const root = resolve(target);
-      return commit(records.get(root) ?? enhanceMultiSelect(root), []);
+      return commit(recordFor(root), []);
     },
     value: (target) => {
       const root = resolve(target);
-      return [...(records.get(root) ?? enhanceMultiSelect(root)).values];
+      return [...recordFor(root).values];
     },
   };
   for (const operation of ["open", "close", "toggle", "clear"] as const) {
@@ -736,7 +1079,7 @@ export function createMultiSelects(
   }
   registerAction("ui.multi-select.select", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlled(context, explicit ? first : undefined);
     const value = explicit ? context.args?.[1] : first;
     const selected = explicit ? context.args?.[2] : context.args?.[1];
@@ -745,7 +1088,7 @@ export function createMultiSelects(
   });
   registerAction("ui.multi-select.set", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlled(context, explicit ? first : undefined);
     const values = explicit ? context.args?.[1] : first;
     if (!Array.isArray(values) || !values.every((value) => typeof value === "string"))

@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { dirname, join, resolve } from "node:path";
+import { createDetectorCheck } from "./quality/detector-check.mjs";
 import { runChild } from "./quality/lib/process.mjs";
 
 const root = process.cwd();
@@ -20,15 +20,14 @@ const report = {
   status: "error",
 };
 
-async function run(executable, args, env = {}) {
-  const result = await runChild({
+function run(executable, args, env = {}) {
+  return runChild({
     command: executable,
     args,
     cwd: root,
     env: { ...process.env, ...env },
     timeoutMs: 900_000,
   });
-  return { ...result, status: result.exitCode, error: result.spawnError };
 }
 
 async function reserveAvailablePort() {
@@ -51,37 +50,9 @@ async function reserveAvailablePort() {
 }
 
 function record(name, result, expected, detector, evidence, artifactDirectory = null) {
-  const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  const expectedExit = expected === "red" ? result.status !== 0 : result.status === 0;
-  const detectorMatched = detector.test(combined);
-  let evidenceMatched = true;
-  let evidenceFailure = null;
-  if (evidence) {
-    try {
-      const gateReport = JSON.parse(readFileSync(evidence.path, "utf8"));
-      const failures = gateReport.checks
-        .filter((check) => check.status !== "pass")
-        .map((check) => check.name);
-      evidenceMatched = failures.length === 1 && failures[0] === evidence.failure;
-      if (!evidenceMatched) evidenceFailure = `unexpected failures: ${failures.join(", ")}`;
-    } catch (error) {
-      evidenceMatched = false;
-      evidenceFailure = error instanceof Error ? error.message : String(error);
-    }
-  }
-  const passed = expectedExit && detectorMatched && evidenceMatched;
-  report.checks.push({
-    name,
-    expected,
-    exitCode: result.status,
-    status: passed ? "pass" : "fail",
-    detector: detector.source,
-    detectorMatched,
-    evidenceMatched,
-    evidenceFailure,
-    artifactDirectory,
-    output: combined.slice(-2_000),
-  });
+  report.checks.push(
+    createDetectorCheck({ name, result, expected, detector, evidence, artifactDirectory }),
+  );
 }
 
 async function writeReport() {
@@ -116,6 +87,19 @@ record(
   undefined,
   join(fixtureDirectory, "empty-selection", "playwright"),
 );
+
+const preparation = await run(process.execPath, ["scripts/prepare-browser-fixtures.mjs"]);
+process.stdout.write(preparation.stdout ?? "");
+process.stderr.write(preparation.stderr ?? "");
+if (
+  preparation.exitCode !== 0 ||
+  preparation.signal !== null ||
+  preparation.timedOut ||
+  preparation.spawnError
+) {
+  await writeReport();
+  throw new Error("Browser detector preparation failed before execution.");
+}
 
 const retryDirectory = join(fixtureDirectory, "retry-pass");
 await mkdir(retryDirectory, { recursive: true });
@@ -237,7 +221,7 @@ record(
     JQS_QUALITY_SABOTAGE: "package-budget",
   }),
   "red",
-  /package-budgets: Packed bytes \d+ exceed 1/u,
+  /package-budgets: Packed bytes \d+ exceed the base and optional-entry allowances/u,
   { path: packageEvidence, failure: "package-budgets" },
 );
 
@@ -295,9 +279,11 @@ record(
 
 record(
   "package-release-contract-hardening",
-  await run(npx, ["--no-install", "vitest", "run", "test/package-release-hardening.test.mjs"]),
+  await run(npx, ["--no-install", "vitest", "run", "test/package-release-hardening.test.mjs"], {
+    FORCE_COLOR: "1",
+  }),
   "green",
-  /Tests\s+13 passed/u,
+  /Tests\s+16 passed/u,
 );
 
 record(

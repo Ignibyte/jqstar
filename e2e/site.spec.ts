@@ -5,11 +5,19 @@ import { installWebMcpHarness } from "./fixtures/webmcp-harness";
 const documentationRoutes = [
   ["/docs/", "Introduction"],
   ["/docs/agents/", "Agent support"],
+  ["/docs/compatibility/", "Compatibility"],
+  ["/docs/migration/", "Migrate to 1.0"],
+  ["/docs/security/", "Security"],
+  ["/docs/download/", "Download"],
   ["/docs/datastar/", "Datastar Integration"],
   ["/docs/api/", "Core API"],
   ["/docs/csp/", "CSP expressions"],
+  ["/docs/stores/", "Shared stores"],
+  ["/docs/persistence/", "Persisted preferences"],
   ["/docs/interoperability/", "Turbo and htmx interoperability"],
   ["/docs/ecosystem/", "jQuery ecosystem"],
+  ["/docs/ecosystem/jquery-ui/", "jQuery UI coexistence and migration"],
+  ["/docs/ecosystem/jquery-mobile/", "jQuery Mobile migration"],
   ["/docs/plugins/", "Plugins"],
   ["/docs/testing/", "Testing"],
   ["/docs/components/", "Components"],
@@ -23,6 +31,7 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await expect(page).toHaveTitle(/jQStar · modern server-rendered applications/);
+  await expect(page.locator(".release-pill")).toHaveText("jQStar 1.1.0 release candidate");
   await expect(
     page.getByRole("heading", { name: "Polished UI behavior for Datastar applications." }),
   ).toBeVisible();
@@ -64,6 +73,26 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   const axe = await new AxeBuilder({ page }).include("main").analyze();
   expect(axe.violations).toEqual([]);
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".promise-card")).toHaveCount(2);
+  const narrowPromise = await page.locator(".promise-grid").evaluate((grid) => {
+    const first = grid.children.item(0);
+    const second = grid.children.item(1);
+    if (!first || !second) throw new Error("Missing framework promise cards.");
+    const firstBox = first.getBoundingClientRect();
+    const secondBox = second.getBoundingClientRect();
+    return {
+      overflow: document.documentElement.scrollWidth - innerWidth,
+      firstBottom: firstBox.bottom,
+      secondTop: secondBox.top,
+      leftDifference: Math.abs(firstBox.left - secondBox.left),
+    };
+  });
+  expect(narrowPromise.overflow).toBeLessThanOrEqual(1);
+  expect(narrowPromise.secondTop).toBeGreaterThanOrEqual(narrowPromise.firstBottom);
+  expect(narrowPromise.leftDifference).toBeLessThanOrEqual(1);
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/docs/");
   const initialTheme = await page.locator("html").getAttribute("data-theme");
   await page.getByRole("button", { name: "Toggle color theme" }).click();
@@ -73,15 +102,66 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   await expect(page.locator("html")).toHaveAttribute("data-theme", changedTheme ?? "light");
 });
 
-test("every documentation route loads directly with shared navigation", async ({ page }) => {
+test("every documentation route loads directly with working shared controls", async ({ page }) => {
   for (const [path, heading] of documentationRoutes) {
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(path);
     await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
     await expect(
       page.getByRole("navigation", { name: "Documentation", exact: true }),
     ).toBeVisible();
     await expect(page.locator('[data-doc-link][aria-current="page"]')).toHaveCount(1);
+
+    const initialTheme = await page.locator("html").getAttribute("data-theme");
+    await page.getByRole("button", { name: "Toggle color theme" }).click();
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme", initialTheme ?? "dark");
+
+    const searchTrigger = page.getByRole("button", { name: /Search documentation/ });
+    await searchTrigger.focus();
+    await page.keyboard.press("Enter");
+    const search = page.getByRole("dialog", { name: "Search documentation" });
+    await expect(search).toBeVisible();
+    await search.getByRole("searchbox", { name: "Search documentation" }).fill("toast");
+    await expect(search.getByRole("link", { name: "Toast", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(search).toBeHidden();
+    await expect(searchTrigger).toBeFocused();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const menuTrigger = page.getByRole("button", { name: "Menu", exact: true });
+    await menuTrigger.click();
+    const menu = page.getByRole("dialog", { name: "Documentation", exact: true });
+    await expect(menu).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Core API", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(menuTrigger).toBeFocused();
   }
+});
+
+test("release pages distinguish stable contracts from publication state", async ({ page }) => {
+  await page.goto("/docs/compatibility/");
+  await expect(page.getByRole("heading", { name: "Stable package entries" })).toBeVisible();
+  await expect(page.getByText("jquery-star/datastar/testing", { exact: true })).toBeVisible();
+
+  await page.goto("/docs/migration/");
+  await expect(page.getByText("The 1.0 root entry preserves", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("jQStar does not bundle either archived runtime", { exact: false }),
+  ).toBeVisible();
+
+  await page.goto("/docs/security/");
+  await expect(page.getByRole("link", { name: "private vulnerability report" })).toHaveAttribute(
+    "href",
+    "https://github.com/Ignibyte/jqstar/security/advisories/new",
+  );
+
+  await page.goto("/docs/download/");
+  await expect(page.locator(".docs-lede")).toContainText("does not mean");
+  await expect(page.getByText("npm install jquery-star jquery", { exact: true })).toBeVisible();
+
+  const axe = await new AxeBuilder({ page }).include("main").analyze();
+  expect(axe.violations).toEqual([]);
 });
 
 test("the CSP guide keeps its shipped status and narrow security claim explicit", async ({
@@ -213,6 +293,132 @@ test("site copy controls expose authored source", async ({ page }) => {
   await expect(firstCopy).toHaveText("Copied");
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toBe("npm install jquery-star jquery");
+});
+
+test("the complete embedded Lab owns its actions and backend updates on each site route", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const corpus = (await (await page.request.get("/jqstar-agent-index.json")).json()) as {
+    components: { name: string; roots: string[] }[];
+  };
+  for (const route of ["/", "/docs/components/", "/components/lab/"]) {
+    await page.goto(route);
+    const lab = page.locator(".component-lab");
+    await expect(lab).toHaveCount(1);
+    await expect(lab.locator("[data-block]")).toHaveCount(7);
+    await expect(page.locator("iframe")).toHaveCount(0);
+    await lab.getByRole("button", { name: "Show verified toast" }).click();
+    const roots = await lab
+      .locator("[data-jqs]")
+      .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-jqs")));
+    expect(corpus.components).toHaveLength(109);
+    for (const recipe of corpus.components) {
+      for (const root of recipe.roots) expect(roots, `${route}: ${recipe.name}`).toContain(root);
+    }
+    const ids = await page
+      .locator("[id]")
+      .evaluateAll((elements) => elements.map((element) => element.id));
+    expect(new Set(ids).size).toBe(ids.length);
+    const trigger = lab.getByRole("button", { name: "Open verified dialog" });
+    await trigger.click();
+    await expect(lab.locator("#proof-dialog-cancel")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+    await lab.getByRole("button", { name: "Add 10 on the server" }).click();
+    await expect(lab.locator(".server-count")).toHaveText("10");
+    await lab.getByRole("button", { name: "Stream from the Datastar SDK" }).click();
+    await expect(lab.locator("#server-feed li")).toHaveCount(1);
+    const form = lab.getByRole("form", { name: "Backend account proof" });
+    await form.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(form.getByText("That account already exists. Try another email.")).toBeVisible();
+    const dashboard = lab.locator('[data-block="operations-dashboard"]');
+    await dashboard.getByRole("button", { name: "Refresh dashboard snapshot" }).click();
+    await expect(dashboard.locator('[data-dashboard-part="logs"] [data-part="entry"]')).toHaveCount(
+      3,
+    );
+    await dashboard.getByRole("button", { name: "Stream dashboard logs" }).click();
+    await expect(dashboard.locator('[data-dashboard-part="logs"] [data-part="entry"]')).toHaveCount(
+      6,
+    );
+    await expect(lab.locator("#runtime-log-entries [data-part='entry']")).toHaveCount(3);
+    const profile = lab.locator('[data-block="profile-settings"]');
+    await profile.getByRole("button", { name: "Rotate invite URL" }).click();
+    await expect(profile.getByRole("textbox", { name: "Team invite URL" })).not.toHaveValue(
+      "https://jqstar.dev/invite/example-0",
+    );
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
+        `${route} at ${width}px`,
+      ).toBeLessThanOrEqual(1);
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  expect(errors).toEqual([]);
+});
+
+test("all public code examples are framed, colored, and copy their exact inert source", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    let copied = "";
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (value: string) => {
+          copied = value;
+          return Promise.resolve();
+        },
+        readText: () => Promise.resolve(copied),
+      },
+    });
+  });
+  for (const route of ["/", ...documentationRoutes.map(([path]) => path), "/components/lab/"]) {
+    await page.goto(route);
+    for (const pre of await page.locator("pre").all()) {
+      await expect(pre.locator("code")).toHaveCount(1);
+      expect(await pre.evaluate((element) => Boolean(element.closest(".code-block")))).toBe(true);
+      await expect(pre.locator("button, input, dialog, script")).toHaveCount(0);
+      const code = pre.locator("code");
+      if ((await code.getAttribute("data-language")) !== "text")
+        expect(await code.locator('[class^="syntax-"]').count()).toBeGreaterThan(0);
+    }
+  }
+  await page.goto("/docs/components/dialog/");
+  const block = page.locator(".code-block").first();
+  await page.getByRole("tab", { name: "Code", exact: true }).click();
+  const expected = await block.locator("code").textContent();
+  await block.getByRole("button", { name: "Copy", exact: true }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(expected);
+  await expect(block.locator(".syntax-tag").first()).toHaveCSS("color", "rgb(126, 219, 255)");
+});
+
+test("the integrated Lab is accessible in both themes", async ({ page }) => {
+  for (const theme of ["dark", "light"]) {
+    await page.addInitScript((value) => localStorage.setItem("jqstar-site-theme", value), theme);
+    await page.goto("/docs/components/");
+    await expect(page.locator("[data-block]")).toHaveCount(7);
+    await expect(page.locator('#architecture-tabs [role="tab"]')).toHaveCount(3);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    const workflow = page.locator(".workflow-components-card");
+    await workflow.getByRole("textbox", { name: "Project name" }).fill("Accessible project");
+    await workflow.getByRole("button", { name: "Continue" }).click();
+    await workflow.locator('input[type="file"]').setInputFiles({
+      name: "accessible.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("accessible proof"),
+    });
+    const account = page.getByRole("form", { name: "Backend account proof" });
+    await account.getByRole("button", { name: "Send multipart form" }).click();
+    await expect(
+      account.getByText("That account already exists. Try another email."),
+    ).toBeVisible();
+    const result = await new AxeBuilder({ page }).include("main").analyze();
+    expect(result.violations).toEqual([]);
+  }
 });
 
 test("every public route registers the read-only WebMCP catalog through the draft boundary", async ({

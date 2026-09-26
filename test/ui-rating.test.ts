@@ -63,6 +63,27 @@ describe("jQuery Star Rating", () => {
     expect($.star.ui.rating.value(root())).toBeUndefined();
   });
 
+  it("accepts its native root as a named-action target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Rating application did not start.");
+
+    await app.run("ui.rating.set", { args: [root(), "2"] });
+    expect(control("2").checked).toBe(true);
+    await app.run("ui.rating.clear", { args: [root()] });
+    expect($.star.ui.rating.value(root())).toBeUndefined();
+    const external = document.getElementById("clear");
+    if (!external) throw new Error("Missing external Rating action.");
+    await expect(
+      app.run("ui.rating.set", {
+        element: control("3"),
+        args: [external, "3"],
+      }),
+    ).rejects.toThrow('Rating target did not match data-jqs="rating"');
+    expect($.star.ui.rating.value(root())).toBeUndefined();
+    await app.run("ui.rating.set", { element: control("3"), args: ["3"] });
+    expect(control("3").checked).toBe(true);
+  });
+
   it("honors canceled changes and accepts server-patched values", () => {
     root().addEventListener("jquery-star:rating:before-change", (event) => {
       const detail = (event as CustomEvent<{ value?: string }>).detail;
@@ -88,5 +109,78 @@ describe("jQuery Star Rating", () => {
     expect(input).toHaveBeenCalledOnce();
     expect(change).toHaveBeenCalledOnce();
     expect(lifecycle).toHaveBeenCalledOnce();
+  });
+
+  it("stops a native change when its before-change listener makes a newer selection", () => {
+    const changed = vi.fn();
+    root().addEventListener("jquery-star:rating:change", changed);
+    root().addEventListener("jquery-star:rating:before-change", (event) => {
+      if ((event as CustomEvent<{ value?: string }>).detail.value === "2")
+        $.star.ui.rating.set(root(), "3");
+    });
+
+    control("2").checked = true;
+    control("2").dispatchEvent(new Event("change", { bubbles: true }));
+    expect(control("3").checked).toBe(true);
+    expect(changed).toHaveBeenCalledOnce();
+    expect((changed.mock.calls[0]?.[0] as CustomEvent<{ value: string }>).detail.value).toBe("3");
+  });
+
+  it("does not emit an obsolete API change after its native change listener reenters", () => {
+    const changed = vi.fn();
+    root().addEventListener("jquery-star:rating:change", changed);
+    control("2").addEventListener("change", () => $.star.ui.rating.set(root(), "3"), {
+      once: true,
+    });
+
+    $.star.ui.rating.set(root(), "2");
+    expect(control("3").checked).toBe(true);
+    expect(changed).toHaveBeenCalledOnce();
+    expect((changed.mock.calls[0]?.[0] as CustomEvent<{ value: string }>).detail.value).toBe("3");
+  });
+
+  it("ignores foreign native-change and non-element click targets", () => {
+    const changed = vi.fn();
+    root().addEventListener("jquery-star:rating:change", changed);
+    const clear = root().querySelector('[data-part="clear"]');
+    const text = root().querySelector("legend")?.firstChild;
+    if (!clear || !text) throw new Error("Missing Rating controls.");
+    clear.dispatchEvent(new Event("change", { bubbles: true }));
+    text.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(control("4").checked).toBe(true);
+    expect(changed).not.toHaveBeenCalled();
+  });
+
+  it("reconciles a silent native selection on unchanged enhancement", () => {
+    control("3").checked = true;
+    $.star.ui.enhance(root());
+    expect($.star.ui.rating.value(root())).toBe("3");
+    expect(root().querySelector('[data-part="status"]')?.textContent).toBe("3 stars");
+  });
+
+  it("keeps one current record when listener cleanup reenters enhancement", () => {
+    control("4").replaceWith(control("4").cloneNode(true));
+    const rating = root();
+    const nativeRemove = rating.removeEventListener.bind(rating);
+    let reentered = false;
+    const removal = vi.spyOn(rating, "removeEventListener").mockImplementation((...args) => {
+      nativeRemove(...args);
+      if (!reentered) {
+        reentered = true;
+        $.star.ui.enhance(rating);
+      }
+    });
+    try {
+      $.star.ui.enhance(rating);
+    } finally {
+      removal.mockRestore();
+    }
+
+    const changed = vi.fn();
+    rating.addEventListener("jquery-star:rating:change", changed);
+    $.star.ui.rating.set(rating, "2");
+    expect(reentered).toBe(true);
+    expect(control("2").checked).toBe(true);
+    expect(changed).toHaveBeenCalledOnce();
   });
 });

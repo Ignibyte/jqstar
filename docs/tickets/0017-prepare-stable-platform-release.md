@@ -1,9 +1,9 @@
 ---
 id: 0017
 title: Prepare the stable 1.0 platform release
-status: planned
+status: testing
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-06
 ---
 
 # 0017: Prepare the stable 1.0 platform release
@@ -20,26 +20,93 @@ or publish it to npm.
 
 ### Current evidence
 
-- The current package is `0.1.0`; ticket 0013 plans to remove the duplicated runtime version and
-  derive all modular artifacts from `package.json` before preview publication.
-- Tickets 0003, 0004, and 0041–0044 established a public baseline, real tarball consumers, quality
-  receipts, browser/accessibility proof, API/type review, package contents, size budgets, and
-  release reproducibility. Tickets 0041–0044 remain blocked until their committed hosted GitHub
-  evidence is authorized and inspected.
+- The package and lockfile are `0.1.0`. `src/version.ts` already imports `package.json`, validates
+  its stable `major.minor.patch` value, and supplies that value to the root, core, UI, Datastar,
+  Turbo, and htmx surfaces. Ticket 0017 owns the one deliberate change to `1.0.0` and proof that no
+  copied version remains.
+- Every prerequisite ticket from 0001 through 0016 and 0034 through 0050 is `done`. Their committed
+  evidence includes the public baseline, real tarball consumers, workflow receipts, hosted GitHub
+  inspection, browser/accessibility proof, API/type review, package contents, size budgets, and
+  release reproducibility.
 - Ticket 0048 removed mutation tooling, commands, dependencies, reports, schemas, and release gates.
   No 1.0 criterion may reintroduce mutation testing unless a future explicit ticket requests it.
-- Tickets 0013–0016 and 0034–0037 plan modular/CSP/testing/interoperability surfaces. Their preview
-  labels, exact package graphs, installed consumers, and stable-API decisions are prerequisites, not
-  evidence that already exists.
-- Tickets 0038–0040 own jQuery ecosystem stewardship plus jQuery UI/Mobile coexistence and
-  migration. Archived UI/Mobile runtimes must not enter jQStar's artifact.
-- Tickets 0045, 0046, and 0049 establish the jQStar name, server-rendered product promise, and
-  self-hosted reference-matched website. Public release copy must use jQStar consistently while npm
-  remains `jquery-star`, the CLI/repository remains `jqstar`, and `data-jqs` remains markup.
+- Root, core, UI, Datastar, CSP, testing, Datastar testing, Turbo, and htmx entries ship as tested
+  ESM/CommonJS surfaces. The modular, testing, and bridge documentation still calls them 0.4
+  previews, so the stable audit must either remove that label with direct evidence or stop.
+- `scripts/quality-package.mjs` installs the exact tarball into root, modular, CSP, testing,
+  TypeScript, QUnit, browser, UMD, CLI/registry, and bridge consumers. It also checks exports,
+  private-import refusal, API reports, package files, peer ranges, bundle graphs, sentinels, sizes,
+  and archived jQuery UI/Mobile runtime absence.
+- `scripts/quality-release.mjs` already creates two distinct copied workspaces, runs two locked
+  installs and self-hosted builds, compares exact file manifests and SHA-256 tarball bytes, writes
+  an SBOM and production-license inventory, records provenance eligibility and tool/browser
+  versions, and installs and serves the packed website. It does not yet bind those results to a
+  clean committed candidate identity, record SHA-512/npm integrity and file modes, audit all
+  prerequisite criteria, or write the 1.0 handoff.
+- Tickets 0038–0040 completed jQuery ecosystem stewardship plus tested jQuery UI coexistence and
+  no-runtime jQuery Mobile migration. Package checks exclude both archived runtimes.
+- Tickets 0045, 0046, 0049, and 0050 establish the jQStar name, server-rendered product promise,
+  self-hosted reference-matched website, agent corpus, and optional read-only WebMCP surface. Public
+  release copy must use jQStar consistently while npm remains `jquery-star`, the CLI/repository
+  remains `jqstar`, and `data-jqs` remains markup.
 - `scripts/quality-release.mjs` and package quality now clean owned temporary workspaces on success,
   failure, and signals after ticket 0048 repaired a roughly 55 GB leak. The stable gate must prove
   cleanup again under every exit class.
+- At Plan start, `feat/stable-platform-release` is clean and non-shallow, has no submodules, and has
+  no existing tag. Those observations establish a usable starting point, not candidate evidence; the
+  final preflight must recompute them from the committed closure tree.
 - No tag, npm publication, provenance attestation, or GitHub release is authorized by this ticket.
+
+### Reopening decision: private reporting route (2026-09-06)
+
+Ticket 0033 read GitHub's live repository setting and found private vulnerability reporting disabled
+for `Ignibyte/jqstar`, although SECURITY.md directs users to its private-report form. Two successful
+API reads returned `enabled: false`. The exact command, date, source hash and proposed bounded
+setting change are recorded under `.git/jqstar/program-audit/security-reporting-plan/finding.json`.
+
+Return to Plan and reopen AC-13. The proposed correction enables only private vulnerability
+reporting through `PUT repos/Ignibyte/jqstar/private-vulnerability-reporting`, then independently
+reads the setting back and checks the documented route. This creates no report, advisory or message.
+Ticket 0033 AC-14 reserves governance changes for separate authorization; that approval has been
+requested and remains pending. A timeout or unanswered question does not authorize it. Do not invent
+a replacement security contact or claim the disabled route works.
+
+Validate this Plan before any approved setting change. Preserve the read and write results with the
+repository identity and timestamp. Update this ticket, ticket 0033 and ROADMAP, then use the normal
+fast/delivery and phase gates before closure. Public reporting policy text remains accurate only
+once the actual configured route is verified. Manual accessibility and final clean-candidate proof
+remain independently required by the full program audit.
+
+### Reopening extension: release and migration guidance (2026-09-06)
+
+The current program audit found two public documentation errors. The manual sequence in
+`RELEASING.md` runs ordinary delivery on a clean checkout, which skips `quality-runner-self-test`
+and `ticket-0044-detector-self-test`. The actual release validator requires both gates to pass.
+`scripts/release/candidate.mjs` already forces every gate in both quality modes. The same incomplete
+manual example appears in `docs/COMPATIBILITY.md`. Retained controls in
+`release-guide-plan/finding.json` use the actual selection and validation functions: the all-green
+report is accepted, and an explicitly synthetic copy with the two skips is rejected.
+
+`MIGRATING_TO_1.md` also says modular core must explicitly select generic JSON/HTML requests.
+`src/protocol.ts` already defaults to `core.generic`; root composition selects `core.datastar`.
+Installing the Datastar plugin alone does not change the core default. The current installed
+`core-only-esm` consumer passes its generic request without a profile option. Source hashes and that
+package result are retained in `release-guide-plan/migration-default-finding.json`.
+
+Reopen AC-01 and AC-02 before correcting these guides. Document forced quality commands in both
+manual examples, explain the existing combined candidate behavior, and state the root and modular
+defaults with the explicit Datastar selection option. Runtime behavior and release validation stay
+as implemented. Preserve the historical 1.0 evidence below. AC-14 is pending because prerequisites
+0035 and 0039 are in Test; AC-16 requires fresh final closure evidence after all corrections. AC-13
+continues to await the separately authorized private-reporting correction.
+
+Planned files are `RELEASING.md`, `MIGRATING_TO_1.md`, `docs/COMPATIBILITY.md`, this ticket,
+`docs/tickets/0033-audit-full-library-program.md`, and `docs/tickets/ROADMAP.md`. Validate this Plan
+first. Review the edited instructions against the actual candidate, selection, profile and
+installed-consumer code, then run the existing release-candidate and modular-entrypoint tests, fast
+checks, complete delivery and exact phase validation. Refresh the affected public-claim review with
+new source hashes while retaining its previous observations. The final candidate and actual manual
+accessibility evidence remain separate required work. Mutation testing stays deferred.
 
 ### Scope
 
@@ -73,7 +140,7 @@ or publish it to npm.
   dependency lock, quality reports, consumer reports, public API baseline, documentation audit, and
   artifact checksum. Fail closed on missing, stale, skipped-required, malformed, or mismatched
   evidence.
-- Audit every acceptance criterion and completion/disposition in tickets 0001–0016 and 0034–0049.
+- Audit every acceptance criterion and completion/disposition in tickets 0001–0016 and 0034–0050.
   Superseded work must link its replacing decision; blocked/planned/coding/testing/documenting work
   cannot be waived into 1.0.
 - Prove optional post-1.0 stores, persistence, resources, native navigation, inspection, DevTools,
@@ -94,7 +161,7 @@ or publish it to npm.
 
 ### Dependencies
 
-- Tickets 0001 through 0016 and 0034 through 0049. Ticket 0048 supersedes ticket 0047's mutation
+- Tickets 0001 through 0016 and 0034 through 0050. Ticket 0048 supersedes ticket 0047's mutation
   branch; both dispositions remain part of the audit trail.
 
 ### Acceptance criteria
@@ -107,45 +174,45 @@ or publish it to npm.
       deprecation/removal, package subpath, naming convention, CSP incompatibility/migration,
       bridge, and jQuery UI/Mobile path. Each breaking or intentionally unchanged baseline item maps
       to a test and changelog entry.
-- [ ] [AC-03] `package.json` is the one package-version source. Package/lockfile, root/core/UI/
+- [x] [AC-03] `package.json` is the one package-version source. Package/lockfile, root/core/UI/
       Datastar/CSP/testing/Turbo/htmx facades, ESM/CommonJS/UMD artifacts, declarations, source
       maps, CLI/registry output, website/archive metadata, reports, and release notes all report the
       exact candidate version; plugin API and CSP/bridge contract versions remain explicitly
       separate.
-- [ ] [AC-04] Candidate preparation refuses a dirty, uncommitted, shallow, mismatched-lockfile,
+- [x] [AC-04] Candidate preparation refuses a dirty, uncommitted, shallow, mismatched-lockfile,
       wrong-branch, ignored-production-input, existing-tag, or unsupported-tool environment before
       creating an artifact. It records the exact commit/tree, source-date, Node/npm/tool versions,
       relevant environment allowlist, and dependency integrity without leaking credentials.
-- [ ] [AC-05] Two fresh locked-dependency checkouts produce byte-identical npm tarballs with the
+- [x] [AC-05] Two fresh locked-dependency checkouts produce byte-identical npm tarballs with the
       same SHA-256/SHA-512, npm integrity, normalized path/mode/size manifest, generated
       declarations/maps, license/notice inventory, website archive, and package metadata. Every
       owned temporary checkout is removed after pass, failure, timeout, interrupt, and termination
       self-tests.
-- [ ] [AC-06] The exact tarball passes Node ESM/CommonJS, TypeScript NodeNext/Bundler, browser
+- [x] [AC-06] The exact tarball passes Node ESM/CommonJS, TypeScript NodeNext/Bundler, browser
       modules, root UMD/CDN/no-build, QUnit, CLI/registry, self-hosting, package-content, private
       deep-import refusal, source-map/declaration/API, `publint`, Are the Types Wrong, and
       license/dependency checks with no workspace/source alias or hoisted undeclared dependency.
-- [ ] [AC-07] Executed bundle/module-graph/sentinel/size checks prove root is exactly composed
+- [x] [AC-07] Executed bundle/module-graph/sentinel/size checks prove root is exactly composed
       core + Datastar + UI; core/UI/Datastar/CSP/testing/Turbo/htmx consumers include only requested
       capabilities; and stores, persistence, resources, native navigation, inspection, DevTools,
       upgrade tooling, fixtures, server, registry, and website code are absent from runtime graphs.
-- [ ] [AC-08] Root behavior, exports, jQuery augmentation, import side effects, directives/actions,
+- [x] [AC-08] Root behavior, exports, jQuery augmentation, import side effects, directives/actions,
       UI identities, request bytes/default Datastar profile, events, errors, patching, and lifecycle
       remain compatible with every stable 0.1 baseline item or follow its completed deprecation and
       documented migration. No baseline or assertion is edited during candidate testing.
-- [ ] [AC-09] Installed core/UI/Datastar/testing/external-plugin conformance passes; the CSP entry
+- [x] [AC-09] Installed core/UI/Datastar/testing/external-plugin conformance passes; the CSP entry
       passes its approved grammar/threat corpus under real policies without `unsafe-eval` or trusted
       compiler code; Turbo and htmx pass exact supported-version, preservation, cancel/error,
       history, form/focus, and three-browser coexistence matrices.
-- [ ] [AC-10] The package contains no jQuery UI or jQuery Mobile runtime/source/style/assets and
+- [x] [AC-10] The package contains no jQuery UI or jQuery Mobile runtime/source/style/assets and
       makes no unapproved official-successor claim. jQuery UI coexistence and component migration
       plus the no-runtime jQuery Mobile migration guide match installed/browser fixtures; jQuery
       Core peer, Sizzle, QUnit, and Migrate stewardship decisions match ticket 0038.
-- [ ] [AC-11] The public jQStar website and packaged self-hosted archive use jQStar itself, match
+- [x] [AC-11] The public jQStar website and packaged self-hosted archive use jQStar itself, match
       the approved reference/ticket 0049, expose current
       API/compatibility/migration/security/download copy, use `jquery-star`/`jqstar`/`data-jqs`
       correctly, and do not claim unpublished npm/tag/ domain state.
-- [ ] [AC-12] One candidate-bound full-audit report enforces workflow/static/architecture/security/
+- [x] [AC-12] One candidate-bound full-audit report enforces workflow/static/architecture/security/
       dependency/source/style/schema/docs, coverage/property, three-browser/accessibility,
       package/API/type/size/tree-shaking, release reproducibility, temp-cleanup, and
       detector-liveness gates with no hidden baseline, required skip, timeout, weakened threshold,
@@ -154,11 +221,11 @@ or publish it to npm.
       generated-artifact scans, package scripts/exports/files, licenses/notices, CSP claims, server
       demo boundaries, and documented vulnerability reporting. Findings are fixed, explicitly
       accepted through policy, or block the candidate; credentials and private paths are redacted.
-- [ ] [AC-14] Every criterion in tickets 0001–0016 and 0034–0049 has current Pass or valid terminal
+- [ ] [AC-14] Every criterion in tickets 0001–0016 and 0034–0050 has current Pass or valid terminal
       Approved-Disposition evidence, and every prerequisite ticket is `done` or `declined`. Ticket
       0048's removal decision supersedes mutation work; no blocked, planned, active, stale,
       duplicate, or unmapped 1.0 requirement remains.
-- [ ] [AC-15] The handoff records the exact candidate commit/tree, tarball
+- [x] [AC-15] The handoff records the exact candidate commit/tree, tarball
       filename/digests/integrity, immutable report/receipt locations, release notes, expected tag,
       npm dist-tag, read-only verification commands, rollback/deprecation response, and separately
       approval-gated write commands. Preparing or completing this ticket does not tag, publish,
@@ -285,12 +352,18 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 - `schema/release-candidate.schema.json`: Generated candidate identity, source/tool/dependency
   provenance, artifact manifests/digests, subordinate report hashes, cleanup evidence, and handoff
   shape.
+- `test/release-candidate-contract.test.mjs`, property tests, and isolated release fixtures:
+  Fail-closed schema, preflight, identity, prerequisite-audit, redaction, cleanup, and handoff
+  sabotage proof.
 - `scripts/release/prepare.mjs`, `scripts/release/prove.mjs`, `scripts/release/handoff.mjs`:
   Read-only preflight, two-build reproducibility, exact-tarball matrices, immutable out-of-tree
   report, and approval-gated command preview without tag/publish writes.
 - `scripts/quality-release.mjs`, `scripts/quality-package.mjs`, quality runner/self-tests: Candidate
   integration, exact-tree/report enforcement, owned temporary cleanup, failure/signal liveness, and
   no mutation lane.
+- `scripts/quality/run.mjs`, `test/quality-runner.test.mjs`, `docs/QUALITY_PROGRAM.md`: Force every
+  configured gate only for a release-candidate run and prove ordinary change-scoped selection stays
+  intact.
 - `package.json`, `package-lock.json`, `src/version.ts`, build/type/API configuration: One package
   version, stable exports, scripts, files, formats, maps, declarations, and reviewed public reports.
 - `quality/public-baseline.json`, `etc/jquery-star*.api.md`, production/size budgets: Stable 1.0
@@ -315,30 +388,254 @@ as `v1.0.0`; release authorization is a separate user decision after the candida
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File                                                   | Purpose                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------- |
+| `docs/tickets/0017-prepare-stable-platform-release.md` | Keep phase, scope, files, commands, findings, and evidence.           |
+| `quality/release-contract.json`                        | Freeze the stable surface, prerequisites, gates, and policies.        |
+| `schema/release-contract.schema.json`                  | Validate the closed hand-authored release authority.                  |
+| `schema/release-candidate.schema.json`                 | Validate identity, reports, security proof, cleanup, and handoff.     |
+| `scripts/release/lib.mjs`                              | Audit source/tickets/reports, compute hashes, and reject secrets.     |
+| `scripts/release/prepare.mjs`                          | Preflight and build two reproducible candidates from fresh clones.    |
+| `scripts/release/prove.mjs`                            | Bind full quality and exact-tarball evidence to the candidate.        |
+| `scripts/release/handoff.mjs`                          | Write the immutable receipt and print separated release commands.     |
+| `scripts/release/candidate.mjs`                        | Run prepare, full audit, delivery, proof, and handoff in order.       |
+| `test/release-candidate-contract.test.mjs`             | Prove authority, preflight, redaction, reports, and writes fail shut. |
+| `package.json`                                         | Set 1.0.0, stable entries, public files, and release scripts.         |
+| `package-lock.json`                                    | Keep the root package and locked candidate version at 1.0.0.          |
+| `schema/package-report.schema.json`                    | Match the exact stable package documentation set.                     |
+| `scripts/quality/package-release-contracts.mjs`        | Match the exact stable package documentation set.                     |
+| `scripts/quality-package.mjs`                          | Verify the 1.0 artifact, public docs, consumers, graphs, and limits.  |
+| `scripts/quality-release.mjs`                          | Probe release-policy routes in the reproducible packed website.       |
+| `scripts/quality/validate-json.mjs`                    | Enroll the release authority and schema.                              |
+| `quality/jquery-mobile-migration.json`                 | Derive the current jQStar migration version as 1.0.0.                 |
+| `CHANGELOG.md`                                         | Record 1.0 changes, limits, migration, security, and attribution.     |
+| `MIGRATING_TO_1.md`                                    | Publish the complete 0.1-to-1.0 migration.                            |
+| `RELEASING.md`                                         | Document candidate proof, approval boundary, checks, and rollback.    |
+| `SECURITY.md`                                          | Publish reporting, support, trust, severity, and withdrawal policy.   |
+| `SUPPORT.md`                                           | Publish maintained lines and issue expectations.                      |
+| `docs/COMPATIBILITY.md`                                | Publish stable entries, environments, lifecycle, and exclusions.      |
+| `README.md`                                            | Present stable entries, policy links, and candidate status.           |
+| `docs/README.md`                                       | Add release policy and tooling to the project brain.                  |
+| `docs/PROJECT.md`                                      | Record the 1.0 package, website, and candidate shape.                 |
+| `docs/ARCHITECTURE.md`                                 | Replace preview entry labels with stable ownership.                   |
+| `docs/RUNTIME_OWNERSHIP.md`                            | Classify the explicit runtime entries as stable.                      |
+| `docs/TESTING.md`                                      | Classify the installed testing entries as stable.                     |
+| `docs/INTEROPERABILITY.md`                             | Classify the Turbo and htmx entries as stable.                        |
+| `docs/SELF_HOSTING.md`                                 | Add release-policy routes to operational probes.                      |
+| `docs/tickets/ROADMAP.md`                              | Record prerequisite closure and the complete 0017 dependency set.     |
+| `config/agent-content.json`                            | Add release guides and advance the reviewed corpus to version 4.      |
+| `scripts/build-agent-content.mjs`                      | Derive the corpus version from the release authority.                 |
+| `example/docs/compatibility/index.html`                | Publish browser-facing stable compatibility.                          |
+| `example/docs/migration/index.html`                    | Publish browser-facing 1.0 migration.                                 |
+| `example/docs/security/index.html`                     | Publish browser-facing reporting and security boundaries.             |
+| `example/docs/download/index.html`                     | Distinguish current npm installation from candidate availability.     |
+| `example/docs-shell.html`                              | Add the four release routes to shared navigation.                     |
+| `example/index.html`                                   | Label the candidate and link stable release guidance.                 |
+| `example/docs/index.html`                              | Present 1.0 support and migration links.                              |
+| `example/docs/api/index.html`                          | Present the stable 1.0 API while preserving the 0.1 baseline.         |
+| `example/docs/testing/index.html`                      | Replace the testing preview label with stable status.                 |
+| `example/docs/interoperability/index.html`             | Replace the bridge preview label with stable status.                  |
+| `vite.demo.config.ts`                                  | Build every release-policy route.                                     |
+| `scripts/smoke-pages.mjs`                              | Require release routes in the GitHub Pages artifact.                  |
+| `scripts/smoke-deployment.mjs`                         | Require release routes in the self-hosted build.                      |
+| `scripts/smoke-server.mjs`                             | Fetch release routes from the standalone server.                      |
+| `scripts/smoke-package-files.mjs`                      | Require release routes in the packaged website archive.               |
+| `e2e/site.spec.ts`                                     | Verify release routes, accessibility, names, and no publish claim.    |
+| `test/site-structure.test.mjs`                         | Require each native release route and corpus version 4.               |
+| `test/agent-content.test.mjs`                          | Expect the package-derived 1.0 agent corpus.                          |
+| `test/webmcp.test.ts`                                  | Expect WebMCP results bound to package version 1.0.0.                 |
+| `example/docs/agents/index.html`                       | Regenerate the visible agent guide.                                   |
+| `example/agent-content.generated.json`                 | Regenerate the runtime agent index.                                   |
+| `example/public/jqstar-agent-index.json`               | Regenerate the public machine-readable index.                         |
+| `example/public/llms.txt`                              | Regenerate short discovery with release routes.                       |
+| `example/public/llms-full.txt`                         | Regenerate bounded full text with release policies.                   |
+| `test/fixtures/csp/conformance-map.json`               | Refresh changed public-expression source locations.                   |
+| `test/runtime-install.test.ts`                         | Expect the root runtime at 1.0.0.                                     |
+| `test/modular-entrypoints.test.ts`                     | Expect modular runtime entries at 1.0.0.                              |
+| `test/render-adapter.test.ts`                          | Expect render ownership at package version 1.0.0.                     |
+| `test/public-baseline.test.ts`                         | Keep 0.1 historical evidence separate from current 1.0 identity.      |
+| `test/cli.test.ts`                                     | Install the 1.x package range in generated consumers.                 |
+| `test/fixtures/external-plugin/package.json`           | Test an external plugin beside the 1.x package range.                 |
+| `test/fixtures/mock-navigation-plugin/package.json`    | Test a navigation plugin beside the 1.x package range.                |
+| `test/jquery-mobile-migration-contract.test.ts`        | Match migration fixtures to current 1.0 package identity.             |
+| `test/package-release-hardening.test.mjs`              | Add timeout cleanup and 1.0 package-report proof.                     |
+| `scripts/quality-0044-self-test.mjs`                   | Keep the cleanup/package detector aligned with its 14-test suite.     |
+| `scripts/quality/run.mjs`                              | Allow release candidates to force all configured gates.               |
+| `test/quality-runner.test.mjs`                         | Prove forced and ordinary changed-path gate selection.                |
+| `docs/QUALITY_PROGRAM.md`                              | Document the release-only all-gates runner mode.                      |
 
 ### Design changes
 
-None recorded.
+- The 2026-09-06 correction adds forced quality commands to the manual release and compatibility
+  examples, matching the existing combined candidate command. The migration guide now states the
+  generic modular default and explicit Datastar selection. The accompanying 0033 and ROADMAP updates
+  record the current audit and unresolved closure work. No runtime file changes.
+
+- The prerequisite and acceptance audit extends through ticket 0050 because its public agent corpus
+  and optional WebMCP surface shipped after this ticket was drafted. Omitting a current public
+  surface from the 1.0 audit would make the candidate incomplete. The prepare, prove, and handoff
+  split and the no-publishing boundary do not change.
+- Four native website routes expose compatibility, migration, security, and download truth from the
+  packaged self-hosted archive. They advance the reviewed agent corpus to version 4 and explicitly
+  distinguish a proven candidate from npm, Git tag, or GitHub release state.
+- The existing immutable packed-size ceiling remains unchanged. Contributor-only component research
+  and the detailed CSP threat-model worksheet remain public in the repository through absolute links
+  but leave the installed tarball; all user-facing component, CSP, security, compatibility, support,
+  migration, and release documents still ship.
+- The final candidate references the package, release, static, and browser subordinate reports by
+  hash and records the npm advisory source and retrieval time. Unsupported tool ranges and private
+  paths embedded in file URLs or messages now fail preflight/redaction.
+- A clean committed candidate has no working-tree diff, so ordinary change-scoped delivery may skip
+  detector gates. The candidate process explicitly forces all configured full-audit and delivery
+  gates; ordinary developer and CI runs keep their existing changed-path selection.
 
 ## Test
 
-| Command   | Result  | Evidence                                 |
-| --------- | ------- | ---------------------------------------- |
-| _Not run_ | Planned | Verification commands are defined above. |
+The 2026-09-06 guide correction passes Plan validation after restoring the required `Scope` heading.
+The existing release-candidate and modular-entrypoint suites pass all thirteen tests
+(`release-guide-plan/focused.log`). Fast run `2026-09-06T21-58-11-294Z-89666` passes its five
+selected gates and all 1,567 unit tests. The unchanged workflow self-test is explicitly skipped.
+Actual Code validation passes against that exact report before this ledger update. Complete delivery
+and Test validation follow the finalized six-file documentation batch.
+
+The three changed public-source reviews have fresh hashes and six explicit revised interpretations.
+Their previous records remain in `claim-review/before-guide-correction-5d74334/`. Neither the
+semantic review nor the earlier development navigation result is final candidate acceptance.
+
+| Command                                                                                                 | Result | Evidence                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run ticket:validate -- --phase plan --ticket docs/tickets/0017-prepare-stable-platform-release.md` | Pass   | The expanded 33-ticket plan and planned-file manifest passed before implementation.                                                                              |
+| Focused release tests, first iterations                                                                 | Fail   | Fixed strict tuple schemas, an invalid regular expression, both historical ticket-table layouts, and ticket 0043's approved mutation-removal disposition.        |
+| `npx vitest run --reporter=json --outputFile=.git/jqstar/0017-unit.json`                                | Fail   | 920/923 passed; regenerated agent artifacts and CSP source locations.                                                                                            |
+| Unit rerun after generation                                                                             | Fail   | 922/923 passed; corrected the WebMCP result from stale 0.1.0 to 1.0.0.                                                                                           |
+| Focused release/site/package contract suite                                                             | Fail   | 38/39 passed; exposed a fail-open `>=24` tool-range parser and corrected it.                                                                                     |
+| Focused release/site/package contract suite                                                             | Pass   | 39/39 passed after tool-range correction; timeout and signal cleanup also passed.                                                                                |
+| `npx vitest run --reporter=json --outputFile=.git/jqstar/0017-unit-final.json`                          | Pass   | 232 suites and 925 tests passed with no failures.                                                                                                                |
+| `node scripts/quality/validate-json.mjs`                                                                | Pass   | 72 JSON files, 14 instances, and 21 strict schemas passed.                                                                                                       |
+| `npm run build:self-hosted`                                                                             | Pass   | Built 41 website files and the deterministic archive with the four release routes.                                                                               |
+| `node scripts/smoke-pages.mjs` after a root-base self-hosted build                                      | Fail   | The command correctly rejected `/` output where `/jqstar/` was required; `npm run build:pages` is the supported invocation.                                      |
+| `node scripts/smoke-deployment.mjs && node scripts/smoke-server.mjs`                                    | Pass   | Packaged routes, server, backend, browser runtime, headers, and agent resources passed.                                                                          |
+| `npm run test:package:quality`, initial                                                                 | Fail   | Required policies exceeded the immutable packed ceiling by 10,925 bytes.                                                                                         |
+| `npm run test:package:quality`, second                                                                  | Fail   | Exact-file probe still named two documents deliberately moved to repository-only scope.                                                                          |
+| `npm run test:package:quality`, final                                                                   | Pass   | All 13 checks passed; 219 files, 2,961,970 packed bytes, and 10,355,688 unpacked bytes without a budget increase.                                                |
+| `npm run test:release:quality`                                                                          | Pass   | All seven reproducibility, SBOM/license, provenance, tool, browser, and packed-site checks passed.                                                               |
+| `npm run build:pages`                                                                                   | Pass   | `/jqstar/` base paths, agent resources, runtime URL, and every new route passed.                                                                                 |
+| `npx playwright test e2e/site.spec.ts --project=chromium`                                               | Fail   | Corrected the nonexistent project name to the repository's `desktop-chromium`.                                                                                   |
+| `npx playwright test e2e/site.spec.ts --project=desktop-chromium`                                       | Pass   | All ten site tests passed, including the release pages and accessibility scan.                                                                                   |
+| `npm run quality:fast`                                                                                  | Pass   | Ticket workflow, runner self-test, format, 925 unit tests, and all 22 fast static analyses passed.                                                               |
+| `npm run ticket:validate -- --phase code ... --report <fast-report>`                                    | Pass   | Code-phase validation accepted the current ledger and passing fast report.                                                                                       |
+| `npm run check`, initial delivery                                                                       | Fail   | Formatting rejected the edited ticket; the package was 214 bytes over its immutable ceiling, and the dependent detector self-test refused that report.           |
+| `npm run check`, corrected delivery                                                                     | Fail   | Eleven substantive gates passed; the liveness detector still expected 13 package-hardening tests after timeout cleanup made the focused suite contain 14.        |
+| `npm run test:quality:0044`                                                                             | Pass   | All 16 detector-liveness checks passed after aligning the package-hardening suite count.                                                                         |
+| `npm run check`, final Test-phase delivery                                                              | Pass   | All 12 required delivery gates passed against one unchanged 646-file fingerprint.                                                                                |
+| `npm run release:prepare -- --run-id 2026-09-04T20-25-00-000Z-17001`                                    | Pass   | Expected refusal: the real dirty worktree produced only a redacted out-of-tree failure receipt and no artifact.                                                  |
+| `npm run ticket:validate -- --phase test ... --report <delivery-report>`                                | Fail   | The validator rejected the receipt after its evidence row changed this gated ticket; a fresh unchanged-tree delivery is required.                                |
+| `npm run ticket:validate -- --phase test ... --report <fresh-delivery-report>`                          | Fail   | The validator required the exact non-empty `Inspection ledger` table; equivalent inspection bullets were not accepted.                                           |
+| `npm run check` after adding the inspection ledger                                                      | Pass   | All 12 delivery gates passed in run `2026-09-04T20-35-59-865Z-97650` against one unchanged 646-file fingerprint.                                                 |
+| `npm run quality:delivery` through the final `npm run check`                                            | Pass   | The delivery runner produced the authorized immutable report for run `2026-09-04T20-35-59-865Z-97650`.                                                           |
+| `npm run ticket:validate -- --phase test ... --report <20-35-59-report>`                                | Pass   | Test-phase validation accepted the authorized immutable delivery report before Document work began.                                                              |
+| First clean-commit `npm run release:candidate`                                                          | Fail   | Preparation and all 14 full-audit gates passed; proof rejected the delivery receipt because two change-scoped detector gates were skipped on a clean tree.       |
+| `node --test test/quality-runner.test.mjs`                                                              | Pass   | All 24 runner tests passed, including ordinary skip preservation and forced execution of a changed-path-selected gate.                                           |
+| `npx vitest run test/release-candidate-contract.test.mjs`                                               | Pass   | All six candidate contract tests passed, including the release-only all-gates orchestration assertion.                                                           |
+| `npm run quality:fast`                                                                                  | Pass   | All five fast gates passed after the all-gates correction.                                                                                                       |
+| `npm run ticket:validate -- --phase code ... --report <21-51-19-report>`                                | Pass   | Code-phase validation accepted the updated ledger and exact fast report.                                                                                         |
+| `npm run check` after the all-gates correction                                                          | Pass   | All selected delivery gates passed against the unchanged correction tree; ordinary change-scoped skips remained explicit.                                        |
+| `npm run ticket:validate -- --phase test ... --report <21-52-36-report>`                                | Pass   | Test-phase validation accepted the exact authorized delivery receipt.                                                                                            |
+| Second clean-commit `npm run release:candidate`                                                         | Fail   | Thirteen substantive full-audit gates passed, including the forced detector; the inherited flag incorrectly forced the runner self-test's ordinary-skip fixture. |
+| `JQS_QUALITY_FORCE_ALL=1 node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs`        | Pass   | All 34 tests passed; direct runner calls preserve ordinary selection while explicit forced calls execute selected gates.                                         |
+| `npx vitest run test/release-candidate-contract.test.mjs`                                               | Pass   | All six candidate contract tests passed after scoping the flag to the CLI entrypoint.                                                                            |
+| `npm run quality:fast`                                                                                  | Pass   | All five fast gates passed after the CLI-boundary correction.                                                                                                    |
+| `npm run ticket:validate -- --phase code ... --report <22-24-11-report>`                                | Pass   | Code-phase validation accepted the updated evidence and exact fast report.                                                                                       |
+| `npm run check` after the CLI-boundary correction                                                       | Pass   | Delivery passed against the unchanged correction tree; ordinary selection remained explicit and the runner self-test passed.                                     |
+| `npm run ticket:validate -- --phase test ... --report <22-25-37-report>`                                | Pass   | Test-phase validation accepted the exact authorized delivery receipt.                                                                                            |
+
+### Inspection ledger
+
+The 2026-09-06 Plan check initially failed because the required `Scope` heading had been renamed.
+Restoring the exact heading made Plan validation pass before the public guide edits.
+
+The release selection and modular-default findings are recorded in the reopening extension above.
+Their guide corrections now match the existing implementation and pass thirteen focused tests and
+the fast gate. Complete delivery follows this ledger update. Historical execution records below keep
+their original scope and source.
+
+| Finding                                                                                                   | Resolution                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| The tool-range comparison parsed `>=24` as no version and could fail open.                                | Parse range prefixes and inject Node 23/npm 10 in sabotage tests; both now stop preflight.                                  |
+| Required release policies exceeded the immutable package ceiling.                                         | Keep the ceiling; retain contributor-only engineering documents in the repository and ship every user-facing policy.        |
+| Timeout cleanup increased the package-hardening suite while its liveness detector retained the old count. | Require all 14 package-hardening tests; the complete 16-detector self-test now passes.                                      |
+| Candidate preparation could accidentally be assumed to work from the implementation tree.                 | Run it on the real dirty tree; it stopped before packing and wrote only a redacted out-of-tree failure receipt.             |
+| Release command strings could be mistaken for authorized work.                                            | Static tests prove tag, push, publish, and GitHub release operations exist only in the separately approval-gated handoff.   |
+| Document validation requires the literal delivery command rather than only its `check` wrapper.           | Record the `quality:delivery` gate and its exact authorized run alongside the wrapper command.                              |
+| A clean candidate delivery used ordinary diff selection and skipped two required detector gates.          | Add a release-only all-gates runner mode, test it, and require the candidate orchestrator to use it for both quality modes. |
+| The all-gates environment flag also changed direct programmatic runner calls inside its own tests.        | Interpret the environment only at the CLI boundary; direct calls now require an explicit `forceAll: true` option.           |
 
 ## Document
 
 ### Documentation changed
 
-Pending.
+- `CHANGELOG.md`, `MIGRATING_TO_1.md`, `RELEASING.md`, `SECURITY.md`, and `SUPPORT.md` publish the
+  1.0 history, complete upgrade path, release authorization boundary, vulnerability process,
+  maintained lines, verification, and withdrawal response.
+- `README.md` and `docs/COMPATIBILITY.md` identify the stable entries, package/runtime identities,
+  supported environments, public policy links, optional-feature exclusions, and candidate state.
+- `docs/README.md`, `docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/RUNTIME_OWNERSHIP.md`,
+  `docs/TESTING.md`, `docs/INTEROPERABILITY.md`, and `docs/SELF_HOSTING.md` record the stable
+  platform, evidence ownership, supported bridges, and packaged-site operations in the project
+  brain.
+- The native compatibility, migration, security, and download routes expose the same policy in the
+  public website and packaged self-hosted archive without claiming that npm, a tag, or a GitHub
+  release already exists.
+- `config/agent-content.json` and the regenerated agent index and text corpora publish the reviewed
+  1.0 guidance as corpus version 4.
+- `docs/tickets/ROADMAP.md` records closure of the complete 1.0 prerequisite set and leaves stores,
+  resources, native navigation, inspection, DevTools, and upgrade diagnostics on their later
+  optional tracks.
+- `docs/QUALITY_PROGRAM.md` distinguishes ordinary changed-path gate selection from the release
+  candidate's mandatory all-gates runs.
 
 ### Acceptance evidence
 
-Pending implementation.
+| Criterion | Result  | Evidence                                                                                                                                                                                                                                                                                        |
+| --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pending | Both manual release guides now force every gate, matching the candidate implementation. Focused and fast checks pass. Complete delivery and current policy proof, including the private-reporting route under AC-13, remain required.                                                           |
+| AC-02     | Pending | The guide now states the generic modular default and explicit Datastar selection. Current source, retained installed-consumer evidence and thirteen focused tests support the correction. Complete delivery and final migration evidence, including prerequisite 0039, remain required.         |
+| AC-03     | Pass    | Package and lockfile are 1.0.0; runtime, CLI, registry, declarations, maps, browser, website, corpus, archive, and report checks derive that identity from `package.json`, while plugin API and CSP grammar retain their independent versions.                                                  |
+| AC-04     | Pass    | Release preflight tests reject dirty, untracked, ignored-production, shallow, wrong-branch, tagged, lock-drift, Node 23, and npm 10 inputs. The real dirty worktree refusal wrote only a redacted failure receipt and no artifact.                                                              |
+| AC-05     | Pass    | Release quality produces and compares two locked fresh-clone tarballs by SHA-256, SHA-512, npm integrity, shasum, metadata, path, mode, size, declarations, maps, notices, archive, and behavior; cleanup tests cover success, failure, timeout, and signals.                                   |
+| AC-06     | Pass    | Package quality's 13 checks install the exact tarball into root, modular, CSP, testing, TypeScript, QUnit, browser, UMD, CLI/registry, bridge, and self-host consumers and enforce exports, types, maps, licenses, `publint`, ATTW, and isolation.                                              |
+| AC-07     | Pass    | Installed module-graph, sentinel, export, composition, and immutable-size checks prove each entry contains only its requested capability and exclude every named post-1.0 feature plus fixtures, server, registry, and website code.                                                            |
+| AC-08     | Pass    | The 0.1 public baseline and 925 unit tests pass unchanged against 1.0, covering root behavior, exports, jQuery augmentation, effects, requests, events, errors, patching, UI identities, and disposal.                                                                                          |
+| AC-09     | Pass    | Installed conformance covers core, UI, Datastar, testing, external plugins, the reviewed CSP grammar/threat corpus, and exact Turbo/htmx lifecycles; browser quality passes Chromium, Firefox, and WebKit matrices.                                                                             |
+| AC-10     | Pass    | Package, dependency, source, archive, bundle, and browser checks exclude archived jQuery UI/Mobile runtimes. The public coexistence/migration guides and fixtures implement ticket 0038's independent-project stewardship decisions.                                                            |
+| AC-11     | Pass    | Site structure, self-host, package, deployment, server, browser, accessibility, and agent-corpus checks cover every current API/policy route, approved names, the reference layout, and the explicit not-yet-published state.                                                                   |
+| AC-12     | Pass    | `release:candidate` forces every configured gate, then binds the clean committed tree to matching full-audit and delivery reports, exact fingerprints, package/release/static/browser subordinate hashes, and the installed tarball; missing, skipped, reordered, or stale reports fail closed. |
+| AC-13     | Pending | The documented private-reporting route is disabled in live GitHub repository settings. Actual API reads are retained. Enabling that single setting and verifying the route await explicit governance authorization; existing static/package/security checks do not prove service availability.  |
+| AC-14     | Pending | Prerequisites 0035 and 0039 are in Test and still require actual screen-reader observations. The prerequisite validator remains strict; its implementation alone does not prove current terminal closure.                                                                                       |
+| AC-15     | Pass    | The immutable candidate schema and handoff bind commit/tree, package filename and digests, subordinate receipts, notes, tag/dist-tag expectations, read-only checks, rollback response, and separately labeled approval-required commands; tests prove no write is executed.                    |
+| AC-16     | Pending | Fresh final full-audit, delivery, installed candidate and Test/Document evidence remain required after the reopened corrections and prerequisite closure. Historical receipts retain their original source identity.                                                                            |
 
 ### Completion audit
 
-Pending.
+The 2026-09-06 reopening supersedes the historical closure. The release-command and modular-default
+corrections pass focused and fast checks. Complete delivery and final policy/migration evidence
+remain pending under AC-01 and AC-02. AC-13 has a verified reporting-route gap and awaits the
+separately authorized repository-setting correction. AC-14 awaits prerequisite closure, and AC-16
+awaits the complete final candidate and phase evidence after those corrections.
+
+### Historical completion audit
+
+All 16 criteria have one current evidence row. The first clean candidate correctly failed closed on
+two skipped required gates; the release-only all-gates correction preserves ordinary selection while
+making skips impossible in candidate evidence. The stable surface authority, public policies, 1.0
+package identity, prerequisite audit, clean-source preflight, reproducible artifact, installed
+consumer matrix, security checks, website/archive, and immutable handoff form one fail-closed
+candidate path. Optional post-1.0 services remain absent from stable exports and do not block this
+release.
+
+The candidate command writes evidence only beneath `.git/jqstar/releases/1.0.0/`. It does not create
+or push a tag, publish to npm, create a GitHub release, sign, attest, or announce. Those operations
+remain separately approval-gated after the candidate receipt has been inspected. No unresolved
+finding or unchecked criterion remains.
+
+Historical status: Complete

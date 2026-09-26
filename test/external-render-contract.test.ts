@@ -12,7 +12,6 @@ import type { StarRenderAdapter } from "jquery-star/core";
 import { datastarPlugin } from "jquery-star/datastar";
 import { datastarSuccessFixture } from "jquery-star/datastar/testing";
 import { createResponseController, createStarHarness } from "jquery-star/testing";
-import type { StarDOMWindow } from "jquery-star/testing";
 import { uiPlugin } from "jquery-star/ui";
 
 import {
@@ -583,7 +582,7 @@ describe("external render coexistence", () => {
         response: datastarSuccessFixture({ streamCount: 2 }),
       });
     const active = createStarHarness({
-      window: window as StarDOMWindow,
+      window: window,
       jQuery: $,
       plugins: [datastarPlugin],
       responses,

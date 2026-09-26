@@ -1,3 +1,4 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { DocumentHost } from "../kernel";
 import {
@@ -56,8 +57,23 @@ import type {
   StarUIStatic,
 } from "../types";
 import { STAR_VERSION } from "../version";
+import { identifyLabel, identifyPart, syncGeneratedAttribute } from "./floating";
+import {
+  createUILifecycle,
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  uiWindow,
+  type UIResources,
+} from "./lifecycle";
 
-interface DialogRecord {
+interface DialogRecord extends UIResources {
+  modal: boolean;
   trigger: Element | undefined;
 }
 
@@ -74,11 +90,10 @@ interface UICapabilities {
 }
 
 const records = new WeakMap<HTMLDialogElement, DialogRecord>();
-const enhanced = new WeakSet<HTMLDialogElement>();
 let dialogId = 0;
 
 function isDialog(value: Element | null): value is HTMLDialogElement {
-  return value instanceof HTMLDialogElement;
+  return isHTMLTag(value, "dialog");
 }
 
 function queryDialog(selector: string, root: ParentNode = document): HTMLDialogElement {
@@ -87,13 +102,18 @@ function queryDialog(selector: string, root: ParentNode = document): HTMLDialogE
   return match;
 }
 
-function resolveDialog(target: DialogTarget, root: ParentNode = document): HTMLDialogElement {
-  return typeof target === "string" ? queryDialog(target, root) : target;
+function resolveDialog(
+  target: DialogTarget | HTMLElement,
+  root: ParentNode = document,
+): HTMLDialogElement {
+  if (typeof target === "string") return queryDialog(target, root);
+  if (isDialog(target)) return target;
+  throw new Error("Dialog target did not match a <dialog>.");
 }
 
 function controlledDialog(context: StarContext, target?: unknown): HTMLDialogElement {
   const owner = context.root.ownerDocument;
-  if (target instanceof HTMLDialogElement) return target;
+  if (isHTMLElement(target)) return resolveDialog(target);
 
   if (typeof target === "string") {
     const local = context.root.querySelector(target);
@@ -112,16 +132,6 @@ function controlledDialog(context: StarContext, target?: unknown): HTMLDialogEle
   );
 }
 
-function identifyPart(
-  dialog: HTMLDialogElement,
-  part: "title" | "description",
-): string | undefined {
-  const element = dialog.querySelector<HTMLElement>(`[data-part='${part}']`);
-  if (!element) return undefined;
-  element.id ||= `${dialog.id}-${part}`;
-  return element.id;
-}
-
 function emit(
   dialog: HTMLDialogElement,
   name: string,
@@ -129,7 +139,7 @@ function emit(
   cancelable = false,
 ): boolean {
   return dialog.dispatchEvent(
-    new CustomEvent(`jquery-star:dialog:${name}`, {
+    new (uiWindow(dialog) as Window & typeof globalThis).CustomEvent(`jquery-star:dialog:${name}`, {
       bubbles: true,
       cancelable,
       detail,
@@ -147,57 +157,100 @@ function setTriggerState(
   trigger.setAttribute("aria-expanded", String(open));
 }
 
-function enhanceDialog(dialog: HTMLDialogElement): DialogRecord {
-  let record = records.get(dialog);
-  if (!record) {
-    record = { trigger: undefined };
-    records.set(dialog, record);
+function restoreDialogModal(dialog: HTMLDialogElement, record: DialogRecord): void {
+  if (!record.modal || !dialog.open || !dialog.isConnected) return;
+  try {
+    if (dialog.matches(":modal")) return;
+  } catch {
+    // DOM test environments may not implement the native modal selector.
+    return;
   }
-  if (enhanced.has(dialog)) return record;
+  dialog.close(dialog.returnValue);
+  if (!uiCurrent(record) || records.get(dialog) !== record) return;
+  try {
+    dialog.showModal();
+  } catch (error) {
+    record.modal = false;
+    throw error;
+  }
+}
+
+function enhanceDialog(dialog: HTMLDialogElement): DialogRecord {
+  const existing = records.get(dialog);
 
   dialog.id ||= `jqs-dialog-${++dialogId}`;
+  identifyLabel(dialog, identifyPart(dialog, "title"));
+  syncGeneratedAttribute(dialog, "aria-describedby", identifyPart(dialog, "description"));
+  if (existing && uiCurrent(existing)) {
+    restoreDialogModal(dialog, existing);
+    return existing;
+  }
+  existing?.cleanup();
+  const reentered = records.get(dialog);
+  if (reentered) return reentered;
+  const record: DialogRecord = { ...uiResources(dialog), modal: false, trigger: undefined };
+  const current = (): boolean => uiCurrent(record) && records.get(dialog) === record;
   dialog.dataset.state = dialog.open ? "open" : "closed";
   dialog.setAttribute("aria-modal", "true");
 
-  if (!dialog.hasAttribute("aria-label") && !dialog.hasAttribute("aria-labelledby")) {
-    const titleId = identifyPart(dialog, "title");
-    if (titleId) dialog.setAttribute("aria-labelledby", titleId);
-  }
-  if (!dialog.hasAttribute("aria-describedby")) {
-    const descriptionId = identifyPart(dialog, "description");
-    if (descriptionId) dialog.setAttribute("aria-describedby", descriptionId);
-  }
-
-  dialog.addEventListener("cancel", (event) => {
+  const cancel = (event: Event): void => {
     const current = records.get(dialog);
     const detail = { dialog, trigger: current?.trigger };
-    if (!emit(dialog, "before-close", detail, true)) {
+    if (
+      !emit(dialog, "before-close", detail, true) ||
+      !uiCurrent(record) ||
+      records.get(dialog) !== record
+    ) {
       event.preventDefault();
       return;
     }
     dialog.dataset.state = "closing";
-  });
+  };
 
-  dialog.addEventListener("close", () => {
-    const current = records.get(dialog);
+  const close = (): void => {
+    if (!current() || dialog.open) return;
+    const owner = records.get(dialog);
+    record.modal = false;
     dialog.dataset.state = "closed";
-    setTriggerState(current?.trigger, dialog, false);
-    if (current?.trigger instanceof HTMLElement && current.trigger.isConnected) {
-      current.trigger.focus();
+    setTriggerState(owner?.trigger, dialog, false);
+    if (
+      isHTMLElement(owner?.trigger) &&
+      owner.trigger.isConnected &&
+      owner.trigger.ownerDocument === record.document &&
+      uiActive(owner.trigger)
+    ) {
+      owner.trigger.focus();
     }
+    if (!uiCurrent(record) || records.get(dialog) !== record) return;
     emit(dialog, "close", {
       dialog,
       returnValue: dialog.returnValue,
-      trigger: current?.trigger,
+      trigger: owner?.trigger,
     });
-  });
+  };
 
-  dialog.addEventListener("click", (event) => {
+  const click = (event: MouseEvent): void => {
     if (event.target !== dialog || !dialog.hasAttribute("data-close-on-backdrop")) return;
     closeDialog(dialog, "backdrop");
-  });
+  };
 
-  enhanced.add(dialog);
+  record.cleanups.add(() => {
+    if (record.modal) {
+      record.modal = false;
+      dialog.dataset.state = "closed";
+      setTriggerState(record.trigger, dialog, false);
+      if (dialog.open) dialog.close();
+    }
+    record.trigger = undefined;
+  });
+  record.cleanup = ownUIRecord(records, dialog, record, () => releaseUIResources(record));
+  try {
+    listenUI(record, current, dialog, "cancel", cancel);
+    listenUI(record, current, dialog, "close", close);
+    listenUI(record, current, dialog, "click", click as EventListener);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
 
@@ -206,7 +259,8 @@ function focusInitial(dialog: HTMLDialogElement, target?: string | HTMLElement):
     typeof target === "string"
       ? dialog.querySelector<HTMLElement>(target)
       : (target ?? dialog.querySelector<HTMLElement>("[autofocus]"));
-  element?.focus();
+  if (element && element.ownerDocument === dialog.ownerDocument && uiActive(element))
+    element.focus();
 }
 
 function openDialog(
@@ -219,14 +273,27 @@ function openDialog(
   if (dialog.open) return dialog;
 
   const detail = { dialog, trigger: options.trigger };
-  if (!emit(dialog, "before-open", detail, true)) return dialog;
+  if (
+    !emit(dialog, "before-open", detail, true) ||
+    !uiCurrent(record) ||
+    records.get(dialog) !== record
+  )
+    return dialog;
 
   record.trigger = options.trigger;
   setTriggerState(record.trigger, dialog, true);
   dialog.dataset.state = "opening";
-  dialog.showModal();
+  record.modal = true;
+  try {
+    dialog.showModal();
+  } catch (error) {
+    record.modal = false;
+    throw error;
+  }
+  if (!uiCurrent(record) || records.get(dialog) !== record) return dialog;
   dialog.dataset.state = "open";
   focusInitial(dialog, options.initialFocus);
+  if (!uiCurrent(record) || records.get(dialog) !== record) return dialog;
   emit(dialog, "open", detail);
   return dialog;
 }
@@ -241,7 +308,12 @@ function closeDialog(
   if (!dialog.open) return dialog;
 
   const detail = { dialog, returnValue, trigger: record.trigger };
-  if (!emit(dialog, "before-close", detail, true)) return dialog;
+  if (
+    !emit(dialog, "before-close", detail, true) ||
+    !uiCurrent(record) ||
+    records.get(dialog) !== record
+  )
+    return dialog;
 
   dialog.dataset.state = "closing";
   dialog.close(returnValue);
@@ -254,9 +326,7 @@ function registerDialogActions(dialog: StarDialogStatic, registerAction: ActionR
     const initialFocus = context.args?.[1];
     return dialog.open(target, {
       ...(context.element ? { trigger: context.element } : {}),
-      ...(typeof initialFocus === "string" || initialFocus instanceof HTMLElement
-        ? { initialFocus }
-        : {}),
+      ...(typeof initialFocus === "string" || isHTMLElement(initialFocus) ? { initialFocus } : {}),
     });
   });
 
@@ -383,11 +453,7 @@ export const enhancementObserverOptions: MutationObserverInit = {
 };
 
 function dialogElements(root: ParentNode): HTMLDialogElement[] {
-  const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-jqs="dialog"]'));
-  if (root instanceof HTMLDialogElement && root.matches('[data-jqs="dialog"]')) {
-    dialogs.unshift(root);
-  }
-  return dialogs;
+  return uiElements(root, 'dialog[data-jqs="dialog"]').filter(isDialog);
 }
 
 function installAutoEnhancement(
@@ -415,6 +481,7 @@ function installAutoEnhancement(
       document,
       (mutations) => {
         for (const mutation of mutations) {
+          if (!document.contains(mutation.target)) continue;
           switch (mutation.type) {
             case "attributes": {
               enhance(mutation.target as Element);
@@ -426,7 +493,7 @@ function installAutoEnhancement(
             }
             case "childList":
               for (const node of mutation.addedNodes) {
-                if (!(node instanceof Element)) continue;
+                if (!isElementNode(node) || !document.contains(node)) continue;
                 enhance(node);
                 const owner = node.parentElement?.closest<HTMLElement>(enhancementOwnerSelector);
                 if (owner) enhance(owner);
@@ -445,6 +512,7 @@ function installAutoEnhancement(
 }
 
 export function createUI({ activate, documentHost, registerAction }: UICapabilities): StarUIStatic {
+  const lifecycle = createUILifecycle(documentHost, activate);
   const owner = documentHost.document;
   const dialog: StarDialogStatic = {
     open: (target, options) => openDialog(target, options, owner),
@@ -452,16 +520,16 @@ export function createUI({ activate, documentHost, registerAction }: UICapabilit
   };
   const disclosures = createDisclosures(registerAction);
   const menus = createMenus(documentHost, registerAction);
-  const menubars = createMenubars(menus.api, registerAction);
+  const menubars = createMenubars(menus, registerAction);
   const trees = createTrees(registerAction);
   const tabs = createTabs(registerAction);
   const selects = createSelects(documentHost, registerAction);
   const comboboxes = createComboboxes(documentHost, registerAction);
-  const dataTables = createDataTables(registerAction);
+  const dataTables = createDataTables(registerAction, owner);
   const paginations = createPaginations(registerAction);
   const popovers = createPopovers(documentHost, registerAction);
-  const calendars = createCalendars(popovers.api, registerAction);
-  const forms = createForms(registerAction);
+  const calendars = createCalendars(popovers, registerAction, owner);
+  const forms = createForms(documentHost, registerAction);
   const hoverCards = createHoverCards(documentHost, registerAction);
   const tooltips = createTooltips(documentHost, registerAction);
   const toasts = createToasts(documentHost, registerAction);
@@ -470,12 +538,12 @@ export function createUI({ activate, documentHost, registerAction }: UICapabilit
   const passwordFields = createPasswordFields(registerAction);
   const tagsInputs = createTagsInputs(registerAction);
   const inputOTPs = createInputOTPs(registerAction);
-  const resizables = createResizables(registerAction);
+  const resizables = createResizables(registerAction, owner);
   const sidebars = createSidebars(documentHost, registerAction);
   const carousels = createCarousels(registerAction);
   const toolbars = createToolbars(registerAction);
   const steppers = createSteppers(registerAction);
-  const sortables = createSortables(registerAction);
+  const sortables = createSortables(registerAction, owner);
   const fileUploads = createFileUploads(registerAction);
   const multiSelects = createMultiSelects(documentHost, registerAction);
   const transferLists = createTransferLists(registerAction);
@@ -484,9 +552,9 @@ export function createUI({ activate, documentHost, registerAction }: UICapabilit
   const ratings = createRatings(registerAction);
   const messageScrollers = createMessageScrollers(registerAction);
   const searchFields = createSearchFields(registerAction);
-  const feeds = createFeeds(registerAction);
-  const questionnaires = createQuestionnaires(registerAction);
-  const charts = createCharts(registerAction);
+  const feeds = createFeeds(registerAction, owner);
+  const questionnaires = createQuestionnaires(registerAction, owner);
+  const charts = createCharts(registerAction, owner);
   const codeBlocks = createCodeBlocks(registerAction);
   const clipboards = createClipboards(registerAction);
   const editables = createEditables(registerAction);
@@ -494,6 +562,7 @@ export function createUI({ activate, documentHost, registerAction }: UICapabilit
   const jsonViewers = createJSONViewers(registerAction);
   const countdowns = createCountdowns(registerAction);
   const enhance = (root: ParentNode = owner): void => {
+    if (!lifecycle.canEnhance(root)) return;
     for (const element of dialogElements(root)) enhanceDialog(element);
     disclosures.enhance(root);
     tabs.enhance(root);
@@ -593,6 +662,7 @@ export function createUI({ activate, documentHost, registerAction }: UICapabilit
     enhance,
   };
   registerDialogActions(dialog, registerAction);
+  lifecycle.guard(ui);
   installAutoEnhancement(documentHost, enhance, activate);
   return ui;
 }

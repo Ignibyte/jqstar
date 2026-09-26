@@ -61,6 +61,8 @@ const layouts = new WeakMap<HTMLElement, ColumnLayout>();
 const expandedRows = new WeakMap<HTMLElement, Set<string>>();
 const collapsedGroups = new WeakMap<HTMLElement, Set<string>>();
 const virtualTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+const activeQueries = new WeakMap<HTMLElement, AbortController>();
+const pendingEdits = new WeakMap<HTMLElement, number>();
 let draggedColumn: ColumnKey | undefined;
 
 function browserRoot(context: StarContext<ProjectBrowserState>): HTMLElement {
@@ -284,31 +286,60 @@ function synchronizeComponents(root: HTMLElement, state: ProjectBrowserState): v
   }
 }
 
-async function load(context: StarContext<ProjectBrowserState>, root: HTMLElement): Promise<void> {
+function synchronizeLoading(context: StarContext<ProjectBrowserState>, root: HTMLElement): void {
+  context.state.projectBrowserLoading =
+    activeQueries.has(root) || (pendingEdits.get(root) ?? 0) > 0;
+}
+
+async function load(
+  context: StarContext<ProjectBrowserState>,
+  root: HTMLElement,
+): Promise<boolean> {
+  const previous = activeQueries.get(root);
+  const controller = new AbortController();
+  activeQueries.set(root, controller);
+  previous?.abort("superseded");
   context.state.projectBrowserError = null;
+  synchronizeLoading(context, root);
   context.state.projectBrowserRequestId += 1;
   const requestId = context.state.projectBrowserRequestId;
-  synchronizeComponents(root, context.state);
-  await $.star.get<ProjectBrowserState>(endpoint(root), {
-    error: "projectBrowserError",
-    pending: "projectBrowserLoading",
-    payload: {
-      projectBrowserGroupBy: context.state.projectBrowserGroupBy,
-      projectBrowserMode: context.state.projectBrowserMode,
-      projectBrowserOwner: context.state.projectBrowserOwner,
-      projectBrowserPage: context.state.projectBrowserPage,
-      projectBrowserPageSize: context.state.projectBrowserPageSize,
-      projectBrowserQuery: context.state.projectBrowserQuery,
-      projectBrowserRequestId: requestId,
-      projectBrowserSorts: context.state.projectBrowserSorts,
-      projectBrowserStatus: context.state.projectBrowserStatus,
-      projectBrowserWindowSize: context.state.projectBrowserWindowSize,
-      projectBrowserWindowStart: context.state.projectBrowserWindowStart,
-    },
-    requestCancellation: "auto",
-    retry: "never",
-  })(context);
-  synchronizeComponents(root, context.state);
+  try {
+    synchronizeComponents(root, context.state);
+    await $.star.get<ProjectBrowserState>(endpoint(root), {
+      payload: {
+        projectBrowserGroupBy: context.state.projectBrowserGroupBy,
+        projectBrowserMode: context.state.projectBrowserMode,
+        projectBrowserOwner: context.state.projectBrowserOwner,
+        projectBrowserPage: context.state.projectBrowserPage,
+        projectBrowserPageSize: context.state.projectBrowserPageSize,
+        projectBrowserQuery: context.state.projectBrowserQuery,
+        projectBrowserRequestId: requestId,
+        projectBrowserSorts: context.state.projectBrowserSorts,
+        projectBrowserStatus: context.state.projectBrowserStatus,
+        projectBrowserWindowSize: context.state.projectBrowserWindowSize,
+        projectBrowserWindowStart: context.state.projectBrowserWindowStart,
+      },
+      requestCancellation: controller,
+      retry: "never",
+    })(context);
+    return !controller.signal.aborted && activeQueries.get(root) === controller;
+  } catch (error) {
+    if (controller.signal.aborted) return false;
+    if (activeQueries.get(root) === controller)
+      context.state.projectBrowserError =
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Project query failed.";
+    throw error;
+  } finally {
+    if (activeQueries.get(root) === controller) {
+      activeQueries.delete(root);
+      synchronizeLoading(context, root);
+      if (!controller.signal.aborted) synchronizeComponents(root, context.state);
+    }
+  }
 }
 
 function resetPosition(state: ProjectBrowserState): void {
@@ -346,7 +377,8 @@ async function saveProject(
   const body = Object.fromEntries(
     Array.from(new FormData(form), ([name, value]) => [name, String(value)]),
   );
-  context.state.projectBrowserLoading = true;
+  pendingEdits.set(root, (pendingEdits.get(root) ?? 0) + 1);
+  synchronizeLoading(context, root);
   context.state.projectBrowserError = null;
   try {
     const response = await fetch(endpoint(root, id), {
@@ -357,7 +389,7 @@ async function saveProject(
     const result = (await response.json()) as EditResponse;
     if (!response.ok) {
       if (response.status === 409) {
-        await load(context, root);
+        if (!(await load(context, root))) return;
         context.state.projectBrowserError =
           result.error ?? "The project changed. Reload and retry.";
         root
@@ -367,7 +399,7 @@ async function saveProject(
       }
       throw new Error(result.error ?? `Project update failed with ${response.status}.`);
     }
-    await load(context, root);
+    if (!(await load(context, root))) return;
     context.state.projectBrowserMessage = result.message ?? "Project saved.";
     root
       .querySelector<HTMLInputElement>(`[data-project-browser-edit="${id}"] input[name="name"]`)
@@ -375,7 +407,10 @@ async function saveProject(
   } catch (error) {
     context.state.projectBrowserError = error instanceof Error ? error.message : String(error);
   } finally {
-    context.state.projectBrowserLoading = false;
+    const remaining = (pendingEdits.get(root) ?? 1) - 1;
+    if (remaining > 0) pendingEdits.set(root, remaining);
+    else pendingEdits.delete(root);
+    synchronizeLoading(context, root);
   }
 }
 

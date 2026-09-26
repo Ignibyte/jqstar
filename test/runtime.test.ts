@@ -10,6 +10,11 @@ async function updated(): Promise<void> {
   await $.star.nextUpdate();
 }
 
+function required<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) throw new Error("Required test fixture is missing.");
+  return value;
+}
+
 const expressionRuntimeAction = vi.fn(() => "global-result");
 const expressionRuntimeHelper = vi.fn((value: string) => value.toUpperCase());
 $.star.use({
@@ -90,6 +95,30 @@ describe("jQuery Star", () => {
     await updated();
 
     expect($("output").text()).toBe("1");
+
+    $("#app").append('<button class="unrelated">Other</button>');
+    $(".unrelated").trigger("click");
+    await updated();
+
+    expect($("output").text()).toBe("1");
+  });
+
+  it("binds the root selector's event directly to the application root", async () => {
+    document.body.innerHTML = `<section id="app"><output></output></section>`;
+
+    $("#app").star({
+      state: { count: 0 },
+      actions: { increment: ({ state }) => state.count++ },
+      ui: {
+        "&": { on: { click: "increment" } },
+        output: { text: ({ state }) => state.count },
+      },
+    });
+
+    $("#app").trigger("click");
+    await updated();
+
+    expect($("#app output").text()).toBe("1");
   });
 
   it("binds local actions to the internal expression runtime until destruction", () => {
@@ -176,7 +205,7 @@ describe("jQuery Star", () => {
     expect($(".status").attr("href")).toBe("/ready");
     expect($(".status").attr("aria-live")).toBe("polite");
     expect($(".status").prop("title")).toBe("Done");
-    expect($<HTMLElement>(".status").get(0)?.style.color).toBe("green");
+    expect($(".status").get(0)?.style.color).toBe("green");
     expect($(".markup strong").text()).toBe("Complete");
   });
 
@@ -329,19 +358,9 @@ describe("jQuery Star", () => {
       .map(({ owner }) => owner)
       .sort();
 
-    expect(services).toEqual([
-      "ui:auto-enhancement",
-      "ui:combobox:active-records",
-      "ui:hover-card:active-records",
-      "ui:menu:active-records",
-      "ui:multi-select:active-records",
-      "ui:popover:active-records",
-      "ui:select:active-records",
-      "ui:toast:active-records",
-      "ui:tooltip:active-records",
-    ]);
+    expect(services).toEqual(["ui:auto-enhancement", "ui:lifecycle", "ui:toast:lifetime"]);
     expect(resources.some(({ kind }) => kind === "listener")).toBe(true);
-    expect(resources.filter(({ kind }) => kind === "observer")).toHaveLength(2);
+    expect(resources.filter(({ kind }) => kind === "observer")).toHaveLength(1);
   });
 
   it("records application observers with their exact owner and full subtree scope", async () => {
@@ -704,6 +723,182 @@ describe("jQuery Star", () => {
     expect(mounted).toHaveBeenCalledOnce();
   });
 
+  it("keeps preserved roots and descendants mounted across subtree release and remount", () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <div id="tree">
+          <div id="preserved" class="widget"><span id="nested" class="widget"></span></div>
+          <span id="sibling" class="widget"></span>
+        </div>
+      </section>
+    `;
+    const mounted = vi.fn();
+    const cleaned = vi.fn();
+    $("#app").star({
+      ui: {
+        ".widget": {
+          mount: ({ $element }) => {
+            const element = $element?.get(0);
+            mounted(element);
+            return () => cleaned(element);
+          },
+        },
+      },
+    });
+    const instance = required($("#app").star("instance"));
+    const tree = required(document.querySelector("#tree"));
+    const preserved = required(document.querySelector("#preserved"));
+    const nested = required(document.querySelector("#nested"));
+    const sibling = required(document.querySelector("#sibling"));
+    const internals = instance as unknown as {
+      releaseTree(tree: Element, preservedRoots: readonly Element[]): void;
+      mountTree(tree: Element, preservedRoots: readonly Element[]): void;
+      mounted: Map<Element, unknown>;
+    };
+
+    expect(mounted.mock.calls.map(([element]) => element)).toEqual([preserved, nested, sibling]);
+    internals.releaseTree(tree, [preserved]);
+    expect(cleaned.mock.calls.map(([element]) => element)).toEqual([sibling]);
+    expect([...internals.mounted.keys()]).toEqual([preserved, nested]);
+
+    internals.mountTree(tree, [preserved]);
+    expect(mounted.mock.calls.map(([element]) => element)).toEqual([
+      preserved,
+      nested,
+      sibling,
+      sibling,
+    ]);
+    expect(cleaned).toHaveBeenCalledOnce();
+    expect([...internals.mounted.keys()]).toEqual([preserved, nested, sibling]);
+    instance.destroy();
+  });
+
+  it("skips new elements inside a preserved root when mounting a tree", () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    const mounted = vi.fn();
+    $("#app").star({
+      ui: {
+        ".widget": {
+          mount: ({ $element }) => mounted($element?.get(0)),
+        },
+      },
+    });
+    const instance = required($("#app").star("instance"));
+    const tree = document.createElement("div");
+    tree.innerHTML = `
+      <div id="preserved" class="widget"><span id="nested" class="widget"></span></div>
+      <span id="sibling" class="widget"></span>
+    `;
+    const preserved = required(tree.querySelector("#preserved"));
+    const sibling = required(tree.querySelector("#sibling"));
+    const internals = instance as unknown as {
+      mountTree(tree: Element, preservedRoots: readonly Element[]): void;
+      mounted: Map<Element, unknown>;
+    };
+
+    internals.mountTree(tree, [preserved]);
+    expect(mounted.mock.calls.map(([element]) => element)).toEqual([sibling]);
+    expect([...internals.mounted.keys()]).toEqual([sibling]);
+    instance.destroy();
+  });
+
+  it("runs unmount hooks for rules without mount hooks", () => {
+    document.body.innerHTML = `<section id="app"><span class="widget"></span></section>`;
+    const unmounted = vi.fn();
+    $("#app").star({
+      ui: {
+        ".widget": { unmount: ({ $element }) => unmounted($element?.get(0)) },
+      },
+    });
+    const instance = required($("#app").star("instance"));
+    const widget = required(document.querySelector(".widget"));
+    const internals = instance as unknown as { releaseTree(tree: Element): void };
+
+    internals.releaseTree(widget);
+    expect(unmounted).toHaveBeenCalledExactlyOnceWith(widget);
+    instance.destroy();
+  });
+
+  it("stops mounting a tree when its first mount destroys the application", () => {
+    document.body.innerHTML = `<section id="app"></section>`;
+    const laterMount = vi.fn();
+    $("#app").star({
+      ui: {
+        ".widget": {
+          mount: ({ $element, instance }) => {
+            if ($element?.get(0)?.id === "first") instance.destroy();
+            else laterMount();
+          },
+        },
+      },
+    });
+    const instance = required($("#app").star("instance"));
+    const tree = document.createElement("div");
+    tree.innerHTML = `<span id="first" class="widget"></span><span id="second" class="widget"></span>`;
+    const internals = instance as unknown as { mountTree(tree: Element): void };
+
+    internals.mountTree(tree);
+    expect(instance.destroyed).toBe(true);
+    expect(laterMount).not.toHaveBeenCalled();
+  });
+
+  it("keeps preserved element requests active while releasing sibling requests", async () => {
+    document.body.innerHTML = `
+      <section id="app">
+        <div id="tree">
+          <div id="preserved"><button id="keep">Keep</button></div>
+          <button id="drop">Drop</button>
+        </div>
+      </section>
+    `;
+    const signals = new Map<string, AbortSignal>();
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url, init) => {
+      const signal = init?.signal as AbortSignal;
+      signals.set(new URL(url instanceof Request ? url.url : url, location.href).pathname, signal);
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), {
+          once: true,
+        });
+      });
+    });
+    try {
+      $("#app").star({});
+      const instance = required($("#app").star("instance"));
+      const keep = required(document.querySelector("#keep"));
+      const drop = required(document.querySelector("#drop"));
+      const tasks = [
+        instance
+          .run($.star.get("/keep", { requestCancellation: "cleanup" }), {
+            element: keep,
+            $element: $(keep),
+          })
+          .catch(() => undefined),
+        instance
+          .run($.star.get("/drop", { requestCancellation: "cleanup" }), {
+            element: drop,
+            $element: $(drop),
+          })
+          .catch(() => undefined),
+      ];
+      await vi.waitFor(() => expect(signals.size).toBe(2));
+      const internals = instance as unknown as {
+        releaseTree(tree: Element, preservedRoots: readonly Element[]): void;
+      };
+      internals.releaseTree(required(document.querySelector("#tree")), [
+        required(document.querySelector("#preserved")),
+      ]);
+
+      expect(signals.get("/keep")?.aborted).toBe(false);
+      expect(signals.get("/drop")?.aborted).toBe(true);
+      internals.releaseTree(required(document.querySelector("#preserved")), []);
+      expect(signals.get("/keep")?.aborted).toBe(true);
+      instance.destroy();
+      await Promise.all(tasks);
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it("contains an owned binding failure without skipping later bindings", async () => {
     document.body.innerHTML = `
       <section id="app"><output class="bad"></output><output class="good"></output></section>
@@ -765,15 +960,53 @@ describe("jQuery Star", () => {
       actions: { run: action },
       ui: { button: { on: { click: { action: "run", debounce: 50 } } } },
     });
+    const instance = $("#app").star("instance");
+    const internals = instance as unknown as { timers: Set<ReturnType<typeof setTimeout>> };
 
     $("button").trigger("click");
+    expect(internals.timers.size).toBe(1);
     await vi.advanceTimersByTimeAsync(25);
     $("button").trigger("click");
+    expect(internals.timers.size).toBe(1);
     await vi.advanceTimersByTimeAsync(49);
     expect(action).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
 
     expect(action).toHaveBeenCalledOnce();
+    expect(internals.timers.size).toBe(0);
+    $("button").trigger("click");
+    expect(internals.timers.size).toBe(1);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(action).toHaveBeenCalledTimes(2);
+    expect(internals.timers.size).toBe(0);
+  });
+
+  it("releases a fired debounce record before its action schedules another event", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `<section id="app"><button>Run</button></section>`;
+    const observed: number[] = [];
+    const action = vi.fn(() => {
+      const application = $("#app").star("instance") as unknown as {
+        timers: Set<ReturnType<typeof setTimeout>>;
+      };
+      observed.push(application.timers.size);
+      if (observed.length === 1) $("button").trigger("click");
+    });
+    $("#app").star({
+      actions: { run: action },
+      ui: { button: { on: { click: { action: "run", debounce: 50 } } } },
+    });
+    $("button").trigger("click");
+    await vi.advanceTimersByTimeAsync(50);
+    expect(observed).toEqual([0]);
+    expect(vi.getTimerCount()).toBe(1);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(observed).toEqual([0, 0]);
+    expect(vi.getTimerCount()).toBe(0);
+    $("button").trigger("click");
+    $("#app").star("destroy");
+    await vi.advanceTimersByTimeAsync(50);
+    expect(action).toHaveBeenCalledTimes(2);
   });
 
   it("refreshes inserted bindings and reports inserted mount failures", async () => {
@@ -871,14 +1104,14 @@ describe("jQuery Star", () => {
       },
     });
     const instance = $("#app").star("instance")!;
-    const internals = instance as unknown as { effects: Set<unknown> };
-    expect(internals.effects.size).toBe(1);
+    const internals = instance as unknown as { ownedEffects: Set<unknown> };
+    expect(internals.ownedEffects.size).toBe(1);
 
     instance.destroy();
     $("button").trigger("click");
     await $.star.nextUpdate();
 
-    expect(internals.effects.size).toBe(0);
+    expect(internals.ownedEffects.size).toBe(0);
     expect(action).not.toHaveBeenCalled();
     expect(errors).toEqual([]);
   });

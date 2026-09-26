@@ -12,6 +12,9 @@ delivery order and when parallel work can start.
 | [0042](0042-install-static-quality-gates.md)        | Strict static, architecture, security, dependency, source, style, and documentation gates.                   | 0041            |
 | [0043](0043-enforce-coverage-and-mutation.md)       | Production census, coverage ratchets, and property testing; mutation tooling was removed by 0048.            | 0041, 0042      |
 | [0048](0048-remove-mutation-testing.md)             | Remove mutation tooling and keep it out unless a future ticket is explicitly requested.                      | 0043            |
+| [0054](0054-adopt-browser-first-verification.md)    | Make browser components the fast UI proof and remove mandatory all-unit and coverage score gates.            | 0044, 0048      |
+| [0055](0055-recover-package-size-budgets.md)        | Deduplicate packaged maps and review exact UI size limits so browser-first delivery can receive a receipt.   | 0054            |
+| [0056](0056-make-npm-test-browser-first.md)         | Point `npm test` at the required browser component check while retaining optional direct diagnostics.        | 0054, 0055      |
 | [0003](0003-freeze-public-baseline.md)              | Executable 0.1 behavior, environment, package, event, and request baseline.                                  | 0041            |
 | [0004](0004-build-package-consumer-harness.md)      | Real tarball consumers for modules, types, UMD, contents, sizes, and tree shaking.                           | 0003, 0041–0043 |
 | [0044](0044-prove-browser-package-quality.md)       | Three-browser, accessibility, package API/type, reproducibility, and release-quality proof.                  | 0004, 0041–0043 |
@@ -23,19 +26,37 @@ delivery order and when parallel work can start.
 | [0007](0007-inject-expression-engines.md)           | Per-kernel expression-engine contract with unchanged trusted JavaScript behavior.                            | 0005, 0006      |
 | [0038](0038-define-jquery-ecosystem-stewardship.md) | Integrate Core/QUnit/Migrate, migrate from UI/Mobile, ignore standalone Sizzle, and keep jQStar independent. | None            |
 
-Current closure state: tickets 0041–0044 are implemented locally but blocked from terminal closure
-until the repository workflows are committed with user authorization and their hosted GitHub Actions
-evidence is inspected. Ticket 0048 removed mutation testing from ticket 0043's active contract.
-Future `core`, external-plugin, and testing package contracts remain with tickets 0013 and 0014
-rather than blocking ticket 0044's current-root quality proof.
+Current census correction: ticket 0043 is complete after removing seven type-only modules from
+runtime coverage and verifying the actual denominator. Ticket 0044's process-result correction also
+passes full delivery and all sixteen detector controls. Coverage thresholds remain stored as
+diagnostics under ticket 0054; actual screen-reader proof and the separately authorized
+private-reporting setting remain open.
+
+Current audit follow-up: the CSP implementation correction (0034) and quality review (0052) are
+complete, as is the README positioning correction (0045). The installed CSP proof (0035) remains
+open before the final program audit. Ticket 0048 removed mutation testing from ticket 0043's active
+contract. Ticket 0017 owns the clean 1.0 candidate audit and non-publishing handoff.
+
+Current cleanup corrections: owners 0006, 0009 and 0014 are complete after their reopened criteria
+passed source/documentation inspection, exact Test validation and Document validation. The combined
+cleanup batch passes all 13 delivery gates, 1,642 unit tests, 487 browser tests and all 16 detector
+controls. Installed package and release checks pass within unchanged size limits. Owner 0035 remains
+in testing for its outstanding accessibility evidence. The final program audit, release preparation,
+jQuery UI migration follow-up and intentionally deferred mutation ticket remain open.
+
+Current guide correction: ticket 0017 aligns the manual release commands with the existing forced
+candidate checks and corrects the documented modular request default. Its prerequisite closure and
+final candidate proof remain pending alongside private-reporting authorization. Ticket 0033's
+navigation index reader passes the complete development matrix and delivery checks; final program
+assembly, public-claim review, original references and actual accessibility records remain required.
 
 Release gate: Plan → Code → Test → Document is evidence-gated. Delivery is bound to the exact tested
-worktree. Static analysis, coverage, security, browser, accessibility, installed-package, and
-gate-liveness checks pass without hidden baselines or suppressions. Current root behavior remains
-green while every owned runtime resource has a disposal path. Ecosystem work has an explicit
-integrate, migrate, or ignore decision and makes no unapproved official-project claim. The public
-site gives browser and headless agents a tested path to the same source-backed framework contracts
-shown to people, while WebMCP remains optional progressive enhancement.
+worktree. Static analysis, security, browser, accessibility, installed-package, and gate-liveness
+checks pass without hidden baselines or suppressions. Current root behavior remains green while
+every owned runtime resource has a disposal path. Ecosystem work has an explicit integrate, migrate,
+or ignore decision and makes no unapproved official-project claim. The public site gives browser and
+headless agents a tested path to the same source-backed framework contracts shown to people, while
+WebMCP remains optional progressive enhancement.
 
 ## Release 0.3: extension kernel
 
@@ -72,7 +93,7 @@ Turbo and htmx replacements do not duplicate or leak jQuery Star behavior.
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
 | [0039](0039-publish-jquery-ui-migration.md)     | jQuery UI coexistence and semantic migration; no runtime fork, Widget Factory claim, or presumed adapter.    | 0013, 0014, 0038        |
 | [0040](0040-publish-jquery-mobile-migration.md) | jQuery Mobile no-runtime route-by-route migration; preserve progressive enhancement, not the page framework. | 0014, 0036–0038         |
-| [0017](0017-prepare-stable-platform-release.md) | Compatibility, security, deprecation, migration, release, and clean-tarball audit.                           | 0003–0016 and 0034–0044 |
+| [0017](0017-prepare-stable-platform-release.md) | Compatibility, security, deprecation, migration, release, and clean-tarball audit.                           | 0001–0016 and 0034–0050 |
 
 Release gate: every 1.0 entry point, browser, format, public API, migration promise, and security
 statement has current evidence. jQuery UI and jQuery Mobile migrations do not add either archived
@@ -104,42 +125,89 @@ agreement; it is not assumed by this roadmap.
 Release gate: stores and persistence are optional, dispose completely, and do not become application
 authorization or entity databases.
 
+Current release cleanup: [0051](0051-align-current-release-guidance.md) aligns 1.1 candidate
+instructions, support wording, required quality gates, and stores/persistence prerequisite evidence
+before continuing navigation and inspection work.
+
 ## Release 1.2: asynchronous data decision
 
-| Ticket                                  | Outcome                                                                                              | Depends on                  |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- |
-| [0020](0020-prove-resource-strategy.md) | Reference use case and decision among server patches, an external query client, or native resources. | 0014, 0017                  |
-| [0021](0021-build-resource-client.md)   | Conditional native cache, leases, keys, loaders, invalidation, cancellation, stale state, and GC.    | 0020 approves native client |
-| [0022](0022-add-resource-mutations.md)  | Conditional overlapping mutation state, ordered optimism, rollback, conflicts, and invalidation.     | 0021 approves mutations     |
+| Ticket                                  | Outcome                                                                                       | Depends on                  |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------- |
+| [0020](0020-prove-resource-strategy.md) | Measured Project Inspector decision: retain server patches with no official resource package. | 0014, 0017                  |
+| [0021](0021-build-resource-client.md)   | Declined by 0020: server patches remain the supported composition.                            | 0020 approves native client |
+| [0022](0022-add-resource-mutations.md)  | Declined by 0020: canonical server writes and refresh remain the supported composition.       | 0021 approves mutations     |
 
-Release gate: ticket 0020 may close the track without 0021 or 0022. Ticket 0021 may close 0022 as
-`declined` when the completed reference application has no native mutation need. If implemented,
-resources have a specific reference application and retain server-rendered HTML as the authority.
+Ticket 0020 closes the track with server patches. Tickets 0021 and 0022 are `declined`, with
+criterion dispositions and package/import absence checks. The
+[decision](../decisions/RESOURCE_STRATEGY.md) records the external adapter's one-point nominal lead,
+the frozen inconclusive rule, browser cache differences and evidence required to reopen the track.
 
 ## Release 1.3: native navigation decision
 
-| Ticket                                           | Outcome                                                                                       | Depends on                      |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------- |
-| [0023](0023-decide-native-navigation.md)         | Cross-browser fixture, interoperability gap report, and go/no-go decision.                    | 0017, 0036, 0037                |
-| [0024](0024-intercept-get-document-visits.md)    | Conditional opt-in same-origin GET eligibility, fetch, cancellation, and safe fallback.       | 0023 approves native navigation |
-| [0025](0025-commit-documents-and-head.md)        | Conditional application-aware body commits, permanent roots, and explicit head/script policy. | 0024                            |
-| [0026](0026-restore-history-focus-and-scroll.md) | Conditional history ordering, restoration, focus, scroll, busy state, and accessibility.      | 0025                            |
-| [0027](0027-enhance-native-forms.md)             | Conditional validation, submitter semantics, encodings, redirects, and no write replay.       | 0026                            |
-| [0028](0028-add-navigation-regions.md)           | Conditional matching regions, targeting, lazy loading, fallback, and cleanup.                 | 0026, 0027                      |
-| [0029](0029-add-bounded-prefetch-cache.md)       | Conditional bounded memory cache with eligibility and HTTP cache controls.                    | 0026, 0028                      |
+| Ticket                                           | Outcome                                                                             | Depends on                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------- |
+| [0023](0023-decide-native-navigation.md)         | Measured browser/bridge decision; no native navigation or generic utility approved. | 0017, 0036, 0037                |
+| [0024](0024-intercept-get-document-visits.md)    | Declined by 0023: native browser or explicit host GET visits.                       | 0023 approves native navigation |
+| [0025](0025-commit-documents-and-head.md)        | Declined by 0023: host commits and public jQStar render ownership.                  | 0024                            |
+| [0026](0026-restore-history-focus-and-scroll.md) | Declined by 0023: browser/host history, focus, scroll and recovery.                 | 0025                            |
+| [0027](0027-enhance-native-forms.md)             | Declined by 0023: native/host forms with server write protection.                   | 0026                            |
+| [0028](0028-add-navigation-regions.md)           | Declined by 0023: SDK patches or explicit host regions.                             | 0026, 0027                      |
+| [0029](0029-add-bounded-prefetch-cache.md)       | Declined by 0023: explicit host prefetch/private-cache policy.                      | 0026, 0028                      |
 
-Release gate: ticket 0023 may close the track without a native engine. If implemented, navigation is
-optional, defines no routes, passes Chromium/Firefox/WebKit, and preserves JavaScript-disabled
-behavior.
+Ticket 0023 closes the track with browser navigation and existing optional bridges. The
+[decision](../decisions/NATIVE_NAVIGATION.md) records the complete installed comparison, retained
+failures, host configuration/recovery, private-cache boundaries and reopening criteria. Each of
+0024–0029 has its own declined disposition; no utility or native package is activated.
 
 ## Release 1.4: inspection and upgrades
 
-| Ticket                                          | Outcome                                                                                       | Depends on                                                 |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [0030](0030-add-inspection-and-tracing.md)      | Serializable inspection plus bounded, redacted, production-off tracing and service adapters.  | 0010, 0017, 0019, 0020, 0023, and approved service work    |
-| [0031](0031-add-in-page-devtools.md)            | Conditional inspection UI after usage evidence and a recorded go decision.                    | 0030 plus usage go decision                                |
-| [0032](0032-add-package-upgrade-diagnostics.md) | Package doctor checks and dry-run configuration upgrades without changing registry ownership. | 0013, 0017                                                 |
-| [0033](0033-audit-full-library-program.md)      | Requirement-by-requirement audit of every completed and declined program track.               | 0019, 0020, 0023, 0030–0032, and approved conditional work |
+| Ticket                                          | Outcome                                                                                         | Depends on                                                 |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [0030](0030-add-inspection-and-tracing.md)      | Serializable inspection plus bounded, redacted, production-off tracing and service adapters.    | 0010, 0017, 0019, 0020, 0023, and approved service work    |
+| [0031](0031-add-in-page-devtools.md)            | Declined: both application investigations resolved through public inspection and browser tools. | 0030 plus usage go decision                                |
+| [0032](0032-add-package-upgrade-diagnostics.md) | Package doctor checks and dry-run configuration upgrades without changing registry ownership.   | 0013, 0017                                                 |
+| [0033](0033-audit-full-library-program.md)      | Requirement-by-requirement audit of every completed and declined program track.                 | 0019, 0020, 0023, 0030–0032, and approved conditional work |
+
+The unpublished candidate remains 1.1.0; the release headings describe the original sequence. Ticket
+0030 adds explicit inspection to that candidate. Ticket 0031 is declined after two installed
+application investigations; public inspection and browser tools remain the supported workflow.
+Package diagnostics (0032) and the quality review (0052) are complete. The full program audit (0033)
+waits for real accessibility evidence in 0035/0039, the 0017 private-reporting setting correction,
+and its complete evidence review. The 0044 detector process-result and 0051 candidate-copy
+corrections pass complete delivery. The separately authorized mutation audit is now complete, while
+mutation testing stays outside ordinary quality gates.
+
+## Final quality review, mutation audit, and jQuery compatibility
+
+| Ticket                                                 | Outcome                                                                                                                 | Depends on                                    |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [0052](0052-audit-and-strengthen-quality-standards.md) | Review actual JavaScript quality scopes, rules, thresholds, and detectors; correct gaps before the final program audit. | Existing quality program                      |
+| [0053](0053-run-final-mutation-audit.md)               | Complete one-time, source-bound mutation audit with preserved open findings.                                            | 0052 and explicit later user authorization    |
+| [0057](0057-verify-jquery-3-7-1-support.md)            | Verify exact jQuery 3.7.1 and maintain both 3.7.1 and 4.0.0 installed-package evidence.                                 | Completed 0053 audit and requested 3.7.1 test |
+
+The later user instruction authorized 0053 before finishing 0033 and requested jQuery 3.7.1 testing
+afterward. Ticket 0053 records that one-time exception and its complete report. Ticket 0033 does not
+claim the mutation evidence as its own or require it to close.
+
+## Website documentation completion review
+
+Ticket [0058](0058-review-website-and-agent-documentation.md) reviews the reference website and
+agent instructions in three passes, corrects current usage contracts, and verifies the combined
+reference without introducing another corpus or a remote service. It depends on the design and agent
+surfaces in 0049 and 0050 and the tested jQuery floor in 0057.
+
+## Complete website Component Lab
+
+Ticket [0059](0059-integrate-component-lab-and-code-examples.md) embeds the complete Lab on home and
+Components, shares the legacy route shell, frames and colors code, and explains the server-first
+jQuery philosophy. It follows 0058 and preserves the runtime, registry, SDK, and agent-corpus
+boundaries.
+
+## Default-branch budget comparison
+
+Ticket [0060](0060-compose-reviewed-budget-transitions.md) follows the existing approved package
+size transitions from 0055 and 0053 when the default branch predates both. It supports the 0059
+website handoff without changing numeric limits or bypassing any required checks.
 
 ## Dependency graph
 
@@ -164,17 +232,18 @@ behavior.
 0006 + 0010 + 0013 + 0014 -> 0016 -> 0036 + 0037
 0038 -> 0039
 0014 + 0036 + 0037 + 0038 -> 0040
-0003..0016 + 0034..0044 -> 0017
+0001..0016 + 0034..0050 -> 0017
 
 0014 + 0017 -> 0018 -> 0019
-0014 + 0017 -> 0020 -> [resource decision] -> 0021 -> [mutation decision] -> 0022
+0014 + 0017 -> 0020 -> [server patches; 0021 + 0022 declined]
 0017 + 0036 + 0037 -> 0023 -> [decision] -> 0024 -> 0025 -> 0026 -> 0027
                                                                     |
                                                                     +-> 0028 -> 0029
 
 completed service decisions + implementations -> 0030 -> [usage decision] -> 0031
 0013 + 0017 -> 0032
-completed tracks -> 0033
+completed tracks + 0052 -> 0033
+0052 + explicit later authorization -> 0053 -> 0057
 ```
 
 ## Evidence required from every ticket

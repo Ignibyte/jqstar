@@ -25,8 +25,10 @@ A recent maintenance release does not change an OpenJS status by itself.
 
 ## jQuery Core is the foundation
 
-`jquery` is the sole package peer, with the tested range `>=4.0.0 <5` and exact current test version
-4.0.0. The application owns that instance. jQStar does not vendor, fork, wrap, or replace it.
+`jquery` is the sole required package peer, with range `>=3.7.1 <5` and exact tested versions 3.7.1
+and 4.0.0. The application owns that instance. jQStar does not vendor, fork, wrap, or replace it.
+jQuery 4.0.0 remains the development version; the package gate installs exact 3.7.1 separately under
+strict peer resolution and exercises Node and three browser engines.
 
 The expression boundary remains exact: `$ is real jQuery` and `$name` is the reactive signal named
 `name`. Selector behavior, `$.fn`, events, Ajax, effects, and installed jQuery plugins remain the
@@ -49,8 +51,9 @@ across several major versions with one Migrate build:
 
 Use the uncompressed Migrate build during representative browser testing so its warnings remain
 visible. A warning is evidence to investigate, not permission for an automatic rewrite. jQStar never
-bundles, injects, loads, suppresses, or interprets Migrate warnings. Ticket 0032 may read only
-declared dependency metadata or a bounded schema-valid summary that the application owner supplies.
+bundles, injects, loads, suppresses, or interprets individual Migrate warnings. The explicit package
+doctor reads dependency metadata or a bounded schema-valid category summary that the application
+owner supplies; see [package upgrade diagnostics](UPGRADES.md).
 
 ## QUnit is a supported consumer
 
@@ -69,8 +72,9 @@ ticket 0014.
 also says no significant new feature work is planned. OpenJS still lists it as Archived.
 
 jQStar's native components are the new-code path. Similar names do not imply source, API, styling,
-or instance compatibility. Ticket 0039 owns an exact installed coexistence fixture, representative
-migration, full catalog map, and evidence-scored adapter decision.
+or instance compatibility. The [jQuery UI migration guide](JQUERY_UI_MIGRATION.md) publishes the
+exact installed coexistence fixture, representative migration, full API map, and evidence-scored
+no-adapter decision.
 
 The policy-level capability map covers every official widget and interaction plus the contracts that
 catalog comparisons often hide:
@@ -86,8 +90,10 @@ catalog comparisons often hide:
 | ThemeRoller and UI classes                                                            | jQStar uses its own CSS variables and source-owned semantic markup.                             |
 | Third-party Widget Factory extensions                                                 | Application-owned coexistence only. Compatibility is assessed per application.                  |
 
-The complete 28-entry list and official API links are in the machine matrix. A counterpart means the
-same user need has a migration destination. It never means drop-in Widget Factory compatibility.
+The policy-level 28-entry capability list and official links remain in the ecosystem matrix. The
+downstream migration authority expands the official 1.14 catalog to 72 unique API URLs, each mapped
+exactly once to a detailed migration row. A counterpart means the same user need has a migration
+destination. It never means drop-in Widget Factory compatibility.
 
 ## jQuery Mobile contributes lessons, not runtime
 
@@ -105,7 +111,10 @@ Ticket 0040 preserves these needs in a modern reference application:
 
 The Mobile router, page container, virtual mouse, transition catalog, themes, widgets, and data-role
 auto-initializer do not enter jQStar. Migration keeps legacy and modern routes isolated until each
-route is released on its compatible stack.
+route is released on its compatible stack. The
+[jQuery Mobile migration guide](JQUERY_MOBILE_MIGRATION.md) publishes the 95-entry API inventory,
+60-attribute map, nine modern owners, staged worksheet, exact no-runtime reference app, browser and
+package evidence, measurements, and rollback path.
 
 ## Sizzle stays separate
 

@@ -121,6 +121,20 @@ describe("jQuery Star Transfer List", () => {
     expect($.star.ui.transferList.value(root())).toEqual([]);
   });
 
+  it("rejects a wrong-kind element action target without changing the nearby list", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Transfer List application did not start.");
+    const foreign = control("available");
+    await expect(
+      app.run("ui.transfer-list.add", { element: foreign, args: [foreign, ["read"]] }),
+    ).rejects.toThrow('Transfer List target did not match data-jqs="transfer-list"');
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review"]);
+    await app.run("ui.transfer-list.add", { args: [root(), ["read"]] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review", "read"]);
+    await app.run("ui.transfer-list.remove", { args: ["#permissions", ["read"]] });
+    expect($.star.ui.transferList.value(root())).toEqual(["write", "review"]);
+  });
+
   it("emits detailed cancelable changes and accepts server-patched membership", () => {
     const before = vi.fn((event: Event) => event.preventDefault());
     const changed = vi.fn();

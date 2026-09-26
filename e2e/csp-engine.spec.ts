@@ -5,6 +5,108 @@ import { resolve } from "node:path";
 const cspEngineURL = `/@fs${resolve("src/csp/engine.ts")}`;
 const jquerySource = readFileSync(resolve("node_modules/jquery/dist/jquery.js"), "utf8");
 const runtimeURL = `/@fs${resolve("e2e/fixtures/runtime.ts")}`;
+const cspInstallURL = `/@fs${resolve("src/csp.ts")}`;
+
+test("internal CSP declarative computed signals update and retain getter ownership", async ({
+  page,
+}) => {
+  await page.goto("/components/lab/");
+  const result = await page.evaluate(
+    async ({ installPath, jqueryCode }) => {
+      const { installStarCSP, createCSPExpressionEngine } = await import(installPath);
+      const required = <T>(value: T | null | undefined): T => {
+        if (value == null) throw new Error("Required browser fixture is missing.");
+        return value;
+      };
+      const frame = document.createElement("iframe");
+      document.body.append(frame);
+      const realm = required(frame.contentWindow);
+      const targetDocument = required(frame.contentDocument);
+      const script = targetDocument.createElement("script");
+      script.textContent = jqueryCode;
+      targetDocument.head.append(script);
+      const $ = (realm as unknown as { jQuery: JQueryStatic }).jQuery;
+      targetDocument.body.innerHTML = `<main id="app" data-jqs data-signals="{ count: 2 }" data-computed:double="$count * 2">
+      <button type="button" data-on:click="$count++">Increment</button>
+      <output data-text="$double"></output>
+    </main>`;
+      const errors: unknown[] = [];
+      $(targetDocument).on("jquery-star:error", (_event, detail) =>
+        errors.push(detail.error?.code),
+      );
+      const installed = installStarCSP($, { document: targetDocument });
+      const engine = createCSPExpressionEngine();
+      try {
+        const root = required(targetDocument.querySelector("main"));
+        installed.star.boot(root);
+        const instance = required($(root).star("instance"));
+        const initial = $(root).find("output").text();
+        required(root.querySelector("button")).click();
+        await installed.star.nextUpdate();
+        const updated = $(root).find("output").text();
+        const context = {
+          $,
+          instance,
+          root,
+          $root: $(root),
+          element: root,
+          $element: $(root),
+          state: instance.state,
+          computed: instance.computed,
+        };
+        let reads = 0;
+        Object.defineProperty(instance.state, "unsafe", {
+          get() {
+            reads += 1;
+            return 99;
+          },
+        });
+        const descriptor = required(Object.getOwnPropertyDescriptor(instance.state, "double"));
+        Object.defineProperty(instance.state, "copied", descriptor);
+        const denied = (source: string): string => {
+          try {
+            engine.compileValue(source)(context);
+            return "no-error";
+          } catch (error) {
+            return (error as { code: string }).code;
+          }
+        };
+        const arbitrary = denied("$unsafe");
+        const copied = denied("$copied");
+        const disposal = installed.star.dispose();
+        Object.defineProperty(instance.state, "double", descriptor);
+        const destroyed = denied("$double");
+        return {
+          initial,
+          updated,
+          errors,
+          reads,
+          arbitrary,
+          copied,
+          destroyed,
+          failed: disposal.failed.length,
+          remaining: disposal.remaining.length,
+        };
+      } finally {
+        engine.dispose();
+        installed.star?.dispose();
+        frame.remove();
+      }
+    },
+    { installPath: cspInstallURL, jqueryCode: jquerySource },
+  );
+  expect(result).toEqual({
+    initial: "4",
+    updated: "6",
+    errors: [],
+    reads: 0,
+    arbitrary: "CSP_CAPABILITY_ACCESSOR",
+    copied: "CSP_CAPABILITY_ACCESSOR",
+    destroyed: "CSP_CAPABILITY_ACCESSOR",
+    failed: 0,
+    remaining: 0,
+  });
+});
 
 test("internal CSP engine stays closed across real browser realms", async ({ page }) => {
   await page.goto("/components/lab/");

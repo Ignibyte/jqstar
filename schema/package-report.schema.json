@@ -5,11 +5,7 @@
   "required": ["schema", "runId", "mode", "status", "package", "checks", "futureContracts"],
   "properties": {
     "schema": { "const": "jqstar-package-quality/1" },
-    "runId": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
-      "maxLength": 160
-    },
+    "runId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$", "maxLength": 160 },
     "mode": { "const": "package" },
     "status": { "enum": ["pass", "fail", "error"] },
     "package": {
@@ -30,8 +26,8 @@
     },
     "checks": {
       "type": "array",
-      "minItems": 13,
-      "maxItems": 13,
+      "minItems": 14,
+      "maxItems": 14,
       "prefixItems": [
         { "$ref": "#/$defs/buildCheck" },
         { "$ref": "#/$defs/apiReportCheck" },
@@ -45,14 +41,12 @@
         { "$ref": "#/$defs/qunitConsumerCheck" },
         { "$ref": "#/$defs/browserConsumersCheck" },
         { "$ref": "#/$defs/bundleSentinelCheck" },
-        { "$ref": "#/$defs/copyInRegistryCheck" }
+        { "$ref": "#/$defs/copyInRegistryCheck" },
+        { "$ref": "#/$defs/jquery371ConsumerCheck" }
       ],
       "items": false
     },
-    "futureContracts": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/futureContract" }
-    }
+    "futureContracts": { "type": "array", "items": { "$ref": "#/$defs/futureContract" } }
   },
   "allOf": [
     {
@@ -76,10 +70,7 @@
               }
             }
           },
-          "futureContracts": {
-            "type": "array",
-            "maxItems": 0
-          }
+          "futureContracts": { "type": "array", "maxItems": 0 }
         }
       }
     },
@@ -169,13 +160,8 @@
           "properties": { "name": { "const": "package-budgets" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
-              "then": {
-                "properties": { "detail": { "$ref": "#/$defs/packageBudgetEvidence" } }
-              }
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+              "then": { "properties": { "detail": { "$ref": "#/$defs/packageBudgetEvidence" } } }
             }
           ]
         }
@@ -189,13 +175,8 @@
           "properties": { "name": { "const": "exports-and-files" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
-              "then": {
-                "properties": { "detail": { "$ref": "#/$defs/exportsAndFilesEvidence" } }
-              }
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+              "then": { "properties": { "detail": { "$ref": "#/$defs/exportsAndFilesEvidence" } } }
             }
           ]
         }
@@ -216,10 +197,7 @@
     "refreshPackageSubjectCheck": {
       "allOf": [
         { "$ref": "#/$defs/check" },
-        {
-          "type": "object",
-          "properties": { "name": { "const": "refresh-package-subject" } }
-        }
+        { "type": "object", "properties": { "name": { "const": "refresh-package-subject" } } }
       ]
     },
     "installedConsumerCheck": {
@@ -230,10 +208,7 @@
           "properties": { "name": { "const": "installed-consumer" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
               "then": {
                 "properties": { "detail": { "$ref": "#/$defs/installedConsumerEvidence" } }
               }
@@ -256,15 +231,10 @@
           "properties": { "name": { "const": "browser-consumers" } },
           "allOf": [
             {
-              "if": {
-                "type": "object",
-                "properties": { "status": { "const": "pass" } }
-              },
+              "if": { "type": "object", "properties": { "status": { "const": "pass" } } },
               "then": {
                 "type": "object",
-                "properties": {
-                  "detail": { "$ref": "#/$defs/browserConsumerEvidence" }
-                }
+                "properties": { "detail": { "$ref": "#/$defs/browserConsumerEvidence" } }
               }
             }
           ]
@@ -279,13 +249,8 @@
           "properties": { "name": { "const": "bundle-sentinel" } },
           "allOf": [
             {
-              "if": {
-                "properties": { "status": { "const": "pass" } },
-                "required": ["status"]
-              },
-              "then": {
-                "properties": { "detail": { "$ref": "#/$defs/bundleSentinelEvidence" } }
-              }
+              "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+              "then": { "properties": { "detail": { "$ref": "#/$defs/bundleSentinelEvidence" } } }
             }
           ]
         }
@@ -297,12 +262,63 @@
         { "type": "object", "properties": { "name": { "const": "copy-in-registry" } } }
       ]
     },
+    "jquery371ConsumerCheck": {
+      "allOf": [
+        { "$ref": "#/$defs/check" },
+        {
+          "type": "object",
+          "properties": { "name": { "const": "jquery-3.7.1-consumer" } },
+          "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+          "then": { "properties": { "detail": { "$ref": "#/$defs/jquery371ConsumerEvidence" } } }
+        }
+      ]
+    },
+    "jquery371ConsumerEvidence": {
+      "type": "object",
+      "required": [
+        "subject",
+        "jqueryVersion",
+        "peerRange",
+        "tarballSha256",
+        "nodeConsumers",
+        "browserConsumers",
+        "browserModuleAdapter",
+        "cspPolicy",
+        "engines"
+      ],
+      "properties": {
+        "subject": { "const": "installed-tarball" },
+        "jqueryVersion": { "const": "3.7.1" },
+        "peerRange": { "const": ">=3.7.1 <5" },
+        "tarballSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "nodeConsumers": { "const": ["esm", "commonjs"] },
+        "browserConsumers": { "const": ["module", "umd", "csp"] },
+        "browserModuleAdapter": { "const": "test-only-umd-module" },
+        "cspPolicy": {
+          "const": "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; object-src 'none'"
+        },
+        "engines": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            { "$ref": "#/$defs/chromiumEvidence" },
+            { "$ref": "#/$defs/firefoxEvidence" },
+            { "$ref": "#/$defs/webkitEvidence" }
+          ],
+          "items": false
+        }
+      },
+      "additionalProperties": false
+    },
     "browserConsumerEvidence": {
       "type": "object",
       "required": ["subject", "consumers", "lifecycle", "engines", "csp"],
       "properties": {
         "subject": { "const": "installed-tarball" },
-        "consumers": { "const": ["module", "umd", "testing", "csp"] },
+        "consumers": {
+          "const": ["module", "umd", "testing", "stores", "persist", "inspect", "csp"]
+        },
         "lifecycle": { "const": "boot-and-dispose" },
         "engines": {
           "type": "array",
@@ -342,14 +358,29 @@
             "typescript-testing-nodenext",
             "typescript-testing-bundler",
             "typescript-csp-nodenext",
-            "typescript-csp-bundler"
+            "typescript-csp-bundler",
+            "inspection-esm",
+            "inspection-commonjs",
+            "inspection-inert",
+            "typescript-inspection-negative-nodenext",
+            "typescript-inspection-negative-bundler"
           ]
         },
         "peerDependencies": {
           "type": "object",
-          "required": ["jqueryRange", "turboRange", "turboOptional", "missing", "incompatible"],
+          "required": [
+            "jqueryRange",
+            "htmxRange",
+            "htmxOptional",
+            "turboRange",
+            "turboOptional",
+            "missing",
+            "incompatible"
+          ],
           "properties": {
-            "jqueryRange": { "const": ">=4.0.0 <5" },
+            "jqueryRange": { "const": ">=3.7.1 <5" },
+            "htmxRange": { "const": ">=2.0.0 <2.1.0" },
+            "htmxOptional": { "const": true },
             "turboRange": { "const": ">=8.0.21 <8.1.0" },
             "turboOptional": { "const": true },
             "missing": {
@@ -432,8 +463,8 @@
       "properties": {
         "exports": {
           "type": "array",
-          "minItems": 9,
-          "maxItems": 9,
+          "minItems": 13,
+          "maxItems": 13,
           "prefixItems": [
             { "const": "." },
             { "const": "./core" },
@@ -441,25 +472,36 @@
             { "const": "./ui" },
             { "const": "./datastar" },
             { "const": "./testing" },
+            { "const": "./htmx" },
+            { "const": "./stores" },
             { "const": "./turbo" },
             { "const": "./datastar/testing" },
-            { "const": "./ui.css" }
+            { "const": "./ui.css" },
+            { "const": "./persist" },
+            { "const": "./inspect" }
           ],
           "items": false
         },
         "version": { "type": "string", "minLength": 1 },
         "documentation": {
           "type": "array",
-          "minItems": 7,
-          "maxItems": 7,
+          "minItems": 14,
+          "maxItems": 14,
           "prefixItems": [
             { "const": "docs/BACKEND.md" },
+            { "const": "docs/COMPATIBILITY.md" },
             { "const": "docs/COMPONENT_ARCHITECTURE.md" },
-            { "const": "docs/COMPONENT_RESEARCH.md" },
             { "const": "docs/CSP_EXPRESSIONS.md" },
+            { "const": "docs/INSPECTION.md" },
             { "const": "docs/INTEROPERABILITY.md" },
+            { "const": "docs/JQUERY_ECOSYSTEM.md" },
+            { "const": "docs/JQUERY_MOBILE_MIGRATION.md" },
+            { "const": "docs/JQUERY_UI_MIGRATION.md" },
+            { "const": "docs/PERSISTENCE.md" },
             { "const": "docs/SELF_HOSTING.md" },
-            { "const": "docs/security/CSP_THREAT_MODEL.md" }
+            { "const": "docs/STORES.md" },
+            { "const": "docs/UPGRADES.md" },
+            { "const": "docs/decisions/DEVTOOLS.md" }
           ],
           "items": false
         }
@@ -468,7 +510,18 @@
     },
     "bundleSentinelEvidence": {
       "type": "object",
-      "required": ["root", "core", "csp", "testing", "datastarTesting", "turbo"],
+      "required": [
+        "root",
+        "core",
+        "csp",
+        "testing",
+        "datastarTesting",
+        "htmx",
+        "turbo",
+        "stores",
+        "persist",
+        "inspection"
+      ],
       "properties": {
         "root": {
           "type": "object",
@@ -567,6 +620,19 @@
           },
           "additionalProperties": false
         },
+        "htmx": {
+          "type": "object",
+          "required": ["bytes", "budget", "gzipBytes", "gzipBudget", "modules", "hostPackage"],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "hostPackage": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
         "turbo": {
           "type": "object",
           "required": ["bytes", "budget", "gzipBytes", "gzipBudget", "modules", "hostPackage"],
@@ -577,6 +643,57 @@
             "gzipBudget": { "type": "integer", "minimum": 1 },
             "modules": { "type": "integer", "minimum": 1 },
             "hostPackage": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "stores": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "unrelatedOptionalModules"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "unrelatedOptionalModules": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "persist": {
+          "type": "object",
+          "required": [
+            "bytes",
+            "budget",
+            "gzipBytes",
+            "gzipBudget",
+            "modules",
+            "unrelatedOptionalModules"
+          ],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "budget": { "type": "integer", "minimum": 1 },
+            "gzipBytes": { "type": "integer", "minimum": 1 },
+            "gzipBudget": { "type": "integer", "minimum": 1 },
+            "modules": { "type": "integer", "minimum": 1 },
+            "unrelatedOptionalModules": { "const": "absent" }
+          },
+          "additionalProperties": false
+        },
+        "inspection": {
+          "type": "object",
+          "required": ["inspect", "core-inspect", "csp-inspect", "unimported"],
+          "properties": {
+            "inspect": { "$ref": "#/$defs/inspectionGraphEvidence" },
+            "core-inspect": { "$ref": "#/$defs/inspectionGraphEvidence" },
+            "csp-inspect": { "$ref": "#/$defs/inspectionGraphEvidence" },
+            "unimported": { "const": "absent" }
           },
           "additionalProperties": false
         }
@@ -653,31 +770,461 @@
         "unexpectedPolicyReports",
         "operationCount",
         "disposal",
-        "noJavaScript"
+        "noJavaScript",
+        "runtimeErrors",
+        "computed",
+        "behavior",
+        "accessibilityProfiles",
+        "runtimeErrorDetector"
       ],
       "properties": {
-        "name": { "type": "string" },
-        "version": { "type": "string", "minLength": 1 },
-        "status": { "const": "pass" },
-        "headerResponses": { "type": "integer", "minimum": 1 },
-        "policyEvents": { "type": "integer", "minimum": 0 },
-        "policyReports": { "type": "integer", "minimum": 0 },
-        "expectedCanaryConsoleMessages": { "type": "integer", "minimum": 0 },
-        "unexpectedPolicyEvents": { "const": 0 },
-        "unexpectedPolicyReports": { "const": 0 },
-        "operationCount": { "type": "integer", "minimum": 1 },
-        "disposal": {
-          "type": "object",
-          "required": ["attempted", "failed", "released", "remaining"],
-          "properties": {
-            "attempted": { "type": "integer", "minimum": 1 },
-            "failed": { "const": 0 },
-            "released": { "type": "integer", "minimum": 1 },
-            "remaining": { "const": 0 }
-          },
-          "additionalProperties": false
+        "name": {
+          "type": "string"
         },
-        "noJavaScript": { "const": "native-link-and-form" }
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "pass"
+        },
+        "headerResponses": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "policyEvents": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policyReports": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectedCanaryConsoleMessages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unexpectedPolicyEvents": {
+          "const": 0
+        },
+        "unexpectedPolicyReports": {
+          "const": 0
+        },
+        "operationCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "disposal": {
+          "$ref": "#/$defs/cspDisposalEvidence"
+        },
+        "noJavaScript": {
+          "$ref": "#/$defs/cspNativeEvidence"
+        },
+        "runtimeErrors": {
+          "const": 0
+        },
+        "computed": {
+          "$ref": "#/$defs/cspComputedObservations"
+        },
+        "behavior": {
+          "$ref": "#/$defs/cspBehaviorObservations"
+        },
+        "accessibilityProfiles": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/cspAccessibilityProfile"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "const": "reduced-motion"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/cspAccessibilityProfile"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "const": "forced-colors"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/cspAccessibilityProfile"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "const": "zoom-reflow"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "items": false
+        },
+        "runtimeErrorDetector": {
+          "const": {
+            "stage": "before-install",
+            "events": 1,
+            "rejected": true
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "cspComputedObservations": {
+      "const": {
+        "initial": "2",
+        "afterIncrement": "4",
+        "final": "16"
+      }
+    },
+    "cspBehaviorObservations": {
+      "const": {
+        "initial": {
+          "count": "1",
+          "double": "2"
+        },
+        "afterKeyboard": {
+          "count": "2",
+          "double": "4",
+          "activations": 1
+        },
+        "afterPatches": {
+          "count": "2",
+          "double": "4"
+        },
+        "afterRootDestroy": {
+          "count": "3",
+          "double": "6",
+          "activations": 2,
+          "mainCount": 8,
+          "survived": true
+        },
+        "destroyedOnDispose": true
+      }
+    },
+    "cspDisposalEvidence": {
+      "type": "object",
+      "required": ["attempted", "failed", "released", "remaining"],
+      "properties": {
+        "attempted": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "failed": {
+          "const": 0
+        },
+        "released": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "remaining": {
+          "const": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "cspAccessibilityProfile": {
+      "type": "object",
+      "required": [
+        "profile",
+        "status",
+        "viewportWidth",
+        "documentWidth",
+        "reducedMotion",
+        "forcedColors",
+        "rootFontPixels",
+        "zoom",
+        "inputWidth",
+        "bodyWidth",
+        "scrollBehavior",
+        "supportsForcedColorAdjust",
+        "forcedColorAdjust",
+        "borderStyle",
+        "outlineStyle",
+        "headerResponses",
+        "unexpectedErrors",
+        "unexpectedPolicyEvents",
+        "unexpectedPolicyReports",
+        "runtimeErrors",
+        "computed",
+        "behavior",
+        "axeViolations",
+        "keyboard",
+        "tabKey",
+        "disposal"
+      ],
+      "properties": {
+        "profile": {
+          "enum": ["reduced-motion", "forced-colors", "zoom-reflow"]
+        },
+        "status": {
+          "const": "pass"
+        },
+        "viewportWidth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "documentWidth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "reducedMotion": {
+          "type": "boolean"
+        },
+        "forcedColors": {
+          "type": "boolean"
+        },
+        "rootFontPixels": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "zoom": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "inputWidth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "bodyWidth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "scrollBehavior": {
+          "const": "auto"
+        },
+        "supportsForcedColorAdjust": {
+          "type": "boolean"
+        },
+        "forcedColorAdjust": {
+          "enum": ["auto", null]
+        },
+        "borderStyle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "not": {
+            "const": "none"
+          }
+        },
+        "outlineStyle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "not": {
+            "const": "none"
+          }
+        },
+        "headerResponses": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "unexpectedErrors": {
+          "const": 0
+        },
+        "unexpectedPolicyEvents": {
+          "const": 0
+        },
+        "unexpectedPolicyReports": {
+          "const": 0
+        },
+        "runtimeErrors": {
+          "const": 0
+        },
+        "computed": {
+          "$ref": "#/$defs/cspComputedObservations"
+        },
+        "behavior": {
+          "$ref": "#/$defs/cspBehaviorObservations"
+        },
+        "axeViolations": {
+          "const": 0
+        },
+        "keyboard": {
+          "const": "behavior-increment-save-toggle"
+        },
+        "tabKey": {
+          "enum": ["Tab", "Alt+Tab"]
+        },
+        "disposal": {
+          "$ref": "#/$defs/cspDisposalEvidence"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "profile": {
+                "const": "reduced-motion"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reducedMotion": {
+                "const": true
+              },
+              "forcedColors": {
+                "const": false
+              },
+              "rootFontPixels": {
+                "const": 16
+              },
+              "zoom": {
+                "const": 1
+              },
+              "viewportWidth": {
+                "const": 900
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "profile": {
+                "const": "forced-colors"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reducedMotion": {
+                "const": false
+              },
+              "forcedColors": {
+                "const": true
+              },
+              "rootFontPixels": {
+                "const": 16
+              },
+              "zoom": {
+                "const": 1
+              },
+              "viewportWidth": {
+                "const": 900
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "profile": {
+                "const": "zoom-reflow"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reducedMotion": {
+                "const": false
+              },
+              "forcedColors": {
+                "const": false
+              },
+              "rootFontPixels": {
+                "const": 32
+              },
+              "zoom": {
+                "const": 2
+              },
+              "viewportWidth": {
+                "const": 640
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "supportsForcedColorAdjust": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "forcedColorAdjust": {
+                "const": "auto"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "forcedColorAdjust": {
+                "const": null
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cspNativeEvidence": {
+      "type": "object",
+      "required": [
+        "link",
+        "form",
+        "scriptRequests",
+        "policy",
+        "linkStatus",
+        "formStatus",
+        "receivedName"
+      ],
+      "properties": {
+        "link": {
+          "const": "navigated"
+        },
+        "form": {
+          "const": "submitted"
+        },
+        "scriptRequests": {
+          "const": 0
+        },
+        "policy": {
+          "const": "unchanged"
+        },
+        "linkStatus": {
+          "const": 200
+        },
+        "formStatus": {
+          "const": 200
+        },
+        "receivedName": {
+          "const": "CSP <native> & proof"
+        }
       },
       "additionalProperties": false
     },
@@ -727,7 +1274,19 @@
       },
       "additionalProperties": false
     },
-    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "inspectionGraphEvidence": {
+      "type": "object",
+      "required": ["bytes", "gzipBytes", "budget", "gzipBudget", "modules"],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "gzipBytes": { "type": "integer", "minimum": 1 },
+        "budget": { "type": "integer", "minimum": 1 },
+        "gzipBudget": { "type": "integer", "minimum": 1 },
+        "modules": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

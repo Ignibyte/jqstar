@@ -73,6 +73,29 @@ describe("jQuery Star Pagination", () => {
     expect(changes).toHaveBeenCalledTimes(3);
   });
 
+  it("accepts an element target in a programmatic named action", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The pagination application did not start.");
+    await app.run("ui.pagination.next", { args: [pagination()] });
+    expect($.star.ui.pagination.page(pagination())).toBe(2);
+    await app.run("ui.pagination.previous", { args: [pagination()] });
+    expect($.star.ui.pagination.page(pagination())).toBe(1);
+  });
+
+  it("rejects a wrong-kind element action target without moving the nearby page", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The pagination application did not start.");
+    const foreign = pageLink(1);
+    await expect(
+      app.run("ui.pagination.next", { element: foreign, args: [foreign] }),
+    ).rejects.toThrow('Pagination target did not match data-jqs="pagination"');
+    expect($.star.ui.pagination.page(pagination())).toBe(1);
+    await app.run("ui.pagination.next", { args: [pagination()] });
+    expect($.star.ui.pagination.page(pagination())).toBe(2);
+    await app.run("ui.pagination.previous", { element: foreign });
+    expect($.star.ui.pagination.page(pagination())).toBe(1);
+  });
+
   it("allows progressive native links when manual navigation is absent", () => {
     pagination().removeAttribute("data-navigation");
     let preventedByPagination = true;

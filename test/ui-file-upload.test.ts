@@ -38,6 +38,40 @@ describe("jQuery Star File Upload", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind clear target without removing nearby native files", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The File Upload application did not start.");
+    const image = new File(["image"], "avatar.png", { type: "image/png" });
+    select([image]);
+    await expect(
+      app.run("ui.fileUpload.clear", { element: control(), args: [control()] }),
+    ).rejects.toThrow('File Upload target did not match data-jqs="file-upload"');
+    expect($.star.ui.fileUpload.files(root())).toEqual([image]);
+    await app.run("ui.fileUpload.clear", { args: [root()] });
+    expect($.star.ui.fileUpload.files(root())).toEqual([]);
+    select([image]);
+    await app.run("ui.fileUpload.clear", { args: ["#assets"] });
+    expect($.star.ui.fileUpload.files(root())).toEqual([]);
+    select([image]);
+    await app.run("ui.fileUpload.clear", { element: control() });
+    expect($.star.ui.fileUpload.files(root())).toEqual([]);
+  });
+
+  it("treats a native upload root as an explicit remove target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The File Upload application did not start.");
+    const image = new File(["image"], "avatar.png", { type: "image/png" });
+    select([image]);
+    await app.run("ui.fileUpload.remove", { args: [root(), "avatar.png"] });
+    expect($.star.ui.fileUpload.files(root())).toEqual([]);
+    select([image]);
+    await app.run("ui.fileUpload.remove", { args: ["#assets", "avatar.png"] });
+    expect($.star.ui.fileUpload.files(root())).toEqual([]);
+    select([image]);
+    await app.run("ui.fileUpload.remove", { element: control(), args: ["avatar.png"] });
+    expect($.star.ui.fileUpload.files(root())).toEqual([]);
+  });
+
   it("keeps the native file input as the selected-file source", () => {
     const image = new File(["image"], "avatar.png", { type: "image/png" });
     select([image]);

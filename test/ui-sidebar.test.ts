@@ -100,12 +100,28 @@ describe("jQuery Star Sidebar", () => {
     expect(trigger().getAttribute("aria-expanded")).toBe("true");
 
     trigger().click();
+    expect(sidebar().dataset.value).toBe("collapsed");
     expect(sidebar().dataset.state).toBe("collapsed");
     expect(trigger().getAttribute("aria-expanded")).toBe("false");
     $.star.ui.sidebar.open(sidebar());
     expect($.star.ui.sidebar.value(sidebar())).toBe(true);
     $("#close-sidebar").trigger("click");
     expect($.star.ui.sidebar.value(sidebar())).toBe(false);
+  });
+
+  it("rejects a wrong-kind element action target instead of closing the nearby sidebar", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Sidebar application did not start.");
+    const foreign = document.getElementById("close-sidebar");
+    if (!foreign) throw new Error("Missing Sidebar external action.");
+    await expect(
+      app.run("ui.sidebar.close", { element: trigger(), args: [foreign] }),
+    ).rejects.toThrow('Sidebar target did not match data-jqs="sidebar"');
+    expect($.star.ui.sidebar.value(sidebar())).toBe(true);
+    await app.run("ui.sidebar.toggle", { args: [sidebar()] });
+    expect($.star.ui.sidebar.value(sidebar())).toBe(false);
+    await app.run("ui.sidebar.open", { element: trigger() });
+    expect($.star.ui.sidebar.value(sidebar())).toBe(true);
   });
 
   it("supports a cancelable change and the Ctrl/Cmd+B shortcut", () => {
@@ -159,5 +175,43 @@ describe("jQuery Star Sidebar", () => {
     media.set(false);
     expect(sidebar().dataset.mobile).toBe("false");
     expect($.star.ui.sidebar.value(sidebar())).toBe(true);
+  });
+
+  it("closes and returns focus from the mobile backdrop", () => {
+    media.set(true);
+    trigger().click();
+    expect($.star.ui.sidebar.value(sidebar())).toBe(true);
+    const backdrop = sidebar().querySelector<HTMLButtonElement>('[data-part="backdrop"]');
+    if (!backdrop) throw new Error("Missing Sidebar backdrop.");
+    backdrop.click();
+    expect($.star.ui.sidebar.value(sidebar())).toBe(false);
+    expect(document.activeElement).toBe(trigger());
+    $.star.ui.sidebar.toggle(sidebar());
+    expect($.star.ui.sidebar.value(sidebar())).toBe(true);
+  });
+
+  it("releases a setup invalidated during a storage callback and recovers current parts", () => {
+    sidebar().replaceWith(sidebar().cloneNode(true));
+    sidebar().removeAttribute("data-value");
+    const get = window.localStorage.getItem.bind(window.localStorage);
+    let replaced = false;
+    const lookup = vi.spyOn(window.localStorage, "getItem").mockImplementation((key) => {
+      if (!replaced) {
+        replaced = true;
+        const panel = sidebar().querySelector<HTMLElement>('[data-part="panel"]');
+        if (!panel) throw new Error("Missing Sidebar panel.");
+        panel.replaceWith(panel.cloneNode(true));
+      }
+      return get(key);
+    });
+    expect(() => $.star.ui.enhance(sidebar())).toThrow("This UI root cannot acquire resources.");
+    expect(replaced).toBe(true);
+    lookup.mockRestore();
+    $.star.ui.enhance(sidebar());
+    const changed = vi.fn();
+    sidebar().addEventListener("jquery-star:sidebar:change", changed);
+    trigger().click();
+    expect($.star.ui.sidebar.value(sidebar())).toBe(false);
+    expect(changed).toHaveBeenCalledOnce();
   });
 });

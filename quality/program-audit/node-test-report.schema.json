@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "startedAt",
+    "finishedAt",
+    "node",
+    "runId",
+    "success",
+    "counts",
+    "tests",
+    "suites"
+  ],
+  "properties": {
+    "schema": {
+      "const": "jqstar-node-test-audit/1"
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finishedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "node": {
+      "type": "string",
+      "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "counts": {
+      "$ref": "#/$defs/counts"
+    },
+    "tests": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "$ref": "#/$defs/test"
+      }
+    },
+    "suites": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "$ref": "#/$defs/suite"
+      }
+    }
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tests",
+        "failed",
+        "passed",
+        "cancelled",
+        "skipped",
+        "todo",
+        "topLevel",
+        "suites"
+      ],
+      "properties": {
+        "tests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "cancelled": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "todo": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "topLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "suites": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        }
+      }
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "name", "status", "skipped", "todo", "durationMs"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "status": {
+          "enum": ["pass", "fail"]
+        },
+        "skipped": {
+          "type": "boolean"
+        },
+        "todo": {
+          "type": "boolean"
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "suite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "success", "counts"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "counts": {
+          "$ref": "#/$defs/counts"
+        }
+      }
+    }
+  }
+}

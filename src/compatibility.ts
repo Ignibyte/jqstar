@@ -12,7 +12,7 @@ export function installStar($: JQueryStatic, options: StarInstallOptions = {}): 
   runtime.kernel.plugins.use(datastarPlugin);
   runtime.kernel.setDefaultProtocolProfile("core.datastar");
 
-  const star = installed.star as StarStatic;
+  const star = installed.star;
   star.use(uiPlugin);
   return star;
 }

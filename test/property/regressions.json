@@ -16,6 +16,24 @@
     "counterexample": { "a": {} },
     "encoded": {}
   },
+  "persist-nested-prototype-key": {
+    "seed": 1695469951,
+    "path": "6:1:1:1:3:3:88:88:87:87",
+    "counterexampleJson": "{\"a\":{\"\":{\"__proto__\":0}}}",
+    "expected": { "serialize": "encode", "parse": "corrupt" }
+  },
+  "persist-negative-zero-json": {
+    "seed": 804029289,
+    "path": "75:1:1:2:4:3",
+    "counterexampleJson": "{\"a\":[-0]}",
+    "canonicalJson": "{\"a\":[0]}"
+  },
+  "stores-reserved-field-domain": {
+    "seed": 430043,
+    "path": "5887:2:12:11:10",
+    "counterexampleJson": "[{\"el\":0}]",
+    "expected": { "define": "magic key el", "registered": false }
+  },
   "request-filter-dotted-public-name": {
     "seed": 1727711309,
     "path": "13:2:1:2:3:2:2:4:18:15:15:15",

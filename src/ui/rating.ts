@@ -1,8 +1,20 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { RatingTarget, StarContext, StarRatingStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  listenUIReset,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface RatingRecord {
-  cleanup: () => void;
+interface RatingRecord extends UIResources {
+  form: HTMLFormElement | null;
   controls: HTMLInputElement[];
   lastValue: string;
   root: HTMLElement;
@@ -22,10 +34,11 @@ interface RatingEventDetail {
 }
 
 const records = new WeakMap<HTMLElement, RatingRecord>();
+const reflected = new WeakMap<HTMLElement, string>();
 let ratingId = 0;
 
 function ratingRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="rating"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="rating"]') ? value : undefined;
 }
 
 function ratingControls(root: HTMLElement): HTMLInputElement[] {
@@ -53,7 +66,7 @@ function selectedControl(record: RatingRecord): HTMLInputElement | undefined {
 
 function directPart(root: HTMLElement, part: string): HTMLElement | undefined {
   return Array.from(root.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === part,
   );
 }
 
@@ -65,6 +78,18 @@ function itemFor(root: HTMLElement, control: HTMLInputElement): HTMLElement | un
 function unavailable(record: RatingRecord): boolean {
   return (
     record.root.hasAttribute("disabled") || record.controls.every((control) => control.disabled)
+  );
+}
+
+function current(record: RatingRecord, revision = record.revision): boolean {
+  if (!uiCurrent(record, revision) || records.get(record.root) !== record) return false;
+  const controls = Array.from(
+    record.root.querySelectorAll('input[type="radio"][data-part="control"]'),
+  ).filter((control) => control.closest('[data-jqs="rating"]') === record.root);
+  return (
+    controls.length === record.controls.length &&
+    controls.every((control, index) => control === record.controls[index]) &&
+    (record.controls[0]?.form ?? null) === record.form
   );
 }
 
@@ -82,7 +107,11 @@ function emit(
     value,
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:rating:${name}`, { bubbles: true, cancelable, detail }),
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:rating:${name}`, {
+      bubbles: true,
+      cancelable,
+      detail,
+    }),
   );
 }
 
@@ -98,6 +127,7 @@ function status(record: RatingRecord): void {
 function render(record: RatingRecord): void {
   record.value = selectedControl(record)?.value;
   record.lastValue = record.value ?? "";
+  reflected.set(record.root, record.lastValue);
   if (record.root.dataset.value !== record.lastValue) record.root.dataset.value = record.lastValue;
   record.root.dataset.state = unavailable(record)
     ? "disabled"
@@ -111,7 +141,7 @@ function render(record: RatingRecord): void {
       item.dataset.state = selectedIndex >= 0 && index <= selectedIndex ? "filled" : "empty";
   });
   const clear = directPart(record.root, "clear");
-  if (clear instanceof HTMLButtonElement) {
+  if (isHTMLTag(clear, "button")) {
     clear.type = "button";
     const disabled = unavailable(record) || record.value === undefined;
     if (clear.disabled !== disabled) clear.disabled = disabled;
@@ -125,6 +155,7 @@ function restore(record: RatingRecord, value: string | undefined): void {
 }
 
 function commit(record: RatingRecord, value: string | undefined, nativeEvents = true): HTMLElement {
+  const revision = ++record.revision;
   if (unavailable(record)) return record.root;
   const next = value === "" ? undefined : value;
   const control = next ? record.controls.find((candidate) => candidate.value === next) : undefined;
@@ -132,54 +163,61 @@ function commit(record: RatingRecord, value: string | undefined, nativeEvents = 
     throw new Error(`Rating #${record.root.id} has no enabled control with value "${next}".`);
   }
   const previousValue = record.value;
-  if (next === previousValue || !emit(record, "before-change", next, previousValue, true))
+  if (
+    next === previousValue ||
+    !emit(record, "before-change", next, previousValue, true) ||
+    !current(record, revision) ||
+    unavailable(record) ||
+    control?.disabled ||
+    (control && control.value !== next)
+  )
     return record.root;
   restore(record, next);
   if (nativeEvents && control) {
-    control.dispatchEvent(new Event("input", { bubbles: true }));
-    control.dispatchEvent(new Event("change", { bubbles: true }));
+    control.dispatchEvent(
+      new (record.window as Window & typeof globalThis).Event("input", { bubbles: true }),
+    );
+    if (!current(record, revision) || selectedControl(record)?.value !== next) return record.root;
+    control.dispatchEvent(
+      new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+    );
+    if (!current(record, revision) || selectedControl(record)?.value !== next) return record.root;
   }
   emit(record, "change", next, previousValue);
   return record.root;
 }
 
-function wire(record: RatingRecord): () => void {
+function wire(record: RatingRecord): void {
   const change = (event: Event): void => {
-    if (!(event.target instanceof HTMLInputElement) || !record.controls.includes(event.target))
-      return;
+    if (!isHTMLTag(event.target, "input") || !record.controls.includes(event.target)) return;
     const previousValue = record.value;
     const next = selectedControl(record)?.value;
     if (next === previousValue) return;
+    const revision = ++record.revision;
     if (!emit(record, "before-change", next, previousValue, true)) {
-      restore(record, previousValue);
+      if (current(record, revision)) restore(record, previousValue);
       return;
     }
+    if (!current(record, revision) || selectedControl(record)?.value !== next) return;
     render(record);
     emit(record, "change", next, previousValue);
   };
   const modelWrite = (): void => {
     const previousValue = record.value;
+    if (previousValue !== selectedControl(record)?.value) record.revision += 1;
     render(record);
     if (record.value !== previousValue) emit(record, "change", record.value, previousValue);
   };
-  const click = (event: MouseEvent): void => {
-    if (!(event.target instanceof Element)) return;
+  const click = (event: Event): void => {
+    if (!isElementNode(event.target)) return;
     const clear = event.target.closest<HTMLElement>('[data-part="clear"]');
     if (clear?.closest('[data-jqs="rating"]') === record.root) commit(record, undefined);
   };
-  const reset = (): void => {
-    window.setTimeout(modelWrite, 0);
-  };
-  record.root.addEventListener("change", change);
-  record.root.addEventListener("jquery-star:model-write", modelWrite);
-  record.root.addEventListener("click", click);
-  record.controls[0]?.form?.addEventListener("reset", reset);
-  return () => {
-    record.root.removeEventListener("change", change);
-    record.root.removeEventListener("jquery-star:model-write", modelWrite);
-    record.root.removeEventListener("click", click);
-    record.controls[0]?.form?.removeEventListener("reset", reset);
-  };
+  const listen = listenUI.bind(undefined, record, () => current(record));
+  listen(record.root, "change", change);
+  listen(record.root, "jquery-star:model-write", modelWrite);
+  listen(record.root, "click", click);
+  listenUIReset(record, () => current(record), record.form, modelWrite);
 }
 
 function enhanceRating(root: HTMLElement): RatingRecord {
@@ -189,25 +227,31 @@ function enhanceRating(root: HTMLElement): RatingRecord {
   const sameControls =
     existing?.controls.length === controls.length &&
     existing.controls.every((control, index) => control === controls[index]);
-  if (existing && sameControls) {
+  if (existing && sameControls && current(existing)) {
+    if (existing.resetRevision === existing.revision && root.dataset.value === reflected.get(root))
+      return existing;
     if (root.dataset.value !== undefined && root.dataset.value !== existing.lastValue) {
+      existing.revision += 1;
       const next = root.dataset.value;
       if (next === "" || controls.some((control) => control.value === next && !control.disabled))
         restore(existing, next || undefined);
     }
+    if (existing.value !== selectedControl(existing)?.value) existing.revision += 1;
     render(existing);
     return existing;
   }
   existing?.cleanup();
+  const replacement = records.get(root);
+  if (replacement) return replacement;
   const record: RatingRecord = {
-    cleanup: () => undefined,
+    ...uiResources(root),
+    form: controls[0]?.form ?? null,
     controls,
     lastValue: "",
     root,
     value: controls.find((control) => control.checked)?.value,
   };
-  records.set(root, record);
-  if (root.dataset.value !== undefined) {
+  if (root.dataset.value !== undefined && root.dataset.value !== reflected.get(root)) {
     const authored = root.dataset.value;
     if (
       authored === "" ||
@@ -215,9 +259,20 @@ function enhanceRating(root: HTMLElement): RatingRecord {
     )
       for (const control of controls) control.checked = control.value === authored;
   }
-  render(record);
-  record.cleanup = wire(record);
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    wire(record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    render(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
+}
+
+function recordFor(root: HTMLElement): RatingRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceRating(root);
 }
 
 function resolve(target: RatingTarget, root: ParentNode = document): HTMLElement {
@@ -228,16 +283,14 @@ function resolve(target: RatingTarget, root: ParentNode = document): HTMLElement
 }
 
 function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="rating"]')) return target;
+  if (isHTMLElement(target)) return resolve(target);
   if (typeof target === "string" && target.startsWith("#")) return resolve(target, context.root);
   const closest = context.element?.closest('[data-jqs="rating"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+  return resolve(isHTMLElement(closest) ? closest : String(target));
 }
 
 function enhanceAll(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="rating"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="rating"]')) {
     const rating = ratingRoot(element);
     if (rating) enhanceRating(rating);
   }
@@ -247,20 +300,20 @@ export function createRatings(registerAction: ActionRegistrar): RatingCollection
   const api: StarRatingStatic = {
     set: (target, value) => {
       const root = resolve(target);
-      return commit(records.get(root) ?? enhanceRating(root), value);
+      return commit(recordFor(root), value);
     },
     clear: (target) => {
       const root = resolve(target);
-      return commit(records.get(root) ?? enhanceRating(root), undefined);
+      return commit(recordFor(root), undefined);
     },
     value: (target) => {
       const root = resolve(target);
-      return (records.get(root) ?? enhanceRating(root)).value;
+      return recordFor(root).value;
     },
   };
   registerAction("ui.rating.set", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlled(context, explicit ? first : undefined);
     const value = explicit ? context.args?.[1] : first;
     return typeof value === "string" ? api.set(target, value) : target;

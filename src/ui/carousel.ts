@@ -1,18 +1,29 @@
+import { isElementNode, isHTMLElement, isHTMLTag, isNode } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { CarouselTarget, StarCarouselStatic, StarContext } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+} from "./lifecycle";
+import type { UIResources } from "./lifecycle";
 
 type Orientation = "horizontal" | "vertical";
 type PauseReason = "focus" | "hover" | "user";
 
-interface CarouselRecord {
-  cleanup: () => void;
+interface CarouselRecord extends UIResources {
+  bindings: (HTMLElement | undefined)[];
+  delay: number | undefined;
   content: HTMLElement;
   index: number;
   pauseReasons: Set<PauseReason>;
   pointerStart: { id: number; position: number } | undefined;
-  root: HTMLElement;
   slides: HTMLElement[];
-  timer: number | undefined;
+  timer: { handle: number | undefined } | undefined;
 }
 
 interface CarouselEventDetail {
@@ -29,11 +40,12 @@ interface CarouselCollection {
   enhance(root: ParentNode): void;
 }
 
+const pausedRoots = new WeakMap<HTMLElement, boolean>();
 const records = new WeakMap<HTMLElement, CarouselRecord>();
 let carouselId = 0;
 
 function carouselRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="carousel"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="carousel"]') ? value : undefined;
 }
 
 function orientation(root: HTMLElement): Orientation {
@@ -42,7 +54,7 @@ function orientation(root: HTMLElement): Orientation {
 
 function directPart(root: HTMLElement, part: string): HTMLElement | undefined {
   return Array.from(root.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === part,
   );
 }
 
@@ -65,7 +77,7 @@ function autoplayDelay(root: HTMLElement): number | undefined {
   return Number.isFinite(delay) && delay >= 1000 ? delay : undefined;
 }
 
-function prefersReducedMotion(): boolean {
+function prefersReducedMotion(window: Window): boolean {
   return (
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -87,19 +99,20 @@ function emit(
   name: "before-change" | "change",
   previousIndex: number,
   cancelable = false,
+  index = record.index,
 ): boolean {
-  const slide = record.slides[record.index]!;
+  const slide = record.slides[index]!;
   const previousSlide = record.slides[previousIndex] ?? slide;
   const detail: CarouselEventDetail = {
     carousel: record.root,
-    index: record.index,
+    index,
     previousIndex,
     previousValue: slideValue(previousSlide, previousIndex),
     slide,
-    value: currentValue(record),
+    value: slideValue(slide, index),
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:carousel:${name}`, {
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:carousel:${name}`, {
       bubbles: true,
       cancelable,
       detail,
@@ -109,7 +122,7 @@ function emit(
 
 function emitRotation(record: CarouselRecord, name: "pause" | "play"): void {
   record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:carousel:${name}`, {
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:carousel:${name}`, {
       bubbles: true,
       detail: { carousel: record.root, value: currentValue(record) },
     }),
@@ -142,8 +155,11 @@ function render(record: CarouselRecord): void {
   const next = directPart(record.root, "next");
   const atStart = record.index === 0;
   const atEnd = record.index === record.slides.length - 1;
-  if (previous instanceof HTMLButtonElement) previous.disabled = !looping(record.root) && atStart;
-  if (next instanceof HTMLButtonElement) next.disabled = !looping(record.root) && atEnd;
+  const disablePrevious = !looping(record.root) && atStart;
+  const disableNext = !looping(record.root) && atEnd;
+  if (isHTMLTag(previous, "button") && previous.disabled !== disablePrevious)
+    previous.disabled = disablePrevious;
+  if (isHTMLTag(next, "button") && next.disabled !== disableNext) next.disabled = disableNext;
 
   for (const [index, indicator] of indicatorElements(record).entries()) {
     const target = indicator.dataset.value
@@ -167,9 +183,34 @@ function render(record: CarouselRecord): void {
   }
 }
 
+function bindings(root: HTMLElement): (HTMLElement | undefined)[] {
+  return [
+    directPart(root, "previous"),
+    directPart(root, "next"),
+    directPart(root, "rotation"),
+    ...Array.from(root.querySelectorAll<HTMLElement>('[data-part="indicator"]')).filter(
+      (element) => element.closest('[data-jqs="carousel"]') === root,
+    ),
+  ];
+}
+
+function sameParts<T>(before: T[], after: T[]): boolean {
+  return before.length === after.length && before.every((part, index) => part === after[index]);
+}
+
+function current(record: CarouselRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    directPart(record.root, "content") === record.content &&
+    sameParts(record.bindings, bindings(record.root)) &&
+    sameParts(record.slides, carouselSlides(record.root, record.content))
+  );
+}
+
 function clearTimer(record: CarouselRecord): void {
-  if (record.timer !== undefined) window.clearTimeout(record.timer);
+  const timer = record.timer;
   record.timer = undefined;
+  if (timer?.handle !== undefined) record.window.clearTimeout(timer.handle);
 }
 
 function targetIndex(record: CarouselRecord, index: number): number {
@@ -180,30 +221,62 @@ function targetIndex(record: CarouselRecord, index: number): number {
 }
 
 function schedule(record: CarouselRecord): void {
+  if (!current(record)) return;
+  const revision = record.revision;
   clearTimer(record);
+  if (!current(record, revision)) return;
   const delay = autoplayDelay(record.root);
-  if (!delay || record.pauseReasons.size > 0 || prefersReducedMotion()) {
+  const reduced = prefersReducedMotion(record.window);
+  if (!current(record, revision)) return;
+  if (!delay || record.pauseReasons.size > 0 || reduced) {
     render(record);
     return;
   }
-  record.timer = window.setTimeout(() => {
-    record.timer = undefined;
-    change(record, record.index + 1, false);
-    schedule(record);
-  }, delay);
+  const timer = { handle: undefined as number | undefined };
+  record.timer = timer;
+  try {
+    timer.handle = record.window.setTimeout(() => {
+      if (!current(record) || record.timer !== timer) return;
+      record.timer = undefined;
+      const nextRevision = record.revision + 1;
+      change(record, record.index + 1, false);
+      if (current(record, nextRevision) && !isPlaying(record)) schedule(record);
+    }, delay);
+  } catch (error) {
+    if (record.timer === timer) record.timer = undefined;
+    throw error;
+  }
+  if (!current(record, revision) || record.timer !== timer) {
+    record.window.clearTimeout(timer.handle);
+    return;
+  }
   render(record);
 }
 
 function setPaused(record: CarouselRecord, reason: PauseReason, paused: boolean): void {
+  if (!current(record) || (reason !== "user" && record.pauseReasons.has(reason) === paused)) return;
+  const revision = ++record.revision;
   const wasPlaying = isPlaying(record);
   if (paused) record.pauseReasons.add(reason);
   else record.pauseReasons.delete(reason);
   schedule(record);
+  if (!current(record, revision)) return;
   const playing = isPlaying(record);
   if (wasPlaying !== playing) emitRotation(record, playing ? "play" : "pause");
 }
 
+function play(record: CarouselRecord): void {
+  if (!current(record)) return;
+  const revision = ++record.revision;
+  const wasPlaying = isPlaying(record);
+  record.pauseReasons.clear();
+  schedule(record);
+  if (current(record, revision) && !wasPlaying && isPlaying(record)) emitRotation(record, "play");
+}
+
 function change(record: CarouselRecord, index: number, user = true): HTMLElement {
+  if (!current(record)) return record.root;
+  const revision = ++record.revision;
   const next = targetIndex(record, index);
   if (next === record.index) {
     if (user) setPaused(record, "user", true);
@@ -212,19 +285,18 @@ function change(record: CarouselRecord, index: number, user = true): HTMLElement
   const previousIndex = record.index;
   const previousSlide = record.slides[previousIndex];
   const restoreContentFocus =
-    previousSlide !== undefined &&
-    document.activeElement instanceof Node &&
-    previousSlide.contains(document.activeElement);
+    previousSlide !== undefined && previousSlide.contains(record.document.activeElement);
+  const accepted = emit(record, "before-change", previousIndex, true, next);
+  if (!current(record, revision)) return record.root;
+  if (!accepted) return record.root;
   record.index = next;
-  if (!emit(record, "before-change", previousIndex, true)) {
-    record.index = previousIndex;
-    return record.root;
-  }
   if (user) record.pauseReasons.add("user");
   render(record);
+  if (!current(record, revision)) return record.root;
   if (restoreContentFocus) record.content.focus();
+  if (!current(record, revision)) return record.root;
   emit(record, "change", previousIndex);
-  schedule(record);
+  if (current(record, revision)) schedule(record);
   return record.root;
 }
 
@@ -242,13 +314,13 @@ function indexForValue(record: CarouselRecord, value: string | number): number {
 
 function interactiveTarget(target: EventTarget | null): boolean {
   return (
-    target instanceof Element &&
+    isElementNode(target) &&
     Boolean(target.closest("a, button, input, select, textarea, [contenteditable='true']"))
   );
 }
 
-function wire(record: CarouselRecord): () => void {
-  const cleanups: Array<() => void> = [];
+function wire(record: CarouselRecord): void {
+  const listen = listenUI.bind(undefined, record, () => current(record));
   const previous = directPart(record.root, "previous");
   const next = directPart(record.root, "next");
   const rotation = directPart(record.root, "rotation");
@@ -256,24 +328,14 @@ function wire(record: CarouselRecord): () => void {
   const onNext = (): void => void change(record, record.index + 1);
   const onRotation = (): void => {
     if (isPlaying(record)) setPaused(record, "user", true);
-    else {
-      const wasPlaying = isPlaying(record);
-      record.pauseReasons.clear();
-      schedule(record);
-      if (!wasPlaying && isPlaying(record)) emitRotation(record, "play");
-    }
+    else play(record);
   };
-  previous?.addEventListener("click", onPrevious);
-  next?.addEventListener("click", onNext);
-  rotation?.addEventListener("click", onRotation);
-  cleanups.push(
-    () => previous?.removeEventListener("click", onPrevious),
-    () => next?.removeEventListener("click", onNext),
-    () => rotation?.removeEventListener("click", onRotation),
-  );
+  listen(previous, "click", onPrevious);
+  listen(next, "click", onNext);
+  listen(rotation, "click", onRotation);
 
   for (const [index, indicator] of indicatorElements(record).entries()) {
-    if (indicator instanceof HTMLButtonElement && !indicator.hasAttribute("type")) {
+    if (isHTMLTag(indicator, "button") && !indicator.hasAttribute("type")) {
       indicator.type = "button";
     }
     const click = (): void => {
@@ -282,8 +344,7 @@ function wire(record: CarouselRecord): () => void {
         : index;
       change(record, target);
     };
-    indicator.addEventListener("click", click);
-    cleanups.push(() => indicator.removeEventListener("click", click));
+    listen(indicator, "click", click);
   }
 
   const keydown = (event: KeyboardEvent): void => {
@@ -297,35 +358,29 @@ function wire(record: CarouselRecord): () => void {
     else if (event.key === nextKey) change(record, record.index + 1);
     else change(record, event.key === "Home" ? 0 : record.slides.length - 1);
   };
-  record.content.addEventListener("keydown", keydown);
-  cleanups.push(() => record.content.removeEventListener("keydown", keydown));
+  listen(record.content, "keydown", keydown as EventListener);
 
   const pointerenter = (): void => setPaused(record, "hover", true);
   const pointerleave = (): void => setPaused(record, "hover", false);
   const focusin = (): void => setPaused(record, "focus", true);
   const focusout = (event: FocusEvent): void => {
-    if (event.relatedTarget instanceof Node && record.root.contains(event.relatedTarget)) return;
+    if (isNode(event.relatedTarget) && record.root.contains(event.relatedTarget)) return;
     setPaused(record, "focus", false);
   };
-  record.root.addEventListener("pointerenter", pointerenter);
-  record.root.addEventListener("pointerleave", pointerleave);
-  record.root.addEventListener("focusin", focusin);
-  record.root.addEventListener("focusout", focusout);
-  cleanups.push(
-    () => record.root.removeEventListener("pointerenter", pointerenter),
-    () => record.root.removeEventListener("pointerleave", pointerleave),
-    () => record.root.removeEventListener("focusin", focusin),
-    () => record.root.removeEventListener("focusout", focusout),
-  );
+  listen(record.root, "pointerenter", pointerenter);
+  listen(record.root, "pointerleave", pointerleave);
+  listen(record.root, "focusin", focusin);
+  listen(record.root, "focusout", focusout as EventListener);
 
   const pointerdown = (event: PointerEvent): void => {
-    if (event.button !== 0 || interactiveTarget(event.target)) return;
+    if (!current(record) || event.button !== 0 || interactiveTarget(event.target)) return;
     record.pointerStart = {
       id: event.pointerId,
       position: orientation(record.root) === "vertical" ? event.clientY : event.clientX,
     };
   };
   const pointerup = (event: PointerEvent): void => {
+    if (!current(record)) return;
     const start = record.pointerStart;
     record.pointerStart = undefined;
     if (!start || start.id !== event.pointerId) return;
@@ -336,18 +391,9 @@ function wire(record: CarouselRecord): () => void {
   const pointercancel = (): void => {
     record.pointerStart = undefined;
   };
-  record.content.addEventListener("pointerdown", pointerdown);
-  record.content.addEventListener("pointerup", pointerup);
-  record.content.addEventListener("pointercancel", pointercancel);
-  cleanups.push(
-    () => record.content.removeEventListener("pointerdown", pointerdown),
-    () => record.content.removeEventListener("pointerup", pointerup),
-    () => record.content.removeEventListener("pointercancel", pointercancel),
-  );
-  return () => {
-    clearTimer(record);
-    cleanups.forEach((cleanup) => cleanup());
-  };
+  listen(record.content, "pointerdown", pointerdown as EventListener);
+  listen(record.content, "pointerup", pointerup as EventListener);
+  listen(record.content, "pointercancel", pointercancel);
 }
 
 function enhanceCarousel(root: HTMLElement): CarouselRecord {
@@ -362,7 +408,30 @@ function enhanceCarousel(root: HTMLElement): CarouselRecord {
     throw new Error(`Carousel #${root.id} needs data-part="slide" children.`);
 
   const existing = records.get(root);
+  const controls = bindings(root);
+  if (
+    existing &&
+    current(existing) &&
+    existing.content === content &&
+    sameParts(existing.slides, slides) &&
+    sameParts(existing.bindings, controls)
+  ) {
+    const authored = root.dataset.value?.trim();
+    const index = slides.findIndex((slide, index) => slideValue(slide, index) === authored);
+    const delay = autoplayDelay(root);
+    const changed = index >= 0 && index !== existing.index;
+    if (changed || delay !== existing.delay) {
+      existing.revision += 1;
+      if (changed) existing.index = index;
+      existing.delay = delay;
+      schedule(existing);
+    }
+    if (current(existing)) render(existing);
+    return existing;
+  }
   existing?.cleanup();
+  const reentered = records.get(root);
+  if (reentered) return reentered;
   const authored = root.dataset.value?.trim();
   const previousValue = existing ? currentValue(existing) : undefined;
   const patched = authored !== undefined && authored !== previousValue;
@@ -376,44 +445,62 @@ function enhanceCarousel(root: HTMLElement): CarouselRecord {
   const index = patched
     ? Math.max(0, authoredIndex)
     : Math.max(0, previousIndex, authoredIndex, markedIndex);
+  const pauseReasons = new Set<PauseReason>(
+    existing?.document === root.ownerDocument
+      ? existing.pauseReasons
+      : pausedRoots.get(root)
+        ? ["user"]
+        : [],
+  );
+  if (root.contains(root.ownerDocument.activeElement)) pauseReasons.add("focus");
+  else pauseReasons.delete("focus");
   const record: CarouselRecord = {
-    cleanup: () => undefined,
+    ...uiResources(root),
+    bindings: controls,
+    delay: autoplayDelay(root),
     content,
     index,
-    pauseReasons: new Set(existing?.pauseReasons ?? []),
+    pauseReasons,
     pointerStart: undefined,
-    root,
     slides,
     timer: undefined,
   };
-  records.set(root, record);
-  for (const [slideIndex, slide] of slides.entries()) {
-    slide.id ||= `${root.id}-slide-${slideIndex + 1}`;
-    slide.setAttribute("role", "group");
-    slide.setAttribute("aria-roledescription", "slide");
-    if (!slide.hasAttribute("aria-label") && !slide.hasAttribute("aria-labelledby")) {
-      slide.setAttribute("aria-label", `${slideIndex + 1} of ${slides.length}`);
+  record.cleanups.add(() => clearTimer(record));
+  record.cleanup = ownUIRecord(records, root, record, () => {
+    pausedRoots.set(root, record.pauseReasons.has("user"));
+    record.pointerStart = undefined;
+    releaseUIResources(record);
+  });
+  try {
+    if (!record.active) return record;
+    for (const [slideIndex, slide] of slides.entries()) {
+      slide.id ||= `${root.id}-slide-${slideIndex + 1}`;
+      slide.setAttribute("role", "group");
+      slide.setAttribute("aria-roledescription", "slide");
+      if (!slide.hasAttribute("aria-label") && !slide.hasAttribute("aria-labelledby")) {
+        slide.setAttribute("aria-label", `${slideIndex + 1} of ${slides.length}`);
+      }
     }
+    for (const [part, label] of [
+      ["previous", "Previous slide"],
+      ["next", "Next slide"],
+    ] as const) {
+      const control = directPart(root, part);
+      if (isHTMLTag(control, "button") && !control.hasAttribute("type")) control.type = "button";
+      if (control && !control.hasAttribute("aria-label")) control.setAttribute("aria-label", label);
+    }
+    const rotation = directPart(root, "rotation");
+    if (isHTMLTag(rotation, "button") && !rotation.hasAttribute("type")) rotation.type = "button";
+    const status = directPart(root, "status");
+    if (status) {
+      status.setAttribute("aria-live", "polite");
+      status.setAttribute("aria-atomic", "true");
+    }
+    wire(record);
+    if (current(record)) schedule(record);
+  } catch (error) {
+    failUISetup(record, error);
   }
-  for (const [part, label] of [
-    ["previous", "Previous slide"],
-    ["next", "Next slide"],
-  ] as const) {
-    const control = directPart(root, part);
-    if (control instanceof HTMLButtonElement && !control.hasAttribute("type"))
-      control.type = "button";
-    if (control && !control.hasAttribute("aria-label")) control.setAttribute("aria-label", label);
-  }
-  const rotation = directPart(root, "rotation");
-  if (rotation instanceof HTMLButtonElement && !rotation.hasAttribute("type"))
-    rotation.type = "button";
-  const status = directPart(root, "status");
-  if (status) {
-    status.setAttribute("aria-live", "polite");
-    status.setAttribute("aria-atomic", "true");
-  }
-  record.cleanup = wire(record);
-  schedule(record);
   return record;
 }
 
@@ -425,58 +512,57 @@ function resolveCarousel(target: CarouselTarget, root: ParentNode = document): H
 }
 
 function controlledCarousel(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="carousel"]')) return target;
+  if (isHTMLElement(target)) return resolveCarousel(target, context.root);
   if (typeof target === "string" && target.startsWith("#")) {
     return resolveCarousel(target, context.root);
   }
   const closest = context.element?.closest('[data-jqs="carousel"]');
-  return resolveCarousel(closest instanceof HTMLElement ? closest : String(target));
+  return resolveCarousel(isHTMLElement(closest) ? closest : String(target));
 }
 
 function enhanceCarousels(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="carousel"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="carousel"]')) {
     const carousel = carouselRoot(element);
     if (carousel) enhanceCarousel(carousel);
   }
+}
+
+function recordFor(root: HTMLElement): CarouselRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceCarousel(root);
 }
 
 export function createCarousels(registerAction: ActionRegistrar): CarouselCollection {
   const api: StarCarouselStatic = {
     next: (target) => {
       const root = resolveCarousel(target);
-      const record = records.get(root) ?? enhanceCarousel(root);
+      const record = recordFor(root);
       return change(record, record.index + 1);
     },
     previous: (target) => {
       const root = resolveCarousel(target);
-      const record = records.get(root) ?? enhanceCarousel(root);
+      const record = recordFor(root);
       return change(record, record.index - 1);
     },
     go: (target, value) => {
       const root = resolveCarousel(target);
-      const record = records.get(root) ?? enhanceCarousel(root);
+      const record = recordFor(root);
       return change(record, indexForValue(record, value));
     },
     play: (target) => {
       const root = resolveCarousel(target);
-      const record = records.get(root) ?? enhanceCarousel(root);
-      const wasPlaying = isPlaying(record);
-      record.pauseReasons.clear();
-      schedule(record);
-      if (!wasPlaying && isPlaying(record)) emitRotation(record, "play");
+      play(recordFor(root));
       return root;
     },
     pause: (target) => {
       const root = resolveCarousel(target);
-      const record = records.get(root) ?? enhanceCarousel(root);
+      const record = recordFor(root);
       setPaused(record, "user", true);
       return root;
     },
     value: (target) => {
       const root = resolveCarousel(target);
-      return currentValue(records.get(root) ?? enhanceCarousel(root));
+      return currentValue(recordFor(root));
     },
   };
   for (const operation of ["next", "previous", "play", "pause"] as const) {
@@ -486,7 +572,7 @@ export function createCarousels(registerAction: ActionRegistrar): CarouselCollec
   }
   registerAction("ui.carousel.go", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = isHTMLElement(first) || (typeof first === "string" && first.startsWith("#"));
     const target = controlledCarousel(context, explicit ? first : undefined);
     const value = explicit ? context.args?.[1] : first;
     if (typeof value !== "string" && typeof value !== "number") {

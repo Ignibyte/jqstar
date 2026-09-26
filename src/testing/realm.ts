@@ -143,7 +143,9 @@ export async function withStarDOMRealm<Result>(
     try {
       const descriptor = descriptors.get(name);
       if (descriptor) Object.defineProperty(globalThis, name, descriptor);
-      else Reflect.deleteProperty(globalThis, name);
+      else if (!Reflect.deleteProperty(globalThis, name)) {
+        throw new TypeError(`Could not restore absent global ${name}.`);
+      }
     } catch (error) {
       restorationErrors.push(error);
     }

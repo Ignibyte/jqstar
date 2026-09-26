@@ -45,12 +45,45 @@ describe("signal patches", () => {
       added: true,
     });
   });
+
+  it("preserves existing signals across null and nested patches", () => {
+    const state: Record<string, unknown> = {
+      keep: "client",
+      obsolete: true,
+      profile: { name: "Ada" },
+    };
+
+    patchSignals(
+      state,
+      {
+        keep: { nested: true },
+        obsolete: null,
+        profile: { name: "Grace", role: "admin" },
+        fresh: { enabled: true },
+        absent: null,
+      },
+      { onlyIfMissing: true },
+    );
+
+    expect(state).toEqual({
+      keep: "client",
+      obsolete: true,
+      profile: { name: "Ada", role: "admin" },
+      fresh: { enabled: true },
+    });
+  });
 });
 
 describe("element patches", () => {
   beforeEach(() => {
     document.body.innerHTML = `<main id="app"></main>`;
   });
+
+  function applicationRoot(): Element {
+    const root = document.querySelector("#app");
+    if (!root) throw new Error("Missing test application root.");
+    return root;
+  }
 
   it("morphs by id while preserving node identity, focus, input value, and handlers", () => {
     const root = document.querySelector("#app")!;
@@ -118,6 +151,19 @@ describe("element patches", () => {
     expect(document.querySelector("#replacement")).toBeNull();
   });
 
+  it.each(["inner", "append", "prepend", "before", "after"] as const)(
+    "requires a selector for %s patches",
+    (mode) => {
+      const root = applicationRoot();
+      root.innerHTML = `<section id="target">Old</section>`;
+
+      expect(() => patchElements(root, `<section id="target">New</section>`, { mode })).toThrow(
+        /requires a selector/,
+      );
+      expect(root.innerHTML).toBe(`<section id="target">Old</section>`);
+    },
+  );
+
   it("removes elements by the IDs in a selector-free Datastar patch", () => {
     const root = document.querySelector("#app")!;
     root.innerHTML = `<div id="first"></div><div id="keep"></div><div id="second"></div>`;
@@ -165,6 +211,22 @@ describe("element patches", () => {
     );
   });
 
+  it("rejects malformed SVG markup before changing the target", () => {
+    const root = applicationRoot();
+    root.innerHTML = `<svg id="chart"><circle id="original"></circle></svg>`;
+
+    expect(() =>
+      patchElements(root, `<circle id="broken">`, {
+        selector: "#chart",
+        mode: "append",
+        namespace: "svg",
+      }),
+    ).toThrow(/Invalid svg patch markup/);
+
+    expect(root.querySelector("#original")).not.toBeNull();
+    expect(root.querySelector("#broken")).toBeNull();
+  });
+
   it("deeply imports MathML content into the root document", () => {
     const root = document.querySelector("#app")!;
     root.innerHTML = `<math id="formula"></math>`;
@@ -195,16 +257,46 @@ describe("element patches", () => {
     expect(document.querySelector("#target")).toBeNull();
   });
 
-  it("filters selector-free patch nodes to non-empty element IDs", () => {
+  it("applies only matching selector-free element IDs", () => {
     const root = document.querySelector("#app")!;
     root.innerHTML = `<section id="target">Old</section>`;
-    const lookup = vi.spyOn(document, "getElementById");
 
-    patchElements(root, `text<div>no id</div><section id="target">New</section>`);
+    patchElements(
+      root,
+      `text<div>no id</div><section id="unmatched">Ignore</section><section id="target">New</section>`,
+    );
 
     expect(document.querySelector("#target")?.textContent).toBe("New");
-    expect(lookup).toHaveBeenCalledTimes(2);
-    expect(lookup.mock.calls).toEqual([["target"], ["target"]]);
+    expect(root.querySelector("#unmatched")).toBeNull();
+    expect(root.querySelector("div")).toBeNull();
+  });
+
+  it("prefers the application root when an external ID shadows it", () => {
+    const root = applicationRoot();
+    const outside = document.createElement("main");
+    outside.id = "app";
+    outside.textContent = "External";
+    root.remove();
+    document.body.append(outside, root);
+    expect(document.getElementById("app")).toBe(outside);
+
+    patchElements(root, `<main id="app">Replacement</main>`, { mode: "replace" });
+
+    expect(outside.textContent).toBe("External");
+    expect(outside.nextElementSibling?.textContent).toBe("Replacement");
+  });
+
+  it("rejects a selector-free ID match outside the application root", () => {
+    const root = applicationRoot();
+    const outside = document.createElement("section");
+    outside.id = "external";
+    outside.textContent = "Unchanged";
+    root.before(outside);
+
+    expect(() =>
+      patchElements(root, `<section id="external">Changed</section>`, { mode: "replace" }),
+    ).toThrow(/did not match a target/);
+    expect(outside.textContent).toBe("Unchanged");
   });
 
   it("preserves marked roots during direct remove and replace modes", () => {
@@ -369,6 +461,26 @@ describe("element patches", () => {
     } finally {
       frame.remove();
     }
+  });
+
+  it("patches an unowned document through replace, morph, and remove", () => {
+    const detachedDocument = document.implementation.createHTMLDocument("patch");
+    const root = detachedDocument.createElement("main");
+    root.innerHTML = `<section id="target">Old</section>`;
+    detachedDocument.body.append(root);
+
+    patchElements(root, `<section id="replacement"><i>Old child</i></section>`, {
+      selector: "#target",
+      mode: "replace",
+    });
+    expect(root.querySelector("#replacement i")?.textContent).toBe("Old child");
+
+    patchElements(root, `<section id="replacement"><span>New child</span></section>`);
+    expect(root.querySelector("#replacement span")?.textContent).toBe("New child");
+    expect(root.querySelector("#replacement i")).toBeNull();
+
+    patchElements(root, "", { selector: "#replacement", mode: "remove" });
+    expect(root.querySelector("#replacement")).toBeNull();
   });
 
   it("destroys nested application roots deepest-first before direct removal", () => {

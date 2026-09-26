@@ -2,6 +2,38 @@
 module.exports = {
   forbidden: [
     {
+      name: "no-shipped-navigation-research",
+      severity: "error",
+      from: { path: "^(src|server|registry|example|bin)/" },
+      to: { path: "^test/fixtures/navigation-decision/" },
+    },
+    {
+      name: "no-shipped-resource-research",
+      severity: "error",
+      from: { path: "^(src|server|registry|example|bin)/" },
+      to: { path: "^test/fixtures/resource-strategy/|node_modules/@tanstack/query-core/" },
+    },
+    {
+      name: "independent-native-resource-prototype",
+      severity: "error",
+      from: { path: "^test/fixtures/resource-strategy/native(?:-entry)?\\.ts$" },
+      to: { path: "^test/fixtures/resource-strategy/(external/|server-(entry|strategy)\\.ts$)" },
+    },
+    {
+      name: "independent-server-resource-prototype",
+      severity: "error",
+      from: { path: "^test/fixtures/resource-strategy/server-(entry|strategy)\\.ts$" },
+      to: { path: "^test/fixtures/resource-strategy/(external/|native(?:-entry)?\\.ts$)" },
+    },
+    {
+      name: "independent-external-resource-prototype",
+      severity: "error",
+      from: { path: "^test/fixtures/resource-strategy/external/" },
+      to: {
+        path: "^test/fixtures/resource-strategy/(native(?:-entry)?\\.ts$|server-(entry|strategy)\\.ts$)",
+      },
+    },
+    {
       name: "no-circular",
       severity: "error",
       comment: "Runtime and application layers must remain acyclic.",
@@ -12,8 +44,18 @@ module.exports = {
       name: "no-unresolved",
       severity: "error",
       comment: "Every static dependency must resolve.",
-      from: {},
+      from: { pathNot: "^scripts/smoke-built\\.mjs$" },
       to: { couldNotResolve: true },
+    },
+    {
+      name: "no-unresolved-built-smoke",
+      severity: "error",
+      comment: "The built-package smoke test may reference only its two generated bundle inputs.",
+      from: { path: "^scripts/smoke-built\\.mjs$" },
+      to: {
+        couldNotResolve: true,
+        pathNot: "^\\.\\./dist/(?:jquery-star\\.js|jquery-star\\.umd\\.cjs)$",
+      },
     },
     {
       name: "no-production-to-tests",

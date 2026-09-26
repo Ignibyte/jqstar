@@ -1,20 +1,35 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { FileUploadTarget, StarContext, StarFileUploadStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface FileUploadRecord {
-  cleanup: () => void;
+interface FileUploadRecord extends UIResources {
   control: HTMLInputElement;
+  form: HTMLFormElement | null;
+  list: HTMLElement | undefined;
+  status: HTMLElement | undefined;
+  dropzone: HTMLElement | undefined;
   dragDepth: number;
   files: File[];
   renderedSignature: string;
-  root: HTMLElement;
+  rows: Element[];
+  removes: HTMLButtonElement[];
+  message: string | undefined;
 }
-
 interface FileUploadCollection {
   api: StarFileUploadStatic;
   enhance(root: ParentNode): void;
 }
-
 interface FileUploadEventDetail {
   accepted?: File[];
   files: File[];
@@ -22,73 +37,96 @@ interface FileUploadEventDetail {
   rejected?: Array<{ file: File; reason: string }>;
   upload: HTMLElement;
 }
-
+type RetainedUpload = Pick<
+  FileUploadRecord,
+  "control" | "list" | "dragDepth" | "renderedSignature" | "rows" | "removes" | "message" | "files"
+>;
 const records = new WeakMap<HTMLElement, FileUploadRecord>();
+const retained = new WeakMap<HTMLElement, RetainedUpload>();
 let uploadId = 0;
-
 function uploadRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="file-upload"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="file-upload"]') ? value : undefined;
 }
-
 function scopedPart(root: HTMLElement, part: string): HTMLElement | undefined {
-  return Array.from(root.querySelectorAll<HTMLElement>(`[data-part="${part}"]`)).find(
-    (element) => element.parentElement?.closest("[data-jqs]") === root,
+  return Array.from(root.querySelectorAll(`[data-part="${part}"]`)).find(
+    (element): element is HTMLElement =>
+      isHTMLElement(element) && element.parentElement?.closest("[data-jqs]") === root,
   );
 }
-
 function controlFor(root: HTMLElement): HTMLInputElement {
   const control = scopedPart(root, "control");
-  if (!(control instanceof HTMLInputElement) || control.type !== "file") {
+  if (!isHTMLTag(control, "input") || control.type !== "file")
     throw new Error(`File Upload #${root.id} needs input[type="file"][data-part="control"].`);
-  }
   return control;
 }
-
+function current(record: FileUploadRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.matches('[data-jqs="file-upload"]') &&
+    scopedPart(record.root, "control") === record.control &&
+    record.control.type === "file" &&
+    record.control.form === record.form &&
+    scopedPart(record.root, "list") === record.list &&
+    scopedPart(record.root, "status") === record.status &&
+    scopedPart(record.root, "dropzone") === record.dropzone
+  );
+}
 function disabled(record: FileUploadRecord): boolean {
   return (
-    record.control.disabled ||
+    record.control.matches(":disabled") ||
     record.root.hasAttribute("disabled") ||
     record.root.dataset.disabled !== undefined
   );
 }
-
-function fileKey(file: File): string {
-  return `${file.name}\u0000${file.size}\u0000${file.lastModified}\u0000${file.type}`;
+function nativeFiles(control: HTMLInputElement): File[] {
+  return Array.from(control.files ?? []);
 }
-
+function sameFiles(left: File[], right: File[]): boolean {
+  return left.length === right.length && left.every((file, index) => file === right[index]);
+}
 function signature(files: File[]): string {
-  return files.map(fileKey).join("\u0001");
+  return JSON.stringify(files.map((file) => [file.name, file.size, file.lastModified, file.type]));
 }
-
-function fileList(files: File[]): FileList | undefined {
-  if (typeof DataTransfer === "undefined") return undefined;
-  try {
-    const transfer = new DataTransfer();
-    for (const file of files) transfer.items.add(file);
-    return transfer.files;
-  } catch {
-    return undefined;
+function constraints(record: FileUploadRecord): string {
+  return JSON.stringify([
+    record.control.accept,
+    record.control.multiple,
+    record.root.dataset.maxFiles,
+    record.root.dataset.maxSize,
+  ]);
+}
+function writeFiles(record: FileUploadRecord, files: File[], valid: () => boolean): boolean {
+  if (!valid()) return false;
+  if (sameFiles(nativeFiles(record.control), files)) return true;
+  const Transfer = (record.window as Window & typeof globalThis).DataTransfer;
+  if (typeof Transfer === "function") {
+    const transfer = new Transfer();
+    if (!valid()) return false;
+    for (const file of files) {
+      transfer.items.add(file);
+      if (!valid()) return false;
+    }
+    const list = transfer.files;
+    if (!valid()) return false;
+    record.control.files = list;
+  } else {
+    const override = Object.getOwnPropertyDescriptor(record.control, "files");
+    if (override?.configurable && Array.isArray(override.value)) {
+      Object.defineProperty(record.control, "files", { ...override, value: [...files] });
+    } else if (files.length === 0) record.control.value = "";
+    else
+      throw new Error("File Upload needs native DataTransfer support to replace selected files.");
   }
+  return sameFiles(nativeFiles(record.control), files);
 }
-
-function writeFiles(control: HTMLInputElement, files: File[]): void {
-  const next = fileList(files);
-  try {
-    if (next) control.files = next;
-    else Object.defineProperty(control, "files", { configurable: true, value: files });
-  } catch {
-    Object.defineProperty(control, "files", { configurable: true, value: next ?? files });
-  }
-}
-
 function maxFiles(record: FileUploadRecord): number {
+  const nativeLimit = record.control.multiple ? Number.POSITIVE_INFINITY : 1;
   const value = Number(record.root.dataset.maxFiles);
-  if (Number.isFinite(value) && value > 0) return Math.floor(value);
-  return record.control.multiple ? Number.POSITIVE_INFINITY : 1;
+  return Number.isFinite(value) && value > 0
+    ? Math.min(nativeLimit, Math.floor(value))
+    : nativeLimit;
 }
-
 function maxSize(record: FileUploadRecord): number {
   const value = Number(record.root.dataset.maxSize);
   return Number.isFinite(value) && value > 0 ? value : Number.POSITIVE_INFINITY;
@@ -145,85 +183,150 @@ function emit(
   cancelable = false,
 ): boolean {
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:file-upload:${name}`, {
-      bubbles: true,
-      cancelable,
-      detail: { ...detail, upload: record.root },
-    }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:file-upload:${name}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail: {
+          ...detail,
+          files: [...detail.files],
+          ...(detail.accepted ? { accepted: [...detail.accepted] } : {}),
+          ...(detail.previousFiles ? { previousFiles: [...detail.previousFiles] } : {}),
+          ...(detail.rejected ? { rejected: detail.rejected.map((entry) => ({ ...entry })) } : {}),
+          upload: record.root,
+        },
+      },
+    ),
   );
 }
-
-function render(record: FileUploadRecord, message?: string): void {
-  const nextSignature = signature(record.files);
+function render(record: FileUploadRecord): void {
+  if (!current(record)) return;
+  const revision = record.revision;
+  const unavailable = disabled(record);
   record.root.dataset.state =
-    record.dragDepth > 0 ? "dragging" : record.files.length ? "ready" : "empty";
+    record.dragDepth > 0 && !unavailable
+      ? "dragging"
+      : record.message
+        ? "invalid"
+        : record.files.length
+          ? "ready"
+          : "empty";
   record.root.dataset.count = String(record.files.length);
-  record.root.setAttribute("aria-disabled", String(disabled(record)));
-  const dropzone = scopedPart(record.root, "dropzone");
-  if (dropzone?.tagName === "LABEL") dropzone.setAttribute("for", record.control.id);
-  const status = scopedPart(record.root, "status");
-  if (status) {
-    status.setAttribute("aria-live", "polite");
-    status.setAttribute("aria-atomic", "true");
-    status.textContent =
-      message ??
+  record.root.setAttribute("aria-disabled", String(unavailable));
+  if (isHTMLTag(record.dropzone, "label")) record.dropzone.htmlFor = record.control.id;
+  if (record.status) {
+    record.status.setAttribute("aria-live", "polite");
+    record.status.setAttribute("aria-atomic", "true");
+    record.status.textContent =
+      record.message ??
       (record.files.length
         ? `${record.files.length} file${record.files.length === 1 ? "" : "s"} selected.`
         : "No files selected.");
   }
-  for (const remove of record.root.querySelectorAll<HTMLButtonElement>('[data-part="remove"]')) {
-    if (remove.disabled !== disabled(record)) remove.disabled = disabled(record);
-  }
-  if (record.renderedSignature === nextSignature) return;
-  record.renderedSignature = nextSignature;
-  const list = scopedPart(record.root, "list");
-  if (!list) return;
+  for (const remove of record.removes)
+    if (remove.disabled !== unavailable) remove.disabled = unavailable;
+  const list = record.list;
+  if (!list || !current(record, revision)) return;
+  const nextSignature = signature(record.files);
+  if (
+    record.renderedSignature === nextSignature &&
+    record.rows.length === list.children.length &&
+    record.rows.every((row, index) => list.children[index] === row)
+  )
+    return;
   list.replaceChildren();
+  if (!current(record, revision)) return;
+  record.renderedSignature = nextSignature;
+  record.rows = [];
+  record.removes = [];
   for (const [index, file] of record.files.entries()) {
-    const item = document.createElement("li");
+    const item = record.document.createElement("li");
     item.dataset.part = "item";
     item.dataset.index = String(index);
-    const name = document.createElement("span");
+    const name = record.document.createElement("span");
     name.dataset.part = "name";
     name.textContent = file.name;
-    const size = document.createElement("span");
+    const size = record.document.createElement("span");
     size.dataset.part = "size";
     size.textContent = formatBytes(file.size);
-    const remove = document.createElement("button");
+    const remove = record.document.createElement("button");
     remove.type = "button";
     remove.dataset.part = "remove";
     remove.dataset.index = String(index);
     remove.textContent = "Remove";
     remove.setAttribute("aria-label", `Remove ${file.name}`);
-    remove.disabled = disabled(record);
+    remove.disabled = unavailable;
     item.append(name, size, remove);
     list.append(item);
+    if (!current(record, revision)) return;
+    record.rows.push(item);
+    record.removes.push(remove);
   }
 }
-
-function setFiles(record: FileUploadRecord, files: File[], message?: string): HTMLElement {
-  const previousFiles = [...record.files];
-  if (signature(files) === signature(previousFiles)) {
-    writeFiles(record.control, files);
-    render(record, message);
-    return record.root;
+function request(record: FileUploadRecord) {
+  const revision = ++record.revision;
+  let observed = nativeFiles(record.control);
+  const signature = constraints(record);
+  const valid = (): boolean =>
+    current(record, revision) &&
+    !disabled(record) &&
+    constraints(record) === signature &&
+    sameFiles(nativeFiles(record.control), observed);
+  return {
+    revision,
+    valid,
+    observe: () => {
+      observed = nativeFiles(record.control);
+    },
+  };
+}
+function commit(
+  record: FileUploadRecord,
+  files: File[],
+  previousFiles: File[],
+  operation: ReturnType<typeof request>,
+  message?: string,
+): HTMLElement {
+  if (!operation.valid()) return record.root;
+  const changed = !sameFiles(files, previousFiles);
+  if (changed) {
+    const accepted = emit(record, "before-change", { files, previousFiles }, true);
+    if (!operation.valid()) return record.root;
+    if (!accepted) {
+      if (writeFiles(record, previousFiles, operation.valid)) {
+        operation.observe();
+        if (operation.valid()) {
+          record.files = nativeFiles(record.control);
+          render(record);
+        }
+      }
+      return record.root;
+    }
   }
-  if (!emit(record, "before-change", { files, previousFiles }, true)) {
-    writeFiles(record.control, previousFiles);
-    return record.root;
-  }
-  record.files = [...files];
-  writeFiles(record.control, record.files);
-  render(record, message);
-  emit(record, "change", { files: [...record.files], previousFiles });
-  record.root.dispatchEvent(new Event("input", { bubbles: true }));
-  record.root.dispatchEvent(new Event("change", { bubbles: true }));
+  if (!writeFiles(record, files, operation.valid)) return record.root;
+  operation.observe();
+  if (!operation.valid()) return record.root;
+  record.files = nativeFiles(record.control);
+  record.message = message;
+  render(record);
+  if (!changed || !operation.valid()) return record.root;
+  emit(record, "change", { files: record.files, previousFiles });
+  if (!operation.valid()) return record.root;
+  record.root.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("input", { bubbles: true }),
+  );
+  if (operation.valid())
+    record.root.dispatchEvent(
+      new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+    );
   return record.root;
 }
-
 function acceptSelection(record: FileUploadRecord, selected: File[], append: boolean): HTMLElement {
-  if (disabled(record)) return record.root;
-  const candidates = append && record.control.multiple ? [...record.files, ...selected] : selected;
+  const operation = request(record);
+  if (!operation.valid()) return record.root;
+  const previousFiles = append ? nativeFiles(record.control) : [...record.files];
+  const candidates = append && record.control.multiple ? [...previousFiles, ...selected] : selected;
   const result = validateFiles(record, candidates);
   if (result.rejected.length) {
     emit(record, "reject", {
@@ -231,122 +334,183 @@ function acceptSelection(record: FileUploadRecord, selected: File[], append: boo
       files: result.accepted,
       rejected: result.rejected,
     });
-    record.root.dataset.state = "invalid";
+    if (!operation.valid()) return record.root;
   }
-  const message = result.rejected[0]?.reason;
-  const root = setFiles(record, result.accepted, message);
-  if (result.rejected.length) root.dataset.state = "invalid";
-  return root;
+  return commit(record, result.accepted, previousFiles, operation, result.rejected[0]?.reason);
 }
-
+function setFiles(record: FileUploadRecord, files: File[]): HTMLElement {
+  const operation = request(record);
+  return commit(record, files, nativeFiles(record.control), operation);
+}
 function removeFile(record: FileUploadRecord, target: number | string): HTMLElement {
+  const operation = request(record);
+  if (!operation.valid()) return record.root;
+  const files = nativeFiles(record.control);
   const index =
-    typeof target === "number" ? target : record.files.findIndex((file) => file.name === target);
-  if (index < 0 || index >= record.files.length || disabled(record)) return record.root;
-  return setFiles(
+    typeof target === "number" ? target : files.findIndex((file) => file.name === target);
+  if (!Number.isInteger(index) || index < 0 || index >= files.length) return record.root;
+  return commit(
     record,
-    record.files.filter((_, candidate) => candidate !== index),
+    files.filter((_, candidate) => candidate !== index),
+    files,
+    operation,
   );
 }
-
-function wire(record: FileUploadRecord): () => void {
-  const change = (): void => {
-    acceptSelection(record, Array.from(record.control.files ?? []), false);
-  };
-  const click = (event: MouseEvent): void => {
-    if (!(event.target instanceof Element)) return;
-    const remove = event.target.closest<HTMLElement>('[data-part="remove"]');
-    if (!remove) return;
-    removeFile(record, Number(remove.dataset.index));
-  };
-  const dragenter = (event: DragEvent): void => {
-    if (disabled(record) || !event.dataTransfer?.types.includes("Files")) return;
+function wire(record: FileUploadRecord): void {
+  const listen = listenUI.bind(undefined, record, () => current(record));
+  const owned = (event: Event): boolean =>
+    isElementNode(event.target) && event.target.closest("[data-jqs]") === record.root;
+  listen(record.control, "change", () => {
+    acceptSelection(record, nativeFiles(record.control), false);
+  });
+  listen(record.root, "click", (event) => {
+    if (!owned(event) || !isElementNode(event.target)) return;
+    const remove = event.target.closest('button[data-part="remove"]');
+    if (
+      !isHTMLTag(remove, "button") ||
+      !record.list?.contains(remove) ||
+      remove.matches(":disabled")
+    )
+      return;
+    const index = record.removes.indexOf(remove);
+    if (index >= 0) removeFile(record, index);
+  });
+  listen(record.root, "dragenter", (event) => {
+    if (
+      !owned(event) ||
+      disabled(record) ||
+      !(event as DragEvent).dataTransfer?.types.includes("Files")
+    )
+      return;
     event.preventDefault();
     record.dragDepth += 1;
     render(record);
-  };
-  const dragover = (event: DragEvent): void => {
-    if (disabled(record) || !event.dataTransfer?.types.includes("Files")) return;
+  });
+  listen(record.root, "dragover", (event) => {
+    const transfer = (event as DragEvent).dataTransfer;
+    if (!owned(event) || disabled(record) || !transfer?.types.includes("Files")) return;
     event.preventDefault();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-  };
-  const dragleave = (event: DragEvent): void => {
+    transfer.dropEffect = "copy";
+  });
+  listen(record.root, "dragleave", (event) => {
+    if (!owned(event)) return;
     event.preventDefault();
     record.dragDepth = Math.max(0, record.dragDepth - 1);
     render(record);
-  };
-  const drop = (event: DragEvent): void => {
-    if (disabled(record)) return;
+  });
+  listen(record.root, "drop", (event) => {
+    const transfer = (event as DragEvent).dataTransfer;
+    if (!owned(event) || disabled(record) || !transfer?.types.includes("Files")) return;
     event.preventDefault();
     record.dragDepth = 0;
-    acceptSelection(record, Array.from(event.dataTransfer?.files ?? []), true);
-  };
-  const reset = (): void => {
-    queueMicrotask(() => {
-      record.files = Array.from(record.control.files ?? []);
-      record.renderedSignature = "__reset__";
+    acceptSelection(record, Array.from(transfer.files), true);
+  });
+  listen(record.form ?? undefined, "reset", (event) => {
+    const revision = ++record.revision;
+    record.resetRevision = revision;
+    record.window.queueMicrotask(() => {
+      if (!current(record, revision)) return;
+      delete record.resetRevision;
+      if (event.defaultPrevented) return;
+      record.files = nativeFiles(record.control);
+      record.message = undefined;
+      record.dragDepth = 0;
       render(record);
     });
-  };
-  record.control.addEventListener("change", change);
-  record.root.addEventListener("click", click);
-  record.root.addEventListener("dragenter", dragenter);
-  record.root.addEventListener("dragover", dragover);
-  record.root.addEventListener("dragleave", dragleave);
-  record.root.addEventListener("drop", drop);
-  record.control.form?.addEventListener("reset", reset);
-  return () => {
-    record.control.removeEventListener("change", change);
-    record.root.removeEventListener("click", click);
-    record.root.removeEventListener("dragenter", dragenter);
-    record.root.removeEventListener("dragover", dragover);
-    record.root.removeEventListener("dragleave", dragleave);
-    record.root.removeEventListener("drop", drop);
-    record.control.form?.removeEventListener("reset", reset);
-  };
+  });
 }
-
 function enhanceFileUpload(root: HTMLElement): FileUploadRecord {
+  const existing = records.get(root);
+  if (existing && current(existing)) {
+    if (existing.resetRevision === existing.revision) return existing;
+    const files = nativeFiles(existing.control);
+    if (!sameFiles(existing.files, files)) {
+      existing.revision += 1;
+      existing.files = files;
+      existing.message = undefined;
+    }
+    render(existing);
+    return existing;
+  }
+  existing?.cleanup();
+  if (existing && !uiActive(root)) return existing;
+  const replacement = records.get(root);
+  if (replacement) return replacement;
   root.id ||= `jqs-file-upload-${++uploadId}`;
   const control = controlFor(root);
   control.id ||= `${root.id}-control`;
-  const existing = records.get(root);
-  existing?.cleanup();
-  const sameControl = existing?.control === control;
-  const files = Array.from(control.files ?? []);
+  const list = scopedPart(root, "list");
+  const prior = retained.get(root);
+  retained.delete(root);
+  const sameControl = prior?.control === control;
+  const sameList = sameControl && prior.list === list;
   const record: FileUploadRecord = {
-    cleanup: () => undefined,
+    ...uiResources(root),
     control,
-    dragDepth: existing?.dragDepth ?? 0,
-    files: files.length || !sameControl ? files : [...(existing?.files ?? [])],
-    renderedSignature: existing?.renderedSignature ?? "__initial__",
-    root,
+    form: control.form,
+    list,
+    status: scopedPart(root, "status"),
+    dropzone: scopedPart(root, "dropzone"),
+    dragDepth: sameControl ? prior.dragDepth : 0,
+    files: nativeFiles(control),
+    renderedSignature: sameList ? prior.renderedSignature : "",
+    rows: sameList ? prior.rows : [],
+    removes: sameList ? prior.removes : [],
+    message:
+      sameControl && sameFiles(prior.files, nativeFiles(control)) ? prior.message : undefined,
   };
-  records.set(root, record);
-  render(record);
-  record.cleanup = wire(record);
+  record.cleanup = ownUIRecord(records, root, record, () => {
+    const adopted = record.document !== root.ownerDocument;
+    retained.set(root, {
+      control: record.control,
+      list: record.list,
+      dragDepth: adopted ? record.dragDepth : 0,
+      renderedSignature: record.renderedSignature,
+      rows: record.rows,
+      removes: record.removes,
+      message: record.message,
+      files: record.files,
+    });
+    releaseUIResources(record);
+  });
+  record.cleanups.add(() => {
+    if (record.document === root.ownerDocument && record.dragDepth) {
+      record.dragDepth = 0;
+      if (!records.has(root)) root.dataset.state = record.files.length ? "ready" : "empty";
+    }
+  });
+  try {
+    wire(record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    render(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
-
+function recordFor(root: HTMLElement): FileUploadRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceFileUpload(root);
+}
 function resolveUpload(target: FileUploadTarget, root: ParentNode = document): HTMLElement {
   const resolved =
-    typeof target === "string" ? uploadRoot(root.querySelector(target)) : uploadRoot(target);
+    typeof target === "string"
+      ? uploadRoot(isHTMLElement(root) && root.matches(target) ? root : root.querySelector(target))
+      : uploadRoot(target);
   if (resolved) return resolved;
   throw new Error(`File Upload target did not match data-jqs="file-upload": ${String(target)}`);
 }
 
 function controlledUpload(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="file-upload"]')) return target;
+  if (isHTMLElement(target)) return resolveUpload(target, context.root);
   if (typeof target === "string" && target.startsWith("#"))
     return resolveUpload(target, context.root);
   const closest = context.element?.closest('[data-jqs="file-upload"]');
-  return resolveUpload(closest instanceof HTMLElement ? closest : String(target));
+  return resolveUpload(isHTMLElement(closest) ? closest : String(target), context.root);
 }
 
 function enhanceFileUploads(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="file-upload"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="file-upload"]')) {
     const upload = uploadRoot(element);
     if (upload) enhanceFileUpload(upload);
   }
@@ -356,15 +520,15 @@ export function createFileUploads(registerAction: ActionRegistrar): FileUploadCo
   const api: StarFileUploadStatic = {
     clear: (target) => {
       const root = resolveUpload(target);
-      return setFiles(records.get(root) ?? enhanceFileUpload(root), []);
+      return setFiles(recordFor(root), []);
     },
     remove: (target, file) => {
       const root = resolveUpload(target);
-      return removeFile(records.get(root) ?? enhanceFileUpload(root), file);
+      return removeFile(recordFor(root), file);
     },
     files: (target) => {
       const root = resolveUpload(target);
-      return [...(records.get(root) ?? enhanceFileUpload(root)).files];
+      return nativeFiles(recordFor(root).control);
     },
   };
   registerAction("ui.fileUpload.clear", (context) =>
@@ -372,7 +536,7 @@ export function createFileUploads(registerAction: ActionRegistrar): FileUploadCo
   );
   registerAction("ui.fileUpload.remove", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = isHTMLElement(first) || (typeof first === "string" && first.startsWith("#"));
     const target = controlledUpload(context, explicit ? first : undefined);
     const file = explicit ? context.args?.[1] : first;
     if (typeof file !== "string" && typeof file !== "number")

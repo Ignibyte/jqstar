@@ -54,6 +54,62 @@ describe("jQuery Star Tags Input", () => {
     );
   });
 
+  it("uses an explicit native root in value actions and rejects a different component", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Tags Input application did not start.");
+    await app.run("ui.tags-input.add", { args: [root(), "Datastar"] });
+    expect($.star.ui.tagsInput.value(root())).toEqual(["jQuery", "Datastar"]);
+    await app.run("ui.tags-input.remove", { args: [root(), "jQuery"] });
+    expect($.star.ui.tagsInput.value(root())).toEqual(["Datastar"]);
+    const foreign = document.getElementById("external");
+    if (!foreign) throw new Error("Missing Tags Input external action.");
+    await expect(
+      app.run("ui.tags-input.add", { element: control(), args: [foreign, "redirected"] }),
+    ).rejects.toThrow('Tags Input target did not match data-jqs="tags-input"');
+    expect($.star.ui.tagsInput.value(root())).toEqual(["Datastar"]);
+    await app.run("ui.tags-input.add", { element: control(), args: ["Accessibility"] });
+    expect($.star.ui.tagsInput.value(root())).toEqual(["Datastar", "Accessibility"]);
+  });
+
+  it("clears tags through the action while preserving native form serialization", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Tags Input application did not start.");
+    const form = document.querySelector<HTMLFormElement>("#form");
+    if (!form) throw new Error("Missing Tags Input form.");
+    root().setAttribute("disabled", "");
+    await app.run("ui.tags-input.clear", { args: [root()] });
+    expect($.star.ui.tagsInput.value(root())).toEqual(["jQuery"]);
+    root().removeAttribute("disabled");
+    await app.run("ui.tags-input.clear", { args: [root()] });
+    expect($.star.ui.tagsInput.value(root())).toEqual([]);
+    expect(new FormData(form).getAll("skills")).toEqual([]);
+    expect(root().querySelector('[data-part="status"]')?.textContent).toBe("All tags removed.");
+  });
+
+  it("keeps non-removal clicks inert and clears an unfinished draft with Escape", () => {
+    const list = root().querySelector<HTMLElement>('[data-part="list"]');
+    if (!list) throw new Error("Missing Tags Input list.");
+    list.click();
+    expect($.star.ui.tagsInput.value(root())).toEqual(["jQuery"]);
+    control().value = "draft";
+    control().dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
+    expect(control().value).toBe("");
+    expect(root().querySelector('[data-part="status"]')?.textContent).toBe("Entry cleared.");
+  });
+
+  it("renders accessible list items when a div is the tag list", () => {
+    const list = root().querySelector<HTMLElement>('[data-part="list"]');
+    if (!list) throw new Error("Missing Tags Input list.");
+    const replacement = document.createElement("div");
+    replacement.dataset.part = "list";
+    list.replaceWith(replacement);
+    $.star.ui.enhance(root());
+    $.star.ui.tagsInput.add(root(), "Datastar");
+    const tag = replacement.querySelector<HTMLElement>('[data-part="tag"][data-value="Datastar"]');
+    expect(tag?.tagName).toBe("SPAN");
+    expect(tag?.getAttribute("role")).toBe("listitem");
+  });
+
   it("removes by button and Backspace and announces the result", () => {
     $.star.ui.tagsInput.add(root(), "Datastar");
     remove("jQuery").click();

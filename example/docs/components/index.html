@@ -12,7 +12,7 @@
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
     <link rel="stylesheet" href="/site.css" />
   </head>
-  <body class="docs-page" data-signals="{ siteSearch: '' }">
+  <body class="docs-page" data-jqs data-signals="{ siteSearch: '' }">
     <article class="docs-article">
       <h1>Components</h1>
       <p class="docs-lede">
@@ -82,12 +82,12 @@ npx jqstar add dialog dropdown-menu tabs toast
 npx jqstar list --type block</code></pre>
       </div>
 
-      <h2>Explore the complete system</h2>
       <p>
-        The first hand-authored guides establish the documentation pattern. The
-        <a href="%BASE_URL%components/lab/">Component Lab</a> remains the exhaustive live proof for
-        all recipes, composed blocks, forms, data tables, backend requests, and Datastar streams.
+        The complete system runs below: every recipe, all seven blocks, native forms, data tables,
+        backend requests, and Datastar streams. Choose a section and interact with the examples
+        here.
       </p>
+      <div id="component-lab" data-component-lab></div>
     </article>
     <script type="module" src="/site.ts"></script>
   </body>

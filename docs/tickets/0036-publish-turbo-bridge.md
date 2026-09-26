@@ -1,14 +1,91 @@
 ---
 id: 0036
 title: Publish the Turbo lifecycle bridge
-status: done
+status: testing
 created: 2026-08-30
-updated: 2026-09-03
+updated: 2026-09-08
 ---
 
 # 0036: Publish the Turbo lifecycle bridge
 
 ## Plan
+
+Owner 0016 will add a separate `nested=1` actual-host backend mode after owner 0006's plain
+application-island correction. Verify child-only JSON/HTML/SDK SSE actions and isolated outer state
+before and after real Turbo document replacement on both pinned versions and three engines. Retain
+the single-app control and before-native-removal check; this remains a common-matrix slice.
+
+Owner 0016 plans an opt-in actual-host backend slice for generic JSON/HTML and official-SDK Datastar
+SSE before and after Turbo replacement. This ticket will record the six pinned Turbo cases and
+no-bridge timing negative while retaining AC-10 for the rest of the common matrix.
+
+Owner 0016 plans an active Resizable pointer-session host slice for both pinned Turbo versions in
+all three desktop engines. This owner will record its six cases and no-bridge timing negative; AC-10
+stays open for the remaining common matrix.
+
+### Actual-host UI Countdown continuation (2026-09-23)
+
+Owner 0016 now plans a separate Message Scroller observer/listener slice over both pinned Turbo
+versions and all three desktop engines. This ticket will record its six host cases and retain AC-10
+open for the rest of the common matrix.
+
+The six Turbo Message Scroller cases pass. The no-bridge 8.0.21 Chromium diagnostic fails the
+before-native-removal observer/listener assertion after the host removes the root. The 54-case
+combined baseline and UI selection passes across all three engines; AC-10 remains open.
+
+The exact 929-file `npm run check` report `2026-09-23T06-22-37-775Z-4099/report.json` passes all
+1,666 browser cases, including these six, but remains red on inherited coverage, three fixed package
+sizes and package-budget detector isolation. There is no delivery receipt.
+
+The tightened connected-to-detached assertion also passes the combined 54-case host selection. The
+tightened snapshot's `npm run check` report `2026-09-23T07-05-16-938Z-98065/report.json` passes all
+1,666 browser cases, including Turbo, but repeats the inherited coverage, three fixed-size and
+detector failures. AC-10 remains open without a receipt.
+
+Owner 0016 opens an opt-in actual-host UI fixture and twelve-case browser selection. Its read-only
+current-dist Turbo probe passes 8.0.21/8.0.23 in all three desktop engines: Countdown timer cleanup
+occurs before native document replacement, incoming enhancement starts a new timer and the permanent
+neighbor retains node/value identity. Omitting the bridge lets the host render but fails the
+before-removal timer assertion. Owner 0016 owns the shared fixture/spec; this ticket records
+Turbo-version evidence without closing AC-10 or replacing the remaining UI/resource/JSON/SSE host
+matrix. Keep the approved versions, bridge behavior and budgets fixed.
+
+### Additional coexistence finding (2026-09-08)
+
+The current disposal correction passes its complete delivery. Keep this owner open for AC-10:
+`ui-removal-contract-before.json` confirms that Countdown keeps its interval after public render
+removal until a detached tick, and after kernel disposal while the node remains connected. The
+shared interoperability matrix promises controller cleanup before removal. Existing Toggle-based
+coexistence evidence cannot establish that timer/resource guarantee. Owner 0006 must correct generic
+UI ownership and owner 0016 must extend the common contract evidence, followed by both actual host
+matrices. No host-version or bridge-mutation expansion is authorized by this finding.
+
+### Reopening decision: disposal during enhancement (2026-09-08)
+
+Ticket 0033's current-source public bridge probe calls disposal from the documented enhancing
+observer. Turbo disposal throws synchronously because its failure helper refuses an already settling
+transaction. The pending commit subsequently completes, but the caller receives no disposal promise
+or report. Evidence: `bridge-disposal-before.json` under the current program-audit resume directory.
+Reopen AC-13 and AC-14; prior completion records remain historical. Ticket 0036 owns this
+correction, with no umbrella runtime change or host-version expansion.
+
+Reuse the existing idle barrier for already-settling renders. Disposal will memoize its report
+promise before settling captured active work, await those operations instead of failing their
+transaction again, and fail operations whose transaction has not begun settlement. The disposed flag
+prevents new bridge operations, so the shared barrier covers exactly the remaining work. A delayed
+host renderer remains host-owned; disposal must settle its bridge operation without waiting for that
+renderer, and late host completion must not settle twice. Keep native Turbo calls, kernel ownership,
+exact event fields, bounded observations and public API types. No new per-operation completion state
+is needed. Document that in-progress core settlement finishes before the report.
+
+Planned files: `src/turbo.ts`, new `test/bridge-disposal-lifecycle.test.ts`,
+`docs/INTEROPERABILITY.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/TESTING.md` and this ticket. Shared
+tests also cover owner 0037's independent htmx correction. Test disposal from enhancing observers
+and after host mutation, repeated promise identity, terminal phases, idle barriers, pending renderer
+completion/rejection and preserved live kernel/host capabilities. Retain original-source failures,
+run focused bridge/render tests, types/lint/changed-code coverage, fixed package-size/API checks and
+current fast/Code/full/Test/Document gates. Prepare in the isolated checkout while root verification
+runs; validate the root Plan again before selective integration. No mutation tooling or publication.
 
 ### Problem
 
@@ -182,7 +259,7 @@ host can move focus to the activated control. Focus remains Turbo-owned.
 - [x] [AC-09] Turbo remains authoritative for request/form/redirect/cache/history/head/scroll/focus/
       progress/mutation/events. Network/history/focus/form/event spies prove the bridge performs no
       second request, replay, history/head/scroll/focus write, renderer, or synthetic Turbo event.
-- [x] [AC-10] Root/modular, behavior/declarative, generic JSON/HTML, official-SDK Datastar, UI,
+- [ ] [AC-10] Root/modular, behavior/declarative, generic JSON/HTML, official-SDK Datastar, UI,
       jQuery, native GET/non-GET forms, validation/submitter/file, focus, JavaScript-disabled, and
       disposal coexistence pass before and after repeated document/Frame/restoration flows.
 - [x] [AC-11] Observations have one ID/terminal outcome per actual render, exact phase order and
@@ -272,6 +349,21 @@ connectivity checks and verifies promised roots after commit.
 
 ## Code
 
+Owner 0016 extends the opt-in backend fixture and spec with `nested=1`; owner 0006 scopes plain
+declarative application islands. The Turbo next link carries the mode across the real document
+replacement. The single-app route, public bridge API and supported version range stay unchanged.
+
+Root reopening Plan passed before selective integration on 2026-09-08. The six shared source, test
+and guide files match the verified isolated correction. Normal root build and current quality
+verification follow; the previous green delivery does not cover this correction.
+
+The isolated correction memoizes disposal before settling captured work. Turbo reuses its existing
+idle barrier for settling operations; htmx ends disposed commits without another host event and
+closes already-completed adapters directly. Shared lifecycle tests cover direct/observer disposal,
+terminal phase, repeated promise identity and delayed-renderer controls. The interoperability,
+ownership and testing guides are updated. Public signatures and host-version boundaries are
+unchanged.
+
 ### Changed-file ledger
 
 | File                                          | Purpose                                             |
@@ -331,6 +423,90 @@ connectivity checks and verifies promised roots after commit.
 
 ## Test
 
+Six nested Turbo backend cases pass across 8.0.21/8.0.23 and Chromium, Firefox and WebKit. They
+check isolated outer state, child-only request/action handling, preservation and outgoing child
+destruction before native removal. The 24-case backend and 90-case combined host selections pass.
+Named-component explicit boot and full common-matrix/delivery acceptance remain open.
+
+The nested 8.0.21 no-bridge Chromium diagnostic renders but leaves its outgoing child live after
+native removal. Full `npm run check` report `2026-09-23T13-35-36-553Z-47216/report.json` binds a
+matching 932-file fingerprint and passes 1,702 browser cases across eight projects, 558 per desktop
+engine. Coverage, three fixed package-size checks and package-budget detector isolation remain red;
+no delivery receipt follows.
+
+The opt-in generic JSON/HTML and official-SDK Datastar SSE selection passes both pinned Turbo
+versions in Chromium, Firefox and WebKit, six cases. The combined host selection passes 78 cases.
+The 8.0.21 no-bridge Chromium diagnostic renders but fails outgoing application destruction before
+native removal. AC-10 remains open for named-component explicit boot, async/error paths and the full
+common matrix. The 931-file `npm run check` report `2026-09-23T12-24-53-903Z-32528/report.json`
+passes all 1,690 browser cases, including these six Turbo cases, but fails 96 changed-code coverage
+checks, three fixed package sizes and package-budget detector isolation. There is no delivery
+receipt.
+
+The active Resizable pointer selection passes Turbo 8.0.21 and 8.0.23 in Chromium, Firefox and
+WebKit, six cases. The 66-case combined host selection passes. The 8.0.21 Chromium no-bridge
+diagnostic renders but fails the before-native-disconnect listener/capture assertion. An incoming
+trusted drag works and the preserved neighbor remains identical. Full delivery on this snapshot and
+the remaining common coexistence matrix are still required for AC-10.
+
+The 930-file `npm run check` report `2026-09-23T08-11-31-064Z-12902/report.json` passes all 1,678
+browser cases, including these six Turbo cases, but fails inherited changed-code coverage, three
+fixed package-size limits and package-budget detector isolation. No delivery receipt follows.
+
+The opt-in actual-host UI Countdown selection owned by 0016 passes 8.0.21 and 8.0.23 in Chromium,
+Firefox and WebKit, six cases total. The matching no-bridge negative catches timer cleanup occurring
+after native document replacement despite a successful host visit. Incoming UI and the permanent
+neighbor behave correctly in the positive selection. The ordinary host baseline passes 30 combined
+Turbo/htmx cases. The exact 928-file delivery run `2026-09-23T05-27-52-448Z-6211/report.json` passes
+all 1,654 browser cases, including this selection, but fails inherited changed-code coverage, three
+fixed package sizes and package-budget detector isolation. AC-10 remains open for the full common UI
+and generic/Datastar matrix.
+
+| Command                                                                    | Result | Evidence                                                                                                                                                                                           |
+| -------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check` / `quality:delivery`                                       | Pass   | `2026-09-08T17-27-26-764Z-47398/report.json`: all 13 gates, 1,950 unit tests, 487 browser cases, 13 package checks and seven release checks; matching 877-file fingerprint and authorized receipt. |
+| `npm run ticket:validate -- --phase test` with this ticket and that report | Pass   | Executed before tracked edits; `bridge-test-0036.log`.                                                                                                                                             |
+
+Current correction delivery passes coverage, properties, static checks, browser execution and
+detector self-tests. Its fingerprint is
+`f6e6ec7b3a6db152491b0806b13c356f3daf94ef18e67d07fe3030692a613725`. Earlier failures remain
+recorded. The separate final source-pass UI batch is excluded from this run.
+
+| Command                                                                    | Result | Evidence                                                                                                                                                                              |
+| -------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast`                                                     | Pass   | `2026-09-08T17-24-34-188Z-34093/report.json`: all six gates and 1,950 unit tests on matching 877-file fingerprint `e0dbec97889fffe1524f635645c70f8be5ee970440b1b17700998d9e423924a5`. |
+| `npm run ticket:validate -- --phase code` with this ticket and that report | Pass   | Actual command passed before tracked edits; `bridge-code-0036.log`.                                                                                                                   |
+
+Current complete delivery follows. Both earlier fast failures are retained: the circular Mobile
+phase requirement, then the removed assertion's obsolete allowance and one ticket spelling word. The
+obsolete one-use allowance is deleted; no limit increases. Current full Test closure remains
+required for this correction.
+
+Fast `2026-09-08T17-16-43-355Z-7070` fails one of 1,950 unit cases: the Mobile migration test
+requires these reopened bridge owners to be done before their verification can finish. All 1,949
+other units and the five other gates pass. Owner 0040 reopens the contract test to verify its
+completed navigation decision and current exports without conflating a correction phase with a
+revoked approval. This failed report grants no Code or Test closure.
+
+The final isolated bridge set passes 54 cases across four suites. The tenth case reproduces an extra
+adapter-settlement error when a native host failure arrives from the htmx post-mutation observer;
+the commit guard fixes it. Raw JSON coverage and the unchanged repository evaluator cover every
+changed line and function in both bridge modules (`bridge-disposal-changed-coverage.json`). Current
+test types and focused lint pass. ESM sizes are htmx 17,969 and Turbo 8,156 bytes against fixed
+18,000/8,192 limits; CJS sizes also pass. Both affected API reports match after declaration build
+and isolated API extraction. Earlier size, configuration, missing raw-report and API-directory
+failures remain retained. Full normal root build and complete delivery remain required after
+selective integration; these isolated checks grant no receipt.
+
+Owner Plans pass before source edits, including the Turbo refinement to reuse its existing idle
+barrier. `bridge-disposal-negative.log` records five failures and four controls across nine new
+cases. `bridge-disposal-barrier-focused.log` passes all 53 cases across both bridges, render adapter
+and new lifecycle tests. Test types pass with the repository's actual configuration; an initial
+command named a nonexistent configuration and is retained in `bridge-disposal-types.log`. Focused
+lint passed before the final Turbo barrier simplification; current lint/coverage/build and root
+integration/fast/full verification remain required. All logs are under the current program-audit
+resume directory. This isolated result grants no current root Test closure.
+
 | Command                                                                                                                              | Result | Evidence                                                                                                                                                                    |
 | ------------------------------------------------------------------------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run ticket:validate -- --phase plan --ticket docs/tickets/0036-publish-turbo-bridge.md`                                         | Pass   | Activation, imported manifest, design, and mapping plan validated before source edits.                                                                                      |
@@ -362,6 +538,9 @@ connectivity checks and verifies promised roots after commit.
 
 ## Document
 
+INTEROPERABILITY, BACKEND, TESTING, PROGRAM_AUDIT and owner/umbrella tickets record this additional
+nested Turbo slice and its limits.
+
 ### Documentation changed
 
 - `README.md` documents the inert Turbo entry, explicit capability/version input, install sequence,
@@ -373,23 +552,28 @@ connectivity checks and verifies promised roots after commit.
 
 ### Acceptance evidence
 
-| Criterion | Result | Evidence                                                                                                                                                                              |
-| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-01     | Pass   | The activation evidence pins the manifest and render-adapter digests, aliases, integrity values, eight mapping IDs, prerequisites, and passing Plan validation.                       |
-| AC-02     | Pass   | `package.json`, the generated Turbo declarations/API report, package smoke, and the installed-package quality report prove inert ESM/CommonJS resolution and explicit installation.   |
-| AC-03     | Pass   | The actual Turbo 8.0.21/8.0.23 fixture passes document, Frame, form, restoration, cache, cancel, 204, and error paths in Chromium, Firefox, and WebKit.                               |
-| AC-04     | Pass   | Focused render-order tests and actual host traces prove no transaction at intent, one wrapped host mutation, outgoing cleanup, explicit incoming commit, and enhancement settlement.  |
-| AC-05     | Pass   | Focused cancellation, 204, request/Frame error, synchronous/async renderer failure, and enhancement-failure tests prove the before/after mutation outcomes and no rollback/replay.    |
-| AC-06     | Pass   | Unit and three-browser identity assertions retain `data-jqs-preserve` and `data-turbo-permanent` DOM, application, handler, state, value, and focus behavior only for valid matches.  |
-| AC-07     | Pass   | Core render tests, bridge overlap rejection, actual repeated flows, and generated disjoint Frame completion orders prove deduplication and independent IDs.                           |
-| AC-08     | Pass   | Repeated actual document/Frame routes assert outgoing destruction, one incoming application, retained permanent identity, and no duplicate owned behavior.                            |
-| AC-09     | Pass   | The actual host suite asserts request method/body/submitter, redirects, history, focus, mutation, and event order while the bridge source calls no navigation API.                    |
-| AC-10     | Pass   | Full unit, browser, package, and release lanes cover root/modular, declarative, generic, Datastar, UI, jQuery, forms, no-JavaScript, accessibility, and disposal coexistence.         |
-| AC-11     | Pass   | Focused/generated/browser assertions require monotonic IDs, exact phases and terminal outcomes, a 256-record cap, and an exact redacted field allowlist.                              |
-| AC-12     | Pass   | Synchronous factory tests reject missing/malformed/prerelease/out-of-range inputs; package and three-browser tests cover both approved Turbo boundaries without a runtime dependency. |
-| AC-13     | Pass   | Active and settled disposal tests prove memoized reports, listener removal, one failure settlement, zero remaining operations, and a live independent kernel/Turbo capability.        |
-| AC-14     | Pass   | Delivery run `2026-09-03T16-36-16-671Z-53785` passes all 12 lanes; package evidence proves types/formats/API, size limits, optional peer, and host-code exclusion.                    |
+| Criterion | Result  | Evidence                                                                                                                                                                                                                           |
+| --------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass    | The activation evidence pins the manifest and render-adapter digests, aliases, integrity values, eight mapping IDs, prerequisites, and passing Plan validation.                                                                    |
+| AC-02     | Pass    | `package.json`, the generated Turbo declarations/API report, package smoke, and the installed-package quality report prove inert ESM/CommonJS resolution and explicit installation.                                                |
+| AC-03     | Pass    | The actual Turbo 8.0.21/8.0.23 fixture passes document, Frame, form, restoration, cache, cancel, 204, and error paths in Chromium, Firefox, and WebKit.                                                                            |
+| AC-04     | Pass    | Focused render-order tests and actual host traces prove no transaction at intent, one wrapped host mutation, outgoing cleanup, explicit incoming commit, and enhancement settlement.                                               |
+| AC-05     | Pass    | Focused cancellation, 204, request/Frame error, synchronous/async renderer failure, and enhancement-failure tests prove the before/after mutation outcomes and no rollback/replay.                                                 |
+| AC-06     | Pass    | Unit and three-browser identity assertions retain `data-jqs-preserve` and `data-turbo-permanent` DOM, application, handler, state, value, and focus behavior only for valid matches.                                               |
+| AC-07     | Pass    | Core render tests, bridge overlap rejection, actual repeated flows, and generated disjoint Frame completion orders prove deduplication and independent IDs.                                                                        |
+| AC-08     | Pass    | Repeated actual document/Frame routes assert outgoing destruction, one incoming application, retained permanent identity, and no duplicate owned behavior.                                                                         |
+| AC-09     | Pass    | The actual host suite asserts request method/body/submitter, redirects, history, focus, mutation, and event order while the bridge source calls no navigation API.                                                                 |
+| AC-10     | Pending | Current suites pass their covered flows, but the public Countdown timer probe contradicts the shared UI cleanup promise. Generic owner 0006/common contract 0016 correction and actual host matrix verification remain required.   |
+| AC-11     | Pass    | Focused/generated/browser assertions require monotonic IDs, exact phases and terminal outcomes, a 256-record cap, and an exact redacted field allowlist.                                                                           |
+| AC-12     | Pass    | Synchronous factory tests reject missing/malformed/prerelease/out-of-range inputs; package and three-browser tests cover both approved Turbo boundaries without a runtime dependency.                                              |
+| AC-13     | Pass    | Current shared disposal lifecycle cases and `2026-09-08T17-27-26-764Z-47398/report.json` prove memoized disposal, settled enhancement barriers, one terminal outcome, listener release and independent live host/kernel ownership. |
+| AC-14     | Pass    | Current delivery `2026-09-08T17-27-26-764Z-47398` passes all 13 gates, including package/API/type/graph/size checks and both host boundary suites in three engines. No budget increases or mutation tooling.                       |
+
+### Historical completion audit
+
+Historical status: Complete
 
 ### Completion audit
 
-Status: Complete
+The disposal correction has current full evidence. AC-10 remains open for the confirmed common UI
+resource cleanup gap; this owner is not ready for Document closure.

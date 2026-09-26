@@ -39,6 +39,7 @@ interface TrackedValue {
   readonly writableState?: boolean;
   readonly promise?: Promise<TrackedValue>;
   readonly sourceCall?: StarExpressionCallResult;
+  readonly store?: boolean;
 }
 
 interface PendingValue {
@@ -59,7 +60,7 @@ type EventMethod = (typeof CSP_METHODS.event)[number];
 type JQueryMethod = (typeof CSP_METHODS.jquery)[number];
 type StringMethod = (typeof CSP_METHODS.string)[number];
 
-const pendingValues = new WeakSet<object>();
+const pendingValues = new WeakSet();
 // The captured intrinsic verifies native Promise internal slots without reading a public `then`.
 const nativePromiseThen = Object.getOwnPropertyDescriptor(Promise.prototype, "then")!
   .value as NativePromiseThen;
@@ -79,6 +80,23 @@ const stringMethods = new Set<string>(CSP_METHODS.string);
 const arrayMethods = new Set<string>(CSP_METHODS.array);
 const eventMethods = new Set<string>(CSP_METHODS.event);
 const jqueryMethods = new Set<string>(CSP_METHODS.jquery);
+const literalJQueryMethods: ReadonlySet<string> = new Set([
+  "addClass",
+  "attr",
+  "children",
+  "closest",
+  "css",
+  "filter",
+  "find",
+  "hasClass",
+  "html",
+  "is",
+  "not",
+  "prop",
+  "removeClass",
+  "siblings",
+  "toggleClass",
+]);
 const jqueryMethodArity: Readonly<Record<JQueryMethod, readonly [number, number]>> = Object.freeze({
   addClass: [1, 1],
   attr: [1, 2],
@@ -151,16 +169,35 @@ function literalString(node: CSPExpressionNode | undefined): string | undefined 
   return node?.kind === "literal" && typeof node.value === "string" ? node.value : undefined;
 }
 
+interface EvaluationBudget {
+  steps: number;
+  asyncTransitions: number;
+  getters: Set<object>;
+  failure?: CSPDiagnosticCode;
+}
+
+interface ComputedEvaluation {
+  readonly instance: StarContext["instance"];
+  readonly budget: EvaluationBudget;
+}
+
+// Borrow only while calling an owned synchronous getter; finally restores the prior record.
+let activeComputedFrame: ComputedEvaluation | undefined;
+
 class EvaluationFrame {
-  private steps = 0;
-  private asyncTransitions = 0;
+  private readonly budget: EvaluationBudget;
 
   constructor(
     private readonly source: string,
     private readonly location: StarExpressionLocation | undefined,
     private readonly context: StarContext,
     private readonly active: () => boolean,
-  ) {}
+  ) {
+    this.budget =
+      activeComputedFrame && activeComputedFrame.instance === context.instance
+        ? activeComputedFrame.budget
+        : { steps: 0, asyncTransitions: 0, getters: new Set() };
+  }
 
   evaluate(root: CSPExpressionNode | CSPProgramNode): unknown {
     const result = root.kind === "program" ? this.evaluateProgram(root) : this.evaluateNode(root);
@@ -349,6 +386,8 @@ class EvaluationFrame {
         });
       case "computed":
         return tracked("computed", this.context.computed);
+      case "stores":
+        return tracked("data", this.context.stores, { store: true });
       case "args": {
         const args = this.context.args ?? [];
         if (!Array.isArray(args)) this.fail("CSP_CAPABILITY_VALUE", this.fullSpan());
@@ -438,38 +477,70 @@ class EvaluationFrame {
     node: CSPNode,
     writableState: boolean,
   ): TrackedValue {
-    const member = this.readDescriptor(value, key, node.span);
+    const member = this.readDescriptor(value, key, node.span, true);
     if (!member.found) return tracked("primitive", undefined);
     let resolved: unknown;
     try {
-      resolved = value[key];
+      resolved = member.computed ? this.readComputed(value, key, member.computed) : value[key];
     } catch {
-      this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
+      this.fail(
+        member.computed
+          ? (this.budget.failure ?? "CSP_CAPABILITY_ACCESSOR")
+          : "CSP_CAPABILITY_ACCESSOR",
+        this.fullSpan(),
+      );
     }
-    return this.dataValue(resolved, parent, writableState);
+    return this.dataValue(resolved, parent, writableState && !member.computed);
+  }
+
+  private readComputed(value: Record<string, unknown>, key: string, getter: object): unknown {
+    if (this.budget.getters.has(getter)) {
+      this.budget.failure ??= "CSP_EVALUATE_CYCLE";
+      this.fail(this.budget.failure, this.fullSpan());
+    }
+    const previous = activeComputedFrame;
+    activeComputedFrame = { instance: this.context.instance, budget: this.budget };
+    this.budget.getters.add(getter);
+    try {
+      const result = value[key];
+      if (this.budget.failure) this.fail(this.budget.failure, this.fullSpan());
+      return result;
+    } finally {
+      activeComputedFrame = previous;
+      this.budget.getters.delete(getter);
+    }
   }
 
   private readOwnData(object: TrackedValue, key: string, node: CSPNode): TrackedValue {
     if (!isObject(object.value)) this.fail("CSP_CAPABILITY_PROPERTY", node.span);
     const member = this.readDescriptor(object.value, key, node.span);
     if (!member.found) return tracked("primitive", undefined);
-    return this.dataValue(member.value, object, false);
+    return this.dataValue(member.value, object, object.store === true);
   }
 
   private readDescriptor(
     value: object,
     key: string,
     _span: CSPSourceSpan,
-  ): { readonly found: boolean; readonly value?: unknown } {
-    let descriptor: PropertyDescriptor | undefined;
+    allowComputed = false,
+  ): { readonly found: boolean; readonly value?: unknown; readonly computed?: object } {
+    let descriptor: { readonly value?: unknown; readonly get?: object } | undefined;
     try {
       descriptor = Object.getOwnPropertyDescriptor(value, key);
     } catch {
       this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
     }
     if (!descriptor) return { found: false };
-    if (!("value" in descriptor)) this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
-    return { found: true, value: descriptor.value };
+    if ("value" in descriptor) return { found: true, value: descriptor.value };
+    const getter = descriptor.get;
+    if (
+      !allowComputed ||
+      !getter ||
+      value !== this.context.instance.state ||
+      starExpressionRuntimeFor(this.context)?.ownsGetter?.(key, getter) !== true
+    )
+      this.fail("CSP_CAPABILITY_ACCESSOR", this.fullSpan());
+    return { found: true, computed: getter };
   }
 
   private dataValue(
@@ -651,8 +722,8 @@ class EvaluationFrame {
       )) {
         this.fail("CSP_EVALUATE_TYPE", span);
       }
-      const leftValue = left.value as number | string;
-      const rightValue = right.value as number | string;
+      const leftValue = left.value;
+      const rightValue = right.value;
       const result =
         operator === "<"
           ? leftValue < rightValue
@@ -729,8 +800,8 @@ class EvaluationFrame {
 
     const adopted = this.adoptNativePromise(result.value);
     if (adopted) {
-      this.asyncTransitions += 1;
-      if (this.asyncTransitions > CSP_LIMITS.asyncChain) {
+      this.budget.asyncTransitions += 1;
+      if (this.budget.asyncTransitions > CSP_LIMITS.asyncChain) {
         const error = this.error("CSP_LIMIT_ASYNC_CHAIN", this.fullSpan());
         result.failed(error);
         throw error;
@@ -867,12 +938,11 @@ class EvaluationFrame {
           ? this.jqueryArguments(trackedArgs, node.span)
           : trackedArgs.map(({ value }) => value);
       if (object.kind === "primitive")
-        return this.stringMethod(String(object.value), name as StringMethod, args, node.span);
+        return this.stringMethod(String(object.value), name, args, node.span);
       if (object.kind === "array" || object.kind === "arguments") {
-        return this.arrayMethod(object, name as ArrayMethod, args, node.span);
+        return this.arrayMethod(object, name, args, node.span);
       }
-      if (object.kind === "event")
-        return this.eventMethod(object.value, name as EventMethod, args, node.span);
+      if (object.kind === "event") return this.eventMethod(object.value, name, args, node.span);
       return this.jqueryMethod(object.value, name, args, node);
     });
   }
@@ -984,7 +1054,7 @@ class EvaluationFrame {
             output.push(String(value));
           else this.fail("CSP_EVALUATE_TYPE", span);
         }
-        return tracked("primitive", output.join((args[0] as string | undefined) ?? ","));
+        return tracked("primitive", output.join(args[0] ?? ","));
       }
       case "slice": {
         if (args.length > 2) this.fail("CSP_CAPABILITY_CALL", span);
@@ -1018,33 +1088,14 @@ class EvaluationFrame {
 
   private validateJQueryArguments(node: CSPMethodCallNode): void {
     const name = node.name!;
-    const bounds = jqueryMethodArity[name as JQueryMethod];
+    const bounds = jqueryMethodArity[name];
     if (!bounds) this.fail("CSP_CAPABILITY_CALL", node.span);
     const [minimum, maximum] = bounds;
     if (node.arguments.length < minimum || node.arguments.length > maximum) {
       this.fail("CSP_CAPABILITY_CALL", node.span);
     }
     const literalFirst = literalString(node.arguments[0]);
-    const requiresLiteral = new Set([
-      "addClass",
-      "attr",
-      "children",
-      "closest",
-      "css",
-      "filter",
-      "find",
-      "hasClass",
-      "is",
-      "not",
-      "prop",
-      "removeClass",
-      "siblings",
-      "toggleClass",
-    ]);
-    if (requiresLiteral.has(name) && node.arguments.length > 0 && literalFirst === undefined) {
-      this.fail("CSP_CAPABILITY_VALUE", node.span);
-    }
-    if (name === "html" && node.arguments.length > 0 && literalFirst === undefined) {
+    if (literalJQueryMethods.has(name) && node.arguments.length > 0 && literalFirst === undefined) {
       this.fail("CSP_CAPABILITY_VALUE", node.span);
     }
   }
@@ -1176,9 +1227,10 @@ class EvaluationFrame {
 
   private step(_node: CSPNode): void {
     if (!this.active()) this.fail("CSP_ENGINE_DISPOSED", this.fullSpan());
-    this.steps += 1;
-    if (this.steps > CSP_LIMITS.evaluationSteps) {
-      this.fail("CSP_LIMIT_EVALUATION_STEPS", this.fullSpan());
+    this.budget.steps += 1;
+    if (this.budget.steps > CSP_LIMITS.evaluationSteps) {
+      this.budget.failure ??= "CSP_LIMIT_EVALUATION_STEPS";
+      this.fail(this.budget.failure, this.fullSpan());
     }
   }
 

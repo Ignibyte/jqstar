@@ -13,7 +13,7 @@ export default defineConfig({
     minify: "terser",
     terserOptions: {
       compress: {
-        passes: 2,
+        passes: 5,
       },
     },
     rollupOptions: {

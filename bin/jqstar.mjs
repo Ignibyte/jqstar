@@ -162,12 +162,18 @@ Usage:
   jqstar list [--type <all|component|block>] [--json] [--cwd <directory>]
   jqstar add <item...> [--no-deps] [--dry-run] [--force] [--cwd <directory>]
   jqstar doctor [--json] [--cwd <directory>]
+  jqstar doctor --packages [--json | --quiet] [--cwd <directory>]
+  jqstar doctor --upgrade-config [--json] [--cwd <directory>]
+  jqstar doctor --apply <plan.json> [--json] [--cwd <directory>]
+  jqstar doctor --rollback <journal.json> [--json] [--cwd <directory>]
 
 Commands:
   init    Create jquery-star.json with project-local component and block directories.
   list    Show source items available in the configured registry.
   add     Copy items and their registry dependencies. Existing dependency files are preserved.
   doctor  Check configuration, dependencies, and installed recipes.
+
+Use doctor --packages --help for offline package checks and configuration recovery options.
 `;
 }
 
@@ -382,7 +388,23 @@ function printResult(command, result, options) {
 }
 
 async function main() {
-  const { options, positionals } = parseArguments(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const packageDoctorFlags = [
+    "--packages",
+    "--upgrade-config",
+    "--apply",
+    "--rollback",
+    "--entrypoint",
+    "--migrate-summary",
+    "--quiet",
+    "--format",
+  ];
+  if (argv.includes("doctor") && argv.some((value) => packageDoctorFlags.includes(value))) {
+    const { runDoctor } = await import("./doctor/index.mjs");
+    process.exitCode = await runDoctor(argv);
+    return;
+  }
+  const { options, positionals } = parseArguments(argv);
   if (options.version) {
     process.stdout.write(`${await packageVersion()}\n`);
     return;

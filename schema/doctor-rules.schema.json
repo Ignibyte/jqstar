@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline jQStar doctor compatibility rules",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "jqstar-doctor-rules/1"
+    },
+    "reviewedAt": {
+      "$ref": "#/$defs/date"
+    },
+    "reviewAfter": {
+      "$ref": "#/$defs/date"
+    },
+    "reviewPolicy": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "authority": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "pointer": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": ["path", "pointer", "sha256"]
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "package": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "pluginApi": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "npmForReleaseConstruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "jquery": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "bridges": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "turbo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "htmx": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["turbo", "htmx"]
+        },
+        "configVersions": {
+          "const": [0, 1]
+        },
+        "targetConfigVersion": {
+          "const": 1
+        },
+        "entrypoints": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "subpath": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "formats": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "uniqueItems": true,
+                "items": {
+                  "enum": ["esm", "commonjs", "umd", "css"]
+                }
+              },
+              "since": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "deprecated": {
+                "type": "boolean"
+              }
+            },
+            "required": ["subpath", "formats", "since", "deprecated"]
+          }
+        }
+      },
+      "required": [
+        "package",
+        "version",
+        "pluginApi",
+        "node",
+        "npmForReleaseConstruction",
+        "jquery",
+        "bridges",
+        "configVersions",
+        "targetConfigVersion",
+        "entrypoints"
+      ]
+    },
+    "lockfiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "npm": {
+          "const": [2, 3]
+        },
+        "pnpm": {
+          "const": ["9.0"]
+        },
+        "yarnClassic": {
+          "const": [1]
+        },
+        "yarnModern": {
+          "const": [4, 5, 6, 7, 8]
+        }
+      },
+      "required": ["npm", "pnpm", "yarnClassic", "yarnModern"]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fileBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2097152
+        },
+        "totalBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        },
+        "workspaces": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "packages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "diagnostics": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "scalarLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "dataDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "workspaceDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "elapsedMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "fileBytes",
+        "totalBytes",
+        "workspaces",
+        "packages",
+        "diagnostics",
+        "scalarLength",
+        "dataDepth",
+        "workspaceDepth",
+        "elapsedMs"
+      ]
+    },
+    "diagnostics": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^JQS_[A-Z_]+$",
+            "maxLength": 64
+          },
+          "severity": {
+            "enum": ["error", "warning", "info", "unknown"]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "documentation": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 256
+          },
+          "evidenceInputs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "correction": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "reviewAfter": {
+            "$ref": "#/$defs/date"
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "summary",
+          "source",
+          "documentation",
+          "evidenceInputs",
+          "correction",
+          "reviewAfter"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "reviewedAt",
+    "reviewAfter",
+    "reviewPolicy",
+    "authority",
+    "compatibility",
+    "lockfiles",
+    "limits",
+    "diagnostics"
+  ],
+  "$defs": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

@@ -1,14 +1,151 @@
 ---
 id: 0016
 title: Define the external navigation bridge contract
-status: done
+status: coding
 created: 2026-08-30
-updated: 2026-09-03
+updated: 2026-09-23
 ---
 
 # 0016: Define the external navigation bridge contract
 
 ## Plan
+
+### Actual-host generic and Datastar request coexistence slice (2026-09-23)
+
+The current host UI slices prove resource cleanup but do not send core JSON/HTML or official-SDK
+Datastar traffic while a Turbo/htmx bridge is installed. Add an opt-in `backend=1` fixture to the
+real pinned hosts. It installs the Datastar plugin alongside the existing generic core profile
+before enhancement and serves outgoing and incoming declarative applications. Their buttons request
+real same-origin JSON, HTML and SDK-generated SSE responses. Verify the generic request contract (no
+implicit signal query, Datastar header or SSE preference), the Datastar request/header and
+signal/HTML patches, responsive directives after patching, exactly one request completion per
+action, and no host navigation from these requests. During the actual Turbo document visit or htmx
+inner swap, observe that the outgoing application is destroyed before the native call disconnects
+it, while the host-preserved neighbor keeps its node and input value. Then exercise all three
+transports from the newly enhanced incoming application and require the old root to remain inert.
+Use both pinned versions of each host in Chromium, Firefox and WebKit; a read-only no-bridge control
+must fail the before-disconnect ownership assertion while the host still renders. Keep existing
+routes and host baselines unchanged unless `backend=1` is set. This is another common-matrix slice;
+other asynchronous and error/cancellation combinations remain open.
+
+The first Chromium probe found a separate nested-application issue: the existing Turbo `#main`
+application and its new backend child both ran the child's directives, so the Datastar request could
+serialize the outer application state (`count: 2`) instead of the child state (`count: 8`). The htmx
+case, without an outer application around the backend child, serialized `count: 8` and passed. For
+this transport slice, make the opt-in Turbo `#main` a plain boundary while retaining its baseline
+application whenever `backend=1` is absent. Preserve the nested-root finding under owner 0006 for a
+separate runtime scope and direct regression proof; do not weaken the one-request and current-state
+assertions here.
+
+Owner 0006's direct regression now passes with plain nested application islands. Add a separate
+`nested=1` backend mode that restores an outer application around the child without altering the
+single-app control. Run JSON, HTML and SDK SSE before and after replacement, assert one request per
+action, child-only Datastar state and isolated outer state, and retain the before-native-removal
+ownership check. Extend the fixture/spec and documentation ledger below, validate this Plan before
+fixture edits, then build and run selected, fast and delivery checks.
+
+Planned ledger: `e2e/fixtures/interoperability-server.mjs`, both bridge bootstrap fixtures, new
+actual-host backend browser spec, `docs/BACKEND.md`, `docs/INTEROPERABILITY.md`, `docs/TESTING.md`,
+`docs/PROGRAM_AUDIT.md`, this ticket, umbrella 0033 and downstream 0036/0037. Validate Plan before
+fixture/spec edits. Run selected and combined actual-host cases, no-bridge diagnostics, types/lint,
+fast and full delivery. No production API, source, host range or fixed-budget change.
+
+### Actual-host active pointer session slice (2026-09-23)
+
+The Countdown and Message Scroller host cases prove timer, observer and listener ownership, but no
+active pointer session. Resizable owns window `pointermove`/`pointerup`/`pointercancel` listeners
+and handle pointer capture during a drag. Extend the opt-in Turbo next document and htmx inner
+fragment with an incoming Resizable. In a new twelve-case pinned host/version/desktop-engine
+selection, start a trusted outgoing drag, confirm live capture and listeners, then trigger the real
+host response while the pointer remains down. Instrument the native call that changes the old root
+from connected to detached and require the active listeners and capture to release before that call.
+Confirm a late pointer move cannot change the detached root or emit another change, then start and
+finish a trusted drag in the incoming Resizable with one new listener set. Preserve the neighboring
+root and input value. A read-only no-bridge variant must fail the timing assertion after host
+removal. Keep the ordinary baseline and prior UI selections green, with no production source, API,
+host range or fixed-budget change.
+
+Planned ledger: `e2e/fixtures/interoperability-server.mjs`, new actual-host pointer spec,
+`docs/INTEROPERABILITY.md`, `docs/TESTING.md`, `docs/PROGRAM_AUDIT.md`, this ticket, umbrella 0033,
+and downstream 0036/0037. Validate this Plan before fixture/spec edits. Run the selected twelve,
+combined prior host cases, types/lint/format, fast and full browser/delivery gates on an unchanged
+tree. Other asynchronous UI families and generic JSON/HTML and SDK SSE under actual hosts remain
+open.
+
+### Actual-host UI resource matrix, first slice (2026-09-23)
+
+The existing 30-case actual Turbo/htmx baseline installs core and a bridge, but no UI plugin. The
+synthetic common coordinator installs UI without either actual host. A read-only current-dist probe
+installed UI before starting the first application, then exercised a Countdown through a Turbo
+document visit and htmx inner swap on both pinned versions in Chromium, Firefox and WebKit. All
+twelve cases cleared the outgoing timer before the native removal call, enhanced an incoming
+Countdown with a new timer, and preserved a neighboring root and its input value. Removing each
+bridge in the probe left host rendering intact but moved timer cleanup after native removal. This is
+a discriminating candidate for the common conformance matrix, not complete AC-11/AC-12 proof.
+
+Promote that case into the actual-host fixture and desktop browser suite. Add an explicit `ui=1`
+fixture option that installs `uiPlugin` before any application starts, retains current host/bridge
+ownership, and returns an incoming Countdown only for the opt-in document/fragment response. The
+ordinary host baseline must retain its existing markup and boot order. For each pinned host version
+and desktop engine, capture the outgoing 1-second timer ID, observe its release at the exact native
+removal call while the old root is still connected, require disconnection, then require a running
+incoming Countdown with a new live timer and the exact preserved neighbor/value. Track a real host
+visit/swap rather than manually replacing markup. No new public API, production behavior, version
+range, package file-list entry or fixed budget; the affected public interoperability documentation
+is updated.
+
+Planned ledger: opt-in markup/response in `e2e/fixtures/interoperability-server.mjs`, opt-in UI
+installation in both `e2e/fixtures/*-bridge-bootstrap.js` files, a new actual-host browser spec,
+`docs/INTEROPERABILITY.md`, `docs/TESTING.md`, `docs/PROGRAM_AUDIT.md`, this ticket, downstream
+0036/0037 and umbrella 0033. Validate this Plan before fixture/test edits. Retain the two ignored
+no-bridge negatives, build current dist before the host server, run the selected twelve cases and
+existing host baseline, types/lint/format, complete fast and full browser/delivery checks on an
+unchanged tree. Timer, observer, listener, pointer and asynchronous families beyond this first timer
+case, generic JSON/HTML and SDK SSE under actual hosts, installed-package and final audit acceptance
+remain open.
+
+### Actual-host Message Scroller observer and listener slice (2026-09-23)
+
+The Countdown selection proves only a timer. `src/ui/message-scroller.ts` owns a content
+`MutationObserver`, a viewport `scroll` listener and a latest-button `click` listener. Extend the
+opt-in actual-host fixture with a server-rendered incoming Message Scroller. In a new browser
+selection for both pinned versions of both hosts and all three desktop engines, enhance an outgoing
+Message Scroller, prove it reports an added message, then instrument its observer disconnect and
+listener removal at the native host removal call while the old root is still connected. Require the
+old root to stop reporting added messages after removal, the incoming root to observe and report new
+messages with distinct resources, and the same preserved neighbor identity/value. Retain the
+ordinary host baseline and existing Countdown selection. Use a read-only no-bridge negative to check
+the before-removal assertion can fail. No production source, API, approved range or fixed budget
+change. Planned ledger: `e2e/fixtures/interoperability-server.mjs`, new actual-host browser spec,
+`docs/INTEROPERABILITY.md`, `docs/TESTING.md`, `docs/PROGRAM_AUDIT.md`, this ticket, umbrella 0033
+and downstream 0036/0037. Validate Plan before fixture/spec edits; run selected and prior host
+cases, types/lint/format, fast and full browser/delivery checks. Pointer and other asynchronous
+families, generic JSON/HTML and SDK SSE remain open.
+
+### Reopening decision: controller resource cleanup (2026-09-17)
+
+Reopen AC-11 and AC-12. Current public core/UI/render-adapter probes contradict the common
+coexistence claim: Countdown and Carousel retain timers across removal and connected kernel
+disposal. Message Scroller additionally retains its observer, emits messages and schedules more work
+after removal/disposal, and scrolls a connected disposed root when that work runs. Preserved
+controls retain ordinary behavior before disposal. Evidence is retained under
+`.git/jqstar/program-audit/ownership-census/resume-2026-09-08/` and
+`.git/jqstar/program-audit/quality-refresh-2026-09-17/`. Earlier completion is historical.
+
+Owner 0006 owns generic controller lifetime corrections. This ticket owns common conformance:
+exercise immediate outgoing cleanup, explicit preservation, native moves, repeated enhancement, late
+callbacks, connected/disconnected disposal and isolation between documents. Cover timer, observer,
+listener, pointer-session and asynchronous controller families; a Toggle-only fixture cannot prove
+the whole promise. Require observable events and effects as well as resource counts. Carry that
+matrix into both supported actual-host fixtures, then require owners 0036/0037 to run their exact
+version/browser matrices. Keep host ownership, supported versions, existing behavior and package
+budgets fixed. Do not close this ticket with a weakened coexistence claim.
+
+Planned files: common public-adapter contract tests and installed coexistence fixtures,
+`docs/INTEROPERABILITY.md`, `docs/TESTING.md`, this ticket and downstream owner evidence. Resolve
+the generic lifetime design and validate its owning Plan before runtime edits. Record failing
+controls, corrected focused results, full three-browser host matrices, fast/delivery reports and
+actual phase validation. No runtime correction is implemented by this reopening record.
 
 ### Problem
 
@@ -163,12 +300,12 @@ subtree twice.
       repeated visits, and JavaScript-disabled fallback. Its recorder asserts relative semantic
       order and DOM/ownership fingerprints, not unstable wall-clock timings or undocumented internal
       events.
-- [x] [AC-11] The common coexistence matrix proves behavior and declarative applications, core
+- [ ] [AC-11] The common coexistence matrix proves behavior and declarative applications, core
       JSON/HTML, Datastar streaming/patches, installed UI services/controllers, native forms, jQuery
       handlers, focus, preserved state, and disposal before and after repeated external renders with
       no duplicate effects, actions, directives, listeners, observers, requests, subscriptions,
       tasks, hooks, or UI records.
-- [x] [AC-12] Tickets 0036 and 0037 contain separate stable IDs for every mapped event/flow/version,
+- [ ] [AC-12] Tickets 0036 and 0037 contain separate stable IDs for every mapped event/flow/version,
       side-effect-free plugin installation/disposal, unsupported-version behavior, exact
       preservation policy, installed import/type/graph/size proof, and Chromium/Firefox/WebKit
       execution. Contract documentation, schemas, fixture baselines, `npm run check`, and
@@ -330,6 +467,62 @@ Datastar responses, UI, and failure routes while keeping the route markup common
 
 ## Code
 
+### September 23 nested backend host mode
+
+Changed-file ledger: `e2e/fixtures/interoperability-server.mjs` adds `nested=1` only to the opt-in
+backend route, wrapping the child in a plain outer application and preserving the mode through the
+Turbo next link or htmx inner request. `e2e/interoperability-backend.spec.ts` runs the existing
+single-app control and nested case for each pinned host/version/engine combination. It checks outer
+state before and after host replacement; existing child transport, request count, lifecycle,
+preservation and before-native-removal checks run in both modes. Owner 0006 changes declarative
+scope; public/brain docs and tickets 0006/0016/0033/0036/0037 record the contract.
+
+### September 23 actual-host backend fixture
+
+The opt-in `backend=1` route adds outgoing and incoming declarative applications to real Turbo
+document visits and htmx inner swaps. The bootstraps install the Datastar protocol plugin before
+enhancement while keeping core generic as the default. The fixture serves real same-origin JSON and
+HTML responses plus SSE generated by `ServerSentEventGenerator.stream()` from the official SDK.
+`e2e/interoperability-backend.spec.ts` checks request bytes and headers, signal and HTML patches,
+live newly patched directives, one lifecycle completion per request, outgoing destruction before
+native detachment, preserved identity/value, and incoming operation of all three transports. The
+ordinary host route remains unchanged. The opt-in Turbo boundary has one backend application to
+isolate this transport slice from the separately recorded nested-app ownership finding.
+
+### September 23 actual-host UI Countdown fixture
+
+Changed-file ledger: `e2e/fixtures/interoperability-server.mjs` adds an opt-in `ui=1` response with
+a server-rendered incoming Countdown on the Turbo next page and htmx inner fragment. Its ordinary
+routes, host requests and baseline markup remain unchanged. Both
+`e2e/fixtures/*-bridge-bootstrap.js` files install the built UI plugin before the first application
+only for that option, then install their existing bridge. The new
+`e2e/interoperability-ui-lifecycle.spec.ts` exercises all four pinned host/version pairs under the
+three desktop engines. It records the outgoing timer, its state at the actual native removal call,
+incoming enhancement and preserved node/value identity. `docs/INTEROPERABILITY.md`,
+`docs/TESTING.md`, `docs/PROGRAM_AUDIT.md`, this ticket, downstream 0036/0037 and umbrella 0033
+record scope and evidence. No production runtime, API, approved version or fixed budget changed.
+
+### September 23 actual-host Message Scroller fixture
+
+The opt-in Turbo next document and htmx inner fragment now include an incoming native Message
+Scroller root. `e2e/interoperability-ui-scroller.spec.ts` enhances an outgoing root, observes its
+content observer and two listeners, instruments the native replacement call, and verifies cleanup
+before removal. It then checks that the detached root emits no new message or Latest event, while
+the incoming root acquires its own observer/listeners and reports new messages and Latest actions.
+The permanent/preserved neighbor retains its exact node and input value. The ordinary host route
+still omits UI and its baseline is unchanged. No production source, API, host range or budget
+changed.
+
+### September 23 actual-host Resizable pointer fixture
+
+The opt-in Turbo next document and htmx inner fragment also include an incoming Resizable root.
+`e2e/interoperability-ui-pointer.spec.ts` starts a trusted outgoing drag, records its three window
+pointer listeners and real handle capture, and instruments the native call that disconnects that
+root. It requires listener release and `hasPointerCapture` to become false before that call, then
+checks that a later pointer move cannot alter or emit from the detached root. A trusted incoming
+drag uses a distinct listener set and changes the new root; the neighboring node and input value
+survive. The fixture remains opt-in. This slice changes no runtime, API, host range or fixed budget.
+
 ### Changed-file ledger
 
 | File                                                                                                                                                                                                        | Purpose                                                                                                                                        |
@@ -424,6 +617,116 @@ Datastar responses, UI, and failure routes while keeping the route markup common
 
 ## Test
 
+### September 23 nested backend host evidence
+
+The 24-case backend selection and 90-case combined baseline/UI/backend selection pass without
+retries, flakes or skips in Chromium, Firefox and WebKit. Both pinned versions of each host preserve
+outer `{ outer: 100 }` state and send child-only current Datastar signals before and after real
+replacement. TypeScript, focused ESLint and build pass. The prior single-app no-bridge diagnostics
+remain timing controls. Two temporary nested no-bridge variants for Turbo 8.0.21 and htmx 2.0.0 in
+Chromium render the host result but fail with the outgoing child still live after native removal.
+Full delivery is still pending.
+
+The current fast report `2026-09-23T13-32-36-307Z-32671/report.json` passes six lanes and 4,933
+units, with matching Code-phase ticket validation. Full `npm run check` report
+`2026-09-23T13-35-36-553Z-47216/report.json` binds the unchanged 932-file fingerprint
+`eb2d4ad1d3e82795c5638312de882c20f67f24bdf1d264949c0aea4e2073cb83` and passes 1,702 browser cases
+across eight projects, 558 per desktop engine. Coverage still fails 96 changed-code checks across 47
+of 60 changed source files; package quality fails packed bytes (3,416,436), UMD (559,623) and
+installed root bundle (636,122). Package-budget detector isolation fails alongside those three
+baseline package errors; its other fifteen controls pass. No delivery receipt.
+
+### September 23 actual-host backend evidence
+
+The owner, umbrella and downstream Plans passed validation before fixture/spec changes. The first
+Chromium probe found the separate nested-app ownership issue recorded in owner 0006 and
+umbrella 0033. After isolating the opt-in Turbo application boundary, all twelve backend cases pass
+across both pinned versions of both hosts and Chromium, Firefox and WebKit. The combined baseline,
+Countdown, Message Scroller, pointer and backend host selection passes 78 cases without retries,
+skips or flakes. Temporary no-bridge variants for Turbo 8.0.21 and htmx 2.0.0 in Chromium both
+render the host response but fail exactly at the outgoing application's before-native-removal
+destruction assertion. TypeScript and focused ESLint pass. The matching 931-file fast report
+`2026-09-23T12-22-01-861Z-17907/report.json` passes all six lanes, and Code validation passes for
+0016, 0033, 0036 and 0037. Full `npm run check` report `2026-09-23T12-24-53-903Z-32528/report.json`
+starts and ends on fingerprint `c48b8ae5288284bbf0cf34914003227be85be11bf5f20879fe1ca329fe7e5665`.
+Its browser gate passes all 1,690 cases across eight projects, including 554 per desktop engine,
+with no failures, flakes or skips. Coverage fails 96 changed-code checks across 47 of 59 changed
+source files. Package quality fails three fixed limits: 3,414,397 packed bytes, 559,198-byte Mobile
+UMD and 635,719-byte installed root bundle. The package-budget detector cannot isolate its injected
+failure while those baseline checks fail; its other fifteen controls pass. There is no delivery
+receipt. Error/cancellation combinations and nested-application isolation remain open.
+
+### September 23 actual-host Resizable pointer evidence
+
+Plan validation passed for 0016, 0033, 0036 and 0037 before the fixture/spec edits. The twelve
+pointer cases pass for both pinned versions of Turbo and htmx in Chromium, Firefox and WebKit. The
+combined baseline, Countdown, Message Scroller and pointer selection passes 66 cases with no
+retries, skips or flakes. Temporary no-bridge variants for Turbo 8.0.21 and htmx 2.0.0 in Chromium
+render the host response but fail the before-native-removal listener/capture assertion. The positive
+cases verify real pointer capture, its release and all three window listener removals before the
+native connected-to-detached call, no late detached-root mutation, and a working incoming trusted
+drag. The matching 930-file fast report `2026-09-23T08-07-35-086Z-97413/report.json` passes all six
+lanes after one spelling-only correction. Code validation passes for this ticket, 0033, 0036
+and 0037. Full `npm run check` report `2026-09-23T08-11-31-064Z-12902/report.json` starts and ends
+on fingerprint `4549ffeec61b8baa365dcacd5439983d1fa846309774604b405c86e69b080ff8`. All 1,678
+eight-project browser cases pass, including 550 in each desktop engine, without failures, skips or
+flakes. Coverage still fails 96 changed-code checks in 59 inherited files. Package quality exceeds
+three unchanged limits: 3,413,833 packed bytes, 559,198-byte Mobile UMD and 635,719-byte installed
+root bundle. The package-budget detector cannot isolate its injected failure while those baseline
+checks fail; the other fifteen detector controls pass. There is no delivery receipt, so AC-11 and
+AC-12 remain open.
+
+### September 23 actual-host UI Countdown evidence
+
+The ignored current-dist probe passes twelve host/version/engine transitions. Removing either bridge
+still lets the host render and enhance later, but the timer is not cleared before native removal;
+both saved negative runs exit nonzero. After the validated Plan, a fresh complete `npm run build`
+succeeds. The tracked selection passes all twelve cases, four per desktop engine, with zero retries,
+skips or flakes. The existing actual-host baseline then passes all 30 cases, ten per engine.
+Complete TypeScript and focused ESLint pass. Fast report
+`2026-09-23T05-25-10-674Z-91111/report.json` passes 4,927 units and every fast/static gate.
+`npm run check` report `2026-09-23T05-27-52-448Z-6211/report.json` starts and ends on the same
+928-file fingerprint `f4e40272669fb80ade224b793607865db61c944864fbf8ccfcbf81370f95ad97`. Its full
+browser gate passes 1,654 cases across all eight projects with no failures, skips or flakes; unit,
+property, static delivery, release and self-hosted gates pass. Delivery remains red: coverage
+reports 96 changed-code failures in 59 inherited files; package quality exceeds three fixed size
+limits (3,413,085 packed bytes, 559,198-byte Mobile UMD and 635,719-byte root bundle); the
+package-budget detector cannot isolate its injected failure because all three baseline size checks
+already fail. The other 15 detector controls pass. There is no delivery receipt. This one
+timer-family case does not close common coexistence AC-11/AC-12.
+
+### September 23 actual-host Message Scroller evidence
+
+The Plan validator passed for 0016, 0033, 0036 and 0037 before fixture/spec edits. All twelve
+selected Message Scroller cases pass, covering Turbo 8.0.21/8.0.23 and htmx 2.0.0/2.0.10 in
+Chromium, Firefox and WebKit. Two saved no-bridge diagnostics (Turbo 8.0.21 and htmx 2.0.0 in
+Chromium) fail specifically at the before-native-removal observer/listener assertion after the host
+has removed the outgoing root. The combined prior baseline, Countdown and Message Scroller selection
+passes all 54 cases with no retries, skips or flakes. Complete TypeScript passes. Focused ESLint
+first found three non-null assertions in the new spec; those were replaced with explicit fixture
+checks. The focused ESLint rerun and final 54-case selection pass. Fast report
+`2026-09-23T06-19-06-627Z-88701/report.json` passes 4,927 units and all fast/static gates. Full
+`npm run check` report `2026-09-23T06-22-37-775Z-4099/report.json` starts and ends on the same
+929-file fingerprint `4dfe1d00b51324252d4a434e2712071f3b12833391aa5bd125f7fd802ef14b86`. The full
+browser gate passes 1,666 cases across all eight projects, 546 per desktop engine, with no failures,
+skips or flakes. Unit, property, static delivery, release and self-hosted gates pass. Delivery
+remains red on the same 96 changed-code coverage failures in 59 inherited files, three fixed
+package-size limits (3,413,403 packed bytes, 559,198-byte Mobile UMD, 635,719-byte root bundle) and
+package-budget detector isolation. The other 15 detector controls pass. There is no delivery
+receipt; the common coexistence matrix and AC-11/AC-12 remain open.
+
+Both host UI specs now require the instrumented native method itself to change the outgoing root
+from connected to detached. The combined 54-case selection and a separate twelve-case Countdown
+rerun pass this stronger assertion in all three engines. TypeScript and focused ESLint pass. The
+matching fast report `2026-09-23T07-02-30-808Z-83440/report.json` passes all six gates and 4,927
+units. Full `npm run check` report `2026-09-23T07-05-16-938Z-98065/report.json` starts and ends on
+matching 929-file fingerprint `78046212cd320bdd1aa937a52352d370f54bc221eb733938e843a98fe540375a`.
+All 1,666 eight-project browser cases pass without failures, skips or flakes; unit, property,
+static, self-hosted and release gates pass. The same 96 inherited changed-code coverage failures,
+three fixed package-size limits (3,413,555 packed bytes, 559,198-byte Mobile UMD, 635,719-byte root
+bundle) and package-budget detector isolation remain red. The other 15 detector controls pass. There
+is no delivery receipt; AC-11/AC-12 remain open.
+
 | Command                                                                                                                                                                 | Result            | Evidence                                                                                                                                                                                                                                                                                                                                                     |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `npx vitest run test/external-render-contract.test.ts test/property/external-render-contract.property.test.ts`                                                          | Failed, then pass | The first run exposed cross-realm element checks, schema tuple strictness, and an incorrect test lookup. After correction, 15 tests pass.                                                                                                                                                                                                                    |
@@ -497,6 +800,16 @@ Datastar responses, UI, and failure routes while keeping the route markup common
 
 ## Document
 
+BACKEND, INTEROPERABILITY, TESTING and PROGRAM_AUDIT now describe the separate nested mode and its
+24 selected cases. Owner 0006 and umbrella/downstream tickets record the plain-marker scope;
+explicitly booted named component roots and error/cancellation combinations remain open.
+
+BACKEND, INTEROPERABILITY and TESTING now distinguish four actual-host slices: Countdown timer,
+Message Scroller observer/listeners, Resizable active pointer, and generic JSON/HTML plus official
+SDK SSE. PROGRAM_AUDIT and tickets 0033/0036/0037 record their pinned cases and no-bridge timing
+negatives. Owner 0006 records the nested-application finding. Async/error combinations, fixed
+coverage and package gates, and the full common coexistence contract remain open.
+
 ### Documentation changed
 
 - `docs/INTEROPERABILITY.md` publishes the host-neutral transaction, exact Turbo and htmx event
@@ -528,10 +841,15 @@ Datastar responses, UI, and failure routes while keeping the route markup common
 | AC-11     | Pass   | The integrated public-API test performs repeated external renders with behavior/declarative roots, generic and Datastar traffic, UI, jQuery, forms, focus, preservation, observations, and complete disposal without duplicated resources.                               |
 | AC-12     | Pass   | Tickets 0036 and 0037 pin the current manifest SHA-256 and complete downstream requirements. Delivery run `2026-09-03T14-48-11-618Z-8205`, ticket Test validation, package/release/browser reports, and `git diff --check` pass without mutation testing.                |
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-17)
 
 All 12 criteria have direct current-tree evidence. The contract, schema, exact host packages,
 three-browser traces, public-adapter tests, downstream activation gates, public documentation,
 package boundaries, and delivery receipt agree. No unresolved finding remains in this ticket.
 
-Status: Complete
+Historical status: Complete
+
+### Current completion audit
+
+Controller resource cleanup and expanded common/actual-host evidence remain pending under AC-11 and
+AC-12. Owner 0006 and downstream owners 0036/0037 remain open.

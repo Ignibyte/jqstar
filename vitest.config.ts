@@ -5,8 +5,18 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: /^jquery-star$/, replacement: resolve("src/index.ts") },
+      { find: /^jquery-star\/inspect$/, replacement: resolve("src/inspect/index.ts") },
       { find: /^jquery-star\/core$/, replacement: resolve("src/core.ts") },
+      { find: /^jquery-star\/csp$/, replacement: resolve("src/csp.ts") },
+      {
+        find: /^jquery-star\/datastar\/testing$/,
+        replacement: resolve("src/datastar/testing.ts"),
+      },
+      { find: /^jquery-star\/datastar$/, replacement: resolve("src/datastar.ts") },
+      { find: /^jquery-star\/stores$/, replacement: resolve("src/stores.ts") },
       { find: /^jquery-star\/testing$/, replacement: resolve("src/testing/index.ts") },
+      { find: /^jquery-star\/turbo$/, replacement: resolve("src/turbo.ts") },
+      { find: /^jquery-star\/ui$/, replacement: resolve("src/ui.ts") },
     ],
   },
   test: {
@@ -23,9 +33,11 @@ export default defineConfig({
       "test-results/**",
       "test/quality-runner.test.mjs",
       "test/ticket-workflow.test.mjs",
+      "test/component-browser-report.test.mjs",
+      "test/coverage-diagnostic.test.mjs",
+      "test/source-map-packaging.test.mjs",
     ],
     maxWorkers: Number(process.env.JQS_TEST_WORKERS ?? 2),
-    minWorkers: 1,
     coverage: {
       include: ["src/**/*.ts"],
       exclude: ["src/types.ts"],

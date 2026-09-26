@@ -1,6 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+function completionSignal(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void = () => undefined;
+  const promise = new Promise<void>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
+}
+
 async function installClipboardFixture(page: Page): Promise<void> {
   await page.evaluate(() => {
     let clipboardText = "";
@@ -105,6 +113,11 @@ test.describe("jQStar components", () => {
   });
 
   test("OTP, resizable panels, and scroll area retain platform behavior", async ({ page }) => {
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      // Animated focus scrolling moves the handle between hover and pointerdown.
+      document.documentElement.style.scrollBehavior = "auto";
+    });
     const card = page.getByRole("region", { name: "Verification and layout primitives" });
     const otpForm = card.getByRole("form", { name: "Verification code proof" });
     const otp = card.getByRole("textbox", { name: "Verification code", exact: true });
@@ -133,11 +146,14 @@ test.describe("jQStar components", () => {
 
     await card.getByRole("button", { name: "Reset panels" }).click();
     await expect(splitter).toHaveAttribute("aria-valuenow", "50");
+    await splitter.hover();
     const splitterBox = await splitter.boundingBox();
     expect(splitterBox).not.toBeNull();
-    await page.mouse.move(splitterBox!.x + splitterBox!.width / 2, splitterBox!.y + 20);
     await page.mouse.down();
-    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + 20, { steps: 4 });
+    await expect(splitter).toHaveAttribute("data-state", "dragging");
+    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + splitterBox!.height / 2, {
+      steps: 4,
+    });
     await page.mouse.up();
     await expect
       .poll(async () => Number(await splitter.getAttribute("aria-valuenow")))
@@ -328,12 +344,14 @@ test.describe("jQStar components", () => {
     const scroller = card.locator("#support-thread");
     const viewport = scroller.getByRole("log", { name: "Support" });
     const messages = viewport.locator('[data-jqs="message"]');
+    await page.evaluate(() => document.fonts.ready);
     await viewport.evaluate((element) => {
       element.style.maxHeight = "10rem";
-      element.scrollTop = 0;
+      element.scrollTo({ top: 0, behavior: "instant" });
       element.dispatchEvent(new Event("scroll"));
     });
     await expect(scroller).toHaveAttribute("data-state", "paused");
+    await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBe(0);
     await viewport.locator(':scope > [data-part="content"]').evaluate((element) => {
       element.insertAdjacentHTML(
         "beforeend",
@@ -1094,6 +1112,62 @@ test.describe("jQStar components", () => {
     expect(await projectRows.count()).toBeLessThanOrEqual(80);
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
     await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(/of 2500/);
+  });
+
+  test("project browser cancels an older virtual window before applying a newer SDK response", async ({
+    page,
+  }) => {
+    const root = page.locator('[data-block="project-browser"]');
+    await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    await expect(root.locator("#project-browser-rows tr[data-row-id]")).toHaveCount(40);
+    const captured = completionSignal();
+    const release = completionSignal();
+    const handled = completionSignal();
+    const failedUrls: string[] = [];
+    let olderUrl = "";
+    let requests = 0;
+    page.on("requestfailed", (request) => {
+      failedUrls.push(request.url());
+    });
+    await page.route("**/api/demo/projects?**", async (route) => {
+      requests += 1;
+      if (requests > 1) {
+        await route.continue();
+        return;
+      }
+      olderUrl = route.request().url();
+      const response = await route.fetch();
+      captured.resolve();
+      await release.promise;
+      try {
+        await route.fulfill({ response });
+      } finally {
+        handled.resolve();
+      }
+    });
+    const scroll = async (top: number) => {
+      await root.locator('[data-part="viewport"]').evaluate((viewport, position) => {
+        viewport.scrollTop = position;
+        viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
+      }, top);
+    };
+    try {
+      await scroll(52_000);
+      await captured.promise;
+      await expect(root.getByText("Updating results…", { exact: true })).toBeVisible();
+      await scroll(10_400);
+      const message = root.locator('[data-text="$projectBrowserMessage"]');
+      await expect(message).toContainText("Showing 191–230 of 2500");
+      await expect.poll(() => failedUrls.includes(olderUrl)).toBe(true);
+      await expect(root.getByText("Updating results…", { exact: true })).toBeHidden();
+      release.resolve();
+      await handled.promise;
+      await expect(message).toContainText("Showing 191–230 of 2500");
+      expect(requests).toBe(2);
+    } finally {
+      release.resolve();
+      await page.unrouteAll({ behavior: "wait" });
+    }
   });
 
   test("access manager moves, persists, and reloads permission assignments", async ({ page }) => {

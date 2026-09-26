@@ -264,6 +264,90 @@ describe("kernel ownership", () => {
     expect((repeatedFailure as StarDisposalError).report).toBe(disposalFailure.report);
   });
 
+  it.each([
+    ["null-prototype value", () => Object.create(null) as unknown],
+    [
+      "revoked proxy",
+      () => {
+        const { proxy, revoke } = Proxy.revocable({}, {});
+        revoke();
+        return proxy;
+      },
+    ],
+    [
+      "throwing conversion",
+      () => ({
+        [Symbol.toPrimitive]() {
+          throw new Error("conversion failed");
+        },
+      }),
+    ],
+  ])("completes disposal after a %s is thrown", (_label, createThrown) => {
+    const current = realm();
+    const kernel = new Kernel(jqueryStub(), current.document);
+    const thrown = createThrown();
+    const completed = vi.fn();
+    kernel.own("service", "completed", completed);
+    kernel.own("service", "invalid-value", () => {
+      throw thrown;
+    });
+    let failure: unknown;
+    try {
+      kernel.dispose();
+    } catch (error) {
+      failure = error;
+    }
+
+    expect.soft(completed).toHaveBeenCalledOnce();
+    expect.soft(kernel.resourceSummary()).toEqual([]);
+    expect(failure).toBeInstanceOf(StarDisposalError);
+    const aggregate = failure as StarDisposalError;
+    expect(aggregate.errors).toHaveLength(1);
+    expect(aggregate.errors[0] === thrown).toBe(true);
+    expect(aggregate.report.failed).toEqual([
+      {
+        category: "service",
+        owner: "invalid-value",
+        error: { name: "ThrownValue", message: "Cleanup failed." },
+      },
+    ]);
+    expect(aggregate.report.remaining).toEqual([]);
+    expect(() => JSON.stringify(aggregate.report)).not.toThrow();
+    expect(Object.isFrozen(aggregate.report.failed[0]?.error)).toBe(true);
+    let repeated: unknown;
+    try {
+      kernel.dispose();
+    } catch (error) {
+      repeated = error;
+    }
+    expect(repeated === aggregate).toBe(true);
+    const replacement = new Kernel(jqueryStub(), current.document);
+    replacement.dispose();
+  });
+
+  it("reads changing disposal error fields once and preserves ordinary thrown values", () => {
+    const controller = createStarDisposalReport();
+    const resource = { category: "service" as const, owner: "changing" };
+    const changing = new Error();
+    const name = vi.fn().mockReturnValueOnce("NamedFailure").mockReturnValue(Object.create(null));
+    const message = vi.fn().mockReturnValueOnce("message").mockReturnValue(Object.create(null));
+    Object.defineProperties(changing, { name: { get: name }, message: { get: message } });
+    for (const thrown of [changing, new Error(""), "", 12n, null, Symbol("failure")]) {
+      controller.fail(resource, thrown);
+    }
+    expect(controller.report.failed.map(({ error }) => error)).toEqual([
+      { name: "NamedFailure", message: "message" },
+      { name: "Error", message: "Cleanup failed." },
+      { name: "ThrownValue", message: "" },
+      { name: "ThrownValue", message: "12" },
+      { name: "ThrownValue", message: "null" },
+      { name: "ThrownValue", message: "Symbol(failure)" },
+    ]);
+    expect(name).toHaveBeenCalledOnce();
+    expect(message).toHaveBeenCalledOnce();
+    expect(() => JSON.stringify(controller.report)).not.toThrow();
+  });
+
   it("bounds hostile disposal failures and snapshots remaining resources", () => {
     const controller = createStarDisposalReport();
     const resource = { category: "service" as const, owner: "hostile" };

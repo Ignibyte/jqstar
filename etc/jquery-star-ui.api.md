@@ -1088,7 +1088,7 @@ export const uiPlugin: Readonly<{
 
 // Warnings were encountered during analysis:
 //
-// src/ui/index.ts:600:22 - (ae-forgotten-export) The symbol "StarPluginRegistrar" needs to be exported by the entry point ui.d.ts
+// src/ui/index.ts:670:22 - (ae-forgotten-export) The symbol "StarPluginRegistrar" needs to be exported by the entry point ui.d.ts
 
 // (No @packageDocumentation comment for this package)
 

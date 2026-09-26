@@ -45,6 +45,27 @@ describe("jQuery Star Time Picker", () => {
     expect($.star.ui.timePicker.value(root())).toBe("09:00");
   });
 
+  it("accepts its native root as a named-action target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Time Picker application did not start.");
+
+    await app.run("ui.time-picker.increment", { args: [root(), 1] });
+    expect(control().value).toBe("09:15");
+    await app.run("ui.time-picker.set", { args: [root(), "10:45"] });
+    expect(control().value).toBe("10:45");
+    const external = document.getElementById("set");
+    if (!external) throw new Error("Missing external Time Picker action.");
+    await expect(
+      app.run("ui.time-picker.increment", {
+        element: control(),
+        args: [external],
+      }),
+    ).rejects.toThrow('Time Picker target did not match data-jqs="time-picker"');
+    expect(control().value).toBe("10:45");
+    await app.run("ui.time-picker.set", { element: control(), args: ["11:30"] });
+    expect(control().value).toBe("11:30");
+  });
+
   it("sets values through presets, API, named actions, and server patches", () => {
     root().querySelector<HTMLButtonElement>('[data-part="preset"]')!.click();
     expect(control().value).toBe("13:30");
@@ -68,6 +89,46 @@ describe("jQuery Star Time Picker", () => {
       event.preventDefault(),
     );
     $.star.ui.timePicker.set(root(), "10:00");
+    expect(control().value).toBe("09:00");
+  });
+
+  it("uses a valid time step when the native clone cannot step", () => {
+    const stepUp = vi.spyOn(HTMLInputElement.prototype, "stepUp").mockImplementation(() => {
+      throw new DOMException("Native stepping unavailable", "InvalidStateError");
+    });
+    try {
+      $.star.ui.timePicker.increment(root());
+    } finally {
+      stepUp.mockRestore();
+    }
+    expect(control().value).toBe("09:15");
+    expect(root().dataset.value).toBe("09:15");
+  });
+
+  it("leaves a newer native value alone when normalization reenters", () => {
+    const nativeClone = control().cloneNode.bind(control());
+    const clone = vi.spyOn(control(), "cloneNode").mockImplementation((deep) => {
+      const result = nativeClone(deep);
+      control().value = "11:00";
+      return result;
+    });
+    const changed = vi.fn();
+    root().addEventListener("jquery-star:time-picker:change", changed);
+    try {
+      $.star.ui.timePicker.set(root(), "10:00");
+    } finally {
+      clone.mockRestore();
+    }
+    expect(control().value).toBe("11:00");
+    expect(changed).not.toHaveBeenCalled();
+    $.star.ui.enhance(root());
+    expect(root().dataset.value).toBe("11:00");
+  });
+
+  it("ignores a synthetic preset click whose target is not an element", () => {
+    const text = root().querySelector('[data-part="preset"]')?.firstChild;
+    if (!text) throw new Error("Missing Time Picker preset text.");
+    text.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
     expect(control().value).toBe("09:00");
   });
 

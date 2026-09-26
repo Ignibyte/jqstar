@@ -6,11 +6,15 @@
 body {
   margin: 1rem;
   max-width: 48rem;
+  overflow-wrap: anywhere;
 }
 
 button,
 input {
+  box-sizing: border-box;
   font: inherit;
+  max-inline-size: calc(100% - 0.5rem);
+  min-inline-size: 0;
   margin: 0.25rem;
 }
 

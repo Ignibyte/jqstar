@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "properties": {
+    "success": {
+      "type": "boolean"
+    },
+    "numTotalTests": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "numPassedTests": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "numFailedTests": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "numPendingTests": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "numTodoTests": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "numFailedTestSuites": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "numPendingTestSuites": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "startTime": {
+      "type": "number"
+    },
+    "testResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "number"
+          },
+          "endTime": {
+            "type": "number"
+          },
+          "assertionResults": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fullName": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "failureMessages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 0
+                }
+              },
+              "required": ["fullName", "status", "failureMessages"]
+            },
+            "minItems": 0
+          }
+        },
+        "required": ["name", "status", "startTime", "endTime", "assertionResults"]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "success",
+    "numTotalTests",
+    "numPassedTests",
+    "numFailedTests",
+    "numPendingTests",
+    "numTodoTests",
+    "numFailedTestSuites",
+    "numPendingTestSuites",
+    "startTime",
+    "testResults"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -8,6 +8,7 @@ import { format, resolveConfig } from "prettier";
 const MANIFEST_PATH = "config/agent-content.json";
 const PACKAGE_PATH = "package.json";
 const REGISTRY_PATH = "registry.json";
+const RELEASE_CONTRACT_PATH = "quality/release-contract.json";
 const ARTIFACT_PATHS = {
   guide: "example/docs/agents/index.html",
   index: "example/public/jqstar-agent-index.json",
@@ -137,7 +138,7 @@ async function readJson(root, relativePath) {
   return JSON.parse(await readFile(resolve(root, relativePath), "utf8"));
 }
 
-async function validateManifest(root, manifest, packageJson, registry) {
+async function validateManifest(root, manifest, packageJson, registry, releaseContract) {
   assert(
     manifest.$schema === "jqstar-agent-content/1",
     "Agent manifest schema must be jqstar-agent-content/1.",
@@ -156,8 +157,9 @@ async function validateManifest(root, manifest, packageJson, registry) {
     "The agent corpus requires the jquery-star package name.",
   );
   assert(
-    packageJson.version === "0.1.0",
-    "The reviewed agent corpus must be updated when the package version changes.",
+    releaseContract.schema === "jqstar-release-contract/1" &&
+      packageJson.version === releaseContract.version,
+    "The agent corpus package version must match the stable release contract.",
   );
   assert(
     packageJson.homepage === manifest.canonicalBaseUrl,
@@ -517,13 +519,14 @@ function byteLength(value) {
 }
 
 export async function buildAgentArtifacts(root = process.cwd()) {
-  const [manifest, packageJson, registry, prettierConfig] = await Promise.all([
+  const [manifest, packageJson, registry, releaseContract, prettierConfig] = await Promise.all([
     readJson(root, MANIFEST_PATH),
     readJson(root, PACKAGE_PATH),
     readJson(root, REGISTRY_PATH),
+    readJson(root, RELEASE_CONTRACT_PATH),
     resolveConfig(resolve(root, ARTIFACT_PATHS.guide)),
   ]);
-  const sources = await validateManifest(root, manifest, packageJson, registry);
+  const sources = await validateManifest(root, manifest, packageJson, registry, releaseContract);
   const [guides, examples, components] = await Promise.all([
     buildGuides(root, manifest),
     buildExamples(root, manifest),

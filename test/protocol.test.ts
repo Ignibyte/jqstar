@@ -17,6 +17,11 @@ import {
 import type { StarRequestDescriptor } from "../src/request-middleware";
 import type { StarInstance } from "../src/types";
 
+function required<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) throw new Error("Required test fixture is missing.");
+  return value;
+}
+
 function application(root: Element = document.createElement("main")): StarInstance {
   return {
     mode: "behavior",
@@ -75,6 +80,29 @@ function source(changes: Partial<ProtocolRequestSource> = {}): ProtocolRequestSo
     ...changes,
   };
 }
+
+it("rejects normalized browser-owned protocol headers while retaining application headers", () => {
+  for (const name of ["hOsT", "CoOkIe", "SeC-Fetch-Site", "pRoXy-Authorization"]) {
+    const unsafe = profile("acme.protocol.header-policy", {
+      prepareRequest(_input, writer) {
+        writer.setHeader(name, "value");
+        writer.none();
+      },
+    });
+    expect(() => prepareProtocolRequest(unsafe, source())).toThrow(
+      `browser-owned header ${name.toLowerCase()}`,
+    );
+  }
+  const allowed = prepareProtocolRequest(
+    genericProtocolProfile,
+    source({
+      headers: { "X-Application": "value" },
+    }),
+  );
+  expect(new Headers(allowed.descriptor.headers as [string, string][]).get("X-Application")).toBe(
+    "value",
+  );
+});
 
 function descriptor(profileId = "acme.protocol.custom"): StarRequestDescriptor {
   return Object.freeze({
@@ -148,6 +176,40 @@ describe("protocol profile registry", () => {
     rolledBack.rollback();
     rolledBack.commit();
     expect(() => registry.select("acme.other.custom")).toThrow("Unknown protocol profile");
+  });
+
+  it("preserves or resets the default profile according to its plugin cleanup", () => {
+    const registry = new ProtocolProfileRegistry([genericProtocolProfile, datastarProtocolProfile]);
+    const prepared = registry.preparePluginInstall([
+      { namespace: "acme.default", profiles: [profile("acme.default.custom")] },
+      { namespace: "acme.other", profiles: [profile("acme.other.custom")] },
+    ]);
+    prepared.commit();
+    registry.setDefault("acme.default.custom");
+
+    required(prepared.cleanups.get("acme.other"))();
+    expect(registry.select().id).toBe("acme.default.custom");
+
+    required(prepared.cleanups.get("acme.default"))();
+    expect(registry.select().id).toBe("core.generic");
+  });
+
+  it("does not let a stale cleanup remove a later installation in the same namespace", () => {
+    const registry = new ProtocolProfileRegistry([genericProtocolProfile, datastarProtocolProfile]);
+    const first = registry.preparePluginInstall([
+      { namespace: "acme.reused", profiles: [profile("acme.reused.first")] },
+    ]);
+    first.commit();
+    const oldCleanup = required(first.cleanups.get("acme.reused"));
+    oldCleanup();
+
+    const second = registry.preparePluginInstall([
+      { namespace: "acme.reused", profiles: [profile("acme.reused.second")] },
+    ]);
+    second.commit();
+    oldCleanup();
+    expect(registry.select("acme.reused.second").id).toBe("acme.reused.second");
+    required(second.cleanups.get("acme.reused"))();
   });
 
   it.each([
@@ -262,6 +324,27 @@ describe("protocol profile registry", () => {
       },
       "overlap",
     ],
+    [
+      "equal exact matchers",
+      "acme.protocol",
+      {
+        ...profile(),
+        adapters: [adapter("first", "application/json"), adapter("second", "application/json")],
+      },
+      "overlap",
+    ],
+    [
+      "equal suffix matchers",
+      "acme.protocol",
+      {
+        ...profile(),
+        adapters: [
+          { ...adapter("first"), match: { kind: "suffix", suffix: "+json" } },
+          { ...adapter("second"), match: { kind: "suffix", suffix: "+json" } },
+        ],
+      },
+      "overlap",
+    ],
   ])("rejects %s before commit", (_label, namespace, value, message) => {
     const registry = new ProtocolProfileRegistry([genericProtocolProfile, datastarProtocolProfile]);
     expect(() =>
@@ -270,6 +353,35 @@ describe("protocol profile registry", () => {
       ]),
     ).toThrow(message);
     expect(registry.snapshot()).toHaveLength(2);
+  });
+
+  it("accepts distinct matcher pairs in each order and kind", () => {
+    const pairs: ReadonlyArray<StarProtocolProfileDefinition["adapters"]> = [
+      [adapter("first", "application/json"), adapter("second", "text/plain")],
+      [
+        { ...adapter("first"), match: { kind: "suffix", suffix: "+json" } },
+        { ...adapter("second"), match: { kind: "suffix", suffix: "+xml" } },
+      ],
+      [
+        adapter("first", "application/xml"),
+        { ...adapter("second"), match: { kind: "suffix", suffix: "+json" } },
+      ],
+      [
+        { ...adapter("first"), match: { kind: "suffix", suffix: "+json" } },
+        adapter("second", "application/xml"),
+      ],
+    ];
+    for (const adapters of pairs) {
+      const registry = new ProtocolProfileRegistry([
+        genericProtocolProfile,
+        datastarProtocolProfile,
+      ]);
+      const prepared = registry.preparePluginInstall([
+        { namespace: "acme.protocol", profiles: [profile("acme.protocol.custom", { adapters })] },
+      ]);
+      prepared.commit();
+      expect(registry.select("acme.protocol.custom").adapters).toHaveLength(2);
+    }
   });
 
   it("rejects duplicate profiles, invalid selection, missing officials, and use after disposal", () => {

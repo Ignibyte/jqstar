@@ -1,3 +1,4 @@
+import { registerServiceMetadata } from "./service-metadata";
 import { createRenderAdapter, type StarRenderTransaction } from "./render-adapter";
 import {
   defineOfficialPlugin,
@@ -252,6 +253,16 @@ class TurboBridgeController implements StarTurboBridge {
     this.#documentHost = documentHost;
     this.#onError = onError ?? ((error) => documentHost.window.reportError?.(error));
     this.#installListeners();
+  }
+
+  metadataCounts() {
+    return {
+      installed: Number(!this.#disposed),
+      renders: this.#active.size,
+      observers: this.#observers.size,
+      waiters: this.#idleWaiters.size,
+      listeners: this.#listeners.length,
+    };
   }
 
   #installListeners(): void {
@@ -605,17 +616,25 @@ class TurboBridgeController implements StarTurboBridge {
     for (const release of this.#listeners.splice(0).reverse()) release();
     this.#observers.clear();
     const active = [...this.#active];
-    this.#disposal = Promise.all(
-      active.map((operation) =>
-        this.#fail(operation, new Error("The Turbo bridge was disposed.")).catch(() => undefined),
-      ),
-    ).then(() =>
-      Object.freeze({
-        schema: "jqstar-turbo-bridge-disposal/1" as const,
-        attempted: active.length,
-        remaining: this.#active.size,
-      }),
-    );
+    this.#disposal = Promise.resolve()
+      .then(() =>
+        Promise.all(
+          active.map((operation) =>
+            operation.settling || operation.terminal
+              ? this.whenIdle()
+              : this.#fail(operation, new Error("The Turbo bridge was disposed.")).catch(
+                  () => undefined,
+                ),
+          ),
+        ),
+      )
+      .then(() =>
+        Object.freeze({
+          schema: "jqstar-turbo-bridge-disposal/1" as const,
+          attempted: active.length,
+          remaining: this.#active.size,
+        }),
+      );
     return this.#disposal;
   }
 }
@@ -642,6 +661,13 @@ export function createTurboBridge(options: StarTurboBridgeOptions): Readonly<Sta
     apiVersion: `^${STAR_PLUGIN_API_VERSION}`,
     install(registrar) {
       const bridge = new TurboBridgeController($, version, registrar.documentHost, onError);
+      registerServiceMetadata(
+        registrar,
+        "core.turbo",
+        "bridge",
+        () => bridge.metadataCounts(),
+        (observer) => bridge.observe(observer),
+      );
       registrar.cleanup(() => {
         void bridge.dispose();
       });

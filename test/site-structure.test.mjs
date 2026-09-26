@@ -1,6 +1,7 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
@@ -8,11 +9,19 @@ const publicRoutes = [
   "example/index.html",
   "example/docs/index.html",
   "example/docs/agents/index.html",
+  "example/docs/compatibility/index.html",
+  "example/docs/migration/index.html",
+  "example/docs/security/index.html",
+  "example/docs/download/index.html",
   "example/docs/datastar/index.html",
   "example/docs/api/index.html",
   "example/docs/csp/index.html",
+  "example/docs/stores/index.html",
+  "example/docs/persistence/index.html",
   "example/docs/interoperability/index.html",
   "example/docs/ecosystem/index.html",
+  "example/docs/ecosystem/jquery-ui/index.html",
+  "example/docs/ecosystem/jquery-mobile/index.html",
   "example/docs/plugins/index.html",
   "example/docs/testing/index.html",
   "example/docs/components/index.html",
@@ -22,7 +31,70 @@ const publicRoutes = [
   "example/docs/components/toast/index.html",
 ];
 
+async function routeArray(path, name) {
+  const source = ts.createSourceFile(
+    path,
+    await readFile(resolve(root, path), "utf8"),
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const declaration = source.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])
+    .find((entry) => ts.isIdentifier(entry.name) && entry.name.text === name);
+  let array = declaration?.initializer;
+  if (array && ts.isCallExpression(array)) {
+    expect(ts.isPropertyAccessExpression(array.expression)).toBe(true);
+    expect(array.expression.name.text).toBe("map");
+    array = array.expression.expression;
+  }
+  if (array && ts.isAsExpression(array)) array = array.expression;
+  expect(array && ts.isArrayLiteralExpression(array), `${path}:${name}`).toBe(true);
+  return [...array.elements];
+}
+
 describe("jQStar website structure", () => {
+  it("identifies the current release candidate consistently on home and download pages", async () => {
+    const [home, download, packageSource, releaseSource] = await Promise.all([
+      readFile(resolve(root, "example/index.html"), "utf8"),
+      readFile(resolve(root, "example/docs/download/index.html"), "utf8"),
+      readFile(resolve(root, "package.json"), "utf8"),
+      readFile(resolve(root, "quality/release-contract.json"), "utf8"),
+    ]);
+    const version = JSON.parse(packageSource).version;
+    expect(version).toBe(JSON.parse(releaseSource).version);
+    const document = new globalThis.DOMParser().parseFromString(home, "text/html");
+    expect(document.querySelectorAll(".release-pill")).toHaveLength(1);
+    expect(document.querySelector(".release-pill").textContent.trim()).toBe(
+      `jQStar ${version} release candidate`,
+    );
+    expect(download).toContain(`jQStar ${version} release candidate`);
+  });
+
+  it("covers the HTML file census in both build and verification route lists", async () => {
+    const pages = (await readdir(resolve(root, "example"), { recursive: true }))
+      .filter((file) => file === "index.html" || file.endsWith("/index.html"))
+      .sort();
+    expect(pages.length).toBeGreaterThan(0);
+    const entries = await routeArray("vite.demo.config.ts", "siteEntries");
+    expect(entries.every(ts.isStringLiteral)).toBe(true);
+    expect(entries.map((entry) => entry.text).sort()).toEqual(pages);
+    expect([...publicRoutes].sort()).toEqual(
+      pages.filter((file) => file !== "components/lab/index.html").map((file) => `example/${file}`),
+    );
+    const browserRows = await routeArray("e2e/site.spec.ts", "documentationRoutes");
+    expect(browserRows.every(ts.isArrayLiteralExpression)).toBe(true);
+    expect(browserRows.every((row) => row.elements.length === 2)).toBe(true);
+    expect(browserRows.every((row) => row.elements.every(ts.isStringLiteral))).toBe(true);
+    expect(browserRows.map((row) => row.elements[0].text).sort()).toEqual(
+      pages
+        .filter((file) => file.startsWith("docs/"))
+        .map((file) => `/${file.slice(0, -10)}`)
+        .sort(),
+    );
+  });
+
   it("publishes every planned route as native HTML with the shared jQStar consumer", async () => {
     for (const route of publicRoutes) {
       const source = await readFile(resolve(root, route), "utf8");
@@ -35,12 +107,21 @@ describe("jQStar website structure", () => {
     }
   });
 
-  it("keeps the exhaustive proof at the isolated Component Lab route", async () => {
-    const lab = await readFile(resolve(root, "example/components/lab/index.html"), "utf8");
-    expect(lab).toContain('src="/main.ts"');
-    expect(lab).toContain("Open verified dialog");
-    expect(lab).toContain("Backend account proof");
-    expect(lab).not.toContain('src="/site.ts"');
+  it("integrates one authoritative Lab fragment into the site and preserves the direct route", async () => {
+    const fragment = await readFile(resolve(root, "example/lab-content.html"), "utf8");
+    expect(fragment).toContain("Open verified dialog");
+    expect(fragment).toContain("Backend account proof");
+    expect(fragment).toContain('class="component-lab"');
+    for (const route of [
+      "example/index.html",
+      "example/docs/components/index.html",
+      "example/components/lab/index.html",
+    ]) {
+      const page = await readFile(resolve(root, route), "utf8");
+      expect(page).toContain("data-component-lab");
+      expect(page).toContain('src="/site.ts"');
+      expect(page).not.toContain("<iframe");
+    }
   });
 
   it("does not import the downloaded React repository or its metadata", async () => {
@@ -100,8 +181,8 @@ describe("jQStar website structure", () => {
     expect(full).toContain("@starfederation/datastar-sdk");
     expect(JSON.parse(index)).toMatchObject({
       schema: "jqstar-agent-index/1",
-      corpusVersion: 3,
-      package: { name: "jquery-star", version: "0.1.0" },
+      corpusVersion: 8,
+      package: { name: "jquery-star", version: "1.1.0" },
     });
   });
 });

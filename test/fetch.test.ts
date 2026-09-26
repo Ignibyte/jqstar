@@ -82,6 +82,68 @@ describe("backend actions", () => {
     expect(lifecycle.map(({ type }) => type)).toEqual(["started", "progress", "finished"]);
   });
 
+  it("rejects malformed dynamic request arguments before fetching", async () => {
+    document.body.innerHTML = `<section id="app" data-signals="{ count: 0 }"></section>`;
+    const fetchMock = vi.fn(async () => jsonResponse({ count: 1 }));
+    vi.stubGlobal("fetch", fetchMock);
+    $("#app").star();
+
+    for (const url of [undefined, null, 42, "", " \t "]) {
+      await expect(instance().run("get", { args: [url] })).rejects.toThrow("@get requires a URL.");
+    }
+    await expect(instance().run("get", { args: ["/valid", null] })).rejects.toThrow(
+      "Backend action options must be an object.",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("owns nested pending and error state without replacing existing sibling values", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 1, status: 42, existing: { kept: 7, result: { error: 'old' } } }"></section>
+    `;
+    const fetchMock = vi.fn(async () => {
+      expect(instance().state.status).toEqual({ request: { loading: true } });
+      expect(instance().state.existing).toEqual({ kept: 7, result: { error: null } });
+      return new Response(null, { status: 204 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    $("#app").star();
+
+    await instance().run(
+      $.star.get<TestState>("/nested-status", {
+        pending: "status..request.loading",
+        error: "existing.result.error",
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(instance().state.status).toEqual({ request: { loading: false } });
+    expect(instance().state.existing).toEqual({ kept: 7, result: { error: null } });
+  });
+
+  it("omits nullish request parameters while retaining false and zero", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0, loading: false, requestError: null }"></section>
+    `;
+    const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+    $("#app").star();
+
+    await instance().run(
+      $.star.get("/params", {
+        params: { label: "present", empty: null, missing: undefined, disabled: false, zero: 0 },
+      }),
+    );
+
+    const [url] = fetchMock.mock.calls[0] as unknown as [URL];
+    expect(url.searchParams.get("label")).toBe("present");
+    expect(url.searchParams.has("empty")).toBe(false);
+    expect(url.searchParams.has("missing")).toBe(false);
+    expect(url.searchParams.get("disabled")).toBe("false");
+    expect(url.searchParams.get("zero")).toBe("0");
+    expect(Array.from(url.searchParams.keys())).toEqual(["label", "disabled", "zero", "datastar"]);
+  });
+
   it("posts JSON and morphs an HTML target without losing live directives", async () => {
     document.body.innerHTML = `
       <section id="app" data-signals="{ count: 2, loading: false, requestError: null }">
@@ -172,10 +234,10 @@ describe("backend actions", () => {
     }
 
     expect(requests).toHaveLength(methods.length);
-    for (const [[action, method], [url, init]] of methods.map((entry, index) => [
-      entry,
-      requests[index]!,
-    ]) as Array<[(typeof methods)[number], [URL, RequestInit]]>) {
+    for (const [index, [action, method]] of methods.entries()) {
+      const request = requests[index];
+      if (!request) throw new Error("Expected one backend request for each method.");
+      const [url, init] = request;
       const headers = new Headers(init.headers);
       expect(url.pathname).toBe(`/contract/${action}`);
       expect(init.method).toBe(method);
@@ -192,7 +254,8 @@ describe("backend actions", () => {
         });
       } else {
         expect(headers.get("Content-Type")).toBe("application/json");
-        expect(JSON.parse(String(init.body))).toEqual({ count: 3, action });
+        if (typeof init.body !== "string") throw new Error("Expected a JSON request body.");
+        expect(JSON.parse(init.body)).toEqual({ count: 3, action });
         expect(url.searchParams.has("datastar")).toBe(method === "DELETE");
       }
     }
@@ -260,6 +323,45 @@ describe("backend actions", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(instance().state.count).toBe(1);
+  });
+
+  it("applies the HTTP retry threshold and explicit retry modes", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0, loading: false, requestError: null }"></section>
+    `;
+    $("#app").star();
+
+    const cases = [
+      { mode: "error", status: 400, attempts: 2 },
+      { mode: "error", status: 399, attempts: 1 },
+      { mode: "auto", status: 400, attempts: 1 },
+      { mode: "always", status: 204, attempts: 1 },
+    ] as const;
+    for (const { mode, status, attempts } of cases) {
+      const first = new Response(status === 204 ? null : "response", {
+        status,
+        statusText: "Observed",
+      });
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce(first)
+        .mockResolvedValueOnce(new Response(null, { status: 204 }));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const request = instance().run(
+        $.star.get(`/retry-${mode}-${status}`, {
+          retry: mode,
+          retryInterval: 0,
+          retryMaxCount: 1,
+        }),
+      );
+      if (status !== 204 && attempts === 1) {
+        await expect(request).rejects.toThrow(`${status} Observed`);
+      } else {
+        await expect(request).resolves.toBeInstanceOf(Response);
+      }
+      expect(fetchMock).toHaveBeenCalledTimes(attempts);
+    }
   });
 
   it("applies Datastar signal and element patches from a chunked SSE stream", async () => {
@@ -393,6 +495,29 @@ describe("backend actions", () => {
       "progress:2",
       "finished:2",
     ]);
+  });
+
+  it("does not retry a network error when retry is disabled", async () => {
+    document.body.innerHTML = `
+      <section id="app" data-signals="{ count: 0, loading: false, requestError: null }"></section>
+    `;
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("offline"))
+      .mockResolvedValueOnce(jsonResponse({ count: 4 }));
+    vi.stubGlobal("fetch", fetchMock);
+    $("#app").star();
+
+    await expect(
+      instance().run(
+        $.star.get("/no-retry", {
+          retry: "never",
+          retryInterval: 0,
+          retryMaxCount: 1,
+        }),
+      ),
+    ).rejects.toThrow("offline");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("records terminal HTTP errors and always clears pending state", async () => {

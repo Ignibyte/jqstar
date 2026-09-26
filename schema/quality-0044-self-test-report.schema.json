@@ -132,13 +132,52 @@
     "redCheck": {
       "allOf": [
         { "$ref": "#/$defs/check" },
-        { "type": "object", "properties": { "expected": { "const": "red" } } }
+        { "type": "object", "properties": { "expected": { "const": "red" } } },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "pass"
+              }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "exitCode": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
       ]
     },
     "greenCheck": {
       "allOf": [
         { "$ref": "#/$defs/check" },
-        { "type": "object", "properties": { "expected": { "const": "green" } } }
+        { "type": "object", "properties": { "expected": { "const": "green" } } },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "pass"
+              }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "exitCode": {
+                "const": 0
+              }
+            }
+          }
+        }
       ]
     },
     "browserShardRefusal": {

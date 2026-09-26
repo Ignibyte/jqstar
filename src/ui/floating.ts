@@ -1,7 +1,209 @@
 import type { DocumentHost } from "../kernel";
+import { uiWindow, type UIResources } from "./lifecycle";
 
 interface DocumentRecord {
   readonly root: Element;
+}
+
+interface NativeFloatingRecord extends UIResources {
+  content: HTMLElement;
+  trigger: HTMLElement;
+  open: boolean;
+  nativeDepth: number;
+}
+interface NativeFloatingOwner {
+  record: NativeFloatingRecord;
+  current: (revision?: number) => boolean;
+  available: () => boolean;
+  sync: (open: boolean) => void;
+  completions: Array<{ revision: number; open: boolean; run: () => void }>;
+}
+const floatingOwners = new WeakMap<HTMLElement, NativeFloatingOwner>();
+const reconciling = new WeakSet<HTMLElement>();
+const nativeCalls = new WeakSet<HTMLElement>();
+
+export function currentFloatingOwner(content: HTMLElement): NativeFloatingRecord | undefined {
+  const owner = floatingOwners.get(content);
+  return owner?.current() ? owner.record : undefined;
+}
+
+export function claimFloatingContent(
+  record: NativeFloatingRecord,
+  current: NativeFloatingOwner["current"],
+  available: NativeFloatingOwner["available"],
+  sync: NativeFloatingOwner["sync"],
+): void {
+  if (!current()) return;
+  const previous = floatingOwners.get(record.content);
+  if (previous?.record === record) return;
+  const owner: NativeFloatingOwner = { record, current, available, sync, completions: [] };
+  record.cleanups.add(() => {
+    owner.completions.length = 0;
+    if (floatingOwners.get(record.content) === owner) floatingOwners.delete(record.content);
+  });
+  floatingOwners.set(record.content, owner);
+  previous?.record.cleanup();
+}
+
+export function floatingOpen(content: HTMLElement): boolean | undefined {
+  if (!usesNativePopover(content)) return undefined;
+  try {
+    return content.matches(":popover-open");
+  } catch {
+    return undefined;
+  }
+}
+
+export function floatingBusy(content: HTMLElement): boolean {
+  return nativeCalls.has(content);
+}
+
+export function callFloating(content: HTMLElement, opening: boolean): void {
+  if (floatingBusy(content)) return;
+  nativeCalls.add(content);
+  try {
+    if (opening) showFloating(content);
+    else hideFloating(content);
+  } finally {
+    nativeCalls.delete(content);
+  }
+}
+
+export function afterFloating(
+  record: NativeFloatingRecord,
+  revision: number,
+  run: () => void,
+): void {
+  const owner = floatingOwners.get(record.content);
+  if (owner?.record !== record || !owner.current(revision)) return;
+  if (floatingBusy(record.content) || reconciling.has(record.content))
+    owner.completions.push({ revision, open: record.open, run });
+  else run();
+}
+
+export function reconcileFloating(content: HTMLElement, opening: boolean): void {
+  if (floatingBusy(content) || reconciling.has(content)) return;
+  reconciling.add(content);
+  let actual = floatingOpen(content) ?? opening;
+  try {
+    for (;;) {
+      const owner = floatingOwners.get(content);
+      const live = !!owner?.current();
+      const wantsOpen = live && !!owner?.record.open && owner.available();
+      const revision = owner?.record.revision;
+      if (wantsOpen !== actual) {
+        callFloating(content, wantsOpen);
+        actual = floatingOpen(content) ?? wantsOpen;
+        if (
+          floatingOwners.get(content) !== owner ||
+          owner?.record.revision !== revision ||
+          !!owner?.current() !== live ||
+          (live && !!owner?.record.open && owner.available()) !== wantsOpen
+        )
+          continue;
+      }
+      if (owner?.current()) owner.sync(actual);
+      for (const completion of owner?.completions.splice(0) ?? []) {
+        if (
+          floatingOwners.get(content) === owner &&
+          owner?.current(completion.revision) &&
+          owner.record.open === completion.open
+        )
+          completion.run();
+      }
+      if (
+        floatingOwners.get(content) === owner &&
+        owner?.record.revision === revision &&
+        !owner?.completions.length
+      )
+        return;
+      actual = floatingOpen(content) ?? !!floatingOwners.get(content)?.record.open;
+    }
+  } finally {
+    reconciling.delete(content);
+  }
+}
+
+const generatedAttributes = new WeakMap<HTMLElement, Record<string, string | undefined>>();
+
+function authoredAttribute(element: HTMLElement, attribute: string): boolean {
+  const current = element.getAttribute(attribute);
+  return !!current && current !== generatedAttributes.get(element)?.[attribute];
+}
+
+export function copyGeneratedAttributes(previous: HTMLElement, current: HTMLElement): void {
+  if (previous !== current && !generatedAttributes.has(current))
+    generatedAttributes.set(current, { ...generatedAttributes.get(previous) });
+}
+
+export function syncGeneratedAttribute(
+  element: HTMLElement,
+  attribute: string,
+  value?: string,
+): void {
+  if (authoredAttribute(element, attribute)) return;
+  if (value) {
+    if (element.getAttribute(attribute) !== value) element.setAttribute(attribute, value);
+  } else element.removeAttribute(attribute);
+  const owned = generatedAttributes.get(element) ?? {};
+  owned[attribute] = value;
+  generatedAttributes.set(element, owned);
+}
+
+export function identifyLabel(element: HTMLElement, labelledBy?: string, label?: string): void {
+  syncGeneratedAttribute(
+    element,
+    "aria-labelledby",
+    authoredAttribute(element, "aria-label") ? undefined : labelledBy,
+  );
+  syncGeneratedAttribute(
+    element,
+    "aria-label",
+    element.hasAttribute("aria-labelledby") ? undefined : label,
+  );
+}
+
+export function identifyPart(
+  root: HTMLElement,
+  part: string,
+  prefix = root.id,
+): string | undefined {
+  const element = root.querySelector<HTMLElement>(`[data-part="${part}"]`);
+  if (element) element.id ||= `${prefix}-${part}`;
+  return element?.id;
+}
+
+export function identifyControlLabel(
+  root: HTMLElement,
+  control: HTMLInputElement | HTMLSelectElement,
+  target: HTMLElement,
+  fallback: string,
+): void {
+  const label = control.labels?.[0];
+  if (label) label.id ||= `${root.id}-label`;
+  identifyLabel(
+    target,
+    label?.id || control.getAttribute("aria-labelledby") || undefined,
+    control.getAttribute("aria-label") ||
+      root.getAttribute("aria-label") ||
+      control.name ||
+      fallback,
+  );
+}
+
+export function identifyElements(
+  elements: readonly HTMLElement[],
+  prefix: string,
+  start = 0,
+): void {
+  const ids = new Set(elements.map((element) => element.id));
+  let index = start;
+  for (const element of elements) {
+    if (element.id) continue;
+    do element.id = `${prefix}-${index++}`;
+    while (ids.has(element.id));
+    ids.add(element.id);
+  }
 }
 
 export function listenToViewportChanges(host: DocumentHost, listener: () => void): void {
@@ -52,14 +254,14 @@ export function prepareFloating(content: HTMLElement): void {
 }
 
 export function showFloating(content: HTMLElement): void {
-  if (supportsPopover(content)) (content as NativePopoverElement).showPopover();
+  if (supportsPopover(content)) content.showPopover();
   else content.hidden = false;
 }
 
 export function hideFloating(content: HTMLElement): void {
   if (supportsPopover(content)) {
     try {
-      (content as NativePopoverElement).hidePopover();
+      content.hidePopover();
     } catch {
       // A detached or already-hidden native popover needs no further work.
     }
@@ -100,11 +302,14 @@ export function positionFloating(
   trigger: HTMLElement,
   content: HTMLElement,
   defaults: FloatingDefaults = {},
+  current?: () => boolean,
 ): void {
+  const window = uiWindow(root);
   const triggerRect = trigger.getBoundingClientRect();
   const contentRect = content.getBoundingClientRect();
   const width = content.offsetWidth || contentRect.width;
   const height = content.offsetHeight || contentRect.height;
+  if (current && !current()) return;
   const gap = defaults.gap ?? 8;
   const edge = defaults.edge ?? 8;
   const preferred = side(root, defaults.side ?? "bottom");
@@ -149,10 +354,13 @@ export function positionFloatingAtPoint(
   x: number,
   y: number,
   edge = 8,
+  current?: () => boolean,
 ): void {
+  const window = uiWindow(content);
   const contentRect = content.getBoundingClientRect();
   const width = content.offsetWidth || contentRect.width;
   const height = content.offsetHeight || contentRect.height;
+  if (current && !current()) return;
   const left = clamp(x, edge, window.innerWidth - width - edge);
   const top = clamp(y, edge, window.innerHeight - height - edge);
   content.style.left = `${left}px`;

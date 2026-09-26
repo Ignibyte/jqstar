@@ -1,3 +1,4 @@
+import { runtimePropertyMangle } from "./config/runtime-private-properties";
 import { defineConfig } from "vite";
 import { resolve } from "node:path";
 
@@ -7,8 +8,13 @@ export default defineConfig({
       entry: {
         "jquery-star": resolve(__dirname, "src/index.ts"),
         core: resolve(__dirname, "src/core.ts"),
+        csp: resolve(__dirname, "src/csp.ts"),
         ui: resolve(__dirname, "src/ui.ts"),
         datastar: resolve(__dirname, "src/datastar.ts"),
+        htmx: resolve(__dirname, "src/htmx.ts"),
+        stores: resolve(__dirname, "src/stores.ts"),
+        persist: resolve(__dirname, "src/persist.ts"),
+        inspect: resolve(__dirname, "src/inspect/index.ts"),
         testing: resolve(__dirname, "src/testing/index.ts"),
         turbo: resolve(__dirname, "src/turbo.ts"),
         "datastar-testing": resolve(__dirname, "src/datastar/testing.ts"),
@@ -18,8 +24,10 @@ export default defineConfig({
     },
     minify: "terser",
     terserOptions: {
+      mangle: runtimePropertyMangle,
       compress: {
-        passes: 2,
+        hoist_funs: true,
+        passes: 5,
       },
     },
     rollupOptions: {
@@ -29,7 +37,18 @@ export default defineConfig({
         globals: {
           jquery: "jQuery",
         },
-        manualChunks(id) {
+        manualChunks(id, { getModuleInfo }) {
+          const runtimeDependencies = new Set<string>();
+          const pending = [resolve(__dirname, "src/runtime.ts")];
+          while (pending.length > 0) {
+            const moduleId = pending.pop();
+            if (!moduleId || runtimeDependencies.has(moduleId)) continue;
+            runtimeDependencies.add(moduleId);
+            const module = getModuleInfo(moduleId);
+            if (module) pending.push(...module.importedIds);
+          }
+          if (runtimeDependencies.has(id)) return "runtime";
+          if (id.endsWith("/src/csp/contract.ts")) return "csp-contract-chunk";
           if (
             id.endsWith("/src/render-adapter.ts") ||
             id.endsWith("/src/trusted-runtime.ts") ||

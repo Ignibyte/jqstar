@@ -132,22 +132,23 @@ describe("jQuery ecosystem evidence", () => {
   it("keeps real jQuery as the sole required peer and preserves the jQuery/signal boundary", () => {
     expect(packageManifest.peerDependencies).toEqual({
       "@hotwired/turbo": ">=8.0.21 <8.1.0",
-      jquery: ">=4.0.0 <5",
+      "htmx.org": ">=2.0.0 <2.1.0",
+      jquery: ">=3.7.1 <5",
     });
     expect(
       (packageManifest as { peerDependenciesMeta?: Record<string, { optional?: boolean }> })
         .peerDependenciesMeta,
-    ).toEqual({ "@hotwired/turbo": { optional: true } });
+    ).toEqual({ "@hotwired/turbo": { optional: true }, "htmx.org": { optional: true } });
     expect((packageManifest as { files?: string[] }).files).toContain(
       "!schema/jquery-ecosystem.schema.json",
     );
     expect(project("jquery-core")).toMatchObject({
       runtimePolicy: "peer-foundation",
-      supportedRange: ">=4.0.0 <5",
-      testedVersions: ["4.0.0"],
+      supportedRange: ">=3.7.1 <5",
+      testedVersions: ["3.7.1", "4.0.0"],
     });
     const packageQuality = read("scripts/quality-package.mjs");
-    expect(packageQuality).toContain('jqueryPeer === ">=4.0.0 <5"');
+    expect(packageQuality).toContain('jqueryPeer === ">=3.7.1 <5"');
     expect(packageQuality).toContain('"jquery@4.0.0"');
     for (const path of ["README.md", "docs/PROJECT.md", "docs/JQUERY_ECOSYSTEM.md"]) {
       const source = read(path);
@@ -169,15 +170,15 @@ describe("jQuery ecosystem evidence", () => {
 
     const packageQuality = read("scripts/quality-package.mjs");
     expect(packageQuality).toContain('"qunit@2.26.0"');
-    expect(packageQuality.match(/QUnit\.test\(/gu)).toHaveLength(3);
+    expect(packageQuality.match(/QUnit\.test\(/gu)).toHaveLength(5);
     expect(packageQuality).toContain('"node_modules/qunit"');
     expect(packageQuality).toContain(
-      'return "3 installed-package extension, testing, and CSP tests"',
+      'return "5 installed-package extension, testing, CSP, persistence, and inspection tests"',
     );
   });
 
   it("keeps Migrate, UI, Mobile, and standalone Sizzle out of runtime ownership", () => {
-    const forbiddenPackages = ["jquery-migrate", "jquery-mobile", "jquery-ui", "sizzle"];
+    const forbiddenPackages = ["jquery-migrate", "jquery-mobile", "sizzle"];
     const rootLock = packageLock.packages[""] ?? {};
     for (const dependencies of [
       packageManifest.dependencies,
@@ -195,6 +196,12 @@ describe("jQuery ecosystem evidence", () => {
     expect(project("jquery-mobile").runtimePolicy).toBe("absent");
     expect(project("jquery-ui").runtimePolicy).toBe("external-only");
     expect(project("jquery-migrate").runtimePolicy).toBe("application-opt-in");
+    expect(packageManifest.devDependencies?.["jquery-ui"]).toBe("1.14.2");
+    expect(rootLock.devDependencies?.["jquery-ui"]).toBe("1.14.2");
+    expect(packageManifest.dependencies).not.toHaveProperty("jquery-ui");
+    expect(packageManifest.peerDependencies).not.toHaveProperty("jquery-ui");
+    expect(rootLock.dependencies).not.toHaveProperty("jquery-ui");
+    expect(rootLock.peerDependencies).not.toHaveProperty("jquery-ui");
 
     const importPattern =
       /(?:from\s*|import\s*\(|require\s*\(|src\s*=)\s*["'](?:jquery-migrate|jquery-mobile|jquery-ui|sizzle|qunit)(?:\/[^"']*)?["']/u;

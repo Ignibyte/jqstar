@@ -110,6 +110,57 @@ function responseFor(signals: RequestSignals): Response {
   });
 }
 
+interface DeferredQuery {
+  signals: RequestSignals;
+  signal: AbortSignal;
+  resolve: (response: Response) => void;
+  reject: (error: Error) => void;
+}
+
+function deferredQueries(respectAbort = false): DeferredQuery[] {
+  const pending: DeferredQuery[] = [];
+  vi.mocked(fetch).mockImplementation(async (url, init) => {
+    if (!init?.signal) throw new Error("Query has no cancellation signal");
+    const { signal, ...requestInit } = init;
+    const read = await ServerSentEventGenerator.readSignals(new Request(url, requestInit));
+    if (!read.success) throw new Error(read.error);
+    return new Promise<Response>((resolve, reject) => {
+      pending.push({ signals: read.signals as unknown as RequestSignals, signal, resolve, reject });
+      if (respectAbort)
+        signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), {
+          once: true,
+        });
+    });
+  });
+  return pending;
+}
+
+function nextQuery(pending: DeferredQuery[], index: number): Promise<DeferredQuery> {
+  return vi.waitFor(() => {
+    const query = pending[index];
+    if (!query) throw new Error("Expected query has not started");
+    return query;
+  });
+}
+
+function blockInstance(element = root()) {
+  const instance = $(element).star("instance");
+  if (!instance) throw new Error("Project Browser is not initialized");
+  return instance;
+}
+
+async function openEditor() {
+  const instance = blockInstance();
+  const expand = root().querySelector<HTMLButtonElement>(
+    '[data-project-browser-expand][data-project-id="jqstar"]',
+  );
+  if (!expand) throw new Error("Missing expand control");
+  await instance.run("projectBrowser.expand", { element: expand });
+  const form = root().querySelector<HTMLFormElement>('[data-project-browser-edit="jqstar"]');
+  if (!form) throw new Error("Missing editor");
+  return { instance, form };
+}
+
 describe("Project Browser source block", () => {
   let edits: EditRequest[];
   let requests: RequestSignals[];
@@ -148,6 +199,227 @@ describe("Project Browser source block", () => {
   afterEach(() => {
     $(root()).star("destroy");
     vi.unstubAllGlobals();
+  });
+
+  it("applies a saved layout when a new block root enters the document", async () => {
+    const storageKey = "jquery-star:project-browser:columns:v1";
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    };
+    vi.stubGlobal("localStorage", storage);
+    const inserted = document.createElement("section");
+    inserted.dataset.block = "project-browser";
+    inserted.innerHTML = `<table data-part="table"><thead><tr><th>Selection</th><th data-column="name">Name</th><th data-column="owner">Owner</th><th data-column="status">Status</th><th data-column="updated">Updated</th></tr></thead></table><button data-column-pin="updated" type="button">Pin left</button>`;
+
+    try {
+      storage.setItem(
+        storageKey,
+        JSON.stringify({
+          hidden: ["owner"],
+          order: ["updated", "name", "status", "owner"],
+          pinned: ["updated"],
+          version: 1,
+        }),
+      );
+      document.body.append(inserted);
+
+      await vi.waitFor(() => {
+        expect(
+          Array.from(inserted.querySelectorAll("thead [data-column]"), (cell) =>
+            cell.getAttribute("data-column"),
+          ),
+        ).toEqual(["updated", "name", "status", "owner"]);
+        expect(inserted.querySelector<HTMLElement>('[data-column="owner"]')?.hidden).toBe(true);
+        expect(inserted.querySelector<HTMLElement>('[data-column="updated"]')?.dataset.pinned).toBe(
+          "left",
+        );
+        expect(
+          inserted.querySelector('[data-column-pin="updated"]')?.getAttribute("aria-pressed"),
+        ).toBe("true");
+      });
+    } finally {
+      inserted.remove();
+    }
+  });
+
+  it("keeps the latest virtual window when an aborted older response arrives last", async () => {
+    const pending = deferredQueries();
+    const instance = blockInstance();
+    instance.state.projectBrowserMode = "virtual";
+    instance.state.projectBrowserWindowStart = 0;
+    const first = instance.run("projectBrowser.refresh");
+    const older = await nextQuery(pending, 0);
+    instance.state.projectBrowserWindowStart = 80;
+    const second = instance.run("projectBrowser.refresh");
+    const newer = await nextQuery(pending, 1);
+    expect(older.signal.aborted).toBe(true);
+    newer.resolve(responseFor(newer.signals));
+    await second;
+    expect(instance.state.projectBrowserWindowStart).toBe(80);
+    older.resolve(responseFor(older.signals));
+    await first;
+    expect(instance.state.projectBrowserWindowStart).toBe(80);
+    expect(instance.state.projectBrowserRequestId).toBe(2);
+    expect(instance.state.projectBrowserLoading).toBe(false);
+  });
+
+  it("shares query cancellation across controls without clearing newer loading or error state", async () => {
+    const pending = deferredQueries();
+    const instance = blockInstance();
+    const first = instance.run("projectBrowser.refresh", { element: controlFor("owner") });
+    const older = await nextQuery(pending, 0);
+    instance.state.projectBrowserOwner = "Runtime";
+    const second = instance.run("projectBrowser.refresh", { element: controlFor("status") });
+    const newer = await nextQuery(pending, 1);
+    expect(older.signal.aborted).toBe(true);
+    older.reject(new Error("Superseded service failure"));
+    await first;
+    expect(instance.state.projectBrowserLoading).toBe(true);
+    expect(instance.state.projectBrowserError).toBeNull();
+    const failed = expect(second).rejects.toThrow("Current service failure");
+    newer.reject(new Error("Current service failure"));
+    await failed;
+    expect(instance.state.projectBrowserLoading).toBe(false);
+    expect(instance.state.projectBrowserError).toBe("Current service failure");
+  });
+
+  it("cancels the current table query when its application is destroyed", async () => {
+    const pending = deferredQueries(true);
+    const instance = blockInstance();
+    const request = instance.run("projectBrowser.refresh");
+    const query = await nextQuery(pending, 0);
+    instance.destroy();
+    expect(query.signal.aborted).toBe(true);
+    await expect(request).resolves.toBeUndefined();
+  });
+
+  it.each([200, 409])(
+    "does not finalize a superseded save refresh after HTTP %i",
+    async (status) => {
+      const { instance, form } = await openEditor();
+      const pending = deferredQueries(true);
+      const deferred = vi.mocked(fetch).getMockImplementation();
+      if (!deferred) throw new Error("Missing fixture transport");
+      vi.mocked(fetch).mockImplementation((url, init) =>
+        init?.method === "PATCH"
+          ? Promise.resolve(
+              new Response(JSON.stringify({ message: "Old write saved", error: "Old conflict" }), {
+                status,
+                headers: { "Content-Type": "application/json" },
+              }),
+            )
+          : deferred(url, init),
+      );
+      const save = instance.run("projectBrowser.save", { element: form });
+      await nextQuery(pending, 0);
+      const request = instance.run("projectBrowser.refresh", { element: controlFor("owner") });
+      const newer = await nextQuery(pending, 1);
+      await save;
+      try {
+        expect(instance.state.projectBrowserLoading).toBe(true);
+        expect(instance.state.projectBrowserError).toBeNull();
+        expect(instance.state.projectBrowserMessage).not.toBe("Old write saved");
+      } finally {
+        newer.resolve(responseFor(newer.signals));
+        await request;
+      }
+      expect(instance.state.projectBrowserLoading).toBe(false);
+    },
+  );
+
+  it("keeps loading active until concurrent edits finish even when a query completes", async () => {
+    const { instance, form } = await openEditor();
+    const standard = vi.mocked(fetch).getMockImplementation();
+    if (!standard) throw new Error("Missing fixture transport");
+    const writes: Array<(response: Response) => void> = [];
+    vi.mocked(fetch).mockImplementation((url, init) =>
+      init?.method === "PATCH"
+        ? new Promise<Response>((resolve) => {
+            writes.push(resolve);
+          })
+        : standard(url, init),
+    );
+    const first = instance.run("projectBrowser.save", { element: form });
+    const second = instance.run("projectBrowser.save", { element: form });
+    await vi.waitFor(() => expect(writes).toHaveLength(2));
+    const [completeFirst, completeSecond] = writes;
+    if (!completeFirst || !completeSecond) throw new Error("Expected both writes");
+    await instance.run("projectBrowser.refresh");
+    expect(instance.state.projectBrowserLoading).toBe(true);
+    completeFirst(
+      new Response(JSON.stringify({ message: "First write saved" }), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    await first;
+    expect(instance.state.projectBrowserLoading).toBe(true);
+    completeSecond(
+      new Response(JSON.stringify({ error: "Newer version exists" }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    await second;
+    expect(instance.state.projectBrowserLoading).toBe(false);
+    expect(instance.state.projectBrowserError).toBe("Newer version exists");
+  });
+
+  it.each([
+    { failure: "Service returned text", message: "Service returned text" },
+    { failure: 42, message: "Project query failed." },
+  ])(
+    "reports non-Error query rejection $failure and clears loading",
+    async ({ failure, message }) => {
+      vi.mocked(fetch).mockRejectedValueOnce(failure);
+      const instance = blockInstance();
+      await expect(instance.run("projectBrowser.refresh")).rejects.toBeDefined();
+      expect(instance.state.projectBrowserError).toBe(message);
+      expect(instance.state.projectBrowserLoading).toBe(false);
+    },
+  );
+
+  it("keeps simultaneous table queries independent across application roots", async () => {
+    const pending = deferredQueries(true);
+    const secondRoot = root().cloneNode(true) as HTMLElement;
+    for (const element of [secondRoot, ...secondRoot.querySelectorAll<HTMLElement>("[id]")])
+      if (element.id) element.id = `second-${element.id}`;
+    for (const element of secondRoot.querySelectorAll<HTMLElement>(
+      "[for], [aria-controls], [aria-labelledby]",
+    ))
+      for (const name of ["for", "aria-controls", "aria-labelledby"]) {
+        const value = element.getAttribute(name);
+        if (value)
+          element.setAttribute(
+            name,
+            value
+              .split(" ")
+              .map((id) => `second-${id}`)
+              .join(" "),
+          );
+      }
+    document.body.append(secondRoot);
+    $.star.ui.enhance(secondRoot);
+    $(secondRoot).star();
+    const first = blockInstance();
+    const second = blockInstance(secondRoot);
+    try {
+      const a = first.run("projectBrowser.refresh");
+      const qa = await nextQuery(pending, 0);
+      const b = second.run("projectBrowser.refresh");
+      const qb = await nextQuery(pending, 1);
+      expect(qa.signal.aborted).toBe(false);
+      expect(qb.signal.aborted).toBe(false);
+      first.destroy();
+      await a;
+      expect(qb.signal.aborted).toBe(false);
+      second.destroy();
+      await b;
+    } finally {
+      second.destroy();
+      secondRoot.remove();
+    }
   });
 
   it("requests a page and applies official SDK row, signal, and Pagination patches", async () => {
@@ -281,8 +553,13 @@ describe("Project Browser source block", () => {
     await vi.waitFor(() => expect(requests).toHaveLength(2));
     expect(requests[1]).toMatchObject({
       projectBrowserMode: "virtual",
+      projectBrowserGroupBy: "none",
       projectBrowserWindowSize: 40,
     });
+    await vi.waitFor(() =>
+      expect(root().querySelector('[data-project-browser-group-toggle="Platform"]')).toBeNull(),
+    );
+    expect(root().querySelector<HTMLTableRowElement>('[data-row-id="jqstar"]')?.hidden).toBe(false);
     const viewport = root().querySelector<HTMLElement>('[data-part="viewport"]')!;
     viewport.scrollTop = 1_040;
     viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
@@ -301,6 +578,16 @@ describe("Project Browser source block", () => {
         cell.getAttribute("data-column"),
       ),
     ).toEqual(["name", "owner", "updated", "status"]);
+    expect(
+      root().querySelector<HTMLButtonElement>(
+        '[data-column-item="name"] [data-column-move="previous"]',
+      )?.disabled,
+    ).toBe(true);
+    expect(
+      root().querySelector<HTMLButtonElement>(
+        '[data-column-item="status"] [data-column-move="next"]',
+      )?.disabled,
+    ).toBe(true);
 
     const pin = root().querySelector<HTMLButtonElement>('[data-column-pin="owner"]')!;
     pin.click();
@@ -308,12 +595,56 @@ describe("Project Browser source block", () => {
     expect(root().querySelector('th[data-column="owner"]')?.getAttribute("data-pinned")).toBe(
       "left",
     );
+    expect(
+      root()
+        .querySelector<HTMLElement>('th[data-column="name"]')
+        ?.style.getPropertyValue("--project-column-left"),
+    ).toBe("44px");
+    expect(
+      root()
+        .querySelector<HTMLElement>('th[data-column="owner"]')
+        ?.style.getPropertyValue("--project-column-left"),
+    ).toBe("220px");
 
     pin.click();
     expect(pin.getAttribute("aria-pressed")).toBe("false");
     expect(root().querySelector('th[data-column="owner"]')?.hasAttribute("data-pinned")).toBe(
       false,
     );
+  });
+
+  it("ignores a column move action with an invalid direction", async () => {
+    const move = root().querySelector<HTMLButtonElement>(
+      '[data-column-item="owner"] [data-column-move="next"]',
+    );
+    if (!move) throw new Error("Missing owner column move control");
+    const before = Array.from(root().querySelectorAll("thead [data-column]"), (cell) =>
+      cell.getAttribute("data-column"),
+    );
+    move.dataset.columnMove = "sideways";
+
+    await blockInstance().run("projectBrowser.columnMove", { element: move });
+
+    expect(
+      Array.from(root().querySelectorAll("thead [data-column]"), (cell) =>
+        cell.getAttribute("data-column"),
+      ),
+    ).toEqual(before);
+  });
+
+  it("moves a column forward through the next action", async () => {
+    const move = root().querySelector<HTMLButtonElement>(
+      '[data-column-item="owner"] [data-column-move="next"]',
+    );
+    if (!move) throw new Error("Missing owner column move control");
+
+    await blockInstance().run("projectBrowser.columnMove", { element: move });
+
+    expect(
+      Array.from(root().querySelectorAll("thead [data-column]"), (cell) =>
+        cell.getAttribute("data-column"),
+      ),
+    ).toEqual(["name", "status", "owner", "updated"]);
   });
 
   it("reorders columns through drag actions and the event-target fallback", async () => {
@@ -348,6 +679,17 @@ describe("Project Browser source block", () => {
     expect(dataTransfer.dropEffect).toBe("move");
 
     const drop = { target } as unknown as DragEvent;
+    await instance.run("projectBrowser.columnDrop", { element: target, event: drop });
+    expect(
+      Array.from(root().querySelectorAll<HTMLTableCellElement>("thead [data-column]"), (cell) =>
+        cell.getAttribute("data-column"),
+      ),
+    ).toEqual(["name", "updated", "owner", "status"]);
+    await instance.run("projectBrowser.columnDrop", { element: target, event: drop });
+    await instance.run("projectBrowser.columnDragStart", {
+      element: target,
+      event: { dataTransfer, target } as unknown as DragEvent,
+    });
     await instance.run("projectBrowser.columnDrop", { element: target, event: drop });
     expect(
       Array.from(root().querySelectorAll<HTMLTableCellElement>("thead [data-column]"), (cell) =>

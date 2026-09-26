@@ -6,11 +6,11 @@ import { join } from "node:path";
 import { checkLocalLinks } from "./check-links.mjs";
 import { validateLicenses } from "./check-licenses.mjs";
 import { validateLockfile } from "./check-lockfile.mjs";
-import { effectiveMaximum, validateMetrics } from "./check-metrics.mjs";
+import { effectiveMaximum, evaluateMetricRatchet, validateMetrics } from "./check-metrics.mjs";
 import { classifyPaths } from "./scope-census.mjs";
 import { scanSourcePolicy, validateDeviations } from "./source-policy.mjs";
 import { createSchemaValidator } from "./validate-json.mjs";
-import { executeStaticGates } from "./run-static.mjs";
+import { executeStaticGates, githubErrorAnnotation } from "./run-static.mjs";
 import { qualityPaths, readJSON, repositoryRoot } from "./static-lib.mjs";
 
 const sourceSabotage = [
@@ -19,6 +19,8 @@ const sourceSabotage = [
   ["suppression/coverage", "src/a.ts", "/* c8 ignore next */"],
   ["suppression/semgrep", "src/a.ts", "// nosemgrep"],
   ["tests/focused-or-skipped", "test/a.test.ts", "test.only('focused', () => {})"],
+  ["tests/unrecorded-property", "test/property/a.property.test.ts", "fc.assert(property)"],
+  ["tests/unrecorded-property", "test/property/a.property.test.mjs", "fc.check(property)"],
   ["source/dynamic-evaluation", "src/a.ts", "eval('unsafe')"],
   ["source/private-package-entry", "src/a.ts", "import 'jquery-star/src/runtime'"],
   ["source/production-test-import", "src/a.ts", "import { expect } from 'vitest'"],
@@ -43,6 +45,16 @@ function selfTestSourcePolicy() {
       `${id} green fixture failed`,
     );
   }
+  assert.deepEqual(
+    scanSourcePolicy(
+      new Map([
+        ["test/property/a.property.test.ts", "assertProperty('named', property)"],
+        ["test/property/helpers.ts", "const details = fc.check(property, parameters)"],
+      ]),
+    ),
+    [],
+    "recorded property wrapper or shared helper was rejected",
+  );
   assert.deepEqual(
     scanSourcePolicy(
       new Map([
@@ -151,14 +163,50 @@ function selfTestPolicies() {
   );
   const metrics = {
     schemaVersion: "jqstar-static-metrics/1",
+    sonarjs: { cognitiveComplexityMaximum: 65 },
     duplication: { maximumPercent: 10, minimumLines: 8, minimumTokens: 70 },
   };
   const jscpd = { threshold: 10, minLines: 8, minTokens: 70 };
   assert.deepEqual(validateMetrics(metrics, jscpd), []);
+  assert.deepEqual(evaluateMetricRatchet(metrics, metrics, jscpd, jscpd), []);
+  for (const group of ["sonarjs", "duplication"]) {
+    for (const key of Object.keys(metrics[group])) {
+      const weakened = structuredClone(metrics);
+      weakened[group][key]++;
+      assert(
+        evaluateMetricRatchet(weakened, metrics, jscpd, jscpd).length > 0,
+        `${group}.${key} weakening stayed green`,
+      );
+      Reflect.deleteProperty(weakened[group], key);
+      assert(
+        evaluateMetricRatchet(weakened, metrics, jscpd, jscpd).length > 0,
+        `${group}.${key} removal stayed green`,
+      );
+    }
+  }
+  assert(
+    evaluateMetricRatchet(metrics, metrics, { ...jscpd, ignore: ["src/**"] }, jscpd).length > 0,
+    "duplication scope weakening stayed green",
+  );
   jscpd.threshold = 11;
   assert.equal(validateMetrics(metrics, jscpd).length, 1, "metric mismatch sabotage stayed green");
   assert.equal(effectiveMaximum(10, "20"), 10, "environment lowered a committed maximum");
   assert.equal(effectiveMaximum(10, "5"), 5, "environment could not tighten a committed maximum");
+}
+
+function selfTestGithubAnnotations() {
+  assert.equal(
+    githubErrorAnnotation({
+      id: "linux:gate,one%",
+      status: "fail",
+      reason: "first line\r\nsecond line",
+    }),
+    "::error title=Static gate linux%3Agate%2Cone%25::first line%0D%0Asecond line",
+  );
+  assert.equal(
+    githubErrorAnnotation({ id: "gate", status: "error", log: "reports/gate.log" }),
+    "::error title=Static gate gate::See reports/gate.log",
+  );
 }
 
 async function selfTestSchemas() {
@@ -321,6 +369,7 @@ selfTestSourcePolicy();
 await selfTestScopes();
 await selfTestLinks();
 selfTestPolicies();
+selfTestGithubAnnotations();
 await selfTestSchemas();
 await selfTestOrchestration();
 await selfTestSignalCleanup();

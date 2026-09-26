@@ -1,6 +1,6 @@
 {
   "name": "jquery-star",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "HTML-first reactive framework for server-rendered applications, powered by jQuery",
   "type": "module",
   "license": "MIT",
@@ -17,14 +17,18 @@
   },
   "jqstar": {
     "entrypoints": {
-      ".": "compatibility-stable-for-0.x",
-      "./core": "0.4-preview",
-      "./csp": "0.4-preview",
-      "./datastar": "0.4-preview",
-      "./datastar/testing": "0.4-preview",
-      "./testing": "0.4-preview",
-      "./turbo": "0.4-preview",
-      "./ui": "0.4-preview"
+      ".": "stable",
+      "./core": "stable",
+      "./csp": "stable",
+      "./datastar": "stable",
+      "./datastar/testing": "stable",
+      "./htmx": "stable",
+      "./stores": "stable",
+      "./testing": "stable",
+      "./turbo": "stable",
+      "./ui": "stable",
+      "./persist": "stable",
+      "./inspect": "stable"
     }
   },
   "engines": {
@@ -35,6 +39,7 @@
     "reactivity",
     "declarative",
     "datastar",
+    "htmx",
     "signals"
   ],
   "sideEffects": [
@@ -109,6 +114,26 @@
         "default": "./dist/testing.cjs"
       }
     },
+    "./htmx": {
+      "import": {
+        "types": "./dist/htmx.d.ts",
+        "default": "./dist/htmx.js"
+      },
+      "require": {
+        "types": "./dist/htmx.d.cts",
+        "default": "./dist/htmx.cjs"
+      }
+    },
+    "./stores": {
+      "import": {
+        "types": "./dist/stores.d.ts",
+        "default": "./dist/stores.js"
+      },
+      "require": {
+        "types": "./dist/stores.d.cts",
+        "default": "./dist/stores.cjs"
+      }
+    },
     "./turbo": {
       "import": {
         "types": "./dist/turbo.d.ts",
@@ -129,42 +154,80 @@
         "default": "./dist/datastar-testing.cjs"
       }
     },
-    "./ui.css": "./dist/jquery-star-ui.css"
+    "./ui.css": "./dist/jquery-star-ui.css",
+    "./persist": {
+      "import": {
+        "types": "./dist/persist.d.ts",
+        "default": "./dist/persist.js"
+      },
+      "require": {
+        "types": "./dist/persist.d.cts",
+        "default": "./dist/persist.cjs"
+      }
+    },
+    "./inspect": {
+      "import": {
+        "types": "./dist/inspect.d.ts",
+        "default": "./dist/inspect.js"
+      },
+      "require": {
+        "types": "./dist/inspect.d.cts",
+        "default": "./dist/inspect.cjs"
+      }
+    }
   },
   "bin": {
     "jqstar": "bin/jqstar.mjs"
   },
   "files": [
+    "CHANGELOG.md",
     "bin",
     "demo-dist/site.br",
     "deploy",
     "dist",
     "!dist/types",
     "docs/BACKEND.md",
+    "docs/COMPATIBILITY.md",
     "docs/COMPONENT_ARCHITECTURE.md",
-    "docs/COMPONENT_RESEARCH.md",
     "docs/CSP_EXPRESSIONS.md",
     "docs/INTEROPERABILITY.md",
+    "docs/JQUERY_ECOSYSTEM.md",
+    "docs/JQUERY_MOBILE_MIGRATION.md",
+    "docs/JQUERY_UI_MIGRATION.md",
     "docs/SELF_HOSTING.md",
-    "docs/security/CSP_THREAT_MODEL.md",
+    "docs/STORES.md",
     "!docs/README.md",
     "LICENSE",
+    "MIGRATING_TO_1.md",
     "README.md",
+    "RELEASING.md",
     "SECURITY.md",
+    "SUPPORT.md",
     "registry",
     "registry.json",
     "schema",
     "!schema/external-bridge-contract.schema.json",
     "!schema/jquery-ecosystem.schema.json",
-    "server-dist"
+    "!schema/jquery-mobile-migration.schema.json",
+    "!schema/jquery-ui-migration.schema.json",
+    "!schema/release-candidate.schema.json",
+    "!schema/release-contract.schema.json",
+    "!schema/resource-strategy.schema.json",
+    "!schema/navigation-decision.schema.json",
+    "server-dist",
+    "docs/PERSISTENCE.md",
+    "docs/INSPECTION.md",
+    "docs/decisions/DEVTOOLS.md",
+    "docs/UPGRADES.md"
   ],
   "scripts": {
+    "proof:csp": "node scripts/serve-csp-proof.mjs",
     "build": "npm run clean && npm run build:js && npm run build:css",
     "build:agent-content": "node scripts/build-agent-content.mjs",
     "build:css": "tailwindcss -i ./src/ui/theme.css -o ./dist/jquery-star-ui.css --minify",
     "build:demo": "npm run build:agent-content && vite build --config vite.demo.config.ts",
     "build:pages": "JQS_SITE_BASE=/jqstar/ JQS_STATIC_DEMO=true npm run build:demo && node scripts/smoke-pages.mjs",
-    "build:js": "vite build && vite build --config vite.csp.config.ts && vite build --config vite.umd.config.ts && node scripts/build-types.mjs",
+    "build:js": "vite build && vite build --config vite.umd.config.ts && node scripts/build-types.mjs && node scripts/externalize-source-maps.mjs",
     "build:self-hosted": "npm run build && npm run build:demo && npm run build:server && node scripts/bundle-site.mjs",
     "build:server": "vite build --config vite.server.config.ts",
     "check": "npm run quality:delivery",
@@ -173,7 +236,7 @@
     "demo": "npm run build:agent-content && vite --config vite.demo.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint src server test example e2e bin scripts *.config.ts",
+    "lint": "eslint src server registry/blocks test example e2e bin scripts quality config/**/*.ts *.config.ts *.config.js .dependency-cruiser.cjs --max-warnings=0",
     "quality:delivery": "node scripts/quality/run.mjs delivery",
     "quality:fast": "node scripts/quality/run.mjs fast",
     "quality:full-audit": "node scripts/quality/run.mjs full-audit",
@@ -182,8 +245,8 @@
     "quality:guard:uninstall": "node scripts/quality/commit-guard.mjs uninstall",
     "quality:receipt": "node scripts/quality/verify-receipt.mjs",
     "quality:runner:self-test": "node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs",
-    "lint:css": "stylelint src/**/*.css example/**/*.css",
-    "lint:html": "html-validate example/**/*.html registry/**/*.html",
+    "lint:css": "stylelint \"src/**/*.css\" \"example/**/*.css\" \"test/**/*.css\" \"e2e/**/*.css\"",
+    "lint:html": "html-validate example/**/*.html registry/**/*.html e2e/**/*.html",
     "lint:markdown": "markdownlint-cli2 **/*.md",
     "lint:spelling": "cspell README.md SECURITY.md AGENTS.md docs/**/*.md",
     "prepack": "npm run build:self-hosted",
@@ -199,10 +262,21 @@
     "quality:tool:qunit": "qunit --help",
     "quality:census": "node scripts/quality/verify-production-census.mjs",
     "registry:list": "node ./bin/jqstar.mjs list",
+    "research:resources:measure": "node scripts/measure-resource-strategy.mjs",
+    "research:resources:score": "node scripts/score-resource-strategy.mjs",
+    "research:navigation:prepare": "node scripts/prepare-navigation-decision.mjs",
+    "research:navigation:measure": "node scripts/measure-navigation-decision.mjs",
+    "research:inspection:measure": "node scripts/measure-inspection-investigations.mjs",
+    "research:resources:prepare": "node scripts/prepare-resource-strategy.mjs",
+    "release:candidate": "node scripts/release/candidate.mjs",
+    "release:handoff": "node scripts/release/handoff.mjs",
+    "release:prepare": "node scripts/release/prepare.mjs",
+    "release:prove": "node scripts/release/prove.mjs",
     "publish:pages": "npm run check && npm run test:package && npm run build:pages && gh-pages -d demo-dist -m \"Publish jqstar catalog\"",
-    "test": "npm run test:unit",
+    "test": "npm run test:browser:components",
     "test:browser:quality": "node scripts/quality-browser.mjs",
-    "test:e2e": "playwright test",
+    "test:browser:components": "node scripts/quality-component-browser.mjs",
+    "test:e2e": "node scripts/prepare-browser-fixtures.mjs && playwright test",
     "test:coverage": "node scripts/quality/run-coverage.mjs",
     "test:coverage:stabilization": "node scripts/quality/run-coverage.mjs --stabilization",
     "test:csp-contract": "node scripts/validate-csp-contract.mjs && vitest run test/csp-contract.test.ts",
@@ -216,18 +290,23 @@
     "test:release:quality": "node scripts/quality-release.mjs",
     "test:self-hosted": "npm run build:self-hosted && node scripts/smoke-deployment.mjs && node scripts/smoke-server.mjs",
     "test:unit": "vitest run",
-    "test:webmcp:native": "playwright test e2e/webmcp-native.spec.ts --project=webmcp-chromium",
+    "test:webmcp:native": "node scripts/prepare-browser-fixtures.mjs && playwright test e2e/webmcp-native.spec.ts --project=webmcp-chromium",
     "test:watch": "vitest",
     "ticket:validate": "node scripts/quality/validate-ticket.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.registry.json",
-    "serve:self-hosted": "node server-dist/index.mjs"
+    "serve:self-hosted": "node server-dist/index.mjs",
+    "research:resources:record-browser": "node scripts/record-resource-strategy-browser.mjs"
   },
   "peerDependencies": {
     "@hotwired/turbo": ">=8.0.21 <8.1.0",
-    "jquery": ">=4.0.0 <5"
+    "htmx.org": ">=2.0.0 <2.1.0",
+    "jquery": ">=3.7.1 <5"
   },
   "peerDependenciesMeta": {
     "@hotwired/turbo": {
+      "optional": true
+    },
+    "htmx.org": {
       "optional": true
     }
   },
@@ -241,7 +320,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/jquery": "^3.5.32",
     "@types/node": "^24.3.0",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "4.1.11",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "cspell": "^10.1.1",
@@ -256,6 +335,7 @@
     "htmx-2-0-0": "npm:htmx.org@2.0.0",
     "htmx-2-0-10": "npm:htmx.org@2.0.10",
     "jquery": "^4.0.0",
+    "jquery-ui": "1.14.2",
     "jscpd": "5.0.16",
     "jsdom": "^26.1.0",
     "knip": "^6.33.0",
@@ -274,15 +354,21 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.68.0",
     "vite": "^7.1.3",
-    "vitest": "^3.2.4"
+    "vitest": "4.1.11"
   },
   "dependencies": {
     "@starfederation/datastar-sdk": "^1.0.0",
+    "@yarnpkg/parsers": "3.1.0",
     "idiomorph": "^0.7.4",
-    "json5": "^2.2.3"
+    "json5": "^2.2.3",
+    "semver": "7.8.5",
+    "yaml": "2.9.0"
   },
   "overrides": {
-    "qs": "^6.15.2"
+    "qs": "^6.15.2",
+    "markdownlint-cli2": {
+      "smol-toml": "1.7.1"
+    }
   },
   "directories": {
     "doc": "docs",
