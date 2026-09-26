@@ -1,7 +1,14 @@
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { writeAtomicJson } from "./lib/files.mjs";
-import { gitDirectory } from "./lib/git-state.mjs";
+import {
+  changedLines,
+  changedPaths,
+  fingerprint,
+  gitDirectory,
+  gitHead,
+  resolveQualityBase,
+} from "./lib/git-state.mjs";
 import { runGate, terminateActiveChildren } from "./lib/process.mjs";
 import { qualityPaths, repositoryRoot } from "./static-lib.mjs";
 
@@ -315,6 +322,19 @@ export async function runStatic(mode, { interruption = () => undefined } = {}) {
     ? resolve(process.env.JQS_QUALITY_RUN_DIRECTORY)
     : join(await gitDirectory(repositoryRoot), "jqstar", "static-runs", runId);
   const scopePath = process.env.JQS_QUALITY_SCOPE_FILE ?? join(runDirectory, "static-scope.json");
+  if (process.env.JQS_QUALITY_SCOPE_FILE === undefined) {
+    const base = await resolveQualityBase(repositoryRoot, process.env.JQS_QUALITY_BASE_SHA);
+    const startupChangedPaths = await changedPaths(repositoryRoot, { base });
+    await writeAtomicJson(scopePath, {
+      schema: "jqstar-quality-scope/1",
+      runId,
+      base,
+      head: await gitHead(repositoryRoot),
+      startFingerprint: await fingerprint(repositoryRoot),
+      changedPaths: startupChangedPaths,
+      changedLines: await changedLines(repositoryRoot, startupChangedPaths, { base }),
+    });
+  }
   const outcome = await executeStaticGates({
     mode,
     selected,

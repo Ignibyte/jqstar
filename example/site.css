@@ -1073,6 +1073,7 @@ pre code {
 }
 
 :root[data-theme="light"] .component-lab {
+  --color-jqs-primary-hover: #8b5600;
   --color-jqs-primary-foreground: #fffdf8;
   --color-jqs-danger: #c01822;
   --color-jqs-danger-hover: #a20d17;

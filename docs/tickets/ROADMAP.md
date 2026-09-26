@@ -209,6 +209,21 @@ Ticket [0060](0060-compose-reviewed-budget-transitions.md) follows the existing 
 size transitions from 0055 and 0053 when the default branch predates both. It supports the 0059
 website handoff without changing numeric limits or bypassing any required checks.
 
+## Clean-checkout static delivery
+
+Ticket [0061](0061-repair-clean-checkout-static-delivery.md) repairs standalone startup scope and
+prepares the existing private type fixture in hosted static CI. It supports the default-branch
+handoff while preserving analyzer selection, dependency pins, budgets, and exact reading-position
+assertions. Separately reported runtime security findings remain outside this correction.
+
+## Hosted delivery reference and hover proof
+
+Ticket [0062](0062-correct-hosted-delivery-and-lab-hover.md) pins the official Node quality
+reference, calibrates only the identical-byte stores gzip measurement, and uses bounded browser
+parallelism without reducing coverage or raising timeouts. It also corrects light Lab hover contrast
+and adds explicit hover proof in both active-validation themes. Security remediation remains
+separate.
+
 ## Dependency graph
 
 ```text

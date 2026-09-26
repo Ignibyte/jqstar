@@ -625,6 +625,15 @@ describe("package and release quality contracts", () => {
     expect(evaluateBudgetRatchet(auditBudget, baseline, revision).status).toBe("pass");
     expect(evaluateBudgetRatchet(auditBudget, reviewed, revision).status).toBe("pass");
 
+    const officialBudget = structuredClone(auditBudget);
+    officialBudget.consumerBundles.storesImportGzipBytes = 67774;
+    for (const startingBudget of [baseline, reviewed, auditBudget]) {
+      expect(evaluateBudgetRatchet(officialBudget, startingBudget, revision).status).toBe("pass");
+    }
+    const unknownReference = structuredClone(auditBudget);
+    unknownReference.consumerBundles.storesImportGzipBytes -= 1;
+    expect(evaluateBudgetRatchet(officialBudget, unknownReference, revision).status).toBe("fail");
+
     for (const [section, key] of [
       ["bundles", "dist/jquery-star.umd.cjs"],
       ["bundles", "dist/ui.cjs"],
@@ -637,7 +646,7 @@ describe("package and release quality contracts", () => {
       ["consumerBundles", "storesImportGzipBytes"],
     ]) {
       const excessive = structuredClone(reviewed);
-      excessive[section][key] = auditBudget[section][key] + 1;
+      excessive[section][key] = officialBudget[section][key] + 1;
       expect(evaluateBudgetRatchet(excessive, baseline, revision).failures).toContain(
         `${section}.${key} ${excessive[section][key]} loosens immutable-base ceiling ${baseline[section][key]}.`,
       );
@@ -652,7 +661,7 @@ describe("package and release quality contracts", () => {
       expect(evaluateBudgetRatchet(auditBudget, unmatchedIntermediate, revision).status).toBe(
         "fail",
       );
-      const excessive = structuredClone(auditBudget);
+      const excessive = structuredClone(officialBudget);
       excessive.consumerBundles[key] += 1;
       expect(evaluateBudgetRatchet(excessive, reviewed, revision).failures).toContain(
         `consumerBundles.${key} ${excessive.consumerBundles[key]} loosens immutable-base ceiling ${reviewed.consumerBundles[key]}.`,

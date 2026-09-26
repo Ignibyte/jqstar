@@ -61,7 +61,7 @@
     "cspImportBrotliBytes": 40960,
     "rootImportBytes": 634881,
     "storesImportBytes": 208896,
-    "storesImportGzipBytes": 67623,
+    "storesImportGzipBytes": 67774,
     "testingImportBytes": 260000,
     "testingImportGzipBytes": 85000,
     "datastarTestingImportBytes": 80000,

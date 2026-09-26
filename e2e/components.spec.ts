@@ -345,8 +345,10 @@ test.describe("jQStar components", () => {
     const viewport = scroller.getByRole("log", { name: "Support" });
     const messages = viewport.locator('[data-jqs="message"]');
     await page.evaluate(() => document.fonts.ready);
-    await viewport.evaluate((element) => {
+    await viewport.evaluate(async (element) => {
+      element.style.scrollBehavior = "auto";
       element.style.maxHeight = "10rem";
+      await new Promise(requestAnimationFrame);
       element.scrollTo({ top: 0, behavior: "instant" });
       element.dispatchEvent(new Event("scroll"));
     });

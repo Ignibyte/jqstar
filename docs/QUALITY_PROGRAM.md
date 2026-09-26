@@ -518,14 +518,15 @@ Ceilings use the next 4 KiB boundary for package bytes, the next 1 KiB boundary 
 bundles, the next group of five files, the next 100 DOM nodes, and a narrow measured boundary for
 owned operations. Clean builds have a zero changed-file budget. `budget-ratchet.mjs` compares every
 numeric ceiling with `JQS_QUALITY_BASE_SHA` or the runner's immutable scope. Removing a ceiling or
-raising it fails except for the exact measured transitions recorded in tickets 0055 and 0053. Each
-transition requires its recorded starting ceiling. Ticket 0060 composes those approved transitions
-when the immutable base predates both: root-import bytes can move from 542,720 through 634,880 to
-634,881, and stores-import gzip bytes from 66,560 through 67,584 to 67,623. An increase from an
-unmatched starting value, an unrelated increase, a removed ceiling, or a value above the final
-approved endpoint still fails. The configuration and reviewed transition values remain unchanged.
-The initial revision is reported as `first-baseline` when the base has no budget file. There is no
-environment override that can loosen a ceiling.
+raising it fails except for the exact measured transitions recorded in tickets 0055, 0053, and 0062.
+Each transition requires its recorded starting ceiling. Ticket 0060 composes the earlier approved
+transitions, and 0062 adds the pinned official compressor calibration: root-import bytes can move
+from 542,720 through 634,880 to 634,881, and stores-import gzip bytes from 66,560 through 67,584 and
+67,623 to 67,774. An increase from an unmatched starting value, an unrelated increase, a removed
+ceiling, or a value above the final approved endpoint still fails. The 151-byte stores gzip
+calibration leaves every raw and other ceiling unchanged. The initial revision is reported as
+`first-baseline` when the base has no budget file. There is no environment override that can loosen
+a ceiling.
 
 ## Reports and evidence
 
@@ -579,3 +580,45 @@ closing 0052.
 The core gzip ceiling remains 63,000 bytes. Identical baseline JavaScript measured 62,995 bytes with
 Homebrew zlib 1.2.12 and 63,113 with official Node 24.20.0. Ticket 0013 owns the internal sharing
 correction; neither the consumer nor the compression settings or budget changes to accommodate it.
+
+The September 26 standalone static correction is recorded in ticket
+[0061](tickets/0061-repair-clean-checkout-static-delivery.md). A standalone run now writes an
+immutable startup scope before invoking analyzers, using the same Git baseline, HEAD, fingerprint,
+changed paths, and changed lines as the enclosing quality runner. When the enclosing runner supplies
+a scope, static analysis keeps that evidence unchanged. Missing or stale supplied evidence still
+fails.
+
+The independent static CI job prepares the exact private resource research dependency before test
+TypeScript compilation and compares the tree against the PR or push baseline. For a standalone local
+run after a clean checkout, prepare the private fixture first:
+
+```sh
+node scripts/prepare-resource-strategy.mjs --install-only
+npm run quality:static:delivery
+```
+
+This fixture keeps its separate reviewed lockfile and version checks. It adds no root or published
+runtime dependency, and test type checking still includes the fixture. The interruption self-test
+also proves the fallback scope exists before the nested analyzer starts. Component reading-position
+setup uses instant scrolling and settled geometry; exact-zero checks remain before and after an
+appended message.
+
+The September 26 hosted delivery corrections are recorded in ticket
+[0062](tickets/0062-correct-hosted-delivery-and-lab-hover.md). Quality workflows pin official Node
+24.21.0 and use two browser workers for delivery and full audit. All eight required browser projects
+remain selected. Delivery retains its 900-second per-project and 45-minute browser-gate limits; full
+audit retains its existing repetition allowances. Failed, skipped, or flaky results still cannot
+authorize delivery.
+
+The stores consumer gzip reference is calibrated from 67,623 to 67,774 bytes. Identical 208,669-byte
+JavaScript with SHA-256 `b90f9aa010b131c2a5fc7d0b2a4394d27bf2cee887a49e2f1243133cf7ae3576` measures
+67,623 bytes under Homebrew zlib 1.2.12 and 67,774 under pinned official Node 24.21.0 with zlib
+1.3.2.1-motley-8002e91. This records compressor variation, not added payload or a measured
+performance improvement. The exact reviewed transition adds no extra headroom; all raw and other
+limits remain. Hardening tests still reject unknown baselines, one byte beyond the final ceiling,
+removed limits, and unrelated increases. A future reference change requires separate evidence.
+
+The parallel proof also exposed actual light-theme hover contrast of 4.48:1. The Lab now uses the
+established accessible light docs hover color. The existing full-page theme scan waits for backend
+submission to complete and explicitly hovers the enabled submit button before scanning active
+validation states; it does not disable contrast checks or hide the control.

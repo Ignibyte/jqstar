@@ -24,12 +24,20 @@ const REVIEWED_REBASELINE_0053 = new Map([
   ["consumerBundles.rootImportBytes", { from: 634880, to: 634881 }],
   ["consumerBundles.storesImportGzipBytes", { from: 67584, to: 67623 }],
 ]);
+// Ticket 0062 calibrates identical JavaScript against pinned official Node 24.21.0.
+// Its zlib measures 151 more gzip bytes than the original Homebrew reference.
+const REVIEWED_REBASELINE_0062 = new Map([
+  ["consumerBundles.storesImportGzipBytes", { from: 67623, to: 67774 }],
+]);
 
 function reviewedCeiling(path, baselineValue) {
-  return [REVIEWED_REBASELINE_0055, REVIEWED_REBASELINE_0053].reduce((ceiling, transitions) => {
-    const reviewed = transitions.get(path);
-    return reviewed?.from === ceiling ? reviewed.to : ceiling;
-  }, baselineValue);
+  return [REVIEWED_REBASELINE_0055, REVIEWED_REBASELINE_0053, REVIEWED_REBASELINE_0062].reduce(
+    (ceiling, transitions) => {
+      const reviewed = transitions.get(path);
+      return reviewed?.from === ceiling ? reviewed.to : ceiling;
+    },
+    baselineValue,
+  );
 }
 
 function numericLeaves(value, prefix = "") {

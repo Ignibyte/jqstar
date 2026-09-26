@@ -33,6 +33,10 @@ The package has two public layers:
   home/Components proof, shared Lab authoring, code formatting, and positioning.
 - [Reviewed budget transitions](tickets/0060-compose-reviewed-budget-transitions.md): exact
   composition of approved package limits when updating an older default branch.
+- [Clean-checkout static delivery](tickets/0061-repair-clean-checkout-static-delivery.md): immutable
+  standalone scope, pinned private fixture preparation, and exact scroller setup proof.
+- [Hosted delivery and hover proof](tickets/0062-correct-hosted-delivery-and-lab-hover.md): pinned
+  Node reference, exact gzip calibration, bounded parallelism, and active hover accessibility.
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.

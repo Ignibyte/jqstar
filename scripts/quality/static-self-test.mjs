@@ -321,6 +321,7 @@ async function selfTestSignalCleanup() {
       cwd: repositoryRoot,
       env: {
         ...process.env,
+        JQS_QUALITY_SCOPE_FILE: undefined,
         JQS_QUALITY_RUN_DIRECTORY: root,
         JQS_QUALITY_RUN_ID: "signal-cleanup-sabotage",
         JQS_STATIC_SIGNAL_PID_FILE: pidFile,
@@ -332,6 +333,13 @@ async function selfTestSignalCleanup() {
   let cleanupError;
   try {
     nestedPid = await waitForProbePid(pidFile, child);
+    const scope = JSON.parse(await readFile(join(root, "static-scope.json"), "utf8"));
+    assert.equal(scope.schema, "jqstar-quality-scope/1");
+    assert.equal(scope.runId, "signal-cleanup-sabotage");
+    assert.match(scope.head, /^[a-f0-9]{40}$/u);
+    assert.equal(scope.startFingerprint.algorithm, "sha256");
+    assert.deepEqual(scope.changedPaths, [...new Set(scope.changedPaths)].sort());
+    assert.equal(typeof scope.changedLines, "object");
     assert(child.kill("SIGTERM"), "could not signal the static runner sabotage fixture");
     const result = await waitForExit(child);
     assert.notEqual(result.exitCode, 0, "terminated static runner exited green");

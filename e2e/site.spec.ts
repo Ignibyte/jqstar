@@ -412,10 +412,13 @@ test("the integrated Lab is accessible in both themes", async ({ page }) => {
       buffer: Buffer.from("accessible proof"),
     });
     const account = page.getByRole("form", { name: "Backend account proof" });
-    await account.getByRole("button", { name: "Send multipart form" }).click();
+    const submit = account.getByRole("button", { name: "Send multipart form" });
+    await submit.click();
     await expect(
       account.getByText("That account already exists. Try another email."),
     ).toBeVisible();
+    await expect(submit).toBeEnabled();
+    await submit.hover();
     const result = await new AxeBuilder({ page }).include("main").analyze();
     expect(result.violations).toEqual([]);
   }

@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24.21.0
           cache: npm
       - uses: actions/setup-python@v5
         with:
@@ -57,6 +57,7 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run quality:delivery
         env:
+          JQS_E2E_WORKERS: 2
           JQS_QUALITY_BASE_SHA:
             ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha ||
             github.event.before }}
@@ -80,7 +81,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24.21.0
           cache: npm
       - uses: actions/setup-python@v5
         with:
@@ -113,6 +114,8 @@ jobs:
           sudo apt-get install --yes shellcheck
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run quality:full-audit
+        env:
+          JQS_E2E_WORKERS: 2
       - name: Retain quality evidence
         if: always()
         uses: actions/upload-artifact@v4
