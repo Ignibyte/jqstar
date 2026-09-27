@@ -43,6 +43,8 @@ The package has two public layers:
   runner allocation, complete delivery, and deterministic popover fixture placement.
 - [Component fixture initialization](tickets/0065-await-component-fixture-initialization.md):
   declared entry-module completion and exact initial SDK windows before interactions and assertions.
+- [Reserved hosted capacity](tickets/0066-reserve-hosted-browser-capacity.md): three browser
+  workers, actual runner allocation, retained hosted failure, and complete delivery proof.
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.

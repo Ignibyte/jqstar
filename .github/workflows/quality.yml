@@ -61,7 +61,7 @@ jobs:
           console.log(JSON.stringify({ cpus: availableParallelism(), memoryBytes: totalmem() }));'
       - run: npm run quality:delivery
         env:
-          JQS_E2E_WORKERS: 4
+          JQS_E2E_WORKERS: 3
           JQS_QUALITY_BASE_SHA:
             ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha ||
             github.event.before }}
@@ -123,7 +123,7 @@ jobs:
           console.log(JSON.stringify({ cpus: availableParallelism(), memoryBytes: totalmem() }));'
       - run: npm run quality:full-audit
         env:
-          JQS_E2E_WORKERS: 4
+          JQS_E2E_WORKERS: 3
       - name: Retain quality evidence
         if: always()
         uses: actions/upload-artifact@v4

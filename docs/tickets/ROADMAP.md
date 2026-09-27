@@ -250,6 +250,16 @@ runtime behavior, hooks, deadlines, retries, coverage, and original assertions a
 Complete local delivery and final documented-tree receipts precede commit, and hosted verification
 remains required for the pushed commit.
 
+## Reserved hosted capacity
+
+Ticket [0066](0066-reserve-hosted-browser-capacity.md) supersedes the four-worker allocation with
+three workers, leaving capacity outside the browser-worker count for supporting processes. The
+hosted diagnostic confirms four CPUs, but the four-worker report rejects failed, flaky, and missing
+WebKit execution after Chromium completes. Lower concurrency remains a hypothesis requiring complete
+hosted proof. All fixtures, deadlines, cases, retries, pins, and package budgets remain. All 63
+focused repetitions and complete local delivery pass with three workers; final documented-tree
+receipt verification precedes commit. The earlier hosted failure remains recorded.
+
 ## Dependency graph
 
 ```text

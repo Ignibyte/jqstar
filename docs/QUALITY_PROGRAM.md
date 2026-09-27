@@ -605,10 +605,11 @@ appended message.
 
 The September 26 hosted delivery corrections are recorded in ticket
 [0062](tickets/0062-correct-hosted-delivery-and-lab-hover.md). Quality workflows pin official Node
-24.21.0. Ticket 0062 initially configured two browser workers; ticket 0064 supersedes that count
-with four for delivery and full audit. All eight required browser projects remain selected. Delivery
-retains its 900-second per-project and 45-minute browser-gate limits; full audit retains its
-existing repetition allowances. Failed, skipped, or flaky results still cannot authorize delivery.
+24.21.0. Ticket 0062 initially configured two browser workers and ticket 0064 used four; ticket 0066
+sets the current count to three for delivery and full audit. All eight required browser projects
+remain selected. Delivery retains its 900-second per-project and 45-minute browser-gate limits; full
+audit retains its existing repetition allowances. Failed, skipped, or flaky results still cannot
+authorize delivery.
 
 The stores consumer gzip reference is calibrated from 67,623 to 67,774 bytes. Identical 208,669-byte
 JavaScript with SHA-256 `b90f9aa010b131c2a5fc7d0b2a4394d27bf2cee887a49e2f1243133cf7ae3576` measures
@@ -638,10 +639,10 @@ timeout: Firefox completes 566 cases in 625,731 milliseconds, while WebKit compl
 before its 900-second project limit prevents a final report. The corrected virtual-window cases both
 pass. Successful partial execution remains a failed delivery. This repository is public, and the
 [GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
-documents four CPUs for its `ubuntu-latest` runner. Both browser jobs now use four workers and
-record actual available CPUs and total memory before the quality command. Review the count if
-visibility or runner type changes. Node pins, project and gate deadlines, job bounds, test
-selection, repetitions, retries, package limits, and flaky-result rejection remain unchanged.
+documents four CPUs for its `ubuntu-latest` runner. Ticket 0064 configured four workers and added
+actual CPU and memory recording before the quality command. Review the count if visibility or runner
+type changes. Node pins, project and gate deadlines, job bounds, test selection, repetitions,
+retries, package limits, and flaky-result rejection remain unchanged.
 
 The first local four-worker run exposed a popover fixture assumption: its trigger was near the
 viewport bottom, so collision avoidance correctly placed content above it. The test expected
@@ -665,3 +666,20 @@ retries, or result assertions change. All 36 focused repetitions pass with retri
 complete local delivery passes all 12 gates, all 76 component cases, and all 1,726 matrix cases with
 zero failures, flakes, or skips. The rejected run remains evidence, and final documented-tree
 receipt verification and hosted checks remain required.
+
+Ticket [0066](tickets/0066-reserve-hosted-browser-capacity.md) reserves capacity for the dev server,
+test driver, and browser support processes by setting both jobs to three browser workers. The
+four-worker hosted run records four CPUs and 16,766,410,752 memory bytes. All 11 non-matrix gates,
+including all 76 component cases, pass; Chromium passes all 566 cases. WebKit records 35 passes, two
+failures, one flaky case, and 528 skipped cases before the failure policy stops the remaining
+projects. Table actions exceed the test bound, and a toast expires before hover establishes pause.
+The failed report remains evidence. Lower concurrency is a capacity hypothesis, not a confirmed
+runtime fix or a guarantee of hosted success. A worker owns multiple processes; the count does not
+assign CPU affinity. Actual allocation diagnostics remain required.
+
+With three workers and retries disabled, all 63 focused heavy-interaction repetitions pass across
+the three desktop engines. Complete local delivery passes all 12 gates, all 76 component cases, and
+all 1,726 matrix cases without failures, flakes, or skips. Runner type, fixtures, selected projects
+and cases, deadlines, retries, repetitions, flaky-result rejection, pins, and package ceilings are
+unchanged. Final documented-tree receipt verification remains required before commit, and complete
+hosted evidence on the pushed commit remains a separate merge condition.
