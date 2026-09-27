@@ -712,3 +712,22 @@ cases with zero failures, flakes, or skips. Runtime and page sources, workers, d
 projects, repetitions, retries, failure policy, pins, and package ceilings are unchanged. Final
 documented-tree receipt verification precedes commit; complete hosted evidence and the separately
 requested security scope decision remain merge conditions.
+
+Ticket [0068](tickets/0068-await-ownership-fixture-entry.md) records the next hosted failure: all 11
+non-matrix gates, all 77 component cases, and all 567 Chromium cases pass, but Firefox times out in
+all three ownership attempts waiting for global network inactivity. No ownership budget assertion
+runs in those attempts. The rejected report retains 247 Firefox passes, one failure, 319 skipped
+cases, and unexecuted later projects. A long-lived Vite dev connection appears in the trace; it does
+not establish a particular browser network-accounting cause.
+
+The benchmark now awaits its exact declared `/main.ts` module and the public
+`jquery.star.nextUpdate()` barrier before taking the baseline. Missing entry markup fails clearly.
+The frozen fixture, instrumentation, mount/enhance/destroy/remount scenarios, native dialog proof,
+and every budget remain unchanged. All nine focused repetitions pass across three desktop engines
+with three workers and retries disabled. Each retains 2,292 baseline and 2,294 mounted nodes, one
+owned observer and listener, 1,092 queries, four mutations, and zero disposed resources.
+
+Complete local delivery passes all 12 gates, all 77 component cases, and all 1,729 matrix cases
+without failures, flakes, or skips. Workers, deadlines, projects, retries, failure policy, pins, and
+package ceilings remain unchanged. Final documented-tree receipts precede commit; complete hosted
+verification and the separately requested security scope decision remain merge conditions.

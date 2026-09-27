@@ -272,6 +272,15 @@ component and 1,729 matrix cases. Workers, deadlines, retries, projects, pins, a
 Final documented-tree receipts precede commit; hosted verification and the security scope decision
 remain merge conditions.
 
+## Ownership fixture readiness
+
+Ticket [0068](0068-await-ownership-fixture-entry.md) replaces the ownership benchmark's global
+network-inactivity wait with its declared entry evaluation and public runtime update barrier. The
+hosted Firefox failure remains recorded. Frozen HTML, instrumentation, scenarios, assertions, and
+budgets are unchanged. All nine focused repetitions and complete local delivery pass with three
+workers; the suite retains 77 component and 1,729 matrix cases. Final documented-tree receipts
+precede commit; hosted verification and the security scope decision remain merge conditions.
+
 ## Dependency graph
 
 ```text

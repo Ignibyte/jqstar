@@ -48,6 +48,8 @@ The package has two public layers:
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [Timed component proof](tickets/0067-make-timed-component-proof-deterministic.md): controlled
   toast time, independent column persistence, initialized recovery, and retained hosted evidence.
+- [Ownership fixture readiness](tickets/0068-await-ownership-fixture-entry.md): declared entry and
+  public update completion before unchanged ownership measurements.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,

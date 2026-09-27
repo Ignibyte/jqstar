@@ -267,8 +267,12 @@ test("@shared repeated enhancement stays inside structural ownership budgets", a
   });
 
   await page.goto("/__quality__/ownership-lab/");
-  await page.waitForLoadState("networkidle");
   const observed = await page.evaluate(async (runtimePath) => {
+    const entry = document.querySelector<HTMLScriptElement>(
+      'script[type="module"][src="/main.ts"]',
+    );
+    if (!entry) throw new Error("The ownership fixture needs its declared main entry module.");
+    await import(entry.src);
     const metrics = window.__jqstarQualityMetrics;
     const runtime = (await import(runtimePath)) as {
       installStar(value: JQueryStatic): void;
@@ -276,6 +280,7 @@ test("@shared repeated enhancement stays inside structural ownership budgets", a
     };
     const { jquery } = runtime;
     runtime.installStar(jquery);
+    await jquery.star.nextUpdate();
     const snapshot = () => ({
       ...metrics,
       domNodes: document.querySelectorAll("*").length,
