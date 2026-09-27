@@ -74,7 +74,7 @@ for (const mode of [
   "native-throw",
 ] as const) {
   test(`staged plugin listener cancellation stops native ${mode}`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -103,7 +103,7 @@ for (const cancelDuringSecond of [false, true]) {
   test(`staged plugin listener preserves native duplicate with cancellation=${cancelDuringSecond}`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, cancelDuringSecond }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -126,7 +126,7 @@ for (const cancelDuringSecond of [false, true]) {
 
 for (const key of ["method", "capture", "once", "passive", "signal"] as const) {
   test(`document listener keeps newer ${key} getter registration`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const results = await page.evaluate(
       async ({ runtimeURL, factoryURL, key }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -157,7 +157,7 @@ for (const mode of [
   "method-disposal",
 ] as const) {
   test(`document listener acquisition cleans native ${mode}`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -186,7 +186,7 @@ for (const mode of [
   "nested-after",
 ] as const) {
   test(`document listener identity preserves native ${mode}`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -209,7 +209,7 @@ for (const mode of [
 test("document listener options preserve native defaults and getter conversion", async ({
   page,
 }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -232,7 +232,7 @@ test("document listener options preserve native defaults and getter conversion",
 
 for (const throws of [false, true]) {
   test(`first scope disconnects late native observation with throw=${throws}`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, throws }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -250,7 +250,7 @@ for (const throws of [false, true]) {
 }
 for (const kind of ["resizable", "replacement", "pagination", "stepper"] as const) {
   test(`first scope retains newer ${kind} controller work`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, kind }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -274,7 +274,7 @@ for (const kind of ["resizable", "replacement", "pagination", "stepper"] as cons
 
 for (const kind of ["resizable", "sortable"] as const) {
   test(kind + " retains trusted native dragging after document adoption", async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     await page.evaluate(
       async ({ runtimeURL, factoryURL, kind }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -351,7 +351,7 @@ for (const kind of ["resizable", "sortable"] as const)
     test(
       kind + " supports " + mode + " document ownership and native layout controls",
       async ({ page }) => {
-        await page.goto("/components/lab/");
+        await page.goto("/__quality__/ui-document/");
         const result = await page.evaluate(
           async ({ runtimeURL, factoryURL, kind, mode }) => {
             const runtime = (await import(runtimeURL)) as {
@@ -398,7 +398,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Feed supports ${mode} document ownership and native loading`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -452,7 +452,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Toast supports ${mode} document ownership and native interactions`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -499,7 +499,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Questionnaire supports ${mode} document ownership and native forms`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -550,7 +550,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Form supports ${mode} document ownership and native validation`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -597,7 +597,7 @@ for (const kind of ["calendar", "range-calendar", "date-picker", "date-range-pic
     "facade",
   ] as const) {
     test(`${kind} supports ${mode} document ownership and native dates`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -646,7 +646,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Select supports ${mode} document ownership and native popovers`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -691,7 +691,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Time Picker supports ${mode} document ownership and native reset`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -725,7 +725,7 @@ for (const mode of [
 for (const kind of ["countdown", "carousel", "message-scroller", "dialog"] as const) {
   for (const mode of ["explicit", "automatic", "action", "adopted"] as const) {
     test(`${kind} supports ${mode} ownership in independent frame documents`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -756,7 +756,7 @@ for (const userPaused of [false, true]) {
   test(`Carousel recalculates native focus on adoption with user pause=${userPaused}`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, userPaused }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -776,7 +776,7 @@ for (const userPaused of [false, true]) {
 test("native component actions accept element targets and reject mismatched roots", async ({
   page,
 }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -827,7 +827,7 @@ test("native component actions accept element targets and reject mismatched root
 });
 
 test("remaining native actions validate explicit element targets", async ({ page }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -844,7 +844,7 @@ test("remaining native actions validate explicit element targets", async ({ page
 });
 
 test("additional native actions validate explicit element targets", async ({ page }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -861,7 +861,7 @@ test("additional native actions validate explicit element targets", async ({ pag
 });
 
 test("structural native actions validate targets and interactions", async ({ page }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -878,7 +878,7 @@ test("structural native actions validate targets and interactions", async ({ pag
 });
 
 test("external native floating toggles keep Popover and Hover Card state", async ({ page }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -906,7 +906,7 @@ test("external native floating toggles keep Popover and Hover Card state", async
 for (const kind of ["number-field", "password-field", "search-field", "rating"] as const) {
   for (const mode of ["explicit", "automatic", "action", "adopted"] as const) {
     test(`${kind} supports ${mode} native document ownership`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -936,7 +936,7 @@ for (const kind of ["number-field", "search-field", "rating"] as const) {
     test(`${kind} preserves native reset cancellation with adoption=${adopted}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, adopted }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -957,7 +957,7 @@ for (const kind of ["number-field", "search-field", "rating"] as const) {
 for (const kind of ["input-otp", "tags-input", "toggle", "toggle-group"] as const) {
   for (const mode of ["explicit", "automatic", "action", "adopted"] as const) {
     test(`${kind} supports ${mode} document ownership`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -988,7 +988,7 @@ for (const adopted of [false, true]) {
   test(`Input OTP preserves native reset cancellation with adoption=${adopted}`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, adopted }) => {
         const runtime = (await import(runtimeURL)) as { exerciseOTPReset: typeof exerciseOTPReset };
@@ -1006,7 +1006,7 @@ for (const adopted of [false, true]) {
 for (const kind of ["tabs", "toolbar", "pagination", "sidebar"] as const) {
   for (const mode of ["explicit", "automatic", "action", "adopted"] as const) {
     test(`${kind} supports ${mode} navigation document ownership`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1035,7 +1035,7 @@ for (const disposedFirst of [false, true]) {
   test(`Sidebar restores desktop preference after a mobile adoption with disposal first=${disposedFirst}`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, disposedFirst }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1055,7 +1055,7 @@ for (const disposedFirst of [false, true]) {
 for (const kind of ["collapsible", "accordion", "editable", "stepper"] as const) {
   for (const mode of ["explicit", "automatic", "action", "adopted"] as const) {
     test(`${kind} supports ${mode} disclosure/step document ownership`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1085,7 +1085,7 @@ for (const kind of ["collapsible", "accordion"] as const) {
     test(`${kind} preserves native default actions and toggle notifications with adoption=${adopted}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, adopted }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1112,7 +1112,7 @@ for (const kind of ["editable", "stepper"] as const) {
     test(`${kind} retains state across adoption with source disposal first=${disposedFirst}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, disposedFirst }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1139,7 +1139,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Combobox supports ${mode} document ownership and native popovers`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1187,7 +1187,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Multi Select supports ${mode} document ownership and native popovers`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1240,7 +1240,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Color Picker supports ${mode} document ownership and native colors`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1288,7 +1288,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`File Upload supports ${mode} document ownership and native files`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1338,7 +1338,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Tree supports ${mode} document ownership and native exploration`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1387,7 +1387,7 @@ for (const mode of [
   test(`Transfer List supports ${mode} document ownership and native membership`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1441,7 +1441,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Popover supports ${mode} document ownership and native transitions`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1494,7 +1494,7 @@ for (const mode of [
   "facade",
 ] as const) {
   test(`Tooltip supports ${mode} document ownership and native transitions`, async ({ page }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1544,7 +1544,7 @@ for (const closing of [false, true]) {
     test(`Tooltip retains ${closing ? "closing" : "opening"} deadline with source disposal first=${disposedFirst}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, closing, disposedFirst }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1592,7 +1592,7 @@ for (const [previous, next] of [
     test(`Floating content survives ${previous} to ${next} handoff during native ${opening ? "opening" : "closing"}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, previous, next, opening }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1621,7 +1621,7 @@ for (const mode of [
   test(`Hover Card supports ${mode} document ownership and native transitions`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1674,7 +1674,7 @@ for (const closing of [false, true]) {
     test(`Hover Card retains ${closing ? "closing" : "opening"} deadline with source disposal first=${disposedFirst}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, closing, disposedFirst }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1711,7 +1711,7 @@ for (const kind of ["menu", "context-menu"] as const) {
     "facade",
   ] as const) {
     test(`${kind} supports ${mode} document ownership and native transitions`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, mode, kind }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1765,7 +1765,7 @@ for (const [kind, press] of [
     test(`${kind} retains ${press ? "long-press" : "search"} deadline, source disposed first=${disposedFirst}`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, press, disposedFirst }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1784,7 +1784,7 @@ for (const [kind, press] of [
 }
 
 test("Menubar resolves local values and selectors in its owning document", async ({ page }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const result = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {
@@ -1817,7 +1817,7 @@ for (const mode of [
   test(`Menubar supports ${mode} document ownership and child native transitions`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, mode }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1859,7 +1859,7 @@ for (const disposedFirst of [false, true]) {
   test(`Menubar retains search deadline and roving focus, source disposed first=${disposedFirst}`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, disposedFirst }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1886,7 +1886,7 @@ for (const kind of ["clipboard", "code-block"] as const) {
     "facade",
   ] as const) {
     test(`${kind} supports ${mode} document ownership and async copy`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1921,7 +1921,7 @@ for (const kind of ["clipboard", "code-block"] as const) {
   }
   for (const outcome of ["success", "refused", "copy-throws", "selection-throws"] as const) {
     test(`${kind} uses its owning document fallback on ${outcome}`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, outcome }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -1949,7 +1949,7 @@ for (const disposedFirst of [false, true]) {
   test(`Clipboard retains reset deadline, source disposed first=${disposedFirst}`, async ({
     page,
   }) => {
-    await page.goto("/components/lab/");
+    await page.goto("/__quality__/ui-document/");
     const result = await page.evaluate(
       async ({ runtimeURL, factoryURL, disposedFirst }) => {
         const runtime = (await import(runtimeURL)) as {
@@ -1978,7 +1978,7 @@ for (const kind of ["json-viewer", "log-viewer"] as const) {
     test(`${kind} supports ${mode} document ownership and current native output`, async ({
       page,
     }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -2021,7 +2021,7 @@ for (const kind of ["chart", "data-table"] as const) {
     "facade",
   ] as const) {
     test(`${kind} supports ${mode} reporting document ownership`, async ({ page }) => {
-      await page.goto("/components/lab/");
+      await page.goto("/__quality__/ui-document/");
       const result = await page.evaluate(
         async ({ runtimeURL, factoryURL, kind, mode }) => {
           const runtime = (await import(runtimeURL)) as {
@@ -2055,7 +2055,7 @@ for (const kind of ["chart", "data-table"] as const) {
 }
 
 test("data-table bounds real-browser row work while preserving native pages", async ({ page }) => {
-  await page.goto("/components/lab/");
+  await page.goto("/__quality__/ui-document/");
   const samples = await page.evaluate(
     async ({ runtimeURL, factoryURL }) => {
       const runtime = (await import(runtimeURL)) as {

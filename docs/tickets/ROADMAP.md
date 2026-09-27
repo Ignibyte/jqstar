@@ -292,6 +292,16 @@ and fixture sources, workers, deadlines, retries, projects, pins, and budgets ar
 documented-tree receipts precede commit; hosted verification and the security scope decision remain
 merge conditions.
 
+## Private UI ownership host
+
+Ticket [0070](0070-isolate-ui-ownership-host.md) gives the independent UI document scenarios a
+private empty development host. Actual runtime installation, all assertions, trusted native
+interactions, cleanup, full site integration, and the frozen structural workload remain. All 1,170
+isolated cases, 27 repeated native/structural cases, and complete local delivery pass without
+failures, flakes, or skips. Coverage remains 77 component and 1,804 matrix cases. Rejected hosted
+execution and its unexplained mutation difference remain recorded. Final documented-tree receipts
+precede commit; complete hosted checks and the security scope decision remain merge conditions.
+
 ## Dependency graph
 
 ```text

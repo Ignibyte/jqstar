@@ -74,6 +74,13 @@ function integratedSite(): Plugin {
     },
     configureServer(server) {
       server.middlewares.use((request, response, next) => {
+        if (request.url === "/__quality__/ui-document/") {
+          response.setHeader("Content-Type", "text/html; charset=utf-8");
+          response.end(
+            '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>UI document ownership</title></head><body></body></html>',
+          );
+          return;
+        }
         if (request.url !== "/__quality__/ownership-lab/") return next();
         response.setHeader("Content-Type", "text/html; charset=utf-8");
         response.end(readFileSync(resolve(__dirname, "e2e/fixtures/ownership-lab.html"), "utf8"));

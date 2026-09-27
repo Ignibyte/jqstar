@@ -758,3 +758,28 @@ cases without failures, flakes, or skips. Runtime and fixture sources, configure
 workers, projects, retries, failure policy, pins, and budgets remain unchanged. Final
 documented-tree receipts precede commit; complete hosted verification and the separately requested
 security scope decision remain merge conditions.
+
+Ticket [0070](tickets/0070-isolate-ui-ownership-host.md) retains hosted delivery `36312169650`. All
+11 non-matrix gates, all 77 component cases, and all 592 cases in both Chromium and Firefox pass.
+WebKit reaches the unchanged 900,000-millisecond project bound before completion. Its final result
+JSON is missing; partial output cannot authorize delivery. That output also records a structural
+ownership retry: six patch-mutation records in the first attempt against the four-record limit, then
+four on retry. Other logged metrics match. No retained trace identifies the two extra records. Nine
+local diagnostic runs observe only the expected body insertion/removal records, so the hosted
+mutation source remains unresolved.
+
+The UI document-ownership suite now starts at a private development-only empty HTML host,
+`/__quality__/ui-document/`, rather than loading the full integrated Lab for each independent iframe
+scenario. The host uses standards mode and loads no styles, scripts, resources, or automatic
+runtime. Each scenario still imports the real source modules and jQuery factory and installs them in
+its own native documents. Only 56 navigation literals change. All 390 cases per engine, helper code,
+assertions, cleanup, native pointer capture, trusted dragging, and adoption contracts remain. The
+dedicated site integration cases and frozen structural ownership workload keep their existing hosts.
+Production website entries and the package contain no private host.
+
+All 1,170 isolated cases pass across the desktop engines with three workers and retries disabled.
+All 27 repeated trusted-dragging and structural cases also pass. Fast and complete local delivery
+pass all gates, all 77 component cases, and all 1,804 matrix cases without failures, flakes, or
+skips. No configured deadline, worker count, project, retry, failure policy, pin, or budget changes.
+Final documented-tree receipts precede commit. Complete hosted verification and the separately
+requested security scope decision remain merge conditions.

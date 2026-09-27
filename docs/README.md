@@ -52,6 +52,8 @@ The package has two public layers:
   public update completion before unchanged ownership measurements.
 - [Route and network proof](tickets/0069-isolate-route-and-network-proofs.md): individual complete
   route cases and native htmx network failure isolated from other error categories.
+- [Private UI ownership host](tickets/0070-isolate-ui-ownership-host.md): isolated native documents
+  without unrelated Lab startup, preserved full site proof, and retained incomplete hosted evidence.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,
