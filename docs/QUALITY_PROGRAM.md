@@ -12,6 +12,36 @@ The quality system must remain usable by public contributors without access to I
 Rustal Workflow may orchestrate the same commands for Ignibyte work, but the commands, results,
 thresholds, and CI verdict live in this repository.
 
+## Current test toolchain
+
+Ticket 0054 makes actual-browser component behavior the primary UI acceptance check. Fast mode
+selects and executes at least 76 Component Lab cases in Chromium, with exact count, retry, skip and
+failure evidence. Delivery also runs the complete eight-project browser matrix; full audit repeats
+cross-engine browser execution. Focused direct tests remain available for parsers, protocols,
+packages and other contracts that a browser cannot efficiently prove. All-unit and V8 coverage
+scores are no longer automatic delivery gates. `npm run test:coverage` remains a diagnostic: its
+recorded percentages and uncovered changed code guide investigation but do not set a 100% target.
+The older thresholds and reports below describe the historical ticket 0043 policy.
+
+Vitest and its V8 coverage provider are pinned together at 4.1.11. The three test configurations
+retain their existing suite selection and two-worker default. Optional coverage diagnostics include
+the production census patterns, including uncovered files, and verify the complete denominator. The
+historical threshold evaluator remains available for detector tests but does not decide delivery.
+Removed Vitest 3 options do not provide coverage or worker guarantees in Vitest 4.
+
+For changed function headers omitted from statement maps, the evaluator requires the actual function
+invocation counter and any default-argument branch counters. It never credits an unmapped body from
+a function hit or overrides a zero statement count. Isolated identifier declarations without
+initializers receive a named source-classification record when V8 omits them; initializers and
+neighboring executable statements still require hit evidence. Detector tests prove these boundaries
+with missing and zero counters.
+
+The markdownlint-cli2 dependency is restricted to `smol-toml` 1.7.1 through a package-specific
+override because markdownlint-cli2 0.23.2 pins the affected 1.7.0 parser. Remove the override when
+that package itself selects a patched parser and both dependency scanners pass. This override does
+not change the parser versions used by other tools. Ticket 0052 records the advisory review and
+current verification; its earlier receipts remain evidence only for their original source and tools.
+
 ## Reference findings
 
 The plan was derived from direct inspection on 2026-08-30.
@@ -112,9 +142,10 @@ old debt.
 
 ### Ratchets only move up
 
-Coverage, package size, duplication, complexity, and warning counts have committed floors.
-Environment variables may raise a floor for an audit but cannot lower it. Lowering a floor requires
-a ticket with measured evidence and an explicit product decision.
+Package size, duplication, complexity, and warning counts retain committed limits. Coverage floors
+are historical diagnostic data under ticket 0054 and do not gate delivery. Environment values cannot
+loosen an enforced limit. Changing an enforced limit requires a ticket with measured evidence and an
+explicit product decision.
 
 ### Test behavior, not implementation trivia
 
@@ -126,6 +157,11 @@ platform behavior. None substitutes for the others.
 Each custom gate has a self-test or sabotage fixture that plants one violation, observes a red exit,
 removes the violation, and observes green. Path selectors and ignore rules receive both positive and
 negative fixtures.
+
+Expected failure text does not establish detector success. Controls require a completed process with
+the expected integer exit code. Signals, timeouts, spawn failures and missing exits remain failures
+even when their output matches the detector. Actual child-process tests and report-schema checks
+enforce this boundary.
 
 ### Tested state equals delivered state
 
@@ -183,11 +219,87 @@ dependency-cruiser, Knip, jscpd, Markdownlint, cspell, local links, licenses, Sh
 actionlint. Delivery adds executable sabotage for every dependency-cruiser and Semgrep rule plus
 gitleaks, Semgrep, npm audit, OSV-Scanner, and secret scans of both Git history and the worktree.
 
-The measured 1.0 static maxima are cognitive complexity 149 and total duplicated lines 2.99%. The
-duplication run measured 2.9812% and uses the committed token and line sensitivity in
-`quality/metrics.json`. Environment values can tighten these maxima and cannot raise them. CodeQL
-and dependency review remain hosted GitHub checks; they do not replace mandatory local security
-gates.
+Ticket 0052 lowers the cognitive-complexity ceiling from 149 to 65 and applies the same five SonarJS
+rules to TypeScript and JavaScript. The HTTP dispatcher falls from 145 to 30; the tokenizer falls
+from 107 to 63. Complexity 15 remains a review target, not a claim about every existing function.
+Total duplicated lines remain capped at 2.99%, with eight-line/70-token sensitivity. The metric gate
+compares ceilings and detector settings against the immutable delivery base. Environment values can
+tighten maxima and cannot raise them. CodeQL and dependency review remain hosted GitHub checks; they
+do not replace mandatory local security gates.
+
+## Current scope and remaining boundaries
+
+The 2026-09-06 review found actual invocation gaps: JavaScript lacked SonarJS, Node root
+configuration files were classified but omitted from ESLint, and authored example/fixture CSS was
+omitted from Stylelint. Those selectors now run in fast, delivery, and full audit. The standard
+tests evaluate effective configuration and execute invalid/corrected JavaScript and CSS examples.
+Historical coverage floors and package ceilings retain immutable-base negative controls. Coverage
+now uses the review base when supplied and local HEAD otherwise; missing commit identity or invalid
+historical data fails instead of skipping the comparison.
+
+| Category                           | Actual scope and control                                                                                                                                                 | Evidence and limits                                                                                                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Types / PHPStan equivalent         | Four strict TypeScript projects cover runtime, server, registry, tests/examples and TS build configuration; unchecked indexes and exact optional properties are enabled. | Compiler matrix, installed TypeScript consumers, API reports. Dependency declaration internals use `skipLibCheck`; consumer contracts still compile.                                      |
+| Typed correctness                  | `strictTypeChecked`, floating/misused promise checks, unnecessary assertions/type arguments, and reviewed void/async rules.                                              | Effective-rule tests and zero-warning ESLint; the counted legacy inventory below remains explicit.                                                                                        |
+| JavaScript CLI/automation          | Recommended ESLint, all five SonarJS rules, architecture checks, process/effect canaries, and installed CLI consumers.                                                   | JavaScript `.mjs` files are not type-checked. Process conformance and syntax lint do not substitute for type analysis.                                                                    |
+| Maintainability / PHPMD equivalent | SonarJS cognitive complexity, identical conditions/branches, inverted booleans and nested switches; jscpd duplication.                                                   | Current ceiling 65, immutable-base metric/detector ratchets, positive/negative controls. A green ceiling is not proof that each function is easy to maintain.                             |
+| Formatting / PHPCS equivalent      | Prettier checks the repository; Stylelint covers authored runtime/site/fixture CSS; HTML validation covers site, registry and browser fixtures.                          | Exact selectors and invalid/corrected CSS controls. Two frozen research styles retain cosmetic notation exceptions described below.                                                       |
+| Architecture and unused code       | dependency-cruiser checks production layering/cycles/resolution/dev imports; Knip checks configured entries, dependencies, files and exports.                            | Executable rule sabotage and package graphs. Dynamic imports and generated outputs have named entry/fixture contracts.                                                                    |
+| Security and dependencies          | Semgrep, gitleaks history/worktree, npm audit, OSV, lock integrity, licenses; hosted CodeQL and dependency review.                                                       | Local delivery logs plus hosted statuses. Tool success does not prove absence of vulnerabilities.                                                                                         |
+| Behavior and coverage              | Chromium Component Lab in fast mode, the eight-project browser matrix in delivery, seeded fast-check properties, and optional direct tests and V8 coverage diagnostics.  | Browser execution counts and runner/schema/fingerprint controls; optional coverage retains a source census without an enforced score. `.mjs` process code uses process-contract evidence. |
+| Browsers and accessibility         | Chromium, Firefox, WebKit, axe, keyboard/focus/lifecycle tests, CSP and installed consumers.                                                                             | Automated tests plus separately recorded manual charters; axe is not screen-reader user testing.                                                                                          |
+| Package and release                | API Extractor, publint, Are the Types Wrong, isolated consumers, graph/size budgets, reproducibility, receipts.                                                          | Exact tarball identities, historical ceilings, positive/negative evidence checks; publication remains a separate action.                                                                  |
+| Documentation and automation       | Markdownlint, cspell, local links, generated-content/schema checks, ShellCheck, actionlint, runner self-tests.                                                           | Current tree-bound logs. Link checking validates repository targets, not the future availability of every external page.                                                                  |
+
+Seven formerly blanket-disabled typed rules are now default errors. The exact-file
+[lint boundary inventory](../quality/lint-boundaries.json) records 303 existing file/rule
+allowances. `node scripts/quality/check-lint-boundaries.mjs` enables those rules over all 318
+selected TypeScript source/test files and requires observed counts to match the inventory. Reducing
+a count requires reducing its allowance. After this initial baseline, the immutable-base comparison
+rejects new allowances and increased counts. These are remaining reviewed categories of debt, not
+assertions that every occurrence is ideal or that unchanged counts prove an edit safe.
+
+| Counted rule                     | Existing occurrences | Reason for preserving current behavior pending individual review                                                 |
+| -------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `no-non-null-assertion`          | 1,060                | Indexed access, lifecycle/DOM preconditions, and fixtures; the assertions still need their stated preconditions. |
+| `no-unnecessary-condition`       | 131                  | Runtime checks for JavaScript callers and closure state beyond TypeScript's narrowing.                           |
+| `no-base-to-string`              | 82                   | Existing coercion and formatting contracts, including untyped values.                                            |
+| `no-unnecessary-type-conversion` | 22                   | Runtime coercion of signals and JavaScript inputs.                                                               |
+| `no-unnecessary-type-parameters` | 25                   | Existing public generic inference and caller-selected types.                                                     |
+| `no-dynamic-delete`              | 4                    | Owned mutable dictionaries; changes must preserve proxy/strict-mode semantics.                                   |
+| `no-this-alias`                  | 2                    | Existing jQuery callback receiver capture.                                                                       |
+
+Other remaining overrides have named boundaries in `eslint.config.js`:
+
+- TypeScript test/e2e files permit unsafe mock operations, misused spread, unbound methods, template
+  interpolation, and async functions whose purpose is to supply a Promise-shaped fixture. Strict
+  compiler, floating promises, and misused promises remain enforced there.
+- `src/directive.ts`, `src/idiomorph.d.ts`, `src/plugin.ts`, `src/stores/types.ts`, and
+  `src/types.ts` retain `void | cleanup` or `void | boolean` callback contracts. Elsewhere invalid
+  `void` types are rejected, with the documented `this: void` option enabled.
+- Persistence adapters, protocol preparation, stores, and the Turbo bridge test inspect return
+  values from nominally void callbacks to reject async JavaScript implementations. Their
+  `no-confusing-void-expression` exception preserves those guards. Other files enforce the rule
+  while allowing ordinary shorthand callbacks and void-returning functions.
+- `src/types.ts` preserves published overload spelling. The trusted expression compiler permits
+  implied evaluation, and the clipboard fallback permits its deprecated API, each in one named file.
+- The frozen resource-comparison fixture retains its erased `textContent` assertion; the exact-file
+  unnecessary-assertion exception preserves measurement hashes, and the non-null inventory still
+  counts it.
+- Frozen navigation measurement CSS retains existing blank-line layout. The frozen jQuery UI
+  migration CSS retains prefix media-query notation. Both files still reject invalid CSS semantics;
+  changing measurement bytes solely for style would invalidate the existing evidence.
+
+On 2026-09-06 the GitHub API confirmed strict required checks and administrator enforcement on
+`main`, with force pushes disabled. Required approving PR reviews are not configured. This review
+records that administrative limit without presenting local gates as independent human review.
+Mutation remains outside automatic commands and dependencies; ticket 0053 is a deferred plan.
+
+Dependency Review requires the repository Dependency Graph. For `Ignibyte/jqstar`, organization
+security configuration `270649` enables the graph only for this repository, leaves the existing
+advanced CodeQL workflow in charge, and keeps unrelated secret-scanning features disabled. Branch
+protection on `main` strictly requires `delivery (Node 24)`, `static-delivery`,
+`CodeQL JavaScript and TypeScript`, and `dependency-review`, including for administrators.
 
 The detector sabotage is executable. The in-memory suite proves all 15 source-policy rules and every
 census selector on red and green inputs. The external suite creates temporary graphs and files to
@@ -206,26 +318,28 @@ static runner.
 
 ### Fast
 
-The fast gate is the edit loop and writes no delivery receipt. Target wall time is under two minutes
-on the reference machine.
+The fast gate is the edit loop and writes no delivery receipt. Target wall time is under five
+minutes on the reference machine.
 
 - formatting and configuration syntax
 - production and test TypeScript compilation
 - strict typed ESLint and project source bans
-- all Vitest unit and integration tests without coverage instrumentation
+- the Chromium Component Lab browser suite, with complete execution evidence without retries
 - architecture, unused-code, documentation, and test-selection checks that complete inside budget
 - gate-runner self-tests when gate code or configuration changes
 
 ### Delivery
 
 The delivery gate authorizes a commit and publication candidate only for its content fingerprint.
+Ordinary delivery runs retain changed-path selectors. The release-candidate orchestrator sets the
+internal all-gates flag so every configured delivery gate executes even from a clean commit.
 
 - every fast gate
-- complete production coverage census and ratchet
+- the fast Component Lab browser suite and the full eight-project browser matrix
 - property and contract tests selected by affected subsystem
 - local Semgrep, gitleaks, npm audit, OSV, dependency, license, and lockfile checks
 - clean build, generated-output drift, package API, package types, exports, and size budgets
-- affected Playwright projects across Chromium, Firefox, and WebKit
+- all configured Playwright projects across Chromium, Firefox, and WebKit
 - self-hosted and installed-tarball proof
 - documentation examples and links affected by the change
 - one machine-readable report on green or red
@@ -235,11 +349,12 @@ The delivery gate authorizes a commit and publication candidate only for its con
 
 The full audit runs on a schedule, before release candidates, and when a gate or high-risk boundary
 changes. It is explicitly acknowledged because repeated cross-engine browser, package, and release
-runs are expensive.
+runs are expensive. Release-candidate full audits also force every configured gate instead of
+applying changed-path selectors.
 
 - clean clone and `npm ci`
 - all browser, device, reduced-motion, forced-color, touch, no-JavaScript, and accessibility lanes
-- repeated unit, property, and browser runs with recorded seeds to expose flakes
+- repeated cross-engine browser and property runs with recorded seeds to expose flakes
 - full package consumer matrix, reproducible build comparison, SBOM, and provenance checks
 - CodeQL and full Semgrep/security policy
 - manual assistive-technology charter for release-critical interaction changes
@@ -258,13 +373,15 @@ it classifies:
 
 Declaration files and type-only modules are excluded by semantics, not filename accidents. Every
 other production artifact is instrumented or mapped to named integration, package, browser, or
-deployment evidence.
+deployment evidence. The census rejects both empty runtime emission in a covered TypeScript module
+and runtime emission in an explicit type-only exclusion. Comments do not count as runtime code;
+side-effect imports do. A source-census test independently compares the configured coverage globs
+with every assignment. Type-only exclusions keep their named type-check evidence without synthetic
+counters credited as covered.
 
-After the census is corrected, the first enforced floors equal the measured result rounded down no
-more than one percentage point. They never decrease. Changed production lines and functions require
-100% coverage immediately. Security, request encoding, patching, lifecycle ownership, expression,
-and parser modules target 100% line and function coverage plus at least 95% branch coverage. The
-whole production census ratchets toward the same bar.
+The former coverage floors and changed-code targets are retained as diagnostic history. They no
+longer decide fast, delivery, or full-audit status. Use browser behavior and focused direct contract
+checks to choose evidence for each change.
 
 ## Mutation-testing policy
 
@@ -278,13 +395,28 @@ development. It may return only after an explicit user request and a separate qu
 The quality program exposes `quality:census`, `test:coverage`, `test:property`,
 `test:property:audit`, and `test:quality:self`. The coverage census enrolls runtime TypeScript,
 server handlers, and executable registry blocks while mapping non-instrumented artifacts to named
-evidence. Its initial enforced floors are 89% lines/statements, 88% functions, and 75% branches
-globally, plus committed subsystem ratchets. Changed executable lines and functions remain an exact
-100% gate.
+evidence. Its former floors were 89% lines/statements, 88% functions, and 75% branches globally,
+plus committed subsystem ratchets. They remain in reports for diagnosis, without a delivery
+threshold.
+
+The optional coverage runner derives its full file roster from the filesystem census, independently
+of the Git diff. Both raw hit maps and per-file summaries must contain exactly that roster. A
+missing unchanged file, unexpected file, duplicate normalized path or empty expected roster fails
+before a passing diagnostic report can be accepted. Changed-line and function findings remain
+visible but do not define a passing score.
+
+V8 sometimes maps an executed multiline `const` initializer only to the line after its declaration
+header. The diagnostic evaluator credits that header only when a raw statement map starts inside its
+own initializer syntax, and records the statement IDs, lines and hit counts. A zero-hit initializer,
+an explicitly zero-hit header, an unrelated statement or a declaration with no mapped initializer
+still appears as uncovered in diagnostics. This attribution does not change the coverage roster.
 
 The deterministic property lane uses seed 430043. The acknowledged audit lane generates a fresh
 signed 32-bit seed and records it with the test result; discovered minimized cases remain in
-`test/property/regressions.json`.
+`test/property/regressions.json`. Each generated property uses the shared recorder for its seed,
+configured/effective runs and exact replay consumption, including the UI and Mobile migration
+suites. Source policy rejects direct fast-check assertion/check calls in property test files, with
+failing and passing detector controls.
 
 Standalone evidence is written below `test-results/quality/` (and `coverage/quality/` for coverage
 detail). A canonical quality run relocates the same evidence beneath that run's `.git/jqstar/`
@@ -303,6 +435,10 @@ was harmless.
 
 The full-audit runner executes repeated browser projects with isolated reports and deterministic
 selection. Host pressure, timeouts, retry-only passes, and incomplete project counts fail closed.
+Each project receives the same 900-second process allowance per repetition: 1,800 seconds for the
+canonical two repetitions. Per-test/readiness limits and the outer 90-minute browser-audit bound
+remain unchanged. Child exit, signal, timeout, elapsed time and configured bound are retained in the
+isolated log so an interrupted project cannot be mistaken for an assertion failure or a pass.
 
 Automated axe and ARIA checks do not prove screen-reader usability. Release-critical focus,
 announcement, drag/drop, complex grid, dialog, menu, combobox, and navigation changes include a
@@ -326,15 +462,16 @@ delivery and repeated-audit artifacts.
 
 ### Initial structural and package budgets
 
-The current public-document packlist contains 262 files and fits ceilings of 1,859,584 packed bytes,
+The initial public-document packlist contained 262 files and fit ceilings of 1,859,584 packed bytes,
 6,082,560 unpacked bytes, and 265 files. The ticket-0003 delivery measurement was 1,855,069 packed
 and 6,078,819 unpacked bytes. The installed peer-contract measurement after the kernel ownership
-foundation is 1,868,748 packed and 6,151,259 unpacked bytes. It contains only the four user guides
-linked from the package README beneath `docs/` plus the published schemas. An exact detector rejects
-missing or extra packaged documentation. The prior 261-file public-document baseline measured
-1,852,528 packed and 6,069,206 unpacked bytes; the earlier broad-document artifact measured 316
-files, 1,969,066 packed and 6,483,449 unpacked bytes. The ESM, CommonJS/UMD, and compiled CSS files
-are 491,435, 387,855, and 169,239 bytes. The installed root-import consumer bundle is 467,249 bytes.
+foundation is 1,868,748 packed and 6,151,259 unpacked bytes. That historical packlist contained only
+the four user guides linked from its package README beneath `docs/` plus the published schemas. An
+exact detector rejects missing or extra packaged documentation. The prior 261-file public-document
+baseline measured 1,852,528 packed and 6,069,206 unpacked bytes; the earlier broad-document artifact
+measured 316 files, 1,969,066 packed and 6,483,449 unpacked bytes. The ESM, CommonJS/UMD, and
+compiled CSS files are 491,435, 387,855, and 169,239 bytes. The installed root-import consumer
+bundle is 467,249 bytes.
 
 The installed-consumer report is fail-closed. It records the positive ESM, CommonJS, private-path,
 NodeNext, and Bundler fixtures plus the expected missing and incompatible jQuery peer failures. The
@@ -362,17 +499,34 @@ measures 542,455 bytes, an increase of 2,174 bytes each. The tree-shaken core co
 the first-baseline ceilings follow the next-1-KiB rule: 464,896 UMD bytes, 542,720 root-import
 bytes, and 197,632 core-import bytes. No other ceiling moves.
 
-The repeated-enhancement fixture starts with 2,263 DOM nodes on Chromium, Firefox, and WebKit. One
-owned mutation observer and one owned event listener remain active while mounted. Both return to
-zero after destroy and removal. Both mount/destroy cycles end with zero owned timers and requests,
-1,141 DOM queries, four patch mutations, and no DOM-node delta.
+The original repeated-enhancement fixture started with 2,263 DOM nodes on Chromium, Firefox, and
+WebKit. One owned mutation observer and one owned event listener remain active while mounted. Both
+return to zero after destroy and removal. Both mount/destroy cycles end with zero owned timers and
+requests, 1,141 DOM queries, four patch mutations, and no DOM-node delta.
+
+Ticket 0059 fixes the ownership workload in `e2e/fixtures/ownership-lab.html`, based on the
+pre-integration Lab and its three copied blocks at commit `60f8263`. Vite serves it only at the
+development route `/__quality__/ownership-lab/`; it is excluded from the production website and
+package. The current fixture starts at 2,292 nodes and mounts at 2,294 in all three desktop engines,
+under the unchanged 2,300 ceiling. Both disposal cycles return to the baseline with zero owned
+observers, listeners, timers, requests, or node delta; the complete measurement uses 1,092 queries
+and four patch mutations. Keep the fixture markup fixed when testing runtime changes. The live
+website is separately checked in full for all recipes, seven blocks, backend workflows, themes,
+responsive layouts, and accessibility.
 
 Ceilings use the next 4 KiB boundary for package bytes, the next 1 KiB boundary for individual
 bundles, the next group of five files, the next 100 DOM nodes, and a narrow measured boundary for
 owned operations. Clean builds have a zero changed-file budget. `budget-ratchet.mjs` compares every
 numeric ceiling with `JQS_QUALITY_BASE_SHA` or the runner's immutable scope. Removing a ceiling or
-raising it fails. The initial revision is reported as `first-baseline` when the base has no budget
-file. There is no environment override that can loosen a ceiling.
+raising it fails except for the exact measured transitions recorded in tickets 0055, 0053, and 0062.
+Each transition requires its recorded starting ceiling. Ticket 0060 composes the earlier approved
+transitions, and 0062 adds the pinned official compressor calibration: root-import bytes can move
+from 542,720 through 634,880 to 634,881, and stores-import gzip bytes from 66,560 through 67,584 and
+67,623 to 67,774. An increase from an unmatched starting value, an unrelated increase, a removed
+ceiling, or a value above the final approved endpoint still fails. The 151-byte stores gzip
+calibration leaves every raw and other ceiling unchanged. The initial revision is reported as
+`first-baseline` when the base has no budget file. There is no environment override that can loosen
+a ceiling.
 
 ## Reports and evidence
 
@@ -412,3 +566,241 @@ quality ticket and sabotage proof.
 - [GitHub CodeQL for JavaScript and TypeScript](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning)
 - [API Extractor reports](https://api-extractor.com/pages/overview/demo_api_report/)
 - [Are the Types Wrong CLI](https://github.com/arethetypeswrong/arethetypeswrong.github.io/tree/main/packages/cli)
+
+## Clean-checkout verification correction
+
+The September 6 hosted Node 24 audit exposed a unit test that required an unbuilt UMD artifact and
+browser startup commands that performed research builds and installation inside HTTP readiness.
+Source measurements remain unit checks; exact built UMD measurement now belongs to package contents
+verification. Browser execution prepares assets and research fixtures explicitly before the servers
+start, with named failures and a ten-minute bound per preparation step. Quality selection remains
+read-only, and server readiness remains 60 seconds. Local and hosted reruns are required before
+closing 0052.
+
+The core gzip ceiling remains 63,000 bytes. Identical baseline JavaScript measured 62,995 bytes with
+Homebrew zlib 1.2.12 and 63,113 with official Node 24.20.0. Ticket 0013 owns the internal sharing
+correction; neither the consumer nor the compression settings or budget changes to accommodate it.
+
+The September 26 standalone static correction is recorded in ticket
+[0061](tickets/0061-repair-clean-checkout-static-delivery.md). A standalone run now writes an
+immutable startup scope before invoking analyzers, using the same Git baseline, HEAD, fingerprint,
+changed paths, and changed lines as the enclosing quality runner. When the enclosing runner supplies
+a scope, static analysis keeps that evidence unchanged. Missing or stale supplied evidence still
+fails.
+
+The independent static CI job prepares the exact private resource research dependency before test
+TypeScript compilation and compares the tree against the PR or push baseline. For a standalone local
+run after a clean checkout, prepare the private fixture first:
+
+```sh
+node scripts/prepare-resource-strategy.mjs --install-only
+npm run quality:static:delivery
+```
+
+This fixture keeps its separate reviewed lockfile and version checks. It adds no root or published
+runtime dependency, and test type checking still includes the fixture. The interruption self-test
+also proves the fallback scope exists before the nested analyzer starts. Component reading-position
+setup uses instant scrolling and settled geometry; exact-zero checks remain before and after an
+appended message.
+
+The September 26 hosted delivery corrections are recorded in ticket
+[0062](tickets/0062-correct-hosted-delivery-and-lab-hover.md). Quality workflows pin official Node
+24.21.0. Ticket 0062 initially configured two browser workers and ticket 0064 used four; ticket 0066
+sets the current count to three for delivery and full audit. All eight required browser projects
+remain selected. Delivery retains its 900-second per-project and 45-minute browser-gate limits; full
+audit retains its existing repetition allowances. Failed, skipped, or flaky results still cannot
+authorize delivery.
+
+The stores consumer gzip reference is calibrated from 67,623 to 67,774 bytes. Identical 208,669-byte
+JavaScript with SHA-256 `b90f9aa010b131c2a5fc7d0b2a4394d27bf2cee887a49e2f1243133cf7ae3576` measures
+67,623 bytes under Homebrew zlib 1.2.12 and 67,774 under pinned official Node 24.21.0 with zlib
+1.3.2.1-motley-8002e91. This records compressor variation, not added payload or a measured
+performance improvement. The exact reviewed transition adds no extra headroom; all raw and other
+limits remain. Hardening tests still reject unknown baselines, one byte beyond the final ceiling,
+removed limits, and unrelated increases. A future reference change requires separate evidence.
+
+The parallel proof also exposed actual light-theme hover contrast of 4.48:1. The Lab now uses the
+established accessible light docs hover color. The existing full-page theme scan waits for backend
+submission to complete and explicitly hovers the enabled submit button before scanning active
+validation states; it does not disable contrast checks or hide the control.
+
+Ticket [0063](tickets/0063-await-project-browser-window-completion.md) corrects two virtual-window
+tests that started result assertions while the SDK operation was still loading in hosted Linux
+WebKit. The trace records the correct requests and rendered rows after the assertion deadline. Each
+test now registers a response wait before scrolling, matches the exact endpoint, virtual mode, and
+requested window start, checks successful body completion, and waits for the existing loading
+indicator to become hidden before asserting the result. The cancellation case keeps the older
+response held until the replacement window is complete. Exact ranges, bounded row counts, selection,
+cancellation, late-response checks, and request counts remain. No runtime code, configured deadline,
+retry policy, or project selection changes.
+
+Ticket [0064](tickets/0064-use-four-hosted-browser-workers.md) records the subsequent hosted
+timeout: Firefox completes 566 cases in 625,731 milliseconds, while WebKit completes 437 cases
+before its 900-second project limit prevents a final report. The corrected virtual-window cases both
+pass. Successful partial execution remains a failed delivery. This repository is public, and the
+[GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+documents four CPUs for its `ubuntu-latest` runner. Ticket 0064 configured four workers and added
+actual CPU and memory recording before the quality command. Review the count if visibility or runner
+type changes. Node pins, project and gate deadlines, job bounds, test selection, repetitions,
+retries, package limits, and flaky-result rejection remain unchanged.
+
+The first local four-worker run exposed a popover fixture assumption: its trigger was near the
+viewport bottom, so collision avoidance correctly placed content above it. The test expected
+placement below. Its setup now waits for fonts, scrolls the trigger instantly to the center, and
+polls central geometry before opening. Existing placement, viewport-edge, focus, and dismissal
+assertions remain, with an additional explicit bottom-side check. Runtime positioning is unchanged.
+All 36 focused repetitions pass with retries disabled, and local delivery passes all 12 gates and
+1,726 browser cases with four workers and zero failures, flakes, or skips. Final documented-tree
+receipt verification is required before commit; complete hosted evidence on the pushed commit
+remains a separate merge condition.
+
+Ticket [0065](tickets/0065-await-component-fixture-initialization.md) corrects a later component
+fixture race. The final check passes all 1,726 matrix cases but rejects a flaky cancellation case in
+the separate component gate: the native View select changed before the asynchronous Lab import
+finished, and no project request was sent. Navigation load did not guarantee completed module
+evaluation. Component setup now awaits the exact `/site.ts` entry already declared by the page.
+Importing that same URL reuses its existing evaluation, including the Lab import. Both virtual-mode
+cases also register an exact start-zero response wait before changing View and await successful body
+and loading completion before their existing row assertions. No runtime hooks, sleeps, timeouts,
+retries, or result assertions change. All 36 focused repetitions pass with retries disabled;
+complete local delivery passes all 12 gates, all 76 component cases, and all 1,726 matrix cases with
+zero failures, flakes, or skips. The rejected run remains evidence, and final documented-tree
+receipt verification and hosted checks remain required.
+
+Ticket [0066](tickets/0066-reserve-hosted-browser-capacity.md) reserves capacity for the dev server,
+test driver, and browser support processes by setting both jobs to three browser workers. The
+four-worker hosted run records four CPUs and 16,766,410,752 memory bytes. All 11 non-matrix gates,
+including all 76 component cases, pass; Chromium passes all 566 cases. WebKit records 35 passes, two
+failures, one flaky case, and 528 skipped cases before the failure policy stops the remaining
+projects. Table actions exceed the test bound, and a toast expires before hover establishes pause.
+The failed report remains evidence. Lower concurrency is a capacity hypothesis, not a confirmed
+runtime fix or a guarantee of hosted success. A worker owns multiple processes; the count does not
+assign CPU affinity. Actual allocation diagnostics remain required.
+
+With three workers and retries disabled, all 63 focused heavy-interaction repetitions pass across
+the three desktop engines. Complete local delivery passes all 12 gates, all 76 component cases, and
+all 1,726 matrix cases without failures, flakes, or skips. Runner type, fixtures, selected projects
+and cases, deadlines, retries, repetitions, flaky-result rejection, pins, and package ceilings are
+unchanged. Final documented-tree receipt verification remains required before commit, and complete
+hosted evidence on the pushed commit remains a separate merge condition.
+
+Ticket [0067](tickets/0067-make-timed-component-proof-deterministic.md) records the subsequent
+three-worker hosted failure. All 11 non-matrix gates and all 566 Chromium cases pass, but WebKit
+records 52 passes, one failure, one flaky case, and 512 skipped cases. The remaining projects do not
+execute. The short-lived toast expires before automation establishes hover, and successful table
+actions accumulate past the 60-second scenario bound. Lower concurrency did not resolve these
+fixture failures; the rejected report and traces remain evidence.
+
+Column reorder, pinning, reload persistence, and invalid-storage recovery now have their own
+complete scenario. The original grouped-editing chain retains multi-sort, group collapse/expand,
+version conflict recovery, restored focus, and successful durable save. Every original action and
+assertion remains. Both column reloads await the declared entry module before checking state, so
+default HTML cannot satisfy initialized recovery proof. Coverage increases to 77 component cases and
+1,729 matrix cases; no case or assertion is removed.
+
+Only the toast scenario enables a controlled clock. Following the
+[Playwright clock contract](https://playwright.dev/docs/clock), installation precedes navigation and
+application timers; pausing follows completed entry evaluation. Real F8, focus, Escape, hover,
+pointer exit, and swipe actions remain. After hover, the test asserts paused state and advances
+1,800 milliseconds while the toast remains visible. After pointer exit, it asserts resumed state,
+advances another 1,800 milliseconds, and verifies natural expiry. The application still uses its
+1,600-millisecond duration; timer implementation and configured test bounds are unchanged.
+
+All 36 focused repetitions pass across the three desktop engines with three workers and retries
+disabled. Complete local delivery passes all 12 gates, all 77 component cases, and all 1,729 matrix
+cases with zero failures, flakes, or skips. Runtime and page sources, workers, deadlines, selected
+projects, repetitions, retries, failure policy, pins, and package ceilings are unchanged. Final
+documented-tree receipt verification precedes commit; complete hosted evidence and the separately
+requested security scope decision remain merge conditions.
+
+Ticket [0068](tickets/0068-await-ownership-fixture-entry.md) records the next hosted failure: all 11
+non-matrix gates, all 77 component cases, and all 567 Chromium cases pass, but Firefox times out in
+all three ownership attempts waiting for global network inactivity. No ownership budget assertion
+runs in those attempts. The rejected report retains 247 Firefox passes, one failure, 319 skipped
+cases, and unexecuted later projects. A long-lived Vite dev connection appears in the trace; it does
+not establish a particular browser network-accounting cause.
+
+The benchmark now awaits its exact declared `/main.ts` module and the public
+`jquery.star.nextUpdate()` barrier before taking the baseline. Missing entry markup fails clearly.
+The frozen fixture, instrumentation, mount/enhance/destroy/remount scenarios, native dialog proof,
+and every budget remain unchanged. All nine focused repetitions pass across three desktop engines
+with three workers and retries disabled. Each retains 2,292 baseline and 2,294 mounted nodes, one
+owned observer and listener, 1,092 queries, four mutations, and zero disposed resources.
+
+Complete local delivery passes all 12 gates, all 77 component cases, and all 1,729 matrix cases
+without failures, flakes, or skips. Workers, deadlines, projects, retries, failure policy, pins, and
+package ceilings remain unchanged. Final documented-tree receipts precede commit; complete hosted
+verification and the separately requested security scope decision remain merge conditions.
+
+Ticket [0069](tickets/0069-isolate-route-and-network-proofs.md) retains the subsequent hosted WebKit
+failure. All 11 non-matrix gates, all 77 component cases, and all 567 Chromium cases pass. WebKit
+records 173 passes, two failures, one flaky case, and 391 skips; later projects do not execute. Its
+process exits with 1 within the unchanged project bound. Two site cases accumulate successful
+actions across 22 documentation routes or three Lab routes beyond their shared 60-second case
+deadline. Their traces retain successful earlier routes.
+
+Each of those routes now has its own complete case. Every documentation theme, search, menu, Escape,
+focus, and active-navigation assertion remains. Each Lab route retains all seven blocks, the full
+corpus, unique IDs, native dialog actions, JSON/SDK/account/dashboard/profile updates, all three
+widths, and page-error proof. Coverage increases to 592 desktop cases and 1,804 matrix cases; the
+component lane still contains 77 cases.
+
+The htmx flake waits for a swap-error event immediately after an intentional connection failure. The
+trace contains that real network failure and an incomplete next fragment request, without
+establishing an exact browser connection-reuse cause. Both pinned htmx versions now prove native
+network failure in fresh cases. Each requires an actual failed browser request, the original ordered
+host events, and redacted output. The original baseline retains all remaining OOB, no-swap,
+cancellation, response-error, swap-error, and target-error assertions.
+
+All 252 focused repetitions pass across the three desktop engines with three workers and retries
+disabled. Complete local delivery passes all 12 gates, all 77 component cases, and all 1,804 matrix
+cases without failures, flakes, or skips. Runtime and fixture sources, configured deadlines,
+workers, projects, retries, failure policy, pins, and budgets remain unchanged. Final
+documented-tree receipts precede commit; complete hosted verification and the separately requested
+security scope decision remain merge conditions.
+
+Ticket [0070](tickets/0070-isolate-ui-ownership-host.md) retains hosted delivery `36312169650`. All
+11 non-matrix gates, all 77 component cases, and all 592 cases in both Chromium and Firefox pass.
+WebKit reaches the unchanged 900,000-millisecond project bound before completion. Its final result
+JSON is missing; partial output cannot authorize delivery. That output also records a structural
+ownership retry: six patch-mutation records in the first attempt against the four-record limit, then
+four on retry. Other logged metrics match. No retained trace identifies the two extra records. Nine
+local diagnostic runs observe only the expected body insertion/removal records, so the hosted
+mutation source remains unresolved.
+
+The UI document-ownership suite now starts at a private development-only empty HTML host,
+`/__quality__/ui-document/`, rather than loading the full integrated Lab for each independent iframe
+scenario. The host uses standards mode and loads no styles, scripts, resources, or automatic
+runtime. Each scenario still imports the real source modules and jQuery factory and installs them in
+its own native documents. Only 56 navigation literals change. All 390 cases per engine, helper code,
+assertions, cleanup, native pointer capture, trusted dragging, and adoption contracts remain. The
+dedicated site integration cases and frozen structural ownership workload keep their existing hosts.
+Production website entries and the package contain no private host.
+
+All 1,170 isolated cases pass across the desktop engines with three workers and retries disabled.
+All 27 repeated trusted-dragging and structural cases also pass. Fast and complete local delivery
+pass all gates, all 77 component cases, and all 1,804 matrix cases without failures, flakes, or
+skips. No configured deadline, worker count, project, retry, failure policy, pin, or budget changes.
+Final documented-tree receipts precede commit. Complete hosted verification and the separately
+requested security scope decision remain merge conditions.
+
+Ticket [0071](tickets/0071-await-native-disclosure-notifications.md) retains hosted delivery
+`36317737425`. All 11 non-matrix gates and 77 component cases pass. Firefox completes 592 cases with
+591 first-attempt passes and one rejected native accordion notification flake. Retry passes, but
+that does not authorize delivery. The remaining projects do not execute. Final results, logs, and
+the trace remain in the local evidence.
+
+The disclosure fixture previously observed native notification state after a fixed ten-millisecond
+timer. It now registers a one-time native details `toggle` listener before each affected summary
+click and awaits actual event delivery. The immediate enhancement call during a pending
+notification, native default actions, adoption, cancellation, links, exclusion, notification counts,
+and all assertions remain. The trace does not establish the exact browser task ordering behind the
+failed snapshot. The change removes the timer assumption without claiming a runtime defect.
+
+All 240 repeated native cases pass across the three desktop engines with three workers and retries
+disabled. Fast and complete local delivery pass all gates, 77 component cases, and 1,804 matrix
+cases without failures, flakes, or skips. Runtime, structural workload, all other helpers, coverage,
+configured deadlines, workers, projects, retries, failure policy, pins, and budgets are unchanged.
+The earlier separate structural mutation difference remains unresolved. Final documented-tree
+receipts precede commit; hosted proof and the pending security scope decision remain merge
+conditions.

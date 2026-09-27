@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Persisted preferences · jQStar</title>
+    <meta
+      name="description"
+      content="Save selected browser preferences with synchronous hydration, migrations, recovery, and explicit storage ownership."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Persisted preferences · jQStar" />
+    <meta
+      property="og:description"
+      content="Install optional jQStar persistence before application startup."
+    />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Persisted preferences</h1>
+      <p class="docs-lede">
+        Save selected shared-store preferences with the optional
+        <code>jquery-star/persist</code> plugin. Hydration finishes before the first application
+        starts.
+      </p>
+      <h2>Install before boot</h2>
+      <p>
+        Install core and stores, define your store, then attach persistence. Use frozen options with
+        a required namespace, positive schema version, and explicit field codec.
+      </p>
+      <pre><code>import { createFieldCodec, createLocalStorageAdapter, persistPlugin } from "jquery-star/persist";
+
+const persisted = installed.star.use(persistPlugin);
+const attachment = persisted.attach("preferences", Object.freeze({
+  namespace: "example.preferences",
+  version: 1,
+  adapter: createLocalStorageAdapter(window),
+  ownAdapter: true,
+  codec: createFieldCodec([
+    { path: "theme", validate: (value) => value === "light" || value === "dark" },
+  ]),
+}));
+installed.star.boot(document);</code></pre>
+      <h2>Adapters and selected data</h2>
+      <p>
+        Memory adapters share only when you share the same instance. Local storage supports
+        same-origin pages and reloads. Session storage persists reloads within one top-level page.
+        Custom adapters must be synchronous. Web adapters use the exact kernel Window.
+      </p>
+      <p>
+        Declare each safe path and validator. Codecs reject unspecified fields, unknown paths,
+        methods, undefined, unsupported objects, cycles, and oversized data. JSON null is explicit.
+        The default complete-envelope limit is 65,536 UTF-8 bytes.
+      </p>
+      <h2>Migrations and recovery</h2>
+      <p>
+        Integer schema migrations run in ascending steps on detached data. The full decode commits
+        once. Missing data keeps defaults. Expired data is removed. Corrupt, future-version,
+        migration, decode, unavailable, and write failures preserve data and disable persistence by
+        default.
+      </p>
+      <p>
+        <code>retry()</code> reads storage again. <code>reset()</code> explicitly removes stored
+        bytes and writes current selected values. <code>flush()</code> writes the latest selected
+        snapshot. Strict mode rejects hydration failures before application startup.
+      </p>
+      <h2>Conflicts and disposal</h2>
+      <p>
+        Whole envelopes use last-write-wins ordering by Lamport counter then origin, independent of
+        wall-clock skew. Concurrent edits can lose another page's selected changes. Split unrelated
+        preferences into separate stores when needed. This is not a merge algorithm or a cross-key
+        transaction.
+      </p>
+      <p>
+        One trailing timer defaults to 100 ms with a 1,000 ms maximum delay. Disposal flushes by
+        default, then releases the timer, subscriptions, listeners, and owned adapter. It attempts
+        every cleanup and returns a typed report. Borrowed adapters remain caller owned.
+      </p>
+      <h2>Browser state and server authority</h2>
+      <p>
+        Browser storage is readable and mutable by page scripts and users and can fail because of
+        quotas or privacy settings. Never persist secrets, credentials, tokens, private keys, or
+        authorization decisions. Keep server records, permissions, validation, and resource caches
+        under server authority.
+      </p>
+      <p>
+        Use local signals for one root, shared stores for client coordination, and persistence for
+        selected preferences. Persistence does not change real jQuery <code>$</code>, local
+        <code>$name</code> signals, native forms, focus, or component-specific storage.
+      </p>
+      <p>
+        See the
+        <a href="https://github.com/Ignibyte/jqstar/blob/main/docs/PERSISTENCE.md"
+          >complete persistence contract</a
+        >
+        for types, envelopes, limits, custom adapters, migrations, status, and failure codes.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

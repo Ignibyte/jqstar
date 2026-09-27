@@ -51,6 +51,37 @@ describe("jQuery Star disclosure components", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without opening nearby details", async () => {
+    const app = $("#app").star("instance");
+    const summary = details("#more").querySelector("summary");
+    if (!app || !summary) throw new Error("Missing Disclosure action fixture.");
+    await expect(
+      app.run("ui.collapsible.open", { element: summary, args: [summary] }),
+    ).rejects.toThrow("Disclosure target did not match a <details>");
+    expect(details("#more").open).toBe(false);
+    await app.run("ui.collapsible.open", { args: [details("#more")] });
+    expect(details("#more").open).toBe(true);
+    await app.run("ui.collapsible.close", { args: ["#more"] });
+    expect(details("#more").open).toBe(false);
+    await app.run("ui.collapsible.open", { element: summary });
+    expect(details("#more").open).toBe(true);
+  });
+
+  it("rejects a wrong-kind accordion item target without changing its sibling", async () => {
+    const app = $("#app").star("instance");
+    const summary = details("#second").querySelector("summary");
+    if (!app || !summary) throw new Error("Missing Accordion action fixture.");
+    await expect(
+      app.run("ui.accordion.open", { element: summary, args: [summary] }),
+    ).rejects.toThrow("Disclosure target did not match a <details>");
+    expect(details("#first").open).toBe(true);
+    expect(details("#second").open).toBe(false);
+    await app.run("ui.accordion.open", { args: [details("#second")] });
+    expect(details("#second").open).toBe(true);
+    await app.run("ui.accordion.open", { args: ["#first"] });
+    expect(details("#first").open).toBe(true);
+  });
+
   it("wires disclosure state and accessible relationships", () => {
     const item = details("#more");
     const trigger = item.querySelector("summary")!;

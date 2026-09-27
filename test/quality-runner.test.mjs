@@ -140,13 +140,20 @@ function fixtureGate(behavior, extra = {}) {
 
 test("canonical quality modes keep fixed, collision-free semantics", () => {
   const expected = {
-    fast: ["ticket-workflow", "quality-runner-self-test", "format", "unit", "static-fast"],
+    fast: [
+      "ticket-workflow",
+      "quality-runner-self-test",
+      "resource-research-dependency",
+      "format",
+      "browser-components",
+      "static-fast",
+    ],
     delivery: [
       "ticket-workflow",
       "quality-runner-self-test",
+      "resource-research-dependency",
       "format",
-      "unit",
-      "coverage",
+      "browser-components",
       "property",
       "static-delivery",
       "self-hosted",
@@ -158,10 +165,9 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
     "full-audit": [
       "ticket-workflow",
       "quality-runner-self-test",
+      "resource-research-dependency",
       "format",
-      "unit",
-      "unit-repeated-audit",
-      "coverage",
+      "browser-components",
       "property",
       "property-random-audit",
       "static-full-audit",
@@ -180,6 +186,15 @@ test("canonical quality modes keep fixed, collision-free semantics", () => {
       `${mode} gate membership drifted`,
     );
     assert.equal(new Set(gates.map((gate) => gate.id)).size, gates.length);
+    const preparation = gates.find((gate) => gate.id === "resource-research-dependency");
+    assert.deepEqual(preparation.args, [
+      "run",
+      "research:resources:prepare",
+      "--",
+      "--install-only",
+    ]);
+    assert.equal(preparation.enforced, true);
+    assert.ok(preparation.stage < gates.find((gate) => gate.id === "browser-components").stage);
   }
 
   for (const mode of ["delivery", "full-audit"]) {
@@ -526,15 +541,34 @@ test(
     const gate = fixtureGate("pass", {
       when: { changed: ["src/**"], reason: "source did not change" },
     });
-    const result = await runQuality({
-      mode: "fast",
-      config: configured([gate]),
-      cwd: root,
-      runId: "skip",
-    });
+    const inheritedForceAll = process.env.JQS_QUALITY_FORCE_ALL;
+    process.env.JQS_QUALITY_FORCE_ALL = "1";
+    let result;
+    try {
+      result = await runQuality({
+        mode: "fast",
+        config: configured([gate]),
+        cwd: root,
+        runId: "skip",
+      });
+    } finally {
+      if (inheritedForceAll === undefined) delete process.env.JQS_QUALITY_FORCE_ALL;
+      else process.env.JQS_QUALITY_FORCE_ALL = inheritedForceAll;
+    }
     assert.equal(result.report.status, "pass");
     assert.equal(result.report.gates[0].status, "skip");
     assert.equal(result.report.gates[0].reason, "source did not change");
+
+    const forced = await runQuality({
+      mode: "fast",
+      config: configured([gate]),
+      cwd: root,
+      runId: "forced",
+      forceAll: true,
+    });
+    assert.equal(forced.report.status, "pass");
+    assert.equal(forced.report.gates[0].status, "pass");
+    assert.equal(forced.report.gates[0].selection.selected, true);
 
     const evidenceSkip = await runQuality({
       mode: "fast",
@@ -745,6 +779,15 @@ test(
       reportPath: delivery.reportPath,
       phase: "test",
     });
+    const latest = path.join(evidenceDirectory, "latest-report.json");
+    await validatePhaseEvidence({ root, reportPath: latest, phase: "test" });
+    const latestSource = await readFile(latest);
+    await writeFile(latest, Buffer.concat([latestSource, Buffer.from("\n")]));
+    await assert.rejects(
+      validatePhaseEvidence({ root, reportPath: latest, phase: "test" }),
+      /not the report authorized by the current receipt/,
+    );
+    await writeFile(latest, latestSource);
     const copied = path.join(evidenceDirectory, "copied-report.json");
     await writeFile(copied, await readFile(delivery.reportPath));
     await assert.rejects(

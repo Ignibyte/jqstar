@@ -1,0 +1,141 @@
+# Changelog
+
+This file records user-visible package changes. A version marked Unreleased is not an npm, git tag,
+or GitHub release claim.
+
+## 1.1.0 - Unreleased
+
+### Runtime corrections
+
+- Cancel superseded Project Browser queries so older responses cannot replace the current window or
+  clear loading state while newer reads or edits remain pending.
+- Complete kernel cleanup after unprintable thrown values or hostile error accessors; retain the
+  original failures in the terminal disposal aggregate.
+
+### Package upgrades
+
+- Add explicit offline package doctor checks with stable JSON codes, bounded metadata readers,
+  workspace-aware dependency resolution, entrypoint checks, and opt-in Migrate category summaries.
+- Add dry-run schema 0-to-1 configuration plans, verified atomic apply, protected backup/journal
+  files, idempotent reapply, and hash-checked rollback. Existing registry commands keep their
+  behavior.
+- Record the decision to decline an in-page DevTools UI after two controlled application
+  investigations; the public inspection API remains the supported diagnostic interface.
+
+### Inspection and tracing
+
+- Add explicit `jquery-star/inspect` ESM/CommonJS attachment with immutable, versioned snapshots,
+  shared collectors and independent client leases. Tracing is disabled by default.
+- Bound retained traces by exact UTF-8 JSON bytes and entries, with filters, deterministic sampling,
+  counters, export, and expiring policies for two permitted identifier fields.
+- Add generic public kernel metadata and transactional service count registrations. Stores,
+  persistence and bridges supply aggregate summaries; UI and Datastar use the plugin inventory.
+- Keep application values, URLs, headers, bodies, DOM and arbitrary errors out of inspection data.
+
+### Server data guidance
+
+- Document one registry coordinator and SDK response for related application regions, with native
+  links/forms, owned cancellation and canonical refresh after writes.
+- Retain server patches after the Project Inspector comparison; no resource or mutation API ships.
+
+### Selected preference persistence
+
+- Add optional `jquery-star/persist` with synchronous hydration before application startup, explicit
+  field codecs, schema migrations, recoverable storage failures, and typed status.
+- Add memory, local, session, and custom synchronous adapters with revision ordering, bounded
+  writes, explicit reset/retry/flush, and owned disposal.
+- Add declared plugin dependency-facade lookup and a durable pre-application assertion.
+
+### Shared stores
+
+- Add the side-effect-free `jquery-star/stores` ESM and CommonJS entry with one explicit official
+  plugin, `defineStore()`, matched declarations, source maps, and installed-package proof.
+- Add one reactive store namespace per document kernel, descriptor-safe data cloning, ordinary
+  function-valued methods, atomic synchronous transactions, selector subscriptions, and
+  lifecycle-owned setup work.
+- Expose the fixed optional `stores` binding to behavior, declarative, trusted, and CSP contexts
+  while preserving `$store` as an application-local signal.
+- Add value-free store operation observations, terminal disposal, two-root browser coverage, and
+  raw/gzip optional-graph budgets.
+- Document that stores hold inspectable client coordination state, not secrets, authorization,
+  persistence, authoritative records, or a server-state entity cache.
+
+## 1.0.0 - Unreleased
+
+### Stable package surface
+
+- Stabilize the root, core, UI, Datastar, CSP, testing, Datastar testing, Turbo, htmx, and UI CSS
+  package entries.
+- Keep the root auto-installing composition compatible with the executable 0.1 baseline.
+- Derive runtime, facade, declaration, website, registry, and report version values from
+  `package.json`.
+- Keep `STAR_PLUGIN_API_VERSION` at `0.1.0` and the CSP grammar at `jqstar-csp-expression/1`.
+
+### Runtime and extensions
+
+- Add one document kernel with transactional application setup, exact cleanup, terminal disposal,
+  and public operation observations.
+- Add transactional plugins, directives, helpers, application hooks, request middleware, protocol
+  profiles, render adapters, and owned resource tracking.
+- Add side-effect-free modular installers and isolated declarations.
+- Add the finite CSP expression entry while retaining trusted JavaScript in the compatibility root.
+- Add explicit Turbo and htmx lifecycle bridges with bounded supported ranges.
+
+### UI and server-rendered applications
+
+- Complete the native HTML component registry and server-driven Project Browser/Data Table.
+- Preserve `data-jqs` roots, `data-part` slots, documented state attributes, native links and forms,
+  and server ownership of routes and validation.
+- Add the self-hosted multi-page jQStar website, Component Lab, agent corpus, and optional read-only
+  WebMCP tools.
+
+### Package and testing
+
+- Add installed-tarball consumers for ESM, CommonJS, TypeScript, QUnit, browser modules, UMD,
+  external plugins, registry copies, CSP, testing, Turbo, htmx, and self-hosting.
+- Add reproducible dual builds, package/API/type/size checks, SBOM and license evidence, browser and
+  accessibility matrices, coverage and property tests, and evidence-bound quality receipts.
+- Add a candidate handoff that prepares hashes and publication commands without tagging or
+  publishing.
+- Keep contributor research and the detailed CSP threat-model worksheet in the source repository
+  while shipping the user-facing security, CSP, compatibility, migration, and release guides.
+
+### Security
+
+- Publish the trusted-markup boundary and finite CSP grammar/threat model.
+- Keep credentials, environment values, response data, DOM/state graphs, and private paths out of
+  diagnostics and release receipts.
+- Require the official Datastar SDK for server event generation.
+- Exclude jQuery UI, jQuery Mobile, Turbo, htmx, QUnit, and standalone Sizzle from runtime bundle
+  graphs unless their documented package boundary requires them.
+
+### Migration
+
+- Publish [the 0.1-to-1.0 guide](MIGRATING_TO_1.md).
+- Publish tested jQuery UI coexistence and semantic component migration without a Widget Factory
+  adapter or runtime fork.
+- Publish route-by-route jQuery Mobile migration without reviving its page framework, Ajax router,
+  virtual controls, theme, or runtime.
+- Keep jQStar independent from jQuery and the OpenJS Foundation. This release makes no official
+  successor claim.
+
+### Compatibility and known limits
+
+- Require Node `>=24` for Node tools and the server, npm `>=11` for release construction, and
+  application-owned `jquery >=4.0.0 <5`.
+- Test Chromium, Firefox, and WebKit through the locked Playwright release.
+- Support ordinary HTML documents and explicit same-origin frame documents. Shadow-root applications
+  remain unsupported.
+- Shared stores, persistence, resources, native navigation, inspection, DevTools, and upgrade
+  diagnostics remain post-1.0 work and are absent from stable exports.
+
+### Attribution
+
+jQStar uses jQuery, Idiomorph, JSON5, and the Star Federation Datastar SDK at runtime. The release
+SBOM and license inventory record exact dependency versions and licenses. Browser, type, static,
+accessibility, and test evidence is produced by the tools locked in `package-lock.json`.
+
+## 0.1.0 - Baseline
+
+- Establish the auto-installing jQuery root, declarative signals and expressions, backend actions,
+  JSON/HTML/Datastar responses, DOM patching, UI API, registry CLI, and executable public baseline.

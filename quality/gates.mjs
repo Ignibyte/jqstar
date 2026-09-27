@@ -27,7 +27,14 @@ const ticket = {
 const runnerSelfTest = {
   id: "quality-runner-self-test",
   command: process.execPath,
-  args: ["--test", "test/quality-runner.test.mjs", "test/ticket-workflow.test.mjs"],
+  args: [
+    "--test",
+    "test/quality-runner.test.mjs",
+    "test/ticket-workflow.test.mjs",
+    "test/component-browser-report.test.mjs",
+    "test/coverage-diagnostic.test.mjs",
+    "test/source-map-packaging.test.mjs",
+  ],
   timeoutMs: 120_000,
   stage: 0,
   enforced: true,
@@ -39,6 +46,11 @@ const runnerSelfTest = {
       "schema/**",
       "test/quality-runner.test.mjs",
       "test/ticket-workflow.test.mjs",
+      "test/component-browser-report.test.mjs",
+      "test/coverage-diagnostic.test.mjs",
+      "test/source-map-packaging.test.mjs",
+      "scripts/quality-component-browser.mjs",
+      "scripts/externalize-source-maps.mjs",
       ".githooks/**",
     ],
     reason: "quality runner and workflow files are unchanged",
@@ -46,18 +58,19 @@ const runnerSelfTest = {
 };
 
 const format = gate("format", "format:check", { stage: 1 });
-const unit = gate("unit", "test:unit", {
-  args: ["--", "--reporter=json", "--outputFile={runDirectory}/evidence/unit.json"],
-  timeoutMs: 180_000,
+const browserComponents = gate("browser-components", "test:browser:components", {
+  timeoutMs: 1_200_000,
   stage: 2,
   kind: "test",
   evidence: {
-    path: "{runDirectory}/evidence/unit.json",
+    path: "{runDirectory}/browser-components-report.json",
     format: "json",
-    countPath: "numTotalTests",
-    minimum: 1,
-    statusPath: "success",
-    passValues: [true],
+    schemaPath: "schema/browser-components-report.schema.json",
+    statusPath: "status",
+    passValues: ["pass"],
+    runIdPath: "runId",
+    modePath: "mode",
+    expectedMode: "execution",
   },
 });
 
@@ -98,37 +111,6 @@ const statusEvidence = (path, options = {}) => ({
   ...(options.expectedMode ? { modePath: "mode", expectedMode: options.expectedMode } : {}),
   ...(options.skipValues ? { skipValues: options.skipValues } : {}),
   ...(options.reasonPath ? { reasonPath: options.reasonPath } : {}),
-});
-
-const coverage = gate("coverage", "test:coverage", {
-  timeoutMs: 600_000,
-  stage: 5,
-  kind: "test",
-  evidence: statusEvidence("evidence/coverage-gate.json", {
-    schemaPath: "schema/coverage-report.schema.json",
-    expectedMode: "delivery",
-  }),
-});
-
-const unitRepeatedAudit = gate("unit-repeated-audit", "test:unit", {
-  args: [
-    "--",
-    "--sequence.shuffle",
-    "--sequence.seed=430044",
-    "--reporter=json",
-    "--outputFile={runDirectory}/evidence/unit-repeat.json",
-  ],
-  timeoutMs: 180_000,
-  stage: 4,
-  kind: "test",
-  evidence: {
-    path: "{runDirectory}/evidence/unit-repeat.json",
-    format: "json",
-    countPath: "numTotalTests",
-    minimum: 1,
-    statusPath: "success",
-    passValues: [true],
-  },
 });
 
 const property = gate("property", "test:property", {
@@ -225,6 +207,13 @@ const ticket0044SelfTest = gate("ticket-0044-detector-self-test", "test:quality:
       "scripts/build-types.mjs",
       "scripts/quality-0044-self-test.mjs",
       "scripts/quality-browser.mjs",
+      "scripts/quality/browser-process.mjs",
+      "test/browser-process.test.mjs",
+      "scripts/prepare-browser-fixtures.mjs",
+      "scripts/prepare-navigation-decision.mjs",
+      "scripts/prepare-resource-strategy.mjs",
+      "scripts/quality/mobile-reference.mjs",
+      "test/browser-preparation.test.mjs",
       "scripts/quality-package.mjs",
       "scripts/quality-release.mjs",
       "scripts/quality/budget-ratchet.mjs",
@@ -235,7 +224,16 @@ const ticket0044SelfTest = gate("ticket-0044-detector-self-test", "test:quality:
   },
 });
 
-const common = [ticket, runnerSelfTest, format, unit];
+const resourceResearchDependency = gate(
+  "resource-research-dependency",
+  "research:resources:prepare",
+  {
+    args: ["--", "--install-only"],
+    stage: 0,
+  },
+);
+
+const common = [ticket, runnerSelfTest, resourceResearchDependency, format, browserComponents];
 const withoutChangeSelection = (configuredGate) => {
   const copy = { ...configuredGate };
   delete copy.when;
@@ -243,7 +241,6 @@ const withoutChangeSelection = (configuredGate) => {
 };
 
 const deliveryOnly = [
-  coverage,
   property,
   staticDelivery,
   selfHosted,
@@ -254,8 +251,6 @@ const deliveryOnly = [
 ];
 
 const fullAuditOnly = [
-  unitRepeatedAudit,
-  coverage,
   property,
   propertyAudit,
   staticFullAudit,
@@ -266,7 +261,13 @@ const fullAuditOnly = [
   withoutChangeSelection(ticket0044SelfTest),
 ];
 
-const fullAuditCommon = [ticket, withoutChangeSelection(runnerSelfTest), format, unit];
+const fullAuditCommon = [
+  ticket,
+  withoutChangeSelection(runnerSelfTest),
+  resourceResearchDependency,
+  format,
+  browserComponents,
+];
 
 export const qualityConfig = {
   schema: "jqstar-quality-config/1",

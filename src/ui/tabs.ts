@@ -1,5 +1,16 @@
+import { isHTMLElement } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTabsStatic, TabsTarget, TabTarget } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 type Orientation = "horizontal" | "vertical";
 
@@ -9,8 +20,9 @@ interface TabParts {
   value: string;
 }
 
-interface TabsRecord {
-  cleanups: Map<HTMLElement, () => void>;
+interface TabsRecord extends UIResources {
+  list: HTMLElement;
+  parts: TabParts[];
   value: string | undefined;
 }
 
@@ -31,27 +43,27 @@ const records = new WeakMap<HTMLElement, TabsRecord>();
 let tabsId = 0;
 
 function tabRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="tabs"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="tabs"]') ? value : undefined;
 }
 
 function directPart(root: HTMLElement, part: string): HTMLElement | undefined {
   return Array.from(root.children).find(
     (child): child is HTMLElement =>
-      child instanceof HTMLElement && child.getAttribute("data-part") === part,
+      isHTMLElement(child) && child.getAttribute("data-part") === part,
   );
 }
 
 function tabTriggers(list: HTMLElement): HTMLElement[] {
   return Array.from(list.children).filter(
     (child): child is HTMLElement =>
-      child instanceof HTMLElement && child.getAttribute("data-part") === "trigger",
+      isHTMLElement(child) && child.getAttribute("data-part") === "trigger",
   );
 }
 
 function tabPanels(root: HTMLElement): HTMLElement[] {
   return Array.from(root.children).filter(
     (child): child is HTMLElement =>
-      child instanceof HTMLElement && child.getAttribute("data-part") === "panel",
+      isHTMLElement(child) && child.getAttribute("data-part") === "panel",
   );
 }
 
@@ -116,14 +128,40 @@ function eventDetail(
   };
 }
 
+function current(record: TabsRecord, revision = record.revision): boolean {
+  if (
+    !uiCurrent(record, revision) ||
+    records.get(record.root) !== record ||
+    directPart(record.root, "list") !== record.list
+  )
+    return false;
+  try {
+    const live = parts(record.root);
+    return (
+      live.length === record.parts.length &&
+      live.every((item, index) => {
+        const prior = record.parts[index];
+        return (
+          prior !== undefined &&
+          item.trigger === prior.trigger &&
+          item.panel === prior.panel &&
+          item.value === prior.value
+        );
+      })
+    );
+  } catch {
+    return false;
+  }
+}
+
 function emit(
-  root: HTMLElement,
+  record: TabsRecord,
   name: "before-change" | "change",
   detail: TabsEventDetail,
   cancelable = false,
 ): boolean {
-  return root.dispatchEvent(
-    new CustomEvent(`jquery-star:tabs:${name}`, {
+  return record.root.dispatchEvent(
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:tabs:${name}`, {
       bubbles: true,
       cancelable,
       detail,
@@ -131,40 +169,51 @@ function emit(
   );
 }
 
-function applyValue(root: HTMLElement, value: string, emitChange = true): HTMLElement {
-  const record = records.get(root);
-  if (!record) throw new Error("Tabs must be enhanced before activation.");
-  const allParts = parts(root);
-  const active = allParts.find((item) => item.value === value && !isDisabled(item.trigger));
+function applyValue(record: TabsRecord, value: string, emitChange = true): HTMLElement {
+  const { root } = record;
+  const active = record.parts.find((item) => item.value === value && !isDisabled(item.trigger));
   if (!active)
     throw new Error(`Tabs #${root.id} has no enabled trigger for data-value="${value}".`);
-
   const previousValue = record.value;
   record.value = value;
   if (root.dataset.value !== value) root.dataset.value = value;
-  for (const item of allParts) {
+  const focused = root.dataset.activation === "manual" ? record.document.activeElement : undefined;
+  const roving =
+    record.parts.find((item) => item.trigger === focused && !isDisabled(item.trigger)) ?? active;
+  for (const item of record.parts) {
     const selected = item.value === value;
     item.trigger.dataset.state = selected ? "active" : "inactive";
     item.trigger.setAttribute("aria-selected", String(selected));
-    item.trigger.tabIndex = selected ? 0 : -1;
+    item.trigger.tabIndex = item === roving ? 0 : -1;
     item.panel.dataset.state = selected ? "active" : "inactive";
     item.panel.hidden = !selected;
   }
-
-  if (emitChange && previousValue !== value) {
-    emit(root, "change", eventDetail(root, active, previousValue));
-  }
+  if (emitChange && previousValue !== value)
+    emit(record, "change", eventDetail(root, active, previousValue));
   return root;
 }
 
 function requestValue(root: HTMLElement, value: string): HTMLElement {
-  const record = records.get(root) ?? enhanceTabs(root);
+  const record = recordFor(root);
+  const revision = ++record.revision;
   if (record.value === value) return root;
-  const item = parts(root).find((candidate) => candidate.value === value);
+  const item = record.parts.find((candidate) => candidate.value === value);
   if (!item || isDisabled(item.trigger)) return root;
+  const authored = root.dataset.value;
   const detail = eventDetail(root, item, record.value);
-  if (!emit(root, "before-change", detail, true)) return root;
-  return applyValue(root, value);
+  if (
+    !emit(record, "before-change", detail, true) ||
+    !current(record, revision) ||
+    isDisabled(item.trigger) ||
+    root.dataset.value !== authored
+  )
+    return root;
+  return applyValue(record, value);
+}
+
+function recordFor(root: HTMLElement): TabsRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceTabs(root);
 }
 
 function enabledTriggers(root: HTMLElement): HTMLElement[] {
@@ -188,6 +237,7 @@ function moveFocus(root: HTMLElement, trigger: HTMLElement, event: KeyboardEvent
   else if (event.key === "End") next = triggers.length - 1;
 
   event.preventDefault();
+  for (const candidate of triggers) candidate.tabIndex = candidate === triggers[next] ? 0 : -1;
   triggers[next]?.focus();
 }
 
@@ -206,14 +256,9 @@ function wireTrigger(root: HTMLElement, item: TabParts, record: TabsRecord): voi
     }
     moveFocus(root, item.trigger, event);
   };
-  item.trigger.addEventListener("click", click);
-  item.trigger.addEventListener("focus", focus);
-  item.trigger.addEventListener("keydown", keydown);
-  record.cleanups.set(item.trigger, () => {
-    item.trigger.removeEventListener("click", click);
-    item.trigger.removeEventListener("focus", focus);
-    item.trigger.removeEventListener("keydown", keydown);
-  });
+  listenUI(record, () => current(record), item.trigger, "click", click);
+  listenUI(record, () => current(record), item.trigger, "focus", focus);
+  listenUI(record, () => current(record), item.trigger, "keydown", keydown as EventListener);
 }
 
 function enhanceTabs(root: HTMLElement): TabsRecord {
@@ -227,60 +272,70 @@ function enhanceTabs(root: HTMLElement): TabsRecord {
   list.setAttribute("role", "tablist");
   list.setAttribute("aria-orientation", currentOrientation);
 
-  let record = records.get(root);
-  if (!record) {
-    record = { cleanups: new Map(), value: undefined };
-    records.set(root, record);
-  }
-
   const allParts = parts(root);
-  const currentTriggers = new Set(allParts.map((item) => item.trigger));
-  for (const [trigger, cleanup] of record.cleanups) {
-    if (currentTriggers.has(trigger)) continue;
-    cleanup();
-    record.cleanups.delete(trigger);
-  }
+  const existing = records.get(root);
+  const reusable = existing && current(existing);
+  if (!reusable) existing?.cleanup();
+  const replacement = records.get(root);
+  if (!reusable && replacement) return replacement;
+  const record: TabsRecord = reusable
+    ? existing
+    : {
+        ...uiResources(root),
+        list,
+        parts: allParts,
+        value: existing?.value,
+      };
+  if (!reusable)
+    record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    if (!record.active) return record;
+    for (const item of allParts) {
+      item.trigger.id ||= `${root.id}-tab-${item.value}`;
+      item.panel.id ||= `${root.id}-panel-${item.value}`;
+      item.trigger.setAttribute("role", "tab");
+      item.trigger.setAttribute("aria-controls", item.panel.id);
+      if (item.trigger.dataset.orientation !== currentOrientation) {
+        item.trigger.dataset.orientation = currentOrientation;
+      }
+      item.panel.setAttribute("role", "tabpanel");
+      item.panel.setAttribute("aria-labelledby", item.trigger.id);
+      if (item.panel.dataset.orientation !== currentOrientation) {
+        item.panel.dataset.orientation = currentOrientation;
+      }
+      if (!focusableContent(item.panel) && !item.panel.hasAttribute("tabindex")) {
+        item.panel.tabIndex = 0;
+        item.panel.dataset.generatedTabindex = "";
+      } else if (
+        focusableContent(item.panel) &&
+        item.panel.dataset.generatedTabindex !== undefined
+      ) {
+        item.panel.removeAttribute("tabindex");
+        delete item.panel.dataset.generatedTabindex;
+      }
+      if (!reusable) wireTrigger(root, item, record);
+    }
 
-  for (const item of allParts) {
-    item.trigger.id ||= `${root.id}-tab-${item.value}`;
-    item.panel.id ||= `${root.id}-panel-${item.value}`;
-    item.trigger.setAttribute("role", "tab");
-    item.trigger.setAttribute("aria-controls", item.panel.id);
-    if (item.trigger.dataset.orientation !== currentOrientation) {
-      item.trigger.dataset.orientation = currentOrientation;
-    }
-    item.panel.setAttribute("role", "tabpanel");
-    item.panel.setAttribute("aria-labelledby", item.trigger.id);
-    if (item.panel.dataset.orientation !== currentOrientation) {
-      item.panel.dataset.orientation = currentOrientation;
-    }
-    if (!focusableContent(item.panel) && !item.panel.hasAttribute("tabindex")) {
-      item.panel.tabIndex = 0;
-      item.panel.dataset.generatedTabindex = "";
-    } else if (focusableContent(item.panel) && item.panel.dataset.generatedTabindex !== undefined) {
-      item.panel.removeAttribute("tabindex");
-      delete item.panel.dataset.generatedTabindex;
-    }
-    if (!record.cleanups.has(item.trigger)) wireTrigger(root, item, record);
+    const requested = root.getAttribute("data-value")?.trim();
+    const stateMarked = allParts.find(
+      (item) =>
+        item.trigger.dataset.state === "active" ||
+        item.trigger.getAttribute("aria-selected") === "true",
+    )?.value;
+    const fallback = allParts.find((item) => !isDisabled(item.trigger))?.value;
+    const next = requested || record.value || stateMarked || fallback;
+    if (!next) throw new Error(`Tabs #${root.id} needs at least one enabled trigger.`);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    if (record.value !== next) record.revision += 1;
+    applyValue(record, next, record.value !== undefined);
+  } catch (error) {
+    failUISetup(record, error);
   }
-
-  const requested = root.getAttribute("data-value")?.trim();
-  const stateMarked = allParts.find(
-    (item) =>
-      item.trigger.dataset.state === "active" ||
-      item.trigger.getAttribute("aria-selected") === "true",
-  )?.value;
-  const fallback = allParts.find((item) => !isDisabled(item.trigger))?.value;
-  const next = requested || record.value || stateMarked || fallback;
-  if (!next) throw new Error(`Tabs #${root.id} needs at least one enabled trigger.`);
-  applyValue(root, next, record.value !== undefined);
   return record;
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="tabs"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="tabs"]')) {
     const tabs = tabRoot(element);
     if (tabs) enhanceTabs(tabs);
   }
@@ -305,10 +360,10 @@ function resolveValue(root: HTMLElement, target: TabTarget): string {
 }
 
 function controlledTabs(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="tabs"]')) return target;
+  if (isHTMLElement(target)) return resolveRoot(target, context.root);
   if (typeof target === "string" && target.startsWith("#")) {
     const local = context.root.querySelector(target);
-    return resolveRoot(local instanceof HTMLElement ? local : target);
+    return resolveRoot(isHTMLElement(local) ? local : target, context.root);
   }
   const root = context.element?.closest('[data-jqs="tabs"]') ?? null;
   const resolved = tabRoot(root);
@@ -324,7 +379,7 @@ function registerActions(api: StarTabsStatic, registerAction: ActionRegistrar): 
       second !== undefined || (typeof first === "string" && first.startsWith("#"));
     const root = controlledTabs(context, explicitRoot ? first : undefined);
     const tab = explicitRoot ? second : first;
-    if (typeof tab !== "string" && !(tab instanceof HTMLElement)) {
+    if (typeof tab !== "string" && !isHTMLElement(tab)) {
       throw new Error("ui.tabs.activate needs a tab value or trigger element.");
     }
     return api.activate(root, tab);
@@ -340,7 +395,7 @@ export function createTabs(registerAction: ActionRegistrar): TabsCollection {
     },
     value: (target) => {
       const root = resolveRoot(target);
-      return (records.get(root) ?? enhanceTabs(root)).value;
+      return recordFor(root).value;
     },
   };
   registerActions(api, registerAction);

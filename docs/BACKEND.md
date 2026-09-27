@@ -53,6 +53,11 @@ terminal `completed`, `cancelled`, or `failed` phase. Cancellation reasons are `
 `cleanup`, `external`, or `aborted`. A request invoked by an observed action includes that action's
 ID as `parentId`.
 
+A caller-supplied `AbortController` can serve multiple requests. Each request retains its own root
+ownership until settlement, so one request completing or failing cannot remove a pending sibling
+from application or kernel cleanup. Root teardown aborts controllers with active requests. Separate
+controllers on independent roots remain independent; sharing a controller also shares cancellation.
+
 Request observations contain the method, URL origin and path, attempt, and applicable status or
 progress counts. They omit the query, fragment, headers, payload, credentials, response body, stream
 chunks, state, DOM, and every live browser object. Paths and normalized error messages can still
@@ -144,6 +149,54 @@ const response = ServerSentEventGenerator.stream((stream) => {
 Do not construct SSE fields by hand. The SDK owns protocol event names, data encoding, retry
 metadata, and event IDs.
 
+## Integrated Lab runtime stream
+
+`GET /api/demo/runtime/stream` reads signals with the official SDK and appends three log entries to
+`#runtime-log-entries`. The integrated Operations Dashboard uses `?target=dashboard` to select the
+fixed `#dashboard-runtime-log-entries` target. Both viewers can therefore coexist in one document.
+Every other target value returns `400`; requests cannot supply an arbitrary selector. The SDK event
+format and default route behavior remain the same.
+
+## Actual-host backend coexistence
+
+The opt-in actual Turbo/htmx fixture runs `core.generic` JSON and HTML plus `core.datastar` SSE
+before and after real host replacement. Its SSE endpoint uses the official SDK stream generator.
+Across both pinned host versions in Chromium, Firefox and WebKit, generic requests omit the Datastar
+request header, implicit signal query and SSE preference; Datastar requests include their current
+signals and stream preference. Responses update signals and HTML, newly inserted directives remain
+live, and each action completes once. The bridge destroys the outgoing application before native
+removal and enhances the incoming one. The single-app control and separate `nested=1` mode also
+verify an outer plain application around the backend child. In that mode the outer state remains
+`{ outer: 100 }`, and the child supplies its own current signals and handles each action once on
+either side of replacement. Two nested no-bridge Chromium diagnostics render host results but leave
+the outgoing child live after native removal. Explicitly booted named component roots and
+cancellation/error combinations remain separate audit work. The earlier matching 931-file
+`npm run check` report `2026-09-23T12-24-53-903Z-32528/report.json` passes all 1,690 browser cases,
+but changed-code coverage, three fixed package sizes and package-budget detector isolation remain
+red. No delivery receipt follows.
+
+The subsequent `nested=1` slice's full `npm run check` report
+`2026-09-23T13-35-36-553Z-47216/report.json` binds a matching 932-file fingerprint and passes 4,933
+units plus 1,702 browser cases across eight projects. `src/declarative.ts` has no uncovered changed
+executable line or function, but the wider changed-source coverage gate, three fixed package-size
+limits and package-budget detector isolation remain red. There is no delivery receipt.
+
+## jQuery Mobile migration reference endpoint
+
+The ticket-0040 browser fixture is a separate synthetic server, not a production package route. It
+serves complete documents for the migration home, project list/search, project detail, edit, new
+project, and help URLs. Native edit and multipart forms remain authoritative with JavaScript off.
+The server checks a fixture CSRF token, validates names and files, enforces a version field, escapes
+returned values, uses 303 after successful writes, and renders deliberate 403, 409, 422, and 503
+responses. It never queues or automatically replays an uncertain write.
+
+Only the project-status control uses a partial update.
+`POST /jquery-mobile-migration/projects/alpha/status` returns an element patch created by
+`ServerSentEventGenerator.stream()`. The request and patch do not own route history, the document
+head, scroll, or full-page errors. The fixture includes slow and error documents so browser tests
+can verify that normal navigation keeps those responsibilities. Full implementation and route
+ownership are documented in [JQUERY_MOBILE_MIGRATION.md](JQUERY_MOBILE_MIGRATION.md).
+
 ## Project Browser endpoint
 
 `GET /api/demo/projects` is the reference Data Table endpoint. The client sends the complete query
@@ -168,11 +221,12 @@ state as Datastar signals:
 }
 ```
 
-The server validates facets, sort entries, group key, mode, page, page size, window bounds, and
-request ID before querying. Sort SQL comes from a server-owned column map and all values use bound
-parameters. The store adds a stable tie-breaker. Page mode accepts 5, 10, 20, 50, 100, or 200 rows.
-Virtual mode clamps the window to 20–80 rows and returns top and bottom spacer metadata. Virtual
-mode uses fixed-height rows and disables grouping and row expansion so offsets remain deterministic.
+Each block cancels its previous query across controls; echoed request IDs do not suppress stale
+responses. The server validates facets, sorts, grouping, mode, page sizes, windows, and request IDs
+before querying. Sort SQL comes from a server-owned column map and all values use bound parameters.
+The store adds a stable tie-breaker. Page mode accepts 5, 10, 20, 50, 100, or 200 rows. Virtual mode
+clamps the window to 20–80 rows and returns top and bottom spacer metadata. Virtual mode uses
+fixed-height rows and disables grouping and row expansion so offsets remain deterministic.
 
 The query response emits:
 

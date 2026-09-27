@@ -1,7 +1,14 @@
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { writeAtomicJson } from "./lib/files.mjs";
-import { gitDirectory } from "./lib/git-state.mjs";
+import {
+  changedLines,
+  changedPaths,
+  fingerprint,
+  gitDirectory,
+  gitHead,
+  resolveQualityBase,
+} from "./lib/git-state.mjs";
 import { runGate, terminateActiveChildren } from "./lib/process.mjs";
 import { qualityPaths, repositoryRoot } from "./static-lib.mjs";
 
@@ -23,6 +30,7 @@ const gates = [
   gate("source-policy", node, ["scripts/quality/source-policy.mjs"]),
   gate("schemas", node, ["scripts/quality/validate-json.mjs"]),
   gate("metrics", node, ["scripts/quality/check-metrics.mjs"]),
+  gate("lint-boundaries", node, ["scripts/quality/check-lint-boundaries.mjs"]),
   gate("lockfile", node, ["scripts/quality/check-lockfile.mjs"]),
   gate("typescript-production", npx, [
     "--no-install",
@@ -45,11 +53,27 @@ const gates = [
     "bin",
     "scripts",
     "quality",
+    "config/**/*.ts",
     "*.config.ts",
+    "*.config.js",
+    ".dependency-cruiser.cjs",
     "--max-warnings=0",
   ]),
-  gate("stylelint", npx, ["--no-install", "stylelint", "src/**/*.css"]),
-  gate("html", npx, ["--no-install", "html-validate", "example/**/*.html", "registry/**/*.html"]),
+  gate("stylelint", npx, [
+    "--no-install",
+    "stylelint",
+    "src/**/*.css",
+    "example/**/*.css",
+    "test/**/*.css",
+    "e2e/**/*.css",
+  ]),
+  gate("html", npx, [
+    "--no-install",
+    "html-validate",
+    "example/**/*.html",
+    "registry/**/*.html",
+    "e2e/**/*.html",
+  ]),
   gate("dependency-architecture", npx, [
     "--no-install",
     "depcruise",
@@ -78,14 +102,25 @@ const gates = [
   gate(
     "semgrep",
     "semgrep",
-    ["scan", "--config", ".semgrep.yml", "--error", "--strict", "--metrics", "off", "."],
+    [
+      "scan",
+      "--config",
+      ".semgrep.yml",
+      "--error",
+      "--strict",
+      "--metrics",
+      "off",
+      "--timeout",
+      "30",
+      ".",
+    ],
     ["delivery", "full-audit"],
     300_000,
   ),
   gate(
     "gitleaks-history",
     "gitleaks",
-    ["git", ".", "--no-banner", "--redact"],
+    ["git", ".", "--log-opts=HEAD", "--no-banner", "--no-color", "--redact", "--verbose"],
     ["delivery", "full-audit"],
     300_000,
   ),
@@ -116,6 +151,26 @@ const signalProbeGate = gate(
   ["fast", "delivery", "full-audit"],
   30_000,
 );
+
+function escapeWorkflowCommandData(value) {
+  return String(value).replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
+}
+
+function escapeWorkflowCommandProperty(value) {
+  return escapeWorkflowCommandData(value).replaceAll(":", "%3A").replaceAll(",", "%2C");
+}
+
+export function configuredStaticGates() {
+  return structuredClone(gates);
+}
+
+export function githubErrorAnnotation(result) {
+  const title = escapeWorkflowCommandProperty(`Static gate ${result.id}`);
+  const detail = escapeWorkflowCommandData(
+    result.reason ?? `See ${result.log ?? "the retained static quality report"}`,
+  );
+  return `::error title=${title}::${detail}`;
+}
 
 async function supplementalGates(paths) {
   const selected = [];
@@ -267,6 +322,19 @@ export async function runStatic(mode, { interruption = () => undefined } = {}) {
     ? resolve(process.env.JQS_QUALITY_RUN_DIRECTORY)
     : join(await gitDirectory(repositoryRoot), "jqstar", "static-runs", runId);
   const scopePath = process.env.JQS_QUALITY_SCOPE_FILE ?? join(runDirectory, "static-scope.json");
+  if (process.env.JQS_QUALITY_SCOPE_FILE === undefined) {
+    const base = await resolveQualityBase(repositoryRoot, process.env.JQS_QUALITY_BASE_SHA);
+    const startupChangedPaths = await changedPaths(repositoryRoot, { base });
+    await writeAtomicJson(scopePath, {
+      schema: "jqstar-quality-scope/1",
+      runId,
+      base,
+      head: await gitHead(repositoryRoot),
+      startFingerprint: await fingerprint(repositoryRoot),
+      changedPaths: startupChangedPaths,
+      changedLines: await changedLines(repositoryRoot, startupChangedPaths, { base }),
+    });
+  }
   const outcome = await executeStaticGates({
     mode,
     selected,
@@ -279,6 +347,9 @@ export async function runStatic(mode, { interruption = () => undefined } = {}) {
     process.stdout.write(
       `${result.status.toUpperCase().padEnd(5)} ${result.id}${result.reason ? `: ${result.reason}` : ""}\n`,
     );
+    if (process.env.GITHUB_ACTIONS === "true" && ["fail", "error"].includes(result.status)) {
+      process.stdout.write(`${githubErrorAnnotation(result)}\n`);
+    }
   }
   process.stdout.write(
     `${outcome.report.status.toUpperCase()} static ${mode} report: ${outcome.reportPath}\n`,

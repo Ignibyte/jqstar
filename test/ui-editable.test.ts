@@ -65,6 +65,21 @@ describe("jQuery Star Editable", () => {
     expect((changed.mock.calls[0]?.[0] as CustomEvent).detail.value).toBe("Grace Hopper");
   });
 
+  it("rejects a wrong-kind element action target without editing the nearby control", async () => {
+    const app = $("#profile").star("instance");
+    if (!app) throw new Error("The Editable application did not start.");
+    await expect(
+      app.run("ui.editable.edit", { element: editButton(), args: [saveButton()] }),
+    ).rejects.toThrow('Editable target did not match data-jqs="editable"');
+    expect($.star.ui.editable.editing(root())).toBe(false);
+    await app.run("ui.editable.edit", { args: [root()] });
+    expect($.star.ui.editable.editing(root())).toBe(true);
+    await app.run("ui.editable.cancel", { args: ["#editable"] });
+    expect($.star.ui.editable.editing(root())).toBe(false);
+    await app.run("ui.editable.edit", { element: editButton() });
+    expect($.star.ui.editable.editing(root())).toBe(true);
+  });
+
   it("cancels with Escape and restores the last committed value", () => {
     editButton().click();
     control().value = "Uncommitted";
@@ -97,6 +112,63 @@ describe("jQuery Star Editable", () => {
     expect(control().validity.valueMissing).toBe(true);
     expect(invalid).toHaveBeenCalledOnce();
     expect(root().querySelector('[data-part="status"]')?.textContent).not.toBe("");
+  });
+
+  it("suppresses an edit completion retired during native selection", () => {
+    const edited = vi.fn();
+    root().addEventListener("jquery-star:editable:edit", edited);
+    vi.spyOn(control(), "select").mockImplementation(() => {
+      $.star.ui.editable.cancel(root());
+    });
+    $.star.ui.editable.edit(root());
+    expect($.star.ui.editable.editing(root())).toBe(false);
+    expect(edited).not.toHaveBeenCalled();
+    expect(root().querySelector('[data-part="status"]')?.textContent).toBe("Edit canceled.");
+  });
+
+  it("stops a stale commit when native validation cancels the edit", () => {
+    const changed = vi.fn();
+    root().addEventListener("jquery-star:editable:change", changed);
+    $.star.ui.editable.edit(root());
+    control().value = "New draft";
+    vi.spyOn(control(), "checkValidity").mockImplementation(() => {
+      $.star.ui.editable.cancel(root());
+      return true;
+    });
+    $.star.ui.editable.commit(root());
+    expect($.star.ui.editable.editing(root())).toBe(false);
+    expect($.star.ui.editable.value(root())).toBe("Ada Lovelace");
+    expect(control().value).toBe("Ada Lovelace");
+    expect(changed).not.toHaveBeenCalled();
+  });
+
+  it("suppresses invalid output after native validity reporting cancels the edit", () => {
+    const invalid = vi.fn();
+    root().addEventListener("jquery-star:editable:invalid", invalid);
+    $.star.ui.editable.edit(root());
+    control().value = "";
+    vi.spyOn(control(), "reportValidity").mockImplementation(() => {
+      $.star.ui.editable.cancel(root());
+      return false;
+    });
+    $.star.ui.editable.commit(root());
+    expect($.star.ui.editable.editing(root())).toBe(false);
+    expect($.star.ui.editable.value(root())).toBe("Ada Lovelace");
+    expect(invalid).not.toHaveBeenCalled();
+    expect(root().querySelector('[data-part="status"]')?.textContent).toBe("Edit canceled.");
+  });
+
+  it("leaves a newer edit open after native change reentry", () => {
+    const changed = vi.fn();
+    root().addEventListener("jquery-star:editable:change", changed);
+    $.star.ui.editable.edit(root());
+    control().value = "Grace Hopper";
+    control().addEventListener("change", () => $.star.ui.editable.edit(root()), { once: true });
+    $.star.ui.editable.commit(root());
+    expect($.star.ui.editable.value(root())).toBe("Grace Hopper");
+    expect($.star.ui.editable.editing(root())).toBe(true);
+    expect(document.activeElement).toBe(control());
+    expect(changed).not.toHaveBeenCalled();
   });
 
   it("honors cancelable edits and changes", () => {

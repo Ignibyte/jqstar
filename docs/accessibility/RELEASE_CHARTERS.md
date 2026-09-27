@@ -4,6 +4,14 @@ These charters are required for a release candidate that changes a grid, dialog,
 sortable interaction, navigation, focus management, or live server update. Axe and ARIA assertions
 remain blocking, but they do not replace this manual evidence.
 
+## CSP proof setup
+
+From the verified repository checkout, run `npm run proof:csp` after `npm run check` passes. Open
+the printed URL and retain the session record under `.git/jqstar/manual-csp/` with the tester's
+observations. The command verifies the tested tarball and current receipt, uses the same strict CSP
+server as automated package proof, and keeps immutable assets available until Ctrl+C. It does not
+record a manual pass. See [development guidance](../DEVELOPMENT.md) for address and port options.
+
 ## Evidence record
 
 Create one record per assistive-technology and browser pair. Store it with the release evidence, not
@@ -58,6 +66,27 @@ Chrome version. Start with a clean browser profile and NVDA's default desktop la
 2. Start, retry, abort, and complete a server update. Confirm loading and terminal results are
    announced once and ordinary streaming patches do not move the virtual cursor.
 
+### CSP installed-package interaction
+
+Use the strict-policy CSP proof served from the same candidate tarball as the release evidence.
+Reload between attempts. Record the page URL and whether JavaScript is enabled. These steps use
+native page controls; no console commands are needed.
+
+1. Navigate by heading and form controls. Confirm the native Name input, Increment, Save, Toggle,
+   Increment behavior, and Run server update and cleanup controls have distinct names. Confirm the
+   initial values are Count 1, Double 2, Behavior count 1, and Behavior double 2.
+2. Activate Increment behavior once and Increment once. Confirm each control retains focus, both
+   counts become 2, both doubles become 4, and neither application changes the other application's
+   value. Activate Save and confirm its saved status. Toggle on and off and confirm the pressed
+   state is announced without duplicate activation.
+3. Activate Run server update and cleanup. Confirm the live result announces Completed once, the
+   server result is Count 8 and Double 16, and the independent behavior finishes at count 3 and
+   double 6. Confirm the SDK patch is readable without resetting the reading cursor. Record any
+   missing, repeated, misleading, or interrupted announcement.
+4. Follow Native destination and return. Submit a name through the native form and confirm the
+   received value on the destination page. Repeat link and form navigation with JavaScript disabled;
+   names, headings, successful navigation, and the submitted value must remain usable.
+
 ## VoiceOver with Safari
 
 Use the current supported macOS release, stable Safari, and built-in VoiceOver. Record whether Quick
@@ -89,6 +118,27 @@ Nav is on for each step because it changes key behavior.
    position announcement and verify the saved DOM order after leaving and returning.
 2. Observe delayed, retrying, aborted, failed, and successful server work. Confirm each terminal
    state is announced once and partial streams do not reset the VoiceOver cursor.
+
+### CSP installed-package interaction
+
+Use the strict-policy CSP proof served from the same candidate tarball as the release evidence.
+Reload between attempts. Record the page URL and whether JavaScript is enabled. These steps use
+native page controls; no console commands are needed.
+
+1. Navigate by heading and form controls. Confirm the native Name input, Increment, Save, Toggle,
+   Increment behavior, and Run server update and cleanup controls have distinct names. Confirm the
+   initial values are Count 1, Double 2, Behavior count 1, and Behavior double 2.
+2. Activate Increment behavior once and Increment once. Confirm each control retains focus, both
+   counts become 2, both doubles become 4, and neither application changes the other application's
+   value. Activate Save and confirm its saved status. Toggle on and off and confirm the pressed
+   state is announced without duplicate activation.
+3. Activate Run server update and cleanup. Confirm the live result announces Completed once, the
+   server result is Count 8 and Double 16, and the independent behavior finishes at count 3 and
+   double 6. Confirm the SDK patch is readable without resetting the reading cursor. Record any
+   missing, repeated, misleading, or interrupted announcement.
+4. Follow Native destination and return. Submit a name through the native form and confirm the
+   received value on the destination page. Repeat link and form navigation with JavaScript disabled;
+   names, headings, successful navigation, and the submitted value must remain usable.
 
 ## Release decision
 

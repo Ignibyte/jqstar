@@ -2,6 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 import { effect, nextUpdate, reactive, stop } from "../src/reactivity";
 
 describe("reactive effect lifecycle", () => {
+  it("allows reading reactive state without a running effect", () => {
+    const state = reactive({ value: 1 });
+    expect(state.value).toBe(1);
+
+    state.value = 2;
+    expect(state.value).toBe(2);
+  });
+
   it("removes dependencies when the initial effect run fails", async () => {
     const state = reactive({ value: 0 });
     const runs = vi.fn(() => {
@@ -110,6 +118,61 @@ describe("reactive effect lifecycle", () => {
     stop(second);
   });
 
+  it("tracks only the active branch after an effect switches dependencies", async () => {
+    const state = reactive({ useLeft: true, left: 0, right: 0 });
+    const observed: number[] = [];
+    const runner = effect(() => observed.push(state.useLeft ? state.left : state.right));
+    expect(observed).toEqual([0]);
+
+    state.useLeft = false;
+    await nextUpdate();
+    expect(observed).toEqual([0, 0]);
+
+    state.left = 1;
+    await nextUpdate();
+    expect(observed).toEqual([0, 0]);
+
+    state.right = 2;
+    await nextUpdate();
+    expect(observed).toEqual([0, 0, 2]);
+    stop(runner);
+  });
+
+  it("does not rerun effects for unchanged or rejected writes", async () => {
+    const state = reactive({ value: 1 });
+    const observed: number[] = [];
+    const runner = effect(() => observed.push(state.value));
+
+    state.value = 1;
+    await nextUpdate();
+    expect(observed).toEqual([1]);
+
+    state.value = 2;
+    await nextUpdate();
+    expect(observed).toEqual([1, 2]);
+
+    Object.defineProperty(state, "value", { writable: false });
+    expect(Reflect.set(state, "value", 3)).toBe(false);
+    await nextUpdate();
+    expect(observed).toEqual([1, 2]);
+    stop(runner);
+  });
+
+  it("notifies only when a present reactive property is deleted", async () => {
+    const state = reactive<{ value?: number }>({ value: 1 });
+    const observed: Array<number | undefined> = [];
+    const runner = effect(() => observed.push(state.value));
+
+    expect(Reflect.deleteProperty(state, "value")).toBe(true);
+    await nextUpdate();
+    expect(observed).toEqual([1, undefined]);
+
+    expect(Reflect.deleteProperty(state, "value")).toBe(true);
+    await nextUpdate();
+    expect(observed).toEqual([1, undefined]);
+    stop(runner);
+  });
+
   it("removes a stopped effect from an already scheduled batch", async () => {
     const state = reactive({ value: 0 });
     const runs = vi.fn(() => void state.value);
@@ -119,6 +182,11 @@ describe("reactive effect lifecycle", () => {
     stop(runner);
     await nextUpdate();
 
+    expect(runs).toHaveBeenCalledOnce();
+    runner();
+    expect(runs).toHaveBeenCalledOnce();
+    state.value = 2;
+    await nextUpdate();
     expect(runs).toHaveBeenCalledOnce();
   });
 

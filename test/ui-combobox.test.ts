@@ -56,6 +56,21 @@ describe("jQuery Star Combobox", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without opening the nearby combobox", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Combobox application did not start.");
+    await expect(
+      app.run("ui.combobox.open", { element: control(), args: [control()] }),
+    ).rejects.toThrow('Combobox target did not match data-jqs="combobox"');
+    expect(content().hidden).toBe(true);
+    await app.run("ui.combobox.open", { args: [root()] });
+    expect(content().hidden).toBe(false);
+    await app.run("ui.combobox.close", { args: ["#combobox"] });
+    expect(content().hidden).toBe(true);
+    await app.run("ui.combobox.open", { element: control() });
+    expect(content().hidden).toBe(false);
+  });
+
   it("wires editable combobox semantics and retains native form controls", () => {
     expect(control().getAttribute("role")).toBe("combobox");
     expect(control().getAttribute("aria-autocomplete")).toBe("list");
@@ -123,6 +138,25 @@ describe("jQuery Star Combobox", () => {
     expect(control().value).toBe("data");
     expect(valueControl().value).toBe("");
     expect(document.activeElement).toBe(control());
+  });
+
+  it("keeps inside interactions open and closes on outside pointer or focus", () => {
+    const outside = document.querySelector<HTMLButtonElement>("#external");
+    if (!outside) throw new Error("Missing external Combobox action.");
+
+    $.star.ui.combobox.open(root());
+    control().dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    expect(root().dataset.state).toBe("open");
+    expect(content().hidden).toBe(false);
+
+    outside.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    expect(root().dataset.state).toBe("closed");
+    expect(content().hidden).toBe(true);
+
+    $.star.ui.combobox.open(root());
+    outside.focus();
+    expect(root().dataset.state).toBe("closed");
+    expect(content().hidden).toBe(true);
   });
 
   it("supports an inline listbox for command and dialog compositions", () => {

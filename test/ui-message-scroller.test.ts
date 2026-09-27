@@ -113,4 +113,33 @@ describe("jQuery Star Message Scroller", () => {
     $("#latest").trigger("click");
     expect($.star.ui.messageScroller.isFollowing(root())).toBe(true);
   });
+
+  it("validates explicit elements and preserves the follow target/value overload", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Message Scroller application did not start.");
+    const button = root().querySelector<HTMLButtonElement>('[data-part="latest"]');
+    if (!button) throw new Error("Missing Message Scroller latest button.");
+    setGeometry(100);
+    viewport().dispatchEvent(new Event("scroll"));
+    expect($.star.ui.messageScroller.isFollowing(root())).toBe(false);
+    await expect(
+      app.run("ui.message-scroller.latest", { element: button, args: [button] }),
+    ).rejects.toThrow('Message Scroller target did not match data-jqs="message-scroller"');
+    expect($.star.ui.messageScroller.isFollowing(root())).toBe(false);
+    await app.run("ui.message-scroller.latest", { args: [root()] });
+    expect($.star.ui.messageScroller.isFollowing(root())).toBe(true);
+    await app.run("ui.message-scroller.follow", { element: button, args: [root(), false] });
+    expect($.star.ui.messageScroller.isFollowing(root())).toBe(false);
+    await app.run("ui.message-scroller.follow", { element: button, args: [true] });
+    expect($.star.ui.messageScroller.isFollowing(root())).toBe(true);
+  });
+
+  it("recognizes a matching native root as the explicit follow target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Message Scroller application did not start.");
+    const button = root().querySelector<HTMLButtonElement>('[data-part="latest"]');
+    if (!button) throw new Error("Missing Message Scroller latest button.");
+    await app.run("ui.message-scroller.follow", { element: button, args: [root(), false] });
+    expect($.star.ui.messageScroller.isFollowing(root())).toBe(false);
+  });
 });

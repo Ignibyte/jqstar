@@ -15,6 +15,7 @@ export interface StarExpressionCallResult {
 }
 
 export interface StarExpressionRuntime {
+  readonly ownsGetter: StarExpressionRuntimeBinding["ownsGetter"];
   invokeAction(
     name: string,
     args: readonly unknown[],
@@ -24,6 +25,7 @@ export interface StarExpressionRuntime {
 }
 
 export interface StarExpressionRuntimeBinding {
+  readonly ownsGetter?: (key: string, getter: object) => boolean;
   resolveAction(name: string): StarAction | undefined;
   resolveHelper(name: string): StarExpressionHelperRecord | undefined;
   startAction(label: string, action: StarAction, context: StarContext): ActionOperation;
@@ -48,7 +50,7 @@ function callResult(
 export function isStarExpressionCallResult(value: unknown): value is StarExpressionCallResult {
   return (
     ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    expressionCallResults.has(value as object)
+    expressionCallResults.has(value)
   );
 }
 
@@ -94,6 +96,7 @@ export function bindStarExpressionRuntime(
         () => undefined,
       );
     },
+    ownsGetter: binding.ownsGetter,
   });
   applicationRuntimes.set(application, runtime);
 

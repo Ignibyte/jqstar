@@ -1,18 +1,18 @@
 import $ from "jquery";
 import { installStar } from "../src/index";
 import "../src/ui/theme.css";
-import projectBrowserHTML from "../registry/blocks/project-browser.html?raw";
 import { installProjectBrowser } from "../registry/blocks/project-browser";
-import accessManagerHTML from "../registry/blocks/access-manager.html?raw";
 import { installAccessManager } from "../registry/blocks/access-manager";
-import auditLogHTML from "../registry/blocks/audit-log.html?raw";
 import { installAuditLog } from "../registry/blocks/audit-log";
-import { disposeJqStarWebMcp, installJqStarWebMcp } from "./webmcp";
+import { installOperationsDashboard } from "../registry/blocks/operations-dashboard";
+import { installProfileSettings } from "../registry/blocks/profile-settings";
 
 installStar($);
 installProjectBrowser();
 installAccessManager();
 installAuditLog();
+installOperationsDashboard();
+installProfileSettings();
 
 interface DemoState extends Record<string, unknown> {
   componentBackendError: string | null;
@@ -820,15 +820,6 @@ $.star.action<DemoState>("serverStream", async (context) => {
   context.state.serverLoading = false;
 });
 
-const projectBrowserMount = document.querySelector<HTMLElement>("#project-browser-demo");
-if (projectBrowserMount) projectBrowserMount.innerHTML = projectBrowserHTML;
-
-const accessManagerMount = document.querySelector<HTMLElement>("#access-manager-demo");
-if (accessManagerMount) accessManagerMount.innerHTML = accessManagerHTML;
-
-const auditLogMount = document.querySelector<HTMLElement>("#audit-log-demo");
-if (auditLogMount) auditLogMount.innerHTML = auditLogHTML;
-
 $("#app").star();
 
 if (__JQS_STATIC_DEMO__) {
@@ -838,7 +829,18 @@ if (__JQS_STATIC_DEMO__) {
       "Static catalog preview. Connect a backend without changing component markup.";
   }
   document.documentElement.dataset.deployment = "static";
+  for (const block of document.querySelectorAll(
+    '[data-block="operations-dashboard"], [data-block="profile-settings"]',
+  )) {
+    for (const control of block.querySelectorAll<HTMLButtonElement>("button")) {
+      const action = control.getAttribute("data-on:click") ?? "";
+      if (
+        action.startsWith("@operationsDashboard.") ||
+        action === "@profileSettings.rotateInvite" ||
+        control.type === "submit"
+      )
+        control.disabled = true;
+    }
+  }
+  document.querySelector<HTMLElement>(".static-backend-note")?.removeAttribute("hidden");
 }
-
-void installJqStarWebMcp().catch(() => undefined);
-window.addEventListener("pagehide", () => disposeJqStarWebMcp(), { once: true });

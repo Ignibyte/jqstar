@@ -1,7 +1,7 @@
 # jQStar reviewed agent corpus
 
-Package: jquery-star@0.1.0
-Corpus version: 3
+Package: jquery-star@1.1.0
+Corpus version: 8
 Canonical site: https://ignibyte.github.io/jqstar/
 
 ## Framework invariants
@@ -30,7 +30,7 @@ Citation: https://ignibyte.github.io/jqstar/docs/datastar/
 The testing harness requires a caller-owned same-realm Window, Document, and jQuery instance. Its bounded flush covers jQStar-owned work, queued fixtures, and registered finite tasks, not arbitrary timers or real-network idleness.
 Citation: https://ignibyte.github.io/jqstar/docs/testing/
 
-Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned.
+Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo and jquery-star/htmx bridges use the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots.
 Citation: https://ignibyte.github.io/jqstar/docs/interoperability/
 
 jQStar components start with native HTML semantics and add only missing state and keyboard behavior. WebMCP does not replace semantic HTML, accessibility APIs, or JavaScript-disabled content.
@@ -46,7 +46,7 @@ What jQStar is, what stays on the server, and the boundaries of the current fram
 Citation: https://ignibyte.github.io/jqstar/
 Source: example/index.html
 
-v0.1.0 is now available
+jQStar 1.1.0 release candidate
 Polished UI behavior for
 Datastar applications.
 A jQuery-powered framework built for backend-first developers. Write HTML, add standard
@@ -67,42 +67,45 @@ Datastar.
 HTML is the API
 Your backend renders the markup. Standard attributes declare behavior while jQStar
 keeps real jQuery available.
-The framework promise
-A complete server-rendered development experience.
-jQStar is for teams that want modern interaction without moving their entire application
-into a client runtime.
-Keep the server in charge
-- Keep routes, validation, permissions, and data on the server.
-- Keep HTML readable and useful before JavaScript runs.
-- Add reactivity and rich components where they are needed.
-- Update regions through HTML, JSON, or Datastar streams.
-- Avoid JSX, hydration, virtual DOM ownership, and duplicated client routes.
-- Continue using existing backend templates and jQuery plugins.
-- Adopt it incrementally instead of rewriting the application.
-What we are building for
-- An excellent server-rendered development experience.
-- Predictable enhancement and cleanup after HTML replacement.
-- Examples for PHP, Rails, Django, Node, and similar stacks.
-- Strong no-build and modular-package support.
-- Accessible components that solve real application workflows.
-- Optional navigation and shared state without making them mandatory.
-- Migration paths from ordinary jQuery, jQuery UI, and jQuery Mobile.
+TLDR · why jQStar
+Bring jQuery back. Keep the server in charge.
+jQuery got a bad name from sprawling event handlers and hidden DOM state. jQStar brings
+it back with explicit signals, owned behavior, and cleanup. For server-rendered apps,
+React can add more machinery than the interaction needs. Write HTML. Enhance what moves.
+Server side is king: keep data, permissions, and validation on the backend. Our bet for
+the AI future is strong servers with focused browser work. Give people and coding agents
+the same inspectable HTML, contracts, and working examples. Measure performance against
+your own workload.
+Features you can use today
+- Real jQuery for selectors, plugins, and existing application code.
+- Reactive signals and named actions declared through HTML attributes.
+- 102 source-owned component recipes and seven composed application blocks.
+- Native controls, keyboard behavior, focus management, and form submission.
+- HTML and JSON updates, plus Datastar streams from the official SDK.
+- Enhancement and disposal when the server replaces a region.
+- Script-tag setup or modular packages, with incremental adoption.
+Built for people and coding agents
+- Readable HTML that the backend and an agent can both inspect.
+- Documented component roots, parts, state, and ownership.
+- Copy-in recipes that your application owns and can edit.
+- A complete live Component Lab on this page.
+- One reviewed reference through llms.txt and llms-full.txt.
+- Optional read-only WebMCP tools for supported browsers.
+- Optional stores, persistence, and inspection for larger applications.
 $ is real jQuery. $name is a reactive signal. Named actions move
 longer behavior back into JavaScript.
+No virtual DOM or duplicated client routes. jQStar is not an official successor to jQuery
+UI or jQuery Mobile.
 Built with itself
 This website is a jQStar application.
-The theme control, dialogs, responsive documentation, code previews, component examples,
-and Component Lab all run on the same public model documented here. React is not hiding
-behind the page.
-Component documentation
-Learn the native markup, actions, state attributes, and keyboard contract.
-Read the guides →
-Component Lab
-Exercise the exhaustive UI, forms, data, blocks, and backend integration proof.
-Open the live system →
+The navigation, theme, code previews, and full Component Lab use the public runtime.
+Inspect the markup and try the controls below.
+Read the component guides ,
+compatibility contract , and
+migration instructions .
 
 ### Introduction [getting-started]
-Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.
+Install, boot jQuery with signals, copy recipes, and find the combined reference.
 Citation: https://ignibyte.github.io/jqstar/docs/
 Source: example/docs/index.html
 
@@ -114,7 +117,9 @@ Design philosophy: your backend generates HTML, jQStar enhances local
 interaction, and Datastar can stream server changes. No virtual DOM or duplicated browser
 router is required.
 Install the package
-jQStar 0.1 supports jQuery 4 and Node 24 or newer for package consumers and tooling.
+Use jQuery >=3.7.1 <5 and Node >=24 for package tooling.
+Exact jQuery 3.7.1 and 4.0.0 are tested. See the
+compatibility contract .
 Terminal
 Copy
 ```
@@ -130,12 +135,12 @@ import "jquery-star/ui.css";
 $("#app").star();
 ```
 Write reactive HTML
-A data-signals root owns local state. Directive expressions can read and write
-signals and call the installed jQuery instance in the same expression.
+An enhanced application root owns local state. Expressions combine signal access with real
+jQuery.
 counter.html
 Copy
 ```
-<section id="counter" data-signals="{ count: 0 }">
+<section id="app" data-jqs data-signals="{ count: 0 }">
 <button data-on:click="$count++; $(el).fadeOut()">
 Increment and disappear
 </button>
@@ -166,11 +171,250 @@ npx jqstar add button dialog tabs toast
 npx jqstar doctor
 ```
 Continue with Datastar integration , inspect the
-0.1 API , review the
-finite CSP expression contract , verify an
+stable API , review the
+finite CSP expression contract , coordinate roots with
+shared stores , verify an
 external plugin , use the
-testing harness , or open the
+testing harness , diagnose ownership with
+inspection and tracing , follow the
+package upgrade diagnostics , read
+the 1.0 migration guide , or open the
 complete Component Lab .
+The combined usage reference joins reviewed guides,
+examples, and registry contracts. Discover it through
+llms.txt or the
+agent tools .
+
+### Compatibility [compatibility]
+Stable jQStar 1.1 entries, formats, package doctor, support ranges, document topology, and lifecycle policy.
+Citation: https://ignibyte.github.io/jqstar/docs/compatibility/
+Source: example/docs/compatibility/index.html
+
+Compatibility
+jQStar 1.1 preserves the stable root and modular runtime entries and adds optional shared
+stores, selected-preference persistence, and explicit inspection. The testing harnesses, CSP
+runtime, and Turbo and htmx bridges are tested from the packed tarball, not from
+repository-only imports.
+Package upgrades
+jqstar doctor --packages --cwd . --json checks local metadata without writes or
+network calls. Exit 0 means no errors, 1 incompatibility, and 2 invalid input or failed
+operation. Also inspect complete and unknown diagnostics.
+jqstar doctor --upgrade-config --cwd . --json prints a dry-run plan. Read the
+upgrade guide
+before explicit apply or rollback.
+Stable package entries
+Entry
+Formats
+Installation
+jquery-star
+ESM, CommonJS, UMD
+Automatic root composition
+jquery-star/core
+ESM, CommonJS
+Explicit
+jquery-star/ui
+ESM, CommonJS
+Explicit plugin
+jquery-star/datastar
+ESM, CommonJS
+Explicit plugin
+jquery-star/csp
+ESM, CommonJS
+Explicit runtime
+jquery-star/testing
+ESM, CommonJS
+Test-only import
+jquery-star/datastar/testing
+ESM, CommonJS
+Test-only import
+jquery-star/turbo
+ESM, CommonJS
+Explicit bridge
+jquery-star/htmx
+ESM, CommonJS
+Explicit bridge
+jquery-star/stores
+ESM, CommonJS
+Explicit plugin
+jquery-star/persist
+ESM, CommonJS
+Explicit plugin over stores
+jquery-star/inspect
+ESM, CommonJS
+Explicit attachment; tracing disabled by default
+jquery-star/ui.css
+CSS
+Optional stylesheet
+Supported environments
+- jQuery >=3.7.1 <5 .
+- Node 24 or newer and npm 11 or newer for Node consumers and project tooling.
+- Current installed Chromium, Firefox, and WebKit browser fixtures.
+- ESM, CommonJS, browser modules, and the root UMD/no-build distribution.
+- Ordinary HTML documents and same-origin frame documents.
+Shadow-root applications are not supported. Turbo support is
+>=8.0.21 <8.1.0 ; htmx support is >=2.0.0 <2.1.0 . Both
+hosts are optional and injected explicitly.
+Version boundaries
+The npm package version is 1.1.0 . The plugin registrar remains independently
+versioned as 0.1.0 , and the finite CSP grammar remains
+jqstar-csp-expression/1 . A package release does not silently change either
+contract.
+The root entry retains the recorded 0.1 behavior, including real jQuery, trusted JavaScript
+expressions, and the default Datastar request profile. Read the
+1.0 migration guide for additions and unchanged
+defaults.
+Lifecycle policy
+The current 1.x minor receives fixes. The previous 1.x minor receives security fixes for six
+months after the next minor ships. Unsupported entries fail explicitly; they are not kept
+alive through hidden aliases. Security handling is described in the
+security policy .
+
+### Migrate to 1.0 [migration-to-1]
+Upgrade the 0.1 compatibility root or adopt stable modular, testing, CSP, Turbo, and htmx entries.
+Citation: https://ignibyte.github.io/jqstar/docs/migration/
+Source: example/docs/migration/index.html
+
+Migrate to 1.0
+The 1.0 root entry preserves the 0.1 compatibility baseline. The main upgrade is choosing
+whether to keep that complete root or adopt stable, explicit package entries.
+Keep the compatibility root
+main.ts Copy
+```
+import $ from "jquery";
+import "jquery-star";
+$("#app").star();
+```
+This still auto-installs core, Datastar, and UI behavior. It still uses trusted JavaScript
+expressions and the core.datastar request profile by default. Existing
+data-signals , directives, actions, request events, and UI methods retain their
+recorded meanings.
+Choose explicit entries when needed
+main.ts Copy
+```
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { datastarPlugin } from "jquery-star/datastar";
+import { uiPlugin } from "jquery-star/ui";
+const installed = installStarCore($);
+installed.star.use([datastarPlugin, uiPlugin]);
+installed.star.boot(document);
+```
+Modular imports are inert until explicitly installed. Import
+jquery-star/testing only in tests. Use
+jquery-star/datastar/testing for deterministic Datastar fixtures.
+Review lifecycle and extension changes
+-
+Register plugins before the first application starts; installation is transactional.
+- Use $.star.whenEnhanced() before inspecting a server-patched DOM.
+-
+Use $.star.dispose() for terminal document shutdown and inspect its report.
+-
+Move reusable behavior into namespaced public plugins, directives, helpers, or actions.
+-
+Use the testing harness with a caller-owned same-realm document and jQuery instance.
+CSP, Turbo, and htmx are opt-in
+The root does not silently switch expression languages. Install
+jquery-star/csp before other plugins to use the finite grammar; move ambient
+globals, arbitrary calls, and unapproved jQuery methods into registered application actions
+or helpers. Do not import the compatibility root into the same jQuery owner.
+Turbo and htmx continue to own requests, history, focus, and DOM mutation. Their explicit
+bridges add jQStar cleanup, preservation, and re-enhancement around supported host events.
+See the bridge contract .
+jQuery UI and Mobile applications
+jQStar does not bundle either archived runtime and does not claim to be an official
+successor. Isolate and destroy application-owned jQuery UI regions while migrating them to
+native components. Migrate jQuery Mobile route by route to server documents, semantic HTML,
+responsive CSS, native forms, jQuery 4, and bounded jQStar enhancement.
+Continue with the detailed
+jQuery UI guide or
+jQuery Mobile guide .
+Names that do not change
+Use jQStar for the product, jquery-star for npm imports,
+jqstar for the CLI and repository, and data-jqs for component
+roots. The plugin API remains 0.1.0 ; the CSP grammar remains
+jqstar-csp-expression/1 .
+
+### Security [security]
+Private vulnerability reporting, maintained versions, application responsibilities, CSP boundaries, and release response.
+Citation: https://ignibyte.github.io/jqstar/docs/security/
+Source: example/docs/security/index.html
+
+Security
+Report suspected vulnerabilities privately. Do not include secrets, private customer data,
+or exploit details in a public issue.
+Use the repository's
+private vulnerability report
+form. Include the affected version and entry, impact, reproduction, and any proposed fix.
+Response and supported versions
+Maintainers aim to acknowledge a complete report within three business days and provide an
+initial triage within seven. The current 1.x minor is maintained; the previous 1.x minor
+receives security fixes for six months after the next minor ships.
+Application responsibilities
+- Authenticate and authorize every server operation.
+- Apply CSRF defenses and validate all request data on the server.
+- Encode text and sanitize any application-trusted HTML before rendering it.
+- Protect secrets, response data, logs, and deployment configuration.
+-
+Configure CSP, Trusted Types, allowed origins, and third-party scripts for the site.
+jQStar coordinates browser behavior; it is not an authorization layer, HTML sanitizer,
+secrets store, or network policy.
+Inspection privacy
+jquery-star/inspect is explicitly attached and tracing starts disabled.
+Snapshots and bounded traces exclude URLs, headers, bodies, HTML, DOM, application/store
+values and arbitrary errors. Only bounded action/store identifiers can receive explicit,
+expiring retention/export permission. Revocation removes affected retained records. Export
+returns data to the caller and performs no network or file write. See
+inspection and tracing for the public entry.
+Expression engines
+The compatibility root evaluates application-authored JavaScript and therefore needs a CSP
+policy that permits dynamic evaluation. The explicit jquery-star/csp entry uses
+a closed finite grammar without dynamic code construction. It still requires trusted markup
+and trusted installed extensions and is not a sandbox for attacker-authored expressions.
+Read the complete CSP expression contract before selecting
+the finite runtime.
+Release response
+A vulnerable release may be deprecated in npm and its GitHub release returned to draft while
+a fixed version and advisory are prepared. Package evidence includes dependency advisories,
+lock integrity, licenses, exports, lifecycle scripts, generated artifacts, and the exact
+packed bytes.
+
+### Download [download]
+Install published packages or verify exact candidate tarballs without treating release preparation as publication.
+Citation: https://ignibyte.github.io/jqstar/docs/download/
+Source: example/docs/download/index.html
+
+Download
+This site describes the jQStar 1.1.0 release candidate. A candidate receipt proves local
+packed bytes; it does not mean that version has been published to npm or tagged in Git.
+Install the current npm release
+Terminal Copy
+```
+npm install jquery-star jquery
+```
+npm resolves the currently published package. Check the returned version before relying on
+1.0 behavior; this page does not claim that an unpublished candidate is available there.
+Use a reviewed candidate tarball
+A maintainer can provide the exact jquery-star-1.1.0.tgz named by the immutable
+candidate receipt. Verify both hashes before installation.
+Terminal Copy
+```
+shasum -a 256 jquery-star-1.1.0.tgz
+shasum -a 512 jquery-star-1.1.0.tgz
+npm install ./jquery-star-1.1.0.tgz jquery
+```
+Package formats
+The package contains ESM and CommonJS entries, a root UMD build for no-build applications,
+declarations and source maps, optional CSS, the jqstar CLI, registry recipes,
+and a self-hosted website archive. jQuery remains an external peer; it is not vendored.
+Verify an authorized publication
+Terminal Copy
+```
+npm view jquery-star@1.1.0 --json
+git rev-parse v1.1.0^{commit}
+gh release view v1.1.0 --json tagName,targetCommitish,isDraft,isPrerelease,url
+```
+Compare registry integrity, tag target, release assets, and receipt hashes. Publication,
+tagging, signing, and announcements require separate maintainer authorization.
 
 ### Datastar integration [datastar-integration]
 Call backend actions and consume JSON, HTML, or Datastar SSE generated by the official SDK.
@@ -178,25 +422,27 @@ Citation: https://ignibyte.github.io/jqstar/docs/datastar/
 Source: example/docs/datastar/index.html
 
 Datastar Integration
-jQStar keeps localized browser behavior beside the HTML while the server can update signals
-and page regions through JSON, HTML, or Datastar server-sent events.
+Keep local behavior beside server-rendered HTML. The server can patch signals and regions
+with JSON, HTML, or Datastar SSE.
 One protocol boundary: jQStar consumes Datastar-compatible events. Your
 server must generate SSE with @starfederation/datastar-sdk , never handwritten
 event strings.
 Call the backend from HTML
-Built-in request actions serialize the current public signals and interpret the response by
-its content type.
+The root defaults to core.datastar . Core alone uses core.generic
+with explicit inputs and JSON/HTML. Select the generic profile for ordinary endpoints.
 application.html Copy
 ```
 <button data-on:click="@get('/items')">Refresh</button>
-<form data-on:submit__prevent="@post('/items', { contentType: 'form' })">
+<form method="post" action="/items"
+data-on:submit__prevent="@post('/items', { contentType: 'form' })">
 <input name="title" required />
 <button>Save</button>
 </form>
 ```
-GET places signals in a datastar query parameter. POST, PUT, PATCH, and DELETE
-use the documented JSON or form contract. Every request includes
-Datastar-Request: true .
+Datastar GET sends filtered signals in the datastar query; JSON DELETE uses
+both query and body. Datastar requests include Datastar-Request: true . Form
+mode uses native form encoding. For submission without JavaScript, the endpoint must return
+useful HTML or a redirect.
 Response behavior
 Response
 jQStar result
@@ -231,14 +477,26 @@ mode: "append",
 });
 });
 ```
+One read for several regions
+Put a named backend action in a registry block when several regions need the same record. An
+outer data-jqs coordinator can contain independently owned consumer roots.
+Share the selected ID through an optional store and return one SDK response that patches
+their stable content targets. Patches stay inside the initiating application's boundary.
+The block owns cancellation and subscriptions. Retain a request while another consumer still
+needs it, and release it when the last consumer leaves or the kernel is disposed. Keep
+initial HTML, native links and form actions useful without JavaScript. After a write,
+refresh canonical output; validation, permissions and versions stay on the server.
+jQStar does not ship a resource cache or mutation package. HTTP caching can reduce origin
+work, but correctness must hold when a browser requests the record again. Applications
+needing a shared JSON cache can evaluate an external core in an application-owned plugin
+with explicit lifecycle cleanup.
 Enhancement after a patch
-Inserted HTML is scanned immediately. New directives, bindings, component roots, named
-actions, and cleanup hooks work without calling .star() again. Outer morphs
-preserve matching elements, focused controls, unsaved values, and existing jQuery handlers.
-Use data-ignore-morph for a general subtree the server must not change. Use
-data-jqs-preserve when a live jQStar application root must survive the patch,
-and await $.star.whenEnhanced() before reading newly inserted directive or
-component DOM.
+New directives and components are enhanced without another .star() call. Morphs
+retain matching nodes and their handlers, restore focus, and protect the active input's
+value. Other values can receive server updates; removed nodes lose their state. Use
+data-ignore-morph for an unchanged subtree and
+data-jqs-preserve for a retained live application root. Await
+$.star.whenEnhanced() before reading enhanced DOM.
 The repository's Component Lab includes real JSON,
 HTML, multipart, and official-SDK stream endpoints when run through the local proof server.
 
@@ -248,11 +506,13 @@ Citation: https://ignibyte.github.io/jqstar/docs/api/
 Source: example/docs/api/index.html
 
 Core API
-jQStar is HTML-driven, but its installed jQuery surface exposes explicit application,
-action, request, lifecycle, and UI methods for code that needs programmatic control.
-The root surface is the 0.1 compatibility contract. The core ,
-ui , datastar , testing , and
-datastar/testing package subpaths are published 0.4 previews.
+Use the installed jQuery surface for application, action, request, lifecycle, and UI
+control.
+The root auto-installs core, Datastar, and UI. The explicit core ,
+ui , datastar , csp , testing ,
+datastar/testing , turbo , and htmx package subpaths
+are stable from 1.0. stores , persist , and inspect
+are stable in 1.1. Install structural plugins before boot.
 Applications
 API
 Purpose
@@ -326,12 +586,30 @@ directive and UI enhancement, and the resulting reactive work. Use it before rea
 inserted by an HTML or Datastar patch. $.star.version reports the installed
 runtime version, and $.star.clearExpressionCache() clears the current
 expression engine's cache.
+Inspection and tracing
+Attach jquery-star/inspect to an installed kernel, including after application
+startup. Its snapshots contain immutable ownership and service counts. Tracing is disabled
+by default and requires explicit entry and UTF-8 byte limits.
+```
+import { attachInspector } from "jquery-star/inspect";
+const inspector = attachInspector($);
+const snapshot = inspector.snapshot();
+inspector.enableTrace({ maxEntries: 100, maxBytes: 32768 });
+const trace = inspector.exportTrace();
+inspector.dispose();
+```
+Repeated attachments share one collector with independent leases. The first lease to enable
+tracing controls its settings; releasing it clears trace data and disclosure policies.
+Exports omit URLs, headers, bodies, DOM, application values and arbitrary errors. The
+generic $.star.metadata() capability supplies safe inventory, observation and
+lifecycle ownership. Read the
+complete inspection contract
+for filters, sampling, limits, service summaries and expiring field permissions.
 Terminal disposal
 $.star.dispose() permanently closes one document installation, attempts every
-owned cleanup, releases its document and expression-engine claims, and returns a frozen
-JSON-safe report. A cleanup failure throws StarDisposalError after the complete
-sweep and retains that report. Repeated disposal returns the same report or throws the same
-error object.
+owned cleanup, releases its document claim, and returns a frozen JSON-safe report. A cleanup
+failure throws StarDisposalError after the complete sweep and retains that
+report. Repeated disposal returns the same report or throws the same error object.
 Continue with the CSP expression contract , the
 testing harness , or the
 plugin contract and conformance guide .
@@ -549,12 +827,9 @@ installation rolls back, disposal runs once, later cleanup still runs after a fa
 the frozen public disposal report names the failed plugin owner. The functions contain no
 runner imports or suite registration.
 External navigation
-Navigation and page-transition plugins replace DOM through
-createRenderAdapter() from jquery-star/core . The adapter destroys
-outgoing application roots deepest-first while they remain connected, retains explicit
-data-jqs-preserve identities and control state, validates the committed roots,
-restores focus, boots incoming data-jqs roots, and waits for enhancement. The
-caller performs the actual DOM mutation.
+Use createRenderAdapter() from jquery-star/core around external
+DOM mutation. It releases outgoing roots, checks explicit preservation, boots incoming
+roots, and waits for enhancement. The host owns DOM mutation and focus.
 Wrap each navigation in one public operation observation. Keep the same operation ID from
 started through exactly one completed or
 failed terminal record, and do not expose markup, signal values, or live nodes
@@ -566,18 +841,118 @@ accessibility, arbitrary timers, network services, or memory use. Add focused te
 those claims and use the runner adapter described in the
 testing guide .
 
+### Shared stores [shared-stores]
+Install per-kernel shared reactive state, keep local signals separate, and preserve server authority and owned cleanup.
+Citation: https://ignibyte.github.io/jqstar/docs/stores/
+Source: example/docs/stores/index.html
+
+Shared stores
+The optional jquery-star/stores plugin gives applications in one document a
+shared reactive namespace while keeping every root's local signals independent.
+Authority boundary: stores are inspectable client coordination state.
+Never put secrets in them or use them for authentication, authorization, tenancy, durable
+persistence, or authoritative entity caching.
+Choose the right owner
+- Use $name when one application root owns the value.
+- Use stores.name when several roots coordinate temporary client state.
+-
+Use the persistence plugin for selected browser
+preferences.
+- Keep permissions, validation, records, and server-state resources on the server.
+Install and define a store
+The stores entry is side-effect-free. Install it before the first application starts, then
+define stores either before or after roots mount.
+main.ts Copy
+```
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { defineStore, storesPlugin } from "jquery-star/stores";
+const installed = installStarCore($);
+const shared = installed.star.use(storesPlugin);
+const sessionDefinition = defineStore({
+initial: {
+count: 0,
+increment() {
+this.count += 1;
+},
+},
+});
+const session = shared.define("session", sessionDefinition);
+```
+A definition object owns one lower-camel ASCII name for the kernel lifetime. Repeating the
+same definition and name returns the existing reactive store. A different definition,
+another name for the same definition, or redefinition after publication fails.
+Use shared and local state together
+counter.html Copy
+```
+<section data-signals="{ store: 'local' }">
+<button data-on:click="stores.session.count++">Increment shared</button>
+<output data-text="stores.session && stores.session.count"></output>
+<output data-text="$store"></output>
+</section>
+```
+$store always means the current root's local signal named store .
+The fixed stores root is the read-only shared namespace in trusted and CSP
+expressions. Without the plugin it is undefined , not an ambient global. The CSP
+grammar permits safe data writes below a store name; call named actions instead of store
+methods when using CSP expressions.
+Accepted values and transactions
+Store data accepts finite primitives, arrays, plain or null-prototype records, and ordinary
+function leaves. jQStar clones the caller's acyclic graph and preserves shared references.
+It rejects cycles, accessors, symbol keys, promises, DOM values, class instances, dates,
+maps, sets, and other live objects before publication.
+Function leaves keep their identity and normal member-call this . jQStar does
+not bind, serialize, inspect by invocation, or register them as actions. Writes cannot add,
+remove, or replace a method.
+restore.ts Copy
+```
+shared.transaction<typeof session>("session", (draft) => {
+draft.count = 10;
+});
+```
+A transaction edits a detached validated draft and commits all data before one reactive
+flush. A throw, thenable, invalid graph, or method change leaves the live store unchanged.
+Subscribe and own setup work
+subscribe(name, selector, listener, options) compares selections with
+Object.is by default. Use { immediate: true } for the initial
+value and call the returned idempotent release function to stop. Batched writes deliver one
+later selection; one listener failure is observed without stopping siblings.
+A definition's synchronous setup callback receives a frozen context with the
+store, its lifetime AbortSignal , and owned cleanup ,
+effect , subscribe , and finite task helpers. Failed
+setup releases registered work in reverse order and never publishes the name. Kernel
+disposal makes the facade and stores terminal, aborts tasks, and attempts every cleanup
+once. Destroying one application stops its own store-dependent effects without removing the
+shared store or affecting another root.
+Read the complete API, name and graph limits, observation metadata, and lifecycle details in
+the packaged
+stores contract .
+
 ### Turbo and htmx interoperability [external-interoperability]
-Install the shipped Turbo lifecycle bridge and review tested version boundaries, preservation, focus ownership, and future htmx limits.
+Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.
 Citation: https://ignibyte.github.io/jqstar/docs/interoperability/
 Source: example/docs/interoperability/index.html
 
 Turbo and htmx interoperability
-jQStar has a tested contract for wrapping external DOM renders without taking over the host
-library. The jquery-star/turbo preview ships now. The htmx bridge remains
-planned.
+jQStar has tested bridges for wrapping external DOM renders without taking over the host
+library. The stable jquery-star/turbo and jquery-star/htmx entries
+both ship now.
 One ownership seam: the host sends requests and mutates the DOM. A bridge
 uses createRenderAdapter() only to release outgoing jQStar roots, preserve
 exact approved identities, enhance incoming roots, and await the barrier.
+Choose navigation ownership
+Start with useful complete HTML documents and native links and forms. Add Turbo or htmx when
+enhanced visits or targeted regions help your application. jQStar supplies the lifecycle
+bridge; a native jQStar navigation package is not part of the framework.
+Configure the host's error rendering and show visible recovery after a network failure. Keep
+server validation and write protection, and never automatically resend an uncertain write.
+Private pages need both server cache policy and host snapshot controls: put
+hx-history="false" on the private content that swaps, or use Turbo's no-cache
+metadata. Test direct entry, enhanced entry, leaving and Back.
+Use native document boundaries for downloads, changed head or script policy and destinations
+that require browser behavior. Review the
+navigation decision and supported patterns
+for the measured limits, including rapid programmatic history changes.
 Tested version boundaries
 Host
 Approved evidence range
@@ -588,8 +963,9 @@ Turbo
 htmx
 >=2.0.0 <2.1.0
 2.0.0 and 2.0.10
-Missing, prerelease, unknown, and out-of-range versions fail before the Turbo bridge
-installs listeners. jQStar does not auto-detect or load either host.
+Missing, prerelease, unknown, and out-of-range versions fail before a bridge installs
+listeners. The htmx bridge also requires the explicit version to match
+htmx.version . jQStar does not auto-detect or load either host.
 Install the Turbo bridge
 Explicit Turbo capability and version
 ```
@@ -607,6 +983,24 @@ Use the exact installed Turbo package version. Importing the bridge is inert. In
 registers document-scoped public event listeners but never calls Turbo start or navigation
 APIs. bridge.dispose() removes those listeners without disposing Turbo or the
 jQStar kernel.
+Install the htmx bridge
+Explicit htmx capability and version
+```
+import htmx from "htmx.org";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createHtmxBridge } from "jquery-star/htmx";
+const { star } = installStarCore($);
+const bridge = star.use(
+createHtmxBridge({ $, htmx, version: "2.0.10" }),
+);
+await bridge.whenIdle();
+```
+Use the exact installed htmx package version. Importing the jQStar bridge is inert.
+Installing it registers document-scoped public lifecycle listeners but never calls
+htmx.ajax() , htmx.process() , htmx.swap() , or
+htmx.trigger() . whenIdle() waits for bridge-owned render and
+jQStar enhancement work, not arbitrary htmx requests or network idleness.
 Lifecycle
 External render state machine
 ```
@@ -637,11 +1031,11 @@ htmx no-swap
 afterSwap may fire even when no target mutation occurs.
 Preservation and focus
 data-jqs-preserve remains the core marker. The Turbo bridge also passes an
-exact old data-turbo-permanent element when it is connected, inside the
+exact old data-turbo-permanent element, and the htmx bridge does the same for
+hx-preserve . In each case, the old element must be connected, inside the
 outgoing boundary, uniquely identified, matched once in the incoming content, and retained
-after mutation. A future htmx bridge may do the same for hx-preserve .
-Duplicate, missing, disconnected, moved, or cross-document candidates are cleaned and
-diagnosed.
+after mutation. Duplicate, missing, disconnected, moved, or cross-document candidates are
+cleaned and diagnosed.
 The tested hosts retain DOM and control-value identity for valid permanent elements but can
 move focus to the activated control. Focus remains host-owned. A bridge must not add a focus
 correction unless a later contract explicitly approves and tests one.
@@ -655,6 +1049,21 @@ cross-document targets, and script execution guarantees are outside this contrac
 complete
 repository contract
 for every stable mapping ID and update rule.
+htmx troubleshooting
+-
+An installation error usually means the explicit version differs from
+htmx.version , falls outside >=2.0.0 <2.1.0 , or the
+capability is incomplete.
+-
+A prevented swap can indicate a disconnected target, unsupported swap style, duplicate
+main swap, or overlapping active boundary. Pass onError and inspect
+bridge.observations() for redacted evidence.
+-
+A recreated preserved root needs the same unique, non-empty id on the old and
+incoming hx-preserve or data-jqs-preserve element.
+-
+A pending whenIdle() is waiting for a mapped htmx terminal event or jQStar
+enhancement. Call dispose() during shutdown.
 
 ### jQuery ecosystem [jquery-ecosystem]
 Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.
@@ -663,15 +1072,154 @@ Source: example/docs/ecosystem/index.html
 
 Reviewed package and migration boundaries for jQuery Core, Migrate, UI, Mobile, Sizzle, and QUnit.
 
+### jQuery UI coexistence and migration [jquery-ui-migration]
+Isolate application-owned jQuery UI regions and migrate them feature by feature to semantic HTML and native jQStar components.
+Citation: https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-ui/
+Source: example/docs/ecosystem/jquery-ui/index.html
+
+jQuery UI coexistence and migration
+Keep existing jQuery UI regions application-owned while you migrate one feature at a time to
+semantic HTML and native jQStar components. New work should use jQStar directly.
+No compatibility facade: a similar component name does not promise Widget
+Factory, plugin, method, option, event, data, Position, effect, theme, or third-party
+extension compatibility.
+Verified boundary
+The fixture pins jQuery 4.0.0 and jQuery UI 1.14.2 with the official base theme. It runs
+beside packaged jQStar output in Chromium, Firefox, and WebKit, plus touch, reduced-motion,
+forced-color, and JavaScript-disabled modes. jQuery UI is a development fixture only; it is
+absent from jQStar runtime dependencies, package paths, installed consumer trees, and entry
+graphs.
+The full inventory maps 72 unique official API pages exactly once. It covers all 15 widgets,
+6 interactions, 34 effect entries, methods, selectors, utilities, Widget Factory contracts,
+and theming. Third-party widgets remain application-specific.
+Choose the migration class
+Class
+Use it when
+Direct semantic
+A native control or relationship already owns the task.
+Changed contract
+A jQStar counterpart exists with new source markup and APIs.
+External coexistence
+The application must temporarily keep a legacy interaction.
+No equivalent
+jQStar does not publish the legacy API or behavior.
+Keep ownership separate
+-
+A legacy island owns its UI instances, generated wrappers, data, events, theme, portals,
+and explicit destroy .
+-
+A jQStar island owns its data-jqs root, data-part slots, state,
+named actions, focus, and disposal.
+-
+Destroy the current owner before a server response replaces its island, then initialize
+only the incoming owner.
+-
+Do not patch $.widget , read private UI data, auto-initialize legacy markup,
+or run both systems on one element.
+Migrate the project editor
+-
+Record the exact legacy behavior, form values, server requests, focus, keyboard, touch,
+responsive, and no-script baseline.
+-
+Add jQStar beside the untouched legacy island and verify package, data, event, CSS,
+overlay, and focus isolation.
+-
+Move date input, autocomplete, tabs, sortable order, and dialog one semantic region at a
+time.
+-
+Preserve native names, values, validation, submitters, server behavior, direct URLs, and
+keyboard alternatives.
+-
+Release and observe the region, then explicitly destroy and remove its old UI code and
+theme assets.
+Adapter decision
+No adapter ships. The project-editor and command-toolbar slices need different facades. The
+measured sketches save only 13 lines (7.9%) and 7 lines (7.7%), below the frozen 25% and
+20-line thresholds. A shared surface would also exceed the two-widget limit and has no
+executable accessibility, gzip, type, coverage, or browser proof.
+Direct semantic migration removes the legacy lifecycle and runtime cost. A future adapter
+needs new observed demand and a separate bounded ticket.
+Accessibility and rollback
+The exact fixture retains four serious or critical legacy axe rules across seven nodes and
+adds none in native or partially migrated islands. It also verifies touch targets, reduced
+motion, forced colors, native validation and submission without JavaScript, explicit destroy
+before server replacement, sibling identity, and independent documents.
+Release one island behind an application-owned switch. Keep the prior template and assets
+deployable until checks pass. Rollback disposes the current owner, restores only that
+island, and initializes the previous owner.
+Read the
+complete matrix, code examples, measurements, and verification guide . jQStar is an independent project and is not affiliated with, sponsored by, endorsed by,
+or an official successor to the jQuery project or the OpenJS Foundation.
+
+### jQuery Mobile migration [jquery-mobile-migration]
+Migrate archived jQuery Mobile applications route by route to server documents, semantic HTML, responsive CSS, jQuery 4, and bounded jQStar enhancement.
+Citation: https://ignibyte.github.io/jqstar/docs/ecosystem/jquery-mobile/
+Source: example/docs/ecosystem/jquery-mobile/index.html
+
+jQuery Mobile migration
+Move one route at a time to ordinary server documents, native links and forms, responsive
+CSS, jQuery 4, and bounded jQStar enhancement. Do not load the archived Mobile runtime in a
+modern route.
+No compatibility runtime: jQStar does not recreate the page container,
+Ajax router, virtual mouse aliases, transition catalog, theme swatches, role
+auto-initializer, or third-party plugin API.
+Verified boundary
+The machine authority maps 95 official 1.4 API entries, 60 unique data attributes with 122
+documented contexts, ten transitions, and 16 additional behaviors. Every item has one owner:
+native HTML, native CSS, a jQStar component, application code, the Datastar SDK, an optional
+approved bridge, full document navigation, or intentionally unsupported.
+The historical jquery-mobile@1.4.1 identity is evidence only. It is absent from
+dependencies, the lockfile, fixtures, CI downloads, packed files, clean consumer installs,
+and jQStar entry graphs.
+Use route boundaries
+-
+Inventory roles, attributes, events, plugins, themes, routes, forms, and server work.
+- Give every screen a direct server URL and preserve native link/form behavior.
+- Upgrade Core with the official Migrate workflow in a separate legacy-stack change.
+- Replace layout and swatches with semantic HTML and responsive CSS.
+- Migrate one widget or region to a native element or source-owned jQStar component.
+-
+Keep full documents, or select one approved host bridge for measured application need.
+-
+Remove the old initializer, assets, handlers, and dependency for that route; test and
+release.
+Keep the old and new route templates deployable until production verification passes.
+Rollback switches the whole route to its prior compatible stack. It never mixes jQuery
+Mobile with jQuery 4 in the same modern document.
+Reference application
+The server-rendered project tracker proves list, detail, GET search, edit/conflict,
+multipart upload, responsive navigation, native dialog, tabs, table/list presentation,
+official-SDK status patching, history, focus, scroll, pointer cancellation, and slow, error,
+offline, and JavaScript-disabled behavior. Four shared scenarios run in Chromium, Firefox,
+and WebKit, followed by four special-mode scenarios for 16 browser executions.
+Forms and input
+-
+Preserve action, method, names, submitters, encoding, files, constraint validation, and
+server redirects or errors.
+-
+Keep authentication, authorization, CSRF, validation, output encoding, and conflict
+handling on the server.
+- Never replay an uncertain write automatically after a disconnect.
+-
+Replace virtual input with native click/pointer/input events, pointer cancellation, and a
+keyboard-operable control that produces one activation.
+Read the complete guide
+The
+repository migration guide
+contains the complete inventory boundary, triage worksheet, Core/Migrate split, ownership
+choices, forms and pointer contracts, two application inventories, rollback procedure, exact
+measurements, sources, and unsupported behavior.
+
 ### Testing [testing-harness]
 Use an explicit DOM realm, deterministic response queue, bounded flush, disposal reports, and runner-neutral conformance.
 Citation: https://ignibyte.github.io/jqstar/docs/testing/
 Source: example/docs/testing/index.html
 
 Testing
-The jquery-star/testing preview supplies a runner-neutral harness for public
-jQStar behavior. You choose the DOM implementation and jQuery instance; the harness owns
-only the installation, applications, response fixtures, and finite work created through it.
+The stable jquery-star/testing entry supplies a runner-neutral harness for
+public jQStar behavior. You choose the DOM implementation and jQuery instance; the harness
+owns only the installation, applications, response fixtures, and finite work created through
+it.
 Explicit ownership: importing the testing entry does not create a DOM,
 install jQStar, replace fetch , or register a test suite. The generic entry
 does not import a DOM package, test runner, or Datastar.
@@ -724,6 +1272,9 @@ reports unused expectations during disposal. Use json() , html() ,
 empty() , httpError() , networkError() ,
 delay() , retry() , and abort() . There is no network
 passthrough.
+Non-configurable properties cannot be removed; cleanup reports failures, completes other
+attempts and preserves callback errors. Disposal removes fixture listeners and cancels
+delays without aborting caller signals; failed timer cancellation cannot resume work.
 jquery-star/datastar/testing adds success, ordered multi-event, chunked, retry,
 malformed, failure, and abort fixtures. Valid event bytes come from the official Datastar
 SDK. Keeping them in a separate entry prevents Datastar from entering generic test and core
@@ -786,10 +1337,9 @@ npx jqstar list --type component
 npx jqstar add dialog dropdown-menu tabs toast
 npx jqstar list --type block
 ```
-Explore the complete system
-The first hand-authored guides establish the documentation pattern. The
-Component Lab remains the exhaustive live proof for
-all recipes, composed blocks, forms, data tables, backend requests, and Datastar streams.
+The complete system runs below: every recipe, all seven blocks, native forms, data tables,
+backend requests, and Datastar streams. Choose a section and interact with the examples
+here.
 
 ### Dialog [component-dialog]
 Native modal dialog markup, focus containment and return, lifecycle events, and named actions.
@@ -1043,11 +1593,11 @@ are @ui.toast.show , @ui.toast.dismiss , and
 @ui.toast.clear .
 
 ### Component Lab [component-lab]
-The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.
+The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.
 Citation: https://ignibyte.github.io/jqstar/components/lab/
 Source: example/components/lab/index.html
 
-The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.
+The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.
 
 ### Agent support [agent-support]
 Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.
@@ -1055,6 +1605,67 @@ Citation: https://ignibyte.github.io/jqstar/docs/agents/
 Source: config/agent-content.json
 
 Static discovery, versioned corpus provenance, optional read-only WebMCP tools, limits, and contract reporting.
+
+### Persisted preferences [persistence]
+Persist selected browser preferences with synchronous hydration before boot, codecs, migrations, explicit recovery, and revision ordering.
+Citation: https://ignibyte.github.io/jqstar/docs/persistence/
+Source: example/docs/persistence/index.html
+
+Persisted preferences
+Save selected shared-store preferences with the optional
+jquery-star/persist plugin. Hydration finishes before the first application
+starts.
+Install before boot
+Install core and stores, define your store, then attach persistence. Use frozen options with
+a required namespace, positive schema version, and explicit field codec.
+```
+import { createFieldCodec, createLocalStorageAdapter, persistPlugin } from "jquery-star/persist";
+const persisted = installed.star.use(persistPlugin);
+const attachment = persisted.attach("preferences", Object.freeze({
+namespace: "example.preferences",
+version: 1,
+adapter: createLocalStorageAdapter(window),
+ownAdapter: true,
+codec: createFieldCodec([
+{ path: "theme", validate: (value) => value === "light" || value === "dark" },
+]),
+}));
+installed.star.boot(document);
+```
+Adapters and selected data
+Memory adapters share only when you share the same instance. Local storage supports
+same-origin pages and reloads. Session storage persists reloads within one top-level page.
+Custom adapters must be synchronous. Web adapters use the exact kernel Window.
+Declare each safe path and validator. Codecs reject unspecified fields, unknown paths,
+methods, undefined, unsupported objects, cycles, and oversized data. JSON null is explicit.
+The default complete-envelope limit is 65,536 UTF-8 bytes.
+Migrations and recovery
+Integer schema migrations run in ascending steps on detached data. The full decode commits
+once. Missing data keeps defaults. Expired data is removed. Corrupt, future-version,
+migration, decode, unavailable, and write failures preserve data and disable persistence by
+default.
+retry() reads storage again. reset() explicitly removes stored
+bytes and writes current selected values. flush() writes the latest selected
+snapshot. Strict mode rejects hydration failures before application startup.
+Conflicts and disposal
+Whole envelopes use last-write-wins ordering by Lamport counter then origin, independent of
+wall-clock skew. Concurrent edits can lose another page's selected changes. Split unrelated
+preferences into separate stores when needed. This is not a merge algorithm or a cross-key
+transaction.
+One trailing timer defaults to 100 ms with a 1,000 ms maximum delay. Disposal flushes by
+default, then releases the timer, subscriptions, listeners, and owned adapter. It attempts
+every cleanup and returns a typed report. Borrowed adapters remain caller owned.
+Browser state and server authority
+Browser storage is readable and mutable by page scripts and users and can fail because of
+quotas or privacy settings. Never persist secrets, credentials, tokens, private keys, or
+authorization decisions. Keep server records, permissions, validation, and resource caches
+under server authority.
+Use local signals for one root, shared stores for client coordination, and persistence for
+selected preferences. Persistence does not change real jQuery $ , local
+$name signals, native forms, focus, or component-specific storage.
+See the
+complete persistence contract
+for types, envelopes, limits, custom adapters, migrations, status, and failure codes.
 
 ## Verified examples
 
@@ -1073,7 +1684,7 @@ Citation: https://ignibyte.github.io/jqstar/docs/
 Source: example/docs/index.html
 
 ```html
-<section id="counter" data-signals="{ count: 0 }">
+<section id="app" data-jqs data-signals="{ count: 0 }">
   <button data-on:click="$count++; $(el).fadeOut()">
     Increment and disappear
   </button>

@@ -1,11 +1,21 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarTagsInputStatic, TagsInputTarget } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 type TagsOperation = "add" | "remove" | "clear";
 
-interface TagsInputRecord {
-  cleanup: () => void;
-  control: HTMLInputElement;
+interface TagsInputRecord extends UIResources {
+  input: HTMLInputElement;
   list: HTMLElement;
   root: HTMLElement;
   status: HTMLElement | undefined;
@@ -29,15 +39,13 @@ const records = new WeakMap<HTMLElement, TagsInputRecord>();
 let tagsInputId = 0;
 
 function tagsInputRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="tags-input"]')
-    ? value
-    : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="tags-input"]') ? value : undefined;
 }
 
 function directControl(root: HTMLElement): HTMLInputElement {
   const control = Array.from(root.children).find(
     (child): child is HTMLInputElement =>
-      child instanceof HTMLInputElement && child.dataset.part === "control",
+      isHTMLTag(child, "input") && child.dataset.part === "control",
   );
   if (!control) {
     throw new Error(`Tags Input #${root.id} needs a direct <input data-part="control">.`);
@@ -50,12 +58,12 @@ function directControl(root: HTMLElement): HTMLInputElement {
 
 function directPart(root: HTMLElement, part: "list" | "status"): HTMLElement | undefined {
   return Array.from(root.children).find(
-    (child): child is HTMLElement => child instanceof HTMLElement && child.dataset.part === part,
+    (child): child is HTMLElement => isHTMLElement(child) && child.dataset.part === part,
   );
 }
 
 function createList(root: HTMLElement): HTMLElement {
-  const list = document.createElement("ul");
+  const list = root.ownerDocument.createElement("ul");
   list.dataset.part = "list";
   list.dataset.generated = "";
   root.prepend(list);
@@ -98,8 +106,18 @@ function unavailable(record: TagsInputRecord): boolean {
   return (
     record.root.hasAttribute("disabled") ||
     record.root.getAttribute("aria-disabled") === "true" ||
-    record.control.disabled ||
-    record.control.readOnly
+    record.input.disabled ||
+    record.input.readOnly
+  );
+}
+
+function current(record: TagsInputRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.querySelector(':scope > input[data-part="control"]') === record.input &&
+    directPart(record.root, "list") === record.list &&
+    directPart(record.root, "status") === record.status
   );
 }
 
@@ -125,19 +143,25 @@ function emit(
     values,
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:tags-input:${name}`, {
-      bubbles: true,
-      cancelable,
-      detail,
-    }),
+    new (record.window as Window & typeof globalThis).CustomEvent(
+      `jquery-star:tags-input:${name}`,
+      {
+        bubbles: true,
+        cancelable,
+        detail,
+      },
+    ),
   );
 }
 
 function tagElement(record: TagsInputRecord, value: string): HTMLElement {
-  const tag = document.createElement(record.list instanceof HTMLUListElement ? "li" : "span");
+  const document = record.root.ownerDocument;
+  const tag = document.createElement(
+    isHTMLTag(record.list, "ul") || isHTMLTag(record.list, "ol") ? "li" : "span",
+  );
   tag.dataset.part = "tag";
   tag.dataset.value = value;
-  if (!(tag instanceof HTMLLIElement)) tag.setAttribute("role", "listitem");
+  if (!isHTMLTag(tag, "li")) tag.setAttribute("role", "listitem");
 
   const label = document.createElement("span");
   label.dataset.part = "tag-label";
@@ -168,7 +192,7 @@ function syncFormInputs(record: TagsInputRecord): void {
   for (const input of existing) input.remove();
   if (!name) return;
   for (const value of record.values) {
-    const input = document.createElement("input");
+    const input = record.root.ownerDocument.createElement("input");
     input.type = "hidden";
     input.name = name;
     input.value = value;
@@ -199,23 +223,36 @@ function commit(
   values: string[],
   value?: string,
 ): HTMLElement {
+  const revision = ++record.revision;
   const previousValues = [...record.values];
+  const authored = record.root.dataset.value;
+  const max = maximum(record.root);
   if (
     previousValues.join("\0") === values.join("\0") ||
-    !emit(record, "before-change", operation, previousValues, values, value, true)
+    !emit(record, "before-change", operation, previousValues, values, value, true) ||
+    !current(record, revision) ||
+    unavailable(record) ||
+    maximum(record.root) !== max ||
+    record.root.dataset.value !== authored
   ) {
     return record.root;
   }
   record.values = values;
   render(record);
-  record.root.dispatchEvent(new Event("input", { bubbles: true }));
-  record.root.dispatchEvent(new Event("change", { bubbles: true }));
+  record.root.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("input", { bubbles: true }),
+  );
+  if (!current(record, revision)) return record.root;
+  record.root.dispatchEvent(
+    new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+  );
+  if (!current(record, revision)) return record.root;
   emit(record, "change", operation, previousValues, values, value);
   return record.root;
 }
 
 function requestAdd(root: HTMLElement, rawValue: string): HTMLElement {
-  const record = records.get(root) ?? enhanceTagsInput(root);
+  const record = recordFor(root);
   if (unavailable(record)) return root;
   const value = rawValue.trim();
   if (!value) return root;
@@ -230,55 +267,54 @@ function requestAdd(root: HTMLElement, rawValue: string): HTMLElement {
     announce(record, `You can add up to ${max} tags.`);
     return root;
   }
+  const revision = record.revision + 1;
+  const draft = record.input.value;
   const result = commit(record, "add", [...record.values, value], value);
-  if (record.values.includes(value)) {
-    record.control.value = "";
+  if (current(record, revision) && record.values.includes(value) && record.input.value === draft) {
+    record.input.value = "";
     announce(record, `${value} added.`);
   }
   return result;
 }
 
 function requestRemove(root: HTMLElement, value: string): HTMLElement {
-  const record = records.get(root) ?? enhanceTagsInput(root);
+  const record = recordFor(root);
   if (unavailable(record)) return root;
   const match = record.values.find(
     (candidate) => candidate.toLocaleLowerCase() === value.trim().toLocaleLowerCase(),
   );
   if (!match) return root;
+  const revision = record.revision + 1;
   const result = commit(
     record,
     "remove",
     record.values.filter((candidate) => candidate !== match),
     match,
   );
-  if (!record.values.includes(match)) announce(record, `${match} removed.`);
+  if (current(record, revision) && !record.values.includes(match))
+    announce(record, `${match} removed.`);
   return result;
 }
 
 function requestClear(root: HTMLElement): HTMLElement {
-  const record = records.get(root) ?? enhanceTagsInput(root);
+  const record = recordFor(root);
   if (unavailable(record)) return root;
+  const revision = record.revision + 1;
   const result = commit(record, "clear", []);
-  if (record.values.length === 0) announce(record, "All tags removed.");
+  if (current(record, revision) && record.values.length === 0)
+    announce(record, "All tags removed.");
   return result;
 }
 
 function enhanceTagsInput(root: HTMLElement): TagsInputRecord {
   const existing = records.get(root);
-  if (existing) {
-    const patched = unique(parseValues(root.dataset.value));
-    if (JSON.stringify(patched) !== JSON.stringify(existing.values)) existing.values = patched;
-    render(existing);
-    return existing;
-  }
-
   root.id ||= `jqs-tags-input-${++tagsInputId}`;
   const control = directControl(root);
   const list = directPart(root, "list") ?? createList(root);
   const status = directPart(root, "status");
   control.id ||= `${root.id}-control`;
   list.id ||= `${root.id}-list`;
-  if (!(list instanceof HTMLUListElement || list instanceof HTMLOListElement)) {
+  if (!(isHTMLTag(list, "ul") || isHTMLTag(list, "ol"))) {
     list.setAttribute("role", "list");
   }
   control.setAttribute("aria-controls", list.id);
@@ -287,15 +323,27 @@ function enhanceTagsInput(root: HTMLElement): TagsInputRecord {
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
   }
+  const values = unique(parseValues(root.dataset.value));
+  if (existing && current(existing)) {
+    if (JSON.stringify(values) !== JSON.stringify(existing.values)) existing.revision += 1;
+    existing.values = values;
+    render(existing);
+    return existing;
+  }
+  existing?.cleanup();
+  const replacement = records.get(root);
+  if (replacement) return replacement;
+  if (existing && existing.list !== list) delete list.dataset.jqsValues;
   const record: TagsInputRecord = {
-    cleanup: () => undefined,
-    control,
+    ...uiResources(root),
+    input: control,
     list,
     root,
     status,
-    values: unique(parseValues(root.dataset.value)),
+    values,
   };
-  const keydown = (event: KeyboardEvent): void => {
+  const keydown = (nativeEvent: Event): void => {
+    const event = nativeEvent as KeyboardEvent;
     if (event.isComposing) return;
     if (event.key === "Enter" || event.key === ",") {
       if (!control.value.trim()) return;
@@ -310,33 +358,42 @@ function enhanceTagsInput(root: HTMLElement): TagsInputRecord {
       return;
     }
     if (event.key === "Escape" && control.value !== "") {
+      record.revision += 1;
       event.preventDefault();
       control.value = "";
       announce(record, "Entry cleared.");
     }
   };
-  const click = (event: MouseEvent): void => {
-    const remove =
-      event.target instanceof Element ? event.target.closest('[data-part="remove"]') : null;
-    if (!(remove instanceof HTMLButtonElement) || !list.contains(remove)) return;
+  const click = (event: Event): void => {
+    const remove = isElementNode(event.target)
+      ? event.target.closest('[data-part="remove"]')
+      : null;
+    if (!isHTMLTag(remove, "button") || !list.contains(remove)) return;
     const value = remove.dataset.value;
+    const revision = record.revision + 1;
     if (value) requestRemove(root, value);
-    control.focus();
+    if (current(record, revision)) control.focus();
   };
   const blur = (): void => {
     if (root.hasAttribute("data-add-on-blur")) requestAdd(root, control.value);
   };
-  control.addEventListener("keydown", keydown);
-  control.addEventListener("blur", blur);
-  list.addEventListener("click", click);
-  record.cleanup = () => {
-    control.removeEventListener("keydown", keydown);
-    control.removeEventListener("blur", blur);
-    list.removeEventListener("click", click);
-  };
-  records.set(root, record);
-  render(record);
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    const listen = listenUI.bind(undefined, record, () => current(record));
+    listen(control, "keydown", keydown);
+    listen(control, "blur", blur);
+    listen(list, "click", click);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    render(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
+}
+
+function recordFor(root: HTMLElement): TagsInputRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceTagsInput(root);
 }
 
 function resolveTagsInput(target: TagsInputTarget, root: ParentNode = document): HTMLElement {
@@ -347,18 +404,18 @@ function resolveTagsInput(target: TagsInputTarget, root: ParentNode = document):
 }
 
 function controlledTagsInput(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="tags-input"]')) return target;
+  if (isHTMLElement(target)) return resolveTagsInput(target, context.root);
   if (typeof target === "string" && target.startsWith("#"))
     return resolveTagsInput(target, context.root);
   const closest = context.element?.closest('[data-jqs="tags-input"]');
-  return resolveTagsInput(closest instanceof HTMLElement ? closest : String(target));
+  return resolveTagsInput(isHTMLElement(closest) ? closest : String(target));
 }
 
 function registerActions(api: StarTagsInputStatic, registerAction: ActionRegistrar): void {
   for (const name of ["add", "remove"] as const) {
     registerAction(`ui.tags-input.${name}`, (context) => {
       const first = context.args?.[0];
-      const explicit = typeof first === "string" && first.startsWith("#");
+      const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
       const target = controlledTagsInput(context, explicit ? first : undefined);
       const value = explicit ? context.args?.[1] : first;
       if (typeof value !== "string") throw new Error(`ui.tags-input.${name} needs a tag value.`);
@@ -371,9 +428,7 @@ function registerActions(api: StarTagsInputStatic, registerAction: ActionRegistr
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="tags-input"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="tags-input"]')) {
     const input = tagsInputRoot(element);
     if (input) enhanceTagsInput(input);
   }
@@ -386,7 +441,7 @@ export function createTagsInputs(registerAction: ActionRegistrar): TagsInputColl
     clear: (target) => requestClear(resolveTagsInput(target)),
     value: (target) => {
       const root = resolveTagsInput(target);
-      return [...(records.get(root) ?? enhanceTagsInput(root)).values];
+      return [...recordFor(root).values];
     },
   };
   registerActions(api, registerAction);

@@ -58,6 +58,21 @@ describe("jQuery Star Tree View", () => {
     $("#app").star("destroy");
   });
 
+  it("treats a native tree root as an explicit target for item actions", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Tree application did not start.");
+    await app.run("ui.tree.expand", { args: [root(), "ui"] });
+    expect(item("ui").getAttribute("aria-expanded")).toBe("true");
+    await app.run("ui.tree.collapse", { args: ["#tree", "ui"] });
+    expect(item("ui").getAttribute("aria-expanded")).toBe("false");
+    await app.run("ui.tree.expand", { element: row("ui"), args: ["ui"] });
+    expect(item("ui").getAttribute("aria-expanded")).toBe("true");
+    await expect(
+      app.run("ui.tree.collapse", { element: row("ui"), args: [row("ui"), "ui"] }),
+    ).rejects.toThrow('Tree target did not match data-jqs="tree"');
+    expect(item("ui").getAttribute("aria-expanded")).toBe("true");
+  });
+
   it("derives tree roles, hierarchy metadata, expansion, and independent selection", () => {
     expect(root().getAttribute("role")).toBe("tree");
     expect(root().getAttribute("aria-multiselectable")).toBe("true");

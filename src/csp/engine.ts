@@ -75,7 +75,7 @@ export function createCSPExpressionEngine(): StarExpressionEngine {
         cache.set(key, entry);
         cacheBytes += bytes;
         while (cache.size > CSP_CACHE_LIMITS.entries || cacheBytes > CSP_CACHE_LIMITS.bytes) {
-          const oldest = cache.keys().next().value as string | undefined;
+          const oldest = cache.keys().next().value;
           if (oldest === undefined) break;
           cacheBytes -= cache.get(oldest)!.bytes;
           cache.delete(oldest);
@@ -87,9 +87,9 @@ export function createCSPExpressionEngine(): StarExpressionEngine {
 
   const engine = Object.freeze<StarExpressionEngine>({
     compileValue: (source: string, location?: StarExpressionLocation) =>
-      compile("value", source, location) as StarValueEvaluator,
+      compile("value", source, location),
     compileStatement: (source: string, location?: StarExpressionLocation) =>
-      compile("statement", source, location) as StarStatementEvaluator,
+      compile("statement", source, location),
     clearCache() {
       if (disposed) {
         throw cspError("CSP_ENGINE_DISPOSED", "evaluate", "", 0, 0);

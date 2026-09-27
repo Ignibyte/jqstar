@@ -1,10 +1,8 @@
-import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import {
   classifyPath,
-  existedAtRevision,
   loadQualityScope,
   qualityEvidencePath,
   qualityRunId,
@@ -14,30 +12,17 @@ import {
   run,
   writeJsonAtomic,
 } from "./lib.mjs";
-import {
-  evaluateCoverage,
-  evaluateCoverageThresholdRatchet,
-  verifyExecutedTestEvidence,
-} from "./coverage-report.mjs";
+import { evaluateCoverage, verifyExecutedTestEvidence } from "./coverage-report.mjs";
+import { currentCoverageThresholdRatchet } from "./coverage-thresholds.mjs";
+import { collectCensusFiles } from "./verify-production-census.mjs";
 
 const reportDirectory = process.env.JQS_QUALITY_RUN_DIRECTORY
   ? qualityEvidencePath("coverage")
   : repoPath("coverage/quality");
 const gateReport = qualityEvidencePath("coverage-gate.json");
-const coverageMode = process.argv.includes("--stabilization") ? "stabilization" : "delivery";
+const coverageMode = process.argv.includes("--stabilization") ? "stabilization" : "diagnostic";
 const runId = qualityRunId();
 const executedTestsReport = qualityEvidencePath("executed-tests.json");
-
-function readBaseThresholds(base) {
-  const path = "quality/coverage-thresholds.json";
-  if (!base || !existedAtRevision(path, base)) return null;
-  return JSON.parse(
-    execFileSync("git", ["show", `${base}:${path}`], {
-      cwd: repoPath("."),
-      encoding: "utf8",
-    }),
-  );
-}
 
 async function main() {
   const stabilization = coverageMode === "stabilization";
@@ -72,7 +57,7 @@ async function main() {
     const summary = await readJson(resolve(reportDirectory, "coverage-summary.json"));
     const finalCoverage = await readJson(resolve(reportDirectory, "coverage-final.json"));
     const coveredPaths = new Set(
-      scope.changedPaths.filter((path) =>
+      (await collectCensusFiles(census)).filter((path) =>
         classifyPath(path, census).some((rule) => rule.kind === "coverage"),
       ),
     );
@@ -85,11 +70,7 @@ async function main() {
       await readJson(repoPath("quality/test-evidence.json")),
       await readJson(executedTestsReport),
     );
-    const thresholdRatchet = evaluateCoverageThresholdRatchet(
-      thresholds,
-      readBaseThresholds(scope.base),
-      scope.base,
-    );
+    const thresholdRatchet = currentCoverageThresholdRatchet(thresholds, scope, repoPath("."));
     evaluation = evaluateCoverage({
       summary,
       finalCoverage,
@@ -100,6 +81,7 @@ async function main() {
       sourcesByPath,
       executedEvidence,
       thresholdRatchet,
+      diagnostic: coverageMode === "diagnostic",
     });
   } catch (error) {
     evaluation = {
@@ -128,7 +110,7 @@ async function main() {
     },
     ...evaluation,
   });
-  console.log(`Coverage gate ${status}. Report: ${gateReport}`);
+  console.log(`Coverage ${coverageMode} ${status}. Report: ${gateReport}`);
   for (const failure of evaluation.failures ?? []) console.error(`- ${failure}`);
   if (status !== "pass") process.exitCode = 1;
 }

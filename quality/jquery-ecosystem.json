@@ -109,9 +109,9 @@
       "disposition": "integrate",
       "runtimePolicy": "peer-foundation",
       "jqstarRole": "The application-owned real jQuery instance is jQStar's sole selector, event, collection, and plugin foundation.",
-      "testedVersions": ["4.0.0"],
-      "supportedRange": ">=4.0.0 <5",
-      "ownerTickets": ["0003", "0004"],
+      "testedVersions": ["3.7.1", "4.0.0"],
+      "supportedRange": ">=3.7.1 <5",
+      "ownerTickets": ["0003", "0004", "0057"],
       "nonGoals": [
         "Vendoring or forking jQuery",
         "Publishing a jQuery-compatible replacement",

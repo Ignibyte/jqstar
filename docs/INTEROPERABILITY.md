@@ -1,8 +1,7 @@
 # Turbo and htmx interoperability contract
 
-This contract covers the shipped `jquery-star/turbo` preview and the planned `jquery-star/htmx`
-plugin. The machine authority is
-[`quality/external-bridge-contract.json`](../quality/external-bridge-contract.json).
+This contract covers the stable `jquery-star/turbo` and `jquery-star/htmx` entries. The machine
+authority is [`quality/external-bridge-contract.json`](../quality/external-bridge-contract.json).
 
 ## Ownership
 
@@ -10,6 +9,36 @@ The host owns requests, forms, redirects, cache, history, head, scroll, focus, i
 mutation. A bridge uses only `jquery-star/core` and `jquery-star/testing` to release outgoing roots
 and enhance explicit incoming roots at a documented seam. Private state and observer-based disposal
 are off limits.
+
+## Navigation policy and recovery
+
+The [navigation comparison](decisions/NATIVE_NAVIGATION.md) retains native browser behavior and
+these optional bridges. It does not approve `jquery-star/navigation` or a new utility package. The
+bridge does not configure the host's forms, error rendering, cache or recovery policy.
+
+For the measured full-document workflow:
+
+- Keep native boundaries for non-HTML/download destinations, changed head/script policy and known
+  204 responses. Turbo local anchors can use `data-turbo="false"` when incidental reads are
+  unwanted.
+- Return accessible complete validation/error documents and 303 after successful writes. htmx
+  applications rendering those error documents configure `responseHandling` explicitly. Show a
+  visible transport-error recovery state; never automatically resend an uncertain write. Servers
+  retain authorization, CSRF, validation and version/idempotency protection.
+- Match a requested region before replacing it. A missing read region can use the host's public
+  complete-document fallback; a write must not be sent again. Official-SDK patches remain the
+  server-driven region path.
+- Disable incidental prefetch unless the application approves it. Host DOM snapshots need explicit
+  private-page policy alongside HTTP headers. Put `hx-history="false"` on the private subtree that
+  swaps, and use Turbo's documented no-cache metadata. Test direct and enhanced entry, leaving, Back
+  and storage; an HTTP `no-store` header alone does not configure a host snapshot cache.
+- Host navigation and jQStar enhancement have different completion boundaries. The measured Turbo
+  workflow waits one painted frame before its next history action; an earlier rapid programmatic
+  Back can race a late native scroll event. Use browser navigation or verify the exact host workflow
+  when that interaction is required.
+
+The decision links the exact research policies and retained traces. Those application hooks are not
+installed by the bridge. They do not expand the supported versions or host seams below.
 
 ## Shared lifecycle
 
@@ -88,12 +117,35 @@ Streams, morph refresh, custom renderers, cross-document Frames, and extensions 
 
 `bridge.observations()` returns at most 256 frozen, redacted lifecycle records. `bridge.observe()`
 subscribes to new records. `bridge.dispose()` is idempotent, removes the bridge listeners, and fails
-any bridge-owned active render without disposing Turbo or the jQStar kernel.
+bridge transactions that have not begun settlement. Core settlement already in progress finishes
+before the disposal report resolves. A pending host renderer remains Turbo-owned and does not delay
+bridge disposal; its later completion cannot settle the bridge operation twice. Disposal leaves
+Turbo and the jQStar kernel installed.
 
 ## htmx mapping
 
-One htmx operation deduplicates target and descendant cleanup. An insertion-only swap begins after
-`htmx:beforeSwap` confirms `shouldSwap`.
+Install htmx and core explicitly, then install one bridge into that document's jQStar kernel:
+
+```ts
+import htmx from "htmx.org";
+import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { createHtmxBridge } from "jquery-star/htmx";
+
+const { star } = installStarCore($);
+const bridge = star.use(createHtmxBridge({ $, htmx, version: "2.0.10" }));
+```
+
+The explicit version must equal the read-only `htmx.version` value. The bridge import and factory
+call do not install listeners. Plugin installation validates the capability, the exact stable
+version, and the `>=2.0.0 <2.1.0` range before registering document-scoped listeners. A missing or
+malformed capability, a prerelease or out-of-range version, a version mismatch, or a duplicate
+plugin fails before partial installation.
+
+The bridge observes htmx's public lifecycle. It never calls `htmx.ajax()`, `htmx.process()`,
+`htmx.swap()`, or `htmx.trigger()`, and it does not change a target, response, request, indicator,
+history entry, focus decision, or swap delay. One htmx operation deduplicates target and descendant
+cleanup. An insertion-only swap begins after `htmx:beforeSwap` confirms `shouldSwap`.
 
 | Stable ID              | Host seam                                     | jQStar action                           | Terminal evidence |
 | ---------------------- | --------------------------------------------- | --------------------------------------- | ----------------- |
@@ -110,8 +162,22 @@ One htmx operation deduplicates target and descendant cleanup. An insertion-only
 The tested releases place `afterRequest` before `afterSettle`. Delete has no `afterSwap` or
 `afterSettle`. `hx-swap="none"` can emit `afterSwap` without mutation.
 
-`hx-preserve` uses the same identity checks. Focus stays host-owned. Custom swaps, View Transitions,
-cross-document or shadow targets, and script guarantees are out of scope.
+`hx-preserve` and `data-jqs-preserve` retain the old live element only when it is connected, inside
+the outgoing boundary, uniquely identified in the document, and matched once in the incoming
+content. Missing, duplicate, moved, disconnected, or cross-document candidates are cleaned instead
+of being promised. Focus stays host-owned.
+
+`bridge.whenIdle()` waits for bridge-owned render transactions and their jQStar enhancement work. It
+does not claim that htmx has no pending network request or extension work. `bridge.observations()`
+returns at most 256 frozen, redacted records, and `bridge.observe()` subscribes to later records.
+`bridge.dispose()` is idempotent. It removes bridge listeners, releases prepared correlations, and
+settles active bridge operations without disposing htmx or the jQStar kernel. An in-progress core
+commit finishes before disposal resolves; the bridge then records a terminal failure after mutation
+without waiting for another host-settle event. A commit already complete but waiting for host
+settlement also closes without settling its adapter twice.
+
+Custom swaps, View Transitions, cross-document or shadow targets, and script guarantees are out of
+scope.
 
 ## Exact-once, observation, and coexistence rules
 
@@ -132,8 +198,84 @@ values.
 | Operation observations              | One render ID covers each real mutation and ends in one redacted outcome.                |
 | Disposal                            | Plugin listeners and active operations release idempotently without changing host state. |
 
-Ticket 0036 reruns this matrix for the shipped Turbo preview. Ticket 0037 must do the same before an
-htmx bridge ships.
+Tickets 0036 and 0037 rerun this matrix for the shipped Turbo and htmx entries. Both boundary
+versions pass the bridge suite in Chromium, Firefox, and WebKit.
+
+An opt-in actual-host UI fixture also checks Countdown across both pinned versions of each host in
+Chromium, Firefox and WebKit. The bridge clears its timer before Turbo replaces the document body or
+htmx removes the inner-swap child. The server-rendered incoming Countdown starts a new timer, while
+the permanent or `hx-preserve` neighbor keeps its exact node and input value. Without each bridge,
+the host still renders but clears the outgoing timer only after native removal. This proves one
+timer-family boundary; at this first checkpoint, observer, listener, pointer and asynchronous UI
+controllers and generic JSON/HTML and SDK SSE still needed actual-host coverage. The exact 928-file
+`npm run check` run passes all 1,654 browser cases, including this twelve-case selection, but does
+not produce a delivery receipt because changed-code coverage, three fixed package-size limits and
+package-budget detector isolation remain red.
+
+A second opt-in actual-host selection checks Message Scroller across the same pinned hosts and
+engines. Its content observer disconnects and its viewport/button listeners release before native
+removal. The detached root stops reporting messages and Latest actions; the server-rendered incoming
+root acquires new resources and reports both. The preserved neighbor keeps its node and input value.
+All twelve selected cases and the 54-case combined host selection pass. No-bridge diagnostics for
+one version of each host fail the before-removal assertion. Pointer and other asynchronous UI
+families, generic JSON/HTML and SDK SSE still needed actual-host coverage at that checkpoint. The
+matching 929-file `npm run check` report `2026-09-23T06-22-37-775Z-4099/report.json` passes all
+1,666 eight-project browser cases, including this selection. Changed-code coverage, three fixed
+package-size limits and package-budget detector isolation remain red, so there is no delivery
+receipt. The removal probes also require the observed native call itself to change the outgoing root
+from connected to detached; selected host cases pass that stricter assertion in all three engines.
+The tightened test snapshot's `npm run check` report `2026-09-23T07-05-16-938Z-98065/report.json`
+passes all 1,666 eight-project browser cases. Coverage, three fixed package-size limits and
+package-budget detector isolation remain red, so the common matrix has no delivery receipt.
+
+A third opt-in selection keeps a trusted Resizable drag active while the same hosts replace its
+root. The three window pointer listeners and real handle capture release before the native call
+disconnects the outgoing root. A later move leaves that detached root unchanged; the incoming
+Resizable responds to a new trusted drag with its own listeners. The permanent or `hx-preserve`
+neighbor retains node identity and input value. All twelve pinned host/version/engine cases and the
+66-case combined host selection pass. Turbo 8.0.21 and htmx 2.0.0 no-bridge Chromium diagnostics
+render but fail the before-removal cleanup assertion. Other asynchronous UI families and generic
+JSON/HTML and SDK SSE traffic still needed actual-host proof at that checkpoint. The matching
+`npm run check` report `2026-09-23T08-11-31-064Z-12902/report.json` passes all 1,678 browser cases
+but fails changed-code coverage, three fixed package sizes and package-budget detector isolation; no
+delivery receipt follows.
+
+## Actual-host backend coexistence
+
+An opt-in actual-host backend selection also sends `core.generic` JSON/HTML and SDK-generated
+`core.datastar` SSE from declarative applications before and after real Turbo document replacement
+or htmx inner swap. All twelve pinned host/version/engine cases and the 78-case combined host
+selection pass. Generic requests omit Datastar headers, implicit signals and SSE preference;
+Datastar requests include their current signal query and SSE preference. Patches leave inserted
+directives active, each action completes once, the outgoing app is destroyed before native removal,
+and the incoming app starts with preserved neighbor identity/value. No-bridge Chromium diagnostics
+for Turbo 8.0.21 and htmx 2.0.0 render but fail the ownership timing assertion. A separate
+`nested=1` mode now places an outer plain application around the backend child. Its 12 additional
+pinned host/version/engine cases pass with isolated outer state, child-only request signals and one
+action per click before and after host replacement. Nested no-bridge Chromium diagnostics for one
+version of each host render but leave the outgoing child live after native removal. Explicitly
+booted named component roots and request cancellation/error combinations remain open. The earlier
+matching 931-file `npm run check` report `2026-09-23T12-24-53-903Z-32528/report.json` passes all
+1,690 browser cases, but changed-code coverage, three fixed package sizes and package-budget
+detector isolation remain red. No delivery receipt follows.
+
+The subsequent 932-file `npm run check` report `2026-09-23T13-35-36-553Z-47216/report.json` passes
+4,933 units and all 1,702 eight-project browser cases, including 558 per desktop engine. Coverage
+still fails 96 changed-code checks across 47 of 60 changed source files; three package limits and
+package-budget detector isolation remain red. No delivery receipt follows.
+
+## htmx troubleshooting
+
+- If installation throws, compare the explicit version with `htmx.version` and the supported range
+  `>=2.0.0 <2.1.0`. Do not pass a prerelease or an inferred range.
+- If a swap is prevented, use the optional `onError` callback and `bridge.observations()` to check
+  for a disconnected target, unsupported swap style, duplicate main swap, or overlapping active
+  boundary. The records omit selectors, response content, URLs, headers, form data, and raw errors.
+- If a preserved root is recreated, give the old and incoming `hx-preserve` or `data-jqs-preserve`
+  elements the same unique non-empty `id`. Both elements must stay within the approved swap
+  boundary.
+- If `whenIdle()` is still pending, wait for htmx's mapped terminal event or call `dispose()` during
+  shutdown. It is a bridge-render barrier, not general htmx network idleness.
 
 ## Evidence and updates
 

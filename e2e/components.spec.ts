@@ -1,5 +1,34 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test as base, type Page, type Response } from "@playwright/test";
+
+const test = base.extend<{ controlledClock: boolean }>({
+  controlledClock: [false, { option: true }],
+});
+
+async function waitForComponentEntry(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const entry = document.querySelector<HTMLScriptElement>(
+      'script[type="module"][src="/site.ts"]',
+    );
+    if (!entry) throw new Error("The Lab needs its declared site entry module.");
+    await import(entry.src);
+  });
+}
+
+function isProjectWindowResponse(response: Response, start: number): boolean {
+  const url = new URL(response.url());
+  if (url.pathname !== "/api/demo/projects") return false;
+  const signals = JSON.parse(url.searchParams.get("datastar") ?? "{}") as Record<string, unknown>;
+  return signals.projectBrowserMode === "virtual" && signals.projectBrowserWindowStart === start;
+}
+
+function completionSignal(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void = () => undefined;
+  const promise = new Promise<void>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
+}
 
 async function installClipboardFixture(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -19,8 +48,15 @@ async function installClipboardFixture(page: Page): Promise<void> {
 }
 
 test.describe("jQStar components", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, controlledClock }) => {
+    if (controlledClock) {
+      await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
+    }
     await page.goto("/components/lab/");
+    await waitForComponentEntry(page);
+    if (controlledClock) {
+      await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"));
+    }
   });
 
   test("button variants render with usable states", async ({ page }) => {
@@ -105,6 +141,11 @@ test.describe("jQStar components", () => {
   });
 
   test("OTP, resizable panels, and scroll area retain platform behavior", async ({ page }) => {
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      // Animated focus scrolling moves the handle between hover and pointerdown.
+      document.documentElement.style.scrollBehavior = "auto";
+    });
     const card = page.getByRole("region", { name: "Verification and layout primitives" });
     const otpForm = card.getByRole("form", { name: "Verification code proof" });
     const otp = card.getByRole("textbox", { name: "Verification code", exact: true });
@@ -133,11 +174,14 @@ test.describe("jQStar components", () => {
 
     await card.getByRole("button", { name: "Reset panels" }).click();
     await expect(splitter).toHaveAttribute("aria-valuenow", "50");
+    await splitter.hover();
     const splitterBox = await splitter.boundingBox();
     expect(splitterBox).not.toBeNull();
-    await page.mouse.move(splitterBox!.x + splitterBox!.width / 2, splitterBox!.y + 20);
     await page.mouse.down();
-    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + 20, { steps: 4 });
+    await expect(splitter).toHaveAttribute("data-state", "dragging");
+    await page.mouse.move(splitterBox!.x + 50, splitterBox!.y + splitterBox!.height / 2, {
+      steps: 4,
+    });
     await page.mouse.up();
     await expect
       .poll(async () => Number(await splitter.getAttribute("aria-valuenow")))
@@ -328,12 +372,16 @@ test.describe("jQStar components", () => {
     const scroller = card.locator("#support-thread");
     const viewport = scroller.getByRole("log", { name: "Support" });
     const messages = viewport.locator('[data-jqs="message"]');
-    await viewport.evaluate((element) => {
+    await page.evaluate(() => document.fonts.ready);
+    await viewport.evaluate(async (element) => {
+      element.style.scrollBehavior = "auto";
       element.style.maxHeight = "10rem";
-      element.scrollTop = 0;
+      await new Promise(requestAnimationFrame);
+      element.scrollTo({ top: 0, behavior: "instant" });
       element.dispatchEvent(new Event("scroll"));
     });
     await expect(scroller).toHaveAttribute("data-state", "paused");
+    await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBe(0);
     await viewport.locator(':scope > [data-part="content"]').evaluate((element) => {
       element.insertAdjacentHTML(
         "beforeend",
@@ -567,11 +615,24 @@ test.describe("jQStar components", () => {
     const content = popover.getByRole("dialog", { name: "Ready to deploy" });
     const close = content.getByRole("button", { name: "Got it" });
 
+    await page.evaluate(() => document.fonts.ready);
+    await trigger.evaluate((element) =>
+      element.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" }),
+    );
+    await expect
+      .poll(() =>
+        trigger.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.top >= innerHeight * 0.25 && rect.bottom <= innerHeight * 0.75;
+        }),
+      )
+      .toBe(true);
     await trigger.click();
     await expect(content).toBeVisible();
     await expect(popover).toHaveAttribute("data-state", "open");
     await expect(trigger).toHaveAttribute("aria-expanded", "true");
     await expect(close).toBeFocused();
+    await expect(content).toHaveAttribute("data-side", "bottom");
 
     const triggerBox = await trigger.boundingBox();
     const contentBox = await content.boundingBox();
@@ -967,9 +1028,7 @@ test.describe("jQStar components", () => {
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
   });
 
-  test("project browser supports multi-sort, groups, durable editing, and persistent column layouts", async ({
-    page,
-  }) => {
+  test("project browser supports multi-sort, groups, and durable editing", async ({ page }) => {
     const root = page.locator('[data-block="project-browser"]');
     await root.locator('th[data-key="owner"] [data-part="sort"]').click();
     await root.locator('th[data-key="status"] [data-part="sort"]').click({
@@ -1028,7 +1087,10 @@ test.describe("jQStar components", () => {
     await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(
       "saved at version",
     );
+  });
 
+  test("project browser persists column layouts and recovers invalid storage", async ({ page }) => {
+    const root = page.locator('[data-block="project-browser"]');
     await root.getByText("Columns", { exact: true }).click();
     const statusItem = root.locator('[data-column-item="status"]');
     const ownerItem = root.locator('[data-column-item="owner"]');
@@ -1044,6 +1106,7 @@ test.describe("jQStar components", () => {
       .toEqual(["name", "status", "owner", "updated"]);
 
     await page.reload();
+    await waitForComponentEntry(page);
     const reloaded = page.locator('[data-block="project-browser"]');
     await expect(reloaded.locator('th[data-column="status"]')).toHaveAttribute(
       "data-pinned",
@@ -1061,6 +1124,7 @@ test.describe("jQStar components", () => {
       localStorage.setItem("jquery-star:project-browser:columns:v1", "{invalid"),
     );
     await page.reload();
+    await waitForComponentEntry(page);
     await expect
       .poll(() =>
         page
@@ -1075,7 +1139,14 @@ test.describe("jQStar components", () => {
   }) => {
     const root = page.locator('[data-block="project-browser"]');
     await root.getByRole("checkbox", { name: "Select jQuery Star" }).check();
+    const initialWindowResponse = page.waitForResponse((response) =>
+      isProjectWindowResponse(response, 0),
+    );
     await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    const initialResponse = await initialWindowResponse;
+    expect(initialResponse.ok()).toBe(true);
+    expect(await initialResponse.finished()).toBeNull();
+    await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
     const projectRows = root.locator("#project-browser-rows tr[data-row-id]");
     await expect(projectRows).toHaveCount(40);
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
@@ -1084,16 +1155,93 @@ test.describe("jQStar components", () => {
     await expect(root.locator("[data-project-browser-expand]").first()).toBeDisabled();
 
     const firstId = await projectRows.first().getAttribute("data-row-id");
+    const windowResponse = page.waitForResponse((response) =>
+      isProjectWindowResponse(response, 990),
+    );
     await root.locator('[data-part="viewport"]').evaluate((viewport) => {
       viewport.scrollTop = 52_000;
       viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
     });
+    const response = await windowResponse;
+    expect(response.ok()).toBe(true);
+    expect(await response.finished()).toBeNull();
+    await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
     await expect
       .poll(async () => projectRows.first().getAttribute("data-row-id"))
       .not.toBe(firstId);
     expect(await projectRows.count()).toBeLessThanOrEqual(80);
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
     await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(/of 2500/);
+  });
+
+  test("project browser cancels an older virtual window before applying a newer SDK response", async ({
+    page,
+  }) => {
+    const root = page.locator('[data-block="project-browser"]');
+    const initialWindowResponse = page.waitForResponse((response) =>
+      isProjectWindowResponse(response, 0),
+    );
+    await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    const initialResponse = await initialWindowResponse;
+    expect(initialResponse.ok()).toBe(true);
+    expect(await initialResponse.finished()).toBeNull();
+    await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
+    await expect(root.locator("#project-browser-rows tr[data-row-id]")).toHaveCount(40);
+    const captured = completionSignal();
+    const release = completionSignal();
+    const handled = completionSignal();
+    const failedUrls: string[] = [];
+    let olderUrl = "";
+    let requests = 0;
+    page.on("requestfailed", (request) => {
+      failedUrls.push(request.url());
+    });
+    await page.route("**/api/demo/projects?**", async (route) => {
+      requests += 1;
+      if (requests > 1) {
+        await route.continue();
+        return;
+      }
+      olderUrl = route.request().url();
+      const response = await route.fetch();
+      captured.resolve();
+      await release.promise;
+      try {
+        await route.fulfill({ response });
+      } finally {
+        handled.resolve();
+      }
+    });
+    const scroll = async (top: number) => {
+      await root.locator('[data-part="viewport"]').evaluate((viewport, position) => {
+        viewport.scrollTop = position;
+        viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
+      }, top);
+    };
+    try {
+      await scroll(52_000);
+      await captured.promise;
+      await expect(root.getByText("Updating results…", { exact: true })).toBeVisible();
+      const windowResponse = page.waitForResponse((response) =>
+        isProjectWindowResponse(response, 190),
+      );
+      await scroll(10_400);
+      const response = await windowResponse;
+      expect(response.ok()).toBe(true);
+      expect(await response.finished()).toBeNull();
+      await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
+      const message = root.locator('[data-text="$projectBrowserMessage"]');
+      await expect(message).toContainText("Showing 191–230 of 2500");
+      await expect.poll(() => failedUrls.includes(olderUrl)).toBe(true);
+      await expect(root.getByText("Updating results…", { exact: true })).toBeHidden();
+      release.resolve();
+      await handled.promise;
+      await expect(message).toContainText("Showing 191–230 of 2500");
+      expect(requests).toBe(2);
+    } finally {
+      release.resolve();
+      await page.unrouteAll({ behavior: "wait" });
+    }
   });
 
   test("access manager moves, persists, and reloads permission assignments", async ({ page }) => {
@@ -1167,41 +1315,49 @@ test.describe("jQStar components", () => {
     await expect(rows.first()).toContainText("No access events match these filters");
   });
 
-  test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({
-    page,
-    browserName,
-  }) => {
-    const show = page.getByRole("button", { name: "Show verified toast" });
-    const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
+  test.describe("toast timing", () => {
+    test.use({ controlledClock: true });
 
-    await show.click();
-    let toast = page.getByRole("group", { name: "Build verified" });
-    await expect(toast).toBeVisible();
-    await page.keyboard.press("F8");
-    await expect(viewport).toBeFocused();
-    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
-    await expect(toast.getByRole("button", { name: "Dismiss notification" })).toBeFocused();
-    await page.keyboard.press("Escape");
-    await expect(toast).toBeHidden();
-    await expect(viewport).toBeFocused();
+    test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({
+      page,
+      browserName,
+    }) => {
+      const show = page.getByRole("button", { name: "Show verified toast" });
+      const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
 
-    await show.click();
-    toast = page.getByRole("group", { name: "Build verified" });
-    await toast.hover();
-    await page.waitForTimeout(1800);
-    await expect(toast).toBeVisible();
-    await page.locator("h1").hover();
-    await expect(toast).toBeHidden();
+      await show.click();
+      let toast = page.getByRole("group", { name: "Build verified" });
+      await expect(toast).toBeVisible();
+      await page.keyboard.press("F8");
+      await expect(viewport).toBeFocused();
+      await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+      await expect(toast.getByRole("button", { name: "Dismiss notification" })).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(toast).toBeHidden();
+      await expect(viewport).toBeFocused();
 
-    await show.click();
-    toast = page.getByRole("group", { name: "Build verified" });
-    const box = await toast.boundingBox();
-    expect(box).not.toBeNull();
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box!.x + box!.width / 2 + 80, box!.y + box!.height / 2);
-    await page.mouse.up();
-    await expect(toast).toBeHidden();
+      await show.click();
+      toast = page.getByRole("group", { name: "Build verified" });
+      await toast.hover();
+      await expect(toast).toHaveAttribute("data-duration", "1600");
+      await expect(toast).toHaveAttribute("data-paused", "true");
+      await page.clock.runFor(1800);
+      await expect(toast).toBeVisible();
+      await page.locator("h1").hover();
+      await expect(toast).toHaveAttribute("data-paused", "false");
+      await page.clock.runFor(1800);
+      await expect(toast).toBeHidden();
+
+      await show.click();
+      toast = page.getByRole("group", { name: "Build verified" });
+      const box = await toast.boundingBox();
+      expect(box).not.toBeNull();
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box!.x + box!.width / 2 + 80, box!.y + box!.height / 2);
+      await page.mouse.up();
+      await expect(toast).toBeHidden();
+    });
   });
 
   test("navigation components keep native landmarks and disclosure behavior", async ({ page }) => {

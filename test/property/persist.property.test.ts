@@ -1,0 +1,169 @@
+import fc from "fast-check";
+import { expect, it } from "vitest";
+import { createFieldCodec, createMemoryStorageAdapter, persistPlugin } from "../../src/persist";
+import { parse, serialize } from "../../src/persist/data";
+import { compareRevision } from "../../src/persist/envelope";
+import { defineStore, storesPlugin } from "../../src/stores";
+import { TrustedKernel as Kernel } from "../helpers/trusted-kernel";
+import { assertProperty } from "./helpers";
+import regressions from "./regressions.json";
+
+const prototypeKeys = ["__proto__", "prototype", "constructor"] as const;
+
+it("rejects the nested prototype key found by the hosted random audit", () => {
+  // JSON imports can compile __proto__ to object-literal syntax, losing the own key.
+  const text = regressions["persist-nested-prototype-key"].counterexampleJson;
+  const value: unknown = JSON.parse(text);
+  expect(() => serialize(value)).toThrow("encode");
+  expect(() => parse(text, 65536)).toThrow("corrupt");
+});
+
+function containsPrototypeKey(value: unknown): boolean {
+  if (value === null || typeof value !== "object") return false;
+  return Object.entries(value).some(
+    ([key, nested]) =>
+      prototypeKeys.some((reserved) => key === reserved) || containsPrototypeKey(nested),
+  );
+}
+
+it("normalizes the recorded negative zero without changing the caller's input", () => {
+  const recorded = regressions["persist-negative-zero-json"];
+  const value = JSON.parse(recorded.counterexampleJson) as { a: number[] };
+  expect(value.a[0]).toBe(-0);
+  const canonical = serialize(value);
+  expect(canonical).toBe(recorded.canonicalJson);
+  expect(parse(canonical, 65536)).toEqual({ a: [0] });
+  expect(serialize(parse(canonical, 65536))).toBe(canonical);
+  expect(value.a[0]).toBe(-0);
+});
+
+it("round-trips generated JSON preferences without depending on record insertion order", () => {
+  assertProperty(
+    "persist-canonical-json",
+    fc.property(fc.dictionary(fc.stringMatching(/^[a-z]{1,8}$/), fc.jsonValue()), (value) => {
+      const before = structuredClone(value);
+      const reversed = Object.fromEntries(Object.entries(value).reverse());
+      if (containsPrototypeKey(value)) {
+        expect(() => serialize(value)).toThrow("encode");
+        expect(() => serialize(reversed)).toThrow("encode");
+        expect(() => parse(JSON.stringify(value), 65536)).toThrow("corrupt");
+      } else {
+        const canonical = serialize(value);
+        const decoded = parse(canonical, 65536);
+        expect(canonical).toBe(serialize(reversed));
+        expect(decoded).toEqual(JSON.parse(JSON.stringify(value)));
+        expect(serialize(decoded)).toBe(canonical);
+      }
+      expect(value).toEqual(before);
+    }),
+  );
+});
+
+it("rejects prototype keys through generated object and array nesting", () => {
+  assertProperty(
+    "persist-nested-prototype-rejection",
+    fc.property(
+      fc.constantFrom(...prototypeKeys),
+      fc.jsonValue(),
+      fc.array(fc.boolean(), { maxLength: 8 }),
+      (key, payload, wrappers) => {
+        const value = wrappers.reduce<unknown>(
+          (nested, array) => (array ? [nested] : { preference: nested }),
+          Object.fromEntries([[key, payload]]),
+        );
+        expect(() => serialize(value)).toThrow("encode");
+        expect(() => parse(JSON.stringify(value), 65536)).toThrow("corrupt");
+      },
+    ),
+  );
+});
+
+it("selects the same revision winner for every delivery permutation", () => {
+  const revision = fc.record({
+    counter: fc.integer({ min: 1, max: 10000 }),
+    origin: fc.stringMatching(/^[a-z]{1,12}$/),
+  });
+  assertProperty(
+    "persist-lamport-order",
+    fc.property(fc.array(revision, { minLength: 1, maxLength: 30 }), (revisions) => {
+      const winner = [...revisions].sort(compareRevision).at(-1)!;
+      for (const sequence of [
+        revisions,
+        [...revisions].reverse(),
+        [...revisions].sort(compareRevision),
+      ]) {
+        const accepted = sequence.reduce((current, next) =>
+          compareRevision(current, next) >= 0 ? current : next,
+        );
+        expect(accepted).toEqual(winner);
+      }
+    }),
+  );
+});
+
+it("preserves corrupt bytes through generated edits and retry until an explicit reset", () => {
+  const command = fc.record({
+    action: fc.constantFrom("write", "flush", "corrupt", "retry", "reset"),
+    value: fc.integer({ min: 0, max: 10000 }),
+  });
+  assertProperty(
+    "persist-recovery-state-machine",
+    fc.property(fc.array(command, { maxLength: 30 }), (commands) => {
+      const frame = document.createElement("iframe");
+      document.body.append(frame);
+      const kernel = new Kernel(
+        (() => undefined) as unknown as JQueryStatic,
+        frame.contentDocument!,
+      );
+      const stores = kernel.plugins.use(storesPlugin);
+      const persist = kernel.plugins.use(persistPlugin);
+      const store = stores.define("preferences", defineStore({ initial: { count: 0 } }));
+      const adapter = createMemoryStorageAdapter();
+      const attachment = persist.attach(
+        "preferences",
+        Object.freeze({
+          namespace: "property",
+          version: 1,
+          adapter,
+          codec: createFieldCodec<typeof store>([
+            { path: "count", validate: (value) => typeof value === "number" },
+          ]),
+          flushOnDispose: false,
+        }),
+      );
+      const key = "jqstar:property:preferences";
+      let disabled = false;
+      let current = 0;
+      try {
+        for (const command of commands) {
+          if (command.action === "write") {
+            store.count = command.value;
+            current = command.value;
+          }
+          if (command.action === "corrupt") {
+            adapter.replace(key, "{");
+            disabled = true;
+          }
+          if (command.action === "flush") expect(attachment.flush().ok).toBe(!disabled);
+          if (command.action === "retry") {
+            attachment.retry();
+            current = store.count;
+          }
+          if (command.action === "reset") {
+            expect(attachment.reset().ok).toBe(true);
+            disabled = false;
+          }
+          expect(store.count).toBe(current);
+          if (disabled) {
+            expect(adapter.read(key)).toBe("{");
+            expect(attachment.status().error).toBe("corrupt");
+          }
+        }
+      } finally {
+        kernel.dispose();
+        adapter.dispose();
+        frame.remove();
+      }
+    }),
+  );
+});

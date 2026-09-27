@@ -3,7 +3,7 @@ id: 0008
 title: Install plugins transactionally
 status: done
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-08
 ---
 
 # 0008: Install plugins transactionally
@@ -187,6 +187,84 @@ write into a namespace after a plugin claims it.
 - `docs/tickets/0008-install-plugins-transactionally.md`: Phase, file, command, inspection, and
   acceptance evidence.
 
+### Reopened ownership correction (2026-09-08)
+
+Current public-core probes at commit `c5269db` contradict the prior closure. An activation that
+calls `$.star.dispose()` still returns a published facade and skips its registered cleanup. An
+application hook that disposes the kernel permits later hooks and application commit. Destroying
+only the application also permits later setup callbacks. A staged `documentHost.own()` resource
+receives no cleanup when its installer throws before activation. Exact source identities and
+observations live under `.git/jqstar/program-audit/ownership-census/resume-2026-09-08/` in
+`before.json` and `plugin-boundaries-before.json`. The initial probe's incorrect installer return
+shape was corrected to use `.star` before collecting these results.
+
+Reopen AC-02, AC-03 and AC-07. The previous evidence remains historical. Recheck the structural
+installation lock after every installer and activation, retaining returned cleanup before refusal.
+Stop application hooks after application destruction or host disposal, release returned and earlier
+cleanup in reverse order, and prevent the kernel from committing the interrupted application.
+Register staged-resource cancellation when the resource is declared, covering installer failure,
+preparation failure, explicit cancellation, activation failure and terminal disposal. Preserve
+exactly-once release and aggregate failures while attempting every registered cleanup. A resource
+that cannot acquire kernel ownership must release its provisional listener/observer or cleanup.
+
+The correction changes `src/plugin.ts` and `src/kernel.ts`, focused plugin/public runtime tests in
+`test/plugin-lifecycle.test.ts` , this ticket, `README.md`, `docs/ARCHITECTURE.md`,
+`docs/RUNTIME_OWNERSHIP.md` and `docs/TESTING.md`. The generated
+`test/fixtures/csp/conformance-map.json` tracks shifted README locations. Generated agent content is
+refreshed only if its selected public inputs change. The size budgets remain fixed; measure the
+actual installed core/CSP graphs and artifacts. Additional compact implementation changes require
+recorded evidence of equivalent behavior before adoption.
+
+Verify actual public installation and application setup, both interruption kinds, reverse cleanup,
+throwing cleanup, staged resource cancellation and unchanged successful controls. Negative controls
+must fail against the original source. Run focused tests, `npm run quality:fast`, exact Code
+validation, changed-code coverage and `npm run check` before Test/Document closure. Preserve all
+failed reports. This changes no API, async-install policy, public namespace or authorization
+boundary.
+
+### Interrupted application guard consolidation
+
+The first corrected consumer preview measures core gzip at 62,901 bytes and CSP Brotli at 39,099
+bytes against unchanged 63,000/39,000 limits. The new per-hook refusal makes the kernel's post-hook
+destruction branch redundant. Move its responsibility into one plugin-host application lifetime
+check before the first hook and after each returned cleanup. The existing kernel catch still
+releases observation, middleware and protocol links after hook rollback. Add an already terminated
+application control, retain the existing kernel cleanup assertions, and verify both application
+modes. This consolidation must preserve failure cleanup and rejection, not remove a lifetime check
+to fit the budget. The Mobile reference UMD byte measurement is refreshed from the actual generated
+UMD in `quality/jquery-mobile-migration.json`; no ceiling changes.
+
+The release-slot simplification preserves immediate cancellation and reduces the preview to 39,051
+CSP Brotli bytes, still above the unchanged ceiling. The host's three private disposal maps can be
+cleared after exhaustive release instead of replaced before callbacks: the disposed flag already
+prevents any installation from observing or mutating them, and no public reader exposes these maps.
+Retain the existing observer/middleware/profile disposal and recursive-disposal controls, and verify
+that throwing cleanup still clears all maps. This removes redundant private aliases without changing
+registry ownership or callback order.
+
+Current previews still exceed the CSP ceiling. Source inspection finds `applicationHooks` only in
+private `InstalledPlugin` records and local variables in `src/plugin.ts`. The existing property
+minification contract deliberately accepts only private class members, so the record key is outside
+that mechanism. Leave its allowlist/test unchanged. Use the internal record fields `hooks`,
+`profiles` and `middleware` while retaining the public registrar, manifest and hook API names.
+Installed external-plugin conformance, API reports and both consumer graphs must pass. Adjacent
+identity/cleanup commit loops are consolidated without changing callback order.
+
+### Unified installed cleanup ownership
+
+The smaller record keys and lifetime helper preserve focused behavior but still exceed the CSP
+Brotli ceiling. Consolidate the installed operation, middleware and protocol releases into each
+plugin's existing cleanup stack. Append them in reverse protocol/middleware/operation order so
+terminal reverse iteration preserves the previous operation/middleware/protocol ordering before
+installer cleanup. Remove the three duplicate private maps and their commit/disposal loops. Consume
+each cleanup stack before invoking its callbacks so the retained plugin identity record cannot
+retain released operation, middleware or protocol closures after disposal. Failed preparation still
+rolls back through its existing prepared records, and staged installer cleanup remains separate
+until commit. This uses one owned stack for installed plugin releases without changing exact-once
+cleanup, aggregation, resource categories or public metadata. Verify current
+observer/middleware/profile disposal, failed batches, recursive disposal and external-plugin
+conformance before acceptance.
+
 ## Code
 
 ### Changed-file ledger
@@ -206,7 +284,20 @@ write into a namespace after a plugin claims it.
 | `README.md`, `docs/{ARCHITECTURE,PROJECT,RUNTIME_OWNERSHIP,TESTING}.md`        | Public policy, lifecycle, ownership, and conformance documentation.     |
 | `docs/tickets/0008-install-plugins-transactionally.md`                         | Current phase, files, commands, findings, and acceptance evidence.      |
 
+### Current correction ledger
+
+| File                                                   | Purpose                                                                     |
+| ------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `src/plugin.ts`, `src/kernel.ts`                       | Recheck interrupted installation/application setup and own staged rollback. |
+| `test/plugin-lifecycle.test.ts`                        | Public lifecycle probes and provisional observer failure proof.             |
+| `quality/jquery-mobile-migration.json`                 | Refresh the actual generated UMD measurement, without changing ceilings.    |
+| `docs/tickets/0008-install-plugins-transactionally.md` | Reopening, plan and verification record.                                    |
+
 ### Design changes
+
+The current correction follows the Plan's shared application guard and consumed installed cleanup
+stack. No changes beyond those recorded decisions. The following first-baseline size decisions are
+historical and do not change the current ceilings.
 
 The implementation follows the validated transaction and lifecycle design. Installed-package quality
 measured the final minified UMD at 402,320 bytes and the installed root-import consumer at 481,635
@@ -215,6 +306,55 @@ first-baseline state, set only those two ceilings to their next 1 KiB boundaries
 482,304 bytes. The immutable comparison rule and every unrelated ceiling remain unchanged.
 
 ## Test
+
+| Current command                                                                                                                                                              | Result | Evidence                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                                                                                                                                                              | Pass   | `2026-09-08T14-15-52-232Z-38476/report.json`: all 13 gates, 1,722 unit tests, every changed executable line/function, 487 browser cases, all package/release/detector checks; unchanged 862-file fingerprint. |
+| `npm run ticket:validate -- --phase test --ticket docs/tickets/0008-install-plugins-transactionally.md --report .git/jqstar/runs/2026-09-08T14-15-52-232Z-38476/report.json` | Pass   | Executed against the exact current receipt before Document changes.                                                                                                                                           |
+
+Earlier verification and failures remain below.
+
+Integrated fast `2026-09-08T13-40-13-597Z-23188` passes all six gates and 1,687 unit tests after the
+store correction and installed CSP pin fix. Actual Code validation accepts the exact report for
+owners 0008, 0018 and 0035. Fresh complete delivery remains required.
+
+Delivery `2026-09-08T13-13-33-365Z-48105` finishes with matching fingerprint
+`f9d36b870cad2f88eb488b71fd750ec2f8b6ab844836da9524d68cf7c78e98eb`. Eleven of thirteen gates pass:
+all 1,659 unit tests, 487 browser cases, 53 changed executable lines and twelve changed functions,
+seven release checks and fixed package size budgets. The installed browser digest assertion retains
+one old CSP literal, causing both the package gate and its exact detector baseline to fail. Owner
+0035 corrects that assertion. This run authorizes no delivery receipt or phase closure.
+
+| Command                                            | Result | Evidence                                                                                                                                                         |
+| -------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run quality:fast` (2026-09-08 pin correction) | Pass   | `2026-09-08T13-11-08-222Z-35005/report.json`: all six gates, 1,659 unit tests and unchanged source fingerprint.                                                  |
+| Exact Code phase validation                        | Pass   | Validator accepts that exact fast report before this ticket enters testing.                                                                                      |
+| Expanded focused lifecycle suites                  | Pass   | `ownership-census/resume-2026-09-08/plugin-expanded-focused.log`: 144 cases across seven suites.                                                                 |
+| Public-core interruption probes                    | Pass   | `plugin-boundaries-after.json`: later hooks are absent and returned/provisional cleanup runs; `after-plugin.json` retains the separate unresolved store finding. |
+| CSP inventory review                               | Pass   | `csp-location-review.json`: only 28 README locations change; all other conformance fields and all four corpora are identical to HEAD.                            |
+
+Corrected fast run `2026-09-08T13-06-59-139Z-21725` passes formatting, workflow, all static gates
+and 1,658 unit tests. Its sole failure is the aggregate CSP identity pin after the README location
+inventory refresh. Owner 0035 records the mechanical map/digest/API-test refresh before changes; no
+grammar or corpus behavior changes. The passing expanded focused run contains 144 cases. Current
+built-consumer previews measure core gzip at 62,772 and CSP Brotli at 38,989 bytes. These previews
+do not replace the installed-package gate.
+
+Fast run `2026-09-08T13-01-17-079Z-7814` fails formatting, unit and static verification. It passes
+1,652 unit tests; six lifecycle assertions require the original destroyed-application diagnostic and
+one CSP contract assertion rejects stale README line references. Restore the original diagnostic in
+the consolidated plugin-host check, regenerate the CSP inventory after formatting, and repeat the
+full fast gate. The original report and seven failing assertions remain retained. Static
+verification also rejects an unavailable public type alias and a cancellation branch narrowed
+incorrectly across a reentrant callback. Infer the facade type from the public installer and read
+cancellation through a closure before acquisition. The existing negative/positive cancellation
+control proves why the later check is required. No lint allowance changes.
+
+The 2026-09-08 Plan validation passes before source edits. The original source fails ten of twelve
+new public lifecycle cases; installer disposal and post-activation rollback controls already pass.
+`ownership-census/resume-2026-09-08/plugin-negative.json` retains every assertion and diagnostic.
+The application-data assertion now uses the actual `jqueryStar.instance` key from the source.
+Current focused, fast and full delivery verification remain required.
 
 | Command                                                               | Result                      | Evidence                                                                                                                                                                               |
 | --------------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -237,6 +377,13 @@ first-baseline state, set only those two ceilings to their next 1 KiB boundaries
 | Test-phase ticket validation                                          | Pass                        | The validator accepted that exact report while the ticket was in `testing`; an independent check found zero abandoned `jqstar-release-quality-*` directories.                          |
 
 ### Inspection ledger
+
+Current correction inspection confirms that the shared application guard runs before the first hook
+and after retaining every returned cleanup. Kernel failure still releases its observation,
+middleware and protocol application links. Installed cleanup stacks preserve the former category
+order and are consumed before callbacks. Resource cancellation covers both provisional cleanup and
+an acquisition that finishes during cancellation. Existing private-property rules and every size
+ceiling remain unchanged. Complete delivery is pending.
 
 | Finding                                                                                    | Resolution                                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -268,19 +415,19 @@ first-baseline state, set only those two ceilings to their next 1 KiB boundaries
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                                                                                                                      | Result |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| AC-01 | `src/plugin.ts`, `src/types.ts`, and `src/index.ts` publish API version `0.1.0`, stable manifest and graph fields, a staging registrar, application hooks, cleanup, and generic typed facades.                                | Pass   |
-| AC-02 | Plugin, runtime-install, public-baseline, API, and installed-consumer tests prove single and tuple `use()` results, stable topological order, and one atomic action/hook/facade publication boundary.                         | Pass   |
-| AC-03 | Focused and property tests cover installer, collision, dependency, range, cycle, reference, manifest, registrar, asynchronous-result, reentrant, and late-install failures with no published state.                           | Pass   |
-| AC-04 | Object-identity tests prove a repeated object returns the same facade without reinstalling—even after manifest mutation—while another object with the same name conflicts before option comparison.                           | Pass   |
-| AC-05 | Registry and plugin tests prove exact and descendant `core`/`ui` reservation, dot-qualified external names, namespace-overlap rejection, action confinement, and post-claim legacy-write rejection.                           | Pass   |
-| AC-06 | Behavior and attribute application tests prove the structural lock closes at the first identity allocation and remains closed after application setup rollback.                                                               | Pass   |
-| AC-07 | Kernel, plugin, and runtime tests prove pre-commit hook setup, reverse rollback, explicit and patch-driven exact-once cleanup, application-before-plugin disposal, reverse plugin cleanup, and failure aggregation.           | Pass   |
-| AC-08 | Registry, public-baseline, package, release, and browser suites retain legacy chaining and overwrite behavior outside plugin claims and exercise the existing built-in `ui.*` and backend action surface.                     | Pass   |
-| AC-09 | Package quality measured 402,320-byte UMD and 481,635-byte root-consumer artifacts below exact 402,432 and 482,304 ceilings; schema validation and the immutable-base ratchet preserve every unrelated and future constraint. | Pass   |
+| ID    | Evidence                                                                                                                                                                                                                                                                            | Result |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| AC-01 | `src/plugin.ts`, `src/types.ts`, and `src/index.ts` publish API version `0.1.0`, stable manifest and graph fields, a staging registrar, application hooks, cleanup, and generic typed facades.                                                                                      | Pass   |
+| AC-02 | Plugin installation, property and installed-consumer tests cover graph order and atomic publication. `test/plugin-lifecycle.test.ts` additionally refuses publication after installer/activation disposal and releases staged ownership; current full delivery passes.              | Pass   |
+| AC-03 | Existing validation/rollback tests plus the 17-case `test/plugin-lifecycle.test.ts` cover provisional resources, failed ownership, cancellation during acquisition and returned cleanup failures. Current changed-code coverage and full delivery pass with fixed size/lint limits. | Pass   |
+| AC-04 | Object-identity tests prove a repeated object returns the same facade without reinstalling—even after manifest mutation—while another object with the same name conflicts before option comparison.                                                                                 | Pass   |
+| AC-05 | Registry and plugin tests prove exact and descendant `core`/`ui` reservation, dot-qualified external names, namespace-overlap rejection, action confinement, and post-claim legacy-write rejection.                                                                                 | Pass   |
+| AC-06 | Behavior and attribute application tests prove the structural lock closes at the first identity allocation and remains closed after application setup rollback.                                                                                                                     | Pass   |
+| AC-07 | Hook interruption cases prove stopped later hooks, refused application commit and exact cleanup after application/kernel disposal. Reentrant staged cancellation and reverse installed cleanup are covered; all current lifecycle/browser gates pass.                               | Pass   |
+| AC-08 | Registry, public-baseline, package, release, and browser suites retain legacy chaining and overwrite behavior outside plugin claims and exercise the existing built-in `ui.*` and backend action surface.                                                                           | Pass   |
+| AC-09 | Package quality measured 402,320-byte UMD and 481,635-byte root-consumer artifacts below exact 402,432 and 482,304 ceilings; schema validation and the immutable-base ratchet preserve every unrelated and future constraint.                                                       | Pass   |
 
-### Completion audit
+### Historical completion audit
 
 The changed-file ledger matches the implemented transactional plugin host. Focused tests,
 changed-line coverage, generated graph and stable-range properties, installed consumers, reviewed
@@ -290,6 +437,18 @@ owned temporary release workspaces. Public and project-brain documentation descr
 manifest, graph, transaction, namespace, lifecycle, ownership, cleanup, compatibility, package-size,
 and ticket-0013 modular-UI boundary.
 
-Status: Complete
+Status: Historical
 
-Pending.
+### Completion audit
+
+The reopened plugin criteria have current implementation, direct regression evidence and matching
+public/brain documentation. All 17 added lifecycle cases and the existing plugin/application
+contracts pass in full delivery `2026-09-08T14-15-52-232Z-38476`. It passes all 13 gates and every
+changed executable line/function on fingerprint
+`94a419d86cec0fc16bb5f8ec6203fc1fd7aef6fd997ba34c6e8fd290b0d7994d` across 862 files. Actual Test
+validation accepts that report and receipt before these Document updates. Provisional resource
+handoff, interruption checks and consumed reverse cleanup preserve public diagnostics, API behavior
+and the existing package/lint/coverage limits. The earlier failed runs remain recorded. No required
+work remains for this owner correction; the separate program audit continues.
+
+Status: Complete

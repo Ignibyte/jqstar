@@ -113,7 +113,7 @@ function handleMessage(message: SSEMessage, capabilities: StarProtocolResponseCa
     const fields = sseDataFields(message.data);
     const source = fields.get("signals")?.join("\n");
     if (!source) throw new Error("A signal patch event did not include signals.");
-    const signals = JSON5.parse(source) as unknown;
+    const signals: unknown = JSON5.parse(source);
     if (!signals || typeof signals !== "object" || Array.isArray(signals)) {
       throw new Error("A signal patch must contain an object.");
     }

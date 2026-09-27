@@ -3,7 +3,7 @@ id: 0009
 title: Register public directives and expression helpers
 status: done
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-06
 ---
 
 # 0009: Register public directives and expression helpers
@@ -36,6 +36,53 @@ cleanup contract.
   directive-task category or helper/directive snapshot.
 - The executable 0.1 baseline freezes every current directive form and expression-scope name. Any
   registry migration must preserve that behavior and error-event shape.
+
+### Reopening decision: directive registration rollback (2026-09-06)
+
+The full-library ownership audit reproduces failed resource registration through actual public
+plugin/core/application calls. A throwing task factory and a non-thenable result leave their
+supplied signals un-aborted even after application destruction. An initial effect callback that
+destroys its application leaves an effect running: changing state after destruction invokes it
+again. Normal registered task and effect controls clean up correctly. Exact source, probes and
+five-case results are retained in
+`.git/jqstar/program-audit/ownership-census/directive-registration-finding.json`. Preserve all
+original bundles and results.
+
+Return to planned and reopen AC-05/AC-06/AC-09 before code. Resource creation must acquire rollback
+ownership before exposing the callback, or explicitly undo allocation if the callback invalidates
+its owner before registration completes. A provisional directive must be discoverable by teardown
+while its mount callback runs. Cleanup capabilities must refuse new work after directive release or
+application destruction, including calls through a retained context.
+
+For tasks, abort and detach on a throwing factory, invalid result, failed kernel registration or
+reentrant teardown. Safely observe a returned promise so late rejection cannot escape after its
+owner closes. For effects, stop the returned runner if initial execution released the owner, and
+never add it to a destroyed application's set. Preserve the original failure and attempt remaining
+cleanup. Retain normal directive order, finite-task barriers, callback APIs and error-event shape.
+
+Planned files: `src/declarative.ts`, `test/directive-application.test.ts`, `README.md`,
+`docs/ARCHITECTURE.md`, `docs/RUNTIME_OWNERSHIP.md`, `docs/TESTING.md`, this ticket,
+`docs/tickets/0033-audit-full-library-program.md`, and `docs/tickets/ROADMAP.md`. Extend the Plan
+before any extra path or public corpus regeneration. Keep public signatures, expression locations,
+grammar, diagnostics policy and budgets unchanged.
+
+A second actual public-API probe confirms the setup ordering gap: mount, task and effect callbacks
+that destroy their application skip cleanup already registered by that provisional directive, and
+scanning continues to create a later `data-text` effect. A cleanup function returned after teardown
+is also lost. Evidence is retained in `ownership-census/directive-reentrant-finding.json`. Extend
+the same planned source/test paths before implementation: install provisional directive teardown
+before invoking mount, stop scanning once the application is destroyed, and invoke a returned
+cleanup if its owner closed before registration. Regressions must cover registered and returned
+cleanup, later attributes/descendants, retained capabilities, and original error preservation. This
+extends the validated lifecycle design without adding public API or changing expression grammar.
+
+Validate this Plan before behavior edits. Test throwing/invalid task factories, failed kernel
+registration, reentrant task/effect teardown, failed mount/update and ordinary successful controls
+through public directive capabilities. Assert cancellation, no later effect execution, no remaining
+owned task/barrier, idempotence, original errors and contained late rejection. Keep negative
+controls against the original source, then focused tests, fast checks, changed-code coverage and
+full delivery. The historical closure is superseded until all reopened criteria have current
+evidence. Mutation testing remains deferred.
 
 ### Scope
 
@@ -258,6 +305,21 @@ context field and shared conformance cases.
 | `README.md`, `docs/{ARCHITECTURE,PROJECT,RUNTIME_OWNERSHIP,TESTING}.md`         | Public usage and project-brain contracts.                                   |
 | `docs/tickets/0009-register-directives-and-helpers.md`                          | Current phase, files, commands, findings, and acceptance evidence.          |
 
+### Registration rollback changed files (2026-09-06)
+
+| File                                                                                      | Purpose                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test/directive-application.test.ts`                                                      | Public core/plugin/application regressions for failed task creation, reentrant mount/update/effect/task cleanup, retained capabilities and late rejection after kernel disposal. |
+| This ticket, `docs/tickets/0033-audit-full-library-program.md`, `docs/tickets/ROADMAP.md` | Record the validated reopening, original findings, implementation and verification scope.                                                                                        |
+
+The correction changes `src/declarative.ts` to register provisional teardown before mount, stop
+scanning after destruction, stop effects invalidated during initial execution, own task rollback
+before factory invocation, detach a returned task registration if its owner already closed, and run
+cleanup returned after mount/update teardown. The task helper observes its promise before
+registration can fail and preserves original errors while attempting all cleanup. `README.md`,
+`docs/ARCHITECTURE.md`, `docs/RUNTIME_OWNERSHIP.md` and `docs/TESTING.md` describe these boundaries.
+README expression locations retain their original line numbers.
+
 ### Design changes
 
 Implementation follows the validated Plan. The only API hardening added during review is explicit
@@ -283,6 +345,36 @@ next-1-KiB rules set 270 files, 413,696 UMD bytes, and 492,544 consumer bytes. O
 not move.
 
 ## Test
+
+Final documentation run `2026-09-07T02-13-50-146Z-150` passes unit, coverage, property, format and
+workflow checks but fails spelling on one word in ticket 0009. The wording now says mutation testing
+remains deferred. After the failure was confirmed, the runner received SIGTERM; later gates were not
+executed and no receipt was issued. The corrected final tree requires a fresh complete delivery run.
+
+| Command                                                              | Result | Evidence                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JQS_QUALITY_FORCE_ALL=1 npm run check` (invokes `quality:delivery`) | Pass   | `2026-09-07T01-53-29-076Z-39380/report.json`: all 13 enforced gates pass with matching 858-file fingerprint `c053e7f45e868a3f5e29824b29610eeaaec1da8b27f97ada8b4a51b834691121`. All 1,642 unit tests, 487 browser tests, 13 installed-package checks, seven release checks and 16 detector controls pass. Coverage reports no uncovered changed executable lines or functions in the nine changed runtime files. |
+| Installed package sizes from that delivery run                       | Pass   | `package-report.json`: testing CommonJS/ESM are 12,975/12,988 bytes, core consumer is 62,991 gzip bytes and CSP consumer is 38,983 Brotli bytes. Existing 13,000/63,000/39,000 limits are unchanged.                                                                                                                                                                                                             |
+| Actual Test phase validation for owners 0006, 0009 and 0014          | Pass   | `ownership-census/current-batch-test-validation.log`: all three validators pass against that exact delivery report before moving to Document. The final documentation and status changes require a new matching delivery receipt before commit.                                                                                                                                                                  |
+
+Combined delivery failure (2026-09-06).
+
+Forced delivery `2026-09-06T23-28-19-460Z-20892` finishes with eleven passing gates and two
+failures. All 1,610 unit tests, 487 browser cases, coverage, properties, static checks and seven
+release checks pass. Coverage measures all 96 changed executable lines and sixteen changed
+functions, with no uncovered or unexplained changes. Package quality rejects 3,175,232 packed bytes
+against 3,174,000, 63,203 core gzip bytes against 63,000, and the stale Mobile UMD reference
+(463,011 versus actual 463,830 bytes). The package-budget detector also fails because these
+unrelated package errors remain alongside its deliberate failure. The other fifteen detector
+controls pass. Source fingerprints match throughout; no delivery receipt is eligible. Preserve the
+failed report and correct the implementation/measurement within unchanged budgets before repeating
+full delivery.
+
+| Command                                                            | Result | Evidence                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run quality:fast` (combined lifecycle corrections)            | Pass   | `2026-09-06T23-26-05-896Z-7785/report.json`: all six gates and 1,610 unit tests pass, with zero failures/pending cases and unchanged 856-file fingerprint `accda052…aa2be`.                                                                                                    |
+| Code phase validation against the exact fast report                | Pass   | `ownership-census/directive-rollback-code.log`; actual validation passes before moving to testing.                                                                                                                                                                             |
+| Current source-bundled directive registration and reentrant probes | Pass   | `ownership-census/directive-registration-after.json` and `directive-reentrant-after.json`: supplied signals abort, effects stop, provisional/returned cleanup runs, and no destroyed descendant is enhanced. These are source/public-API probes, not installed-artifact proof. |
 
 | Command                                                           | Result | Evidence                                                                                                                                                                                                                                   |
 | ----------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -315,6 +407,33 @@ not move.
 | Post-delivery temp-root inspection                                | Pass   | Zero `jqstar-package-quality-*` or `jqstar-release-quality-*` directories remain.                                                                                                                                                          |
 | Document-phase ticket validation                                  | Pass   | The validator accepted the documentation list, nine checked criteria, one-to-one Pass evidence, and standalone completion audit before status moved to `done`.                                                                             |
 
+### Registration check corrections (2026-09-06)
+
+The first direct TypeScript command named a nonexistent `tsconfig.test.json`; rerun with the
+maintained `tsconfig.quality.test.json` and retain both logs. Direct typed lint rejects a local
+closed flag changed inside a callback as always false, although the executed reentrant cases prove
+it changes. Store closed/release state in one explicit mutable registration record so the source
+expresses that ownership without disabling a rule or adding an allowance. Repeat focused and
+required checks after this correction.
+
+### Registration rollback verification (2026-09-06)
+
+The expanded Plan passed before source changes. Initial regressions reproduce eight failures and
+seven passing controls against the unchanged committed declarative source. The complete regression
+matrix adds two explicit capability-injection cases that release an owner while kernel task
+registration returns, including a throwing detach. Against the original source, all ten new cases
+fail and the seven existing cases pass. `ownership-census/directive-rollback-negative-complete.json`
+and its verification record retain source/test hashes; the fixed source was restored byte-for-byte
+in `finally`. No fixture setup failure is counted as a product finding.
+
+The fixed source passes all 100 tests across directive application, declarative, kernel and
+reactivity suites in `ownership-census/directive-rollback-focused-complete.json`. Public core calls
+prove supplied signals abort, original errors survive rollback, cleanup is not lost, later state
+changes do not run effects or enhance destroyed descendants, and late task rejection is contained.
+The capability-injection cases separately prove zero remaining task resources and a resolved
+barrier, with exactly-once detachment even when it throws. Fast, changed-code coverage and complete
+delivery remain required before acceptance closure. Mutation testing remains deferred.
+
 ### Inspection ledger
 
 | Finding                                                                                                                    | Resolution                                                                                                                                                                                                               |
@@ -346,19 +465,30 @@ not move.
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                                                                                                                              | Result |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| AC-01 | `src/directive.ts`, root-package exports, reviewed API report, and focused type/runtime tests cover matcher, attribute, priority, callback, cleanup, task, and helper contracts.                                                      | Pass   |
-| AC-02 | All 13 installed-package checks exercise an external plugin directive/helper from ESM, CommonJS, QUnit, NodeNext, Bundler, module-browser, and UMD-browser consumers.                                                                 | Pass   |
-| AC-03 | Directive/plugin focused tests and generated property cases reject invalid IDs, matchers, overlaps, namespaces, priorities, capabilities, helper paths, reserved roots, collisions, and late use.                                     | Pass   |
-| AC-04 | `test/directive-application.test.ts` proves one active element/attribute record, insert/update/remount behavior, stable priority order, independent matching, ignored subtrees, and reinsertion.                                      | Pass   |
-| AC-05 | Directive application, patch, and kernel tests prove exactly-once cleanup for removal, `data-ignore`, replacement, destroy, failure, and disposal while retaining the established patch order.                                        | Pass   |
-| AC-06 | Directive, application, and kernel tests prove owner-bound effects, finite task settlement/abort/detach/report behavior, resource-ledger cleanup, and `whenEnhanced()` barrier participation.                                         | Pass   |
-| AC-07 | Expression, directive, plugin, and property tests prove dotted non-dollar helper paths, safe-object validation, frozen null-prototype namespace snapshots, fixed binding precedence, and engine scope.                                | Pass   |
-| AC-08 | Public-baseline and declarative tests prove committed `core.text` and `core.destroy` registry definitions retain the 0.1 behavior and error boundary.                                                                                 | Pass   |
-| AC-09 | Shared expression conformance, focused suites, coverage, properties, three-engine browser quality, installed consumers, package quality, and release reproducibility pass in exact-tree delivery run `2026-09-01T13-29-36-735Z-9094`. | Pass   |
+| ID    | Evidence                                                                                                                                                                                                                                                                                                                        | Result |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| AC-01 | `src/directive.ts`, root-package exports, reviewed API report, and focused type/runtime tests cover matcher, attribute, priority, callback, cleanup, task, and helper contracts.                                                                                                                                                | Pass   |
+| AC-02 | All 13 installed-package checks exercise an external plugin directive/helper from ESM, CommonJS, QUnit, NodeNext, Bundler, module-browser, and UMD-browser consumers.                                                                                                                                                           | Pass   |
+| AC-03 | Directive/plugin focused tests and generated property cases reject invalid IDs, matchers, overlaps, namespaces, priorities, capabilities, helper paths, reserved roots, collisions, and late use.                                                                                                                               | Pass   |
+| AC-04 | `test/directive-application.test.ts` proves one active element/attribute record, insert/update/remount behavior, stable priority order, independent matching, ignored subtrees, and reinsertion.                                                                                                                                | Pass   |
+| AC-05 | `test/directive-application.test.ts` proves attribute, ignore, removal, patch, update and kernel cleanup; provisional ownership before mount; returned cleanup after release; and reverse cleanup despite failures. The detached-declarative suite covers removal immediately before destruction. Current full delivery passes. | Pass   |
+| AC-06 | Directive regressions prove rollback for throwing/invalid task factories, destruction during initial effect/task callbacks, kernel-registration release races, signal abort, late rejection handling and an empty task barrier. Current coverage has no uncovered changed executable lines or functions.                        | Pass   |
+| AC-07 | Expression, directive, plugin, and property tests prove dotted non-dollar helper paths, safe-object validation, frozen null-prototype namespace snapshots, fixed binding precedence, and engine scope.                                                                                                                          | Pass   |
+| AC-08 | Public-baseline and declarative tests prove committed `core.text` and `core.destroy` registry definitions retain the 0.1 behavior and error boundary.                                                                                                                                                                           | Pass   |
+| AC-09 | Current delivery passes property and public baseline tests, API/types, installed ESM/CommonJS/QUnit/browser consumers, release reproducibility, coverage/static gates and all 487 browser tests. Mutation testing remains deferred.                                                                                             | Pass   |
 
 ### Completion audit
+
+The reopened directive registration and teardown criteria match the current implementation,
+regressions and public contracts. Provisional mount cleanup precedes callback execution; failed task
+registration aborts and detaches work; initial effect destruction stops the runner; and returned
+cleanup after owner release runs immediately. Error, late-rejection and kernel-registration race
+cases pass. All nine criteria have direct evidence, including installed external consumers,
+coverage, property, browser and release checks. Actual Test validation passed before Document.
+
+Status: Complete
+
+### Historical completion audit
 
 The public directive/helper extension contract, transactional installation, lifecycle ownership,
 installed consumer matrix, compatibility migration, focused and generated tests, coverage, package

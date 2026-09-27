@@ -1,6 +1,6 @@
 {
   "$schema": "jqstar-agent-content/1",
-  "corpusVersion": 3,
+  "corpusVersion": 8,
   "canonicalBaseUrl": "https://ignibyte.github.io/jqstar/",
   "webMcpDraft": "2026-08-26",
   "limits": {
@@ -9,7 +9,7 @@
     "guideCharacters": 16000,
     "exampleCharacters": 8000,
     "fullTextBytes": 120000,
-    "indexBytes": 160000
+    "indexBytes": 190000
   },
   "surfaces": [
     {
@@ -55,9 +55,55 @@
       "id": "getting-started",
       "title": "Introduction",
       "path": "docs/",
-      "summary": "Install jquery-star, boot an application, use real jQuery beside reactive signals, and copy registry recipes.",
-      "keywords": ["install", "npm", "boot", "signals", "$", "$name", "registry", "cli"],
+      "summary": "Install, boot jQuery with signals, copy recipes, and find the combined reference.",
+      "keywords": [
+        "install",
+        "npm",
+        "boot",
+        "signals",
+        "$",
+        "$name",
+        "registry",
+        "cli",
+        "combined reference"
+      ],
       "source": "example/docs/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "compatibility",
+      "title": "Compatibility",
+      "path": "docs/compatibility/",
+      "summary": "Stable jQStar 1.1 entries, formats, package doctor, support ranges, document topology, and lifecycle policy.",
+      "keywords": ["compatibility", "support", "node", "jquery", "browser", "entry points"],
+      "source": "example/docs/compatibility/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "migration-to-1",
+      "title": "Migrate to 1.0",
+      "path": "docs/migration/",
+      "summary": "Upgrade the 0.1 compatibility root or adopt stable modular, testing, CSP, Turbo, and htmx entries.",
+      "keywords": ["migration", "upgrade", "1.0", "modular", "csp", "turbo", "htmx"],
+      "source": "example/docs/migration/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "path": "docs/security/",
+      "summary": "Private vulnerability reporting, maintained versions, application responsibilities, CSP boundaries, and release response.",
+      "keywords": ["security", "vulnerability", "report", "csp", "support", "advisory"],
+      "source": "example/docs/security/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "download",
+      "title": "Download",
+      "path": "docs/download/",
+      "summary": "Install published packages or verify exact candidate tarballs without treating release preparation as publication.",
+      "keywords": ["download", "install", "npm", "tarball", "checksum", "release candidate"],
+      "source": "example/docs/download/index.html",
       "contentRoot": "article"
     },
     {
@@ -114,10 +160,26 @@
       "contentRoot": "article"
     },
     {
+      "id": "shared-stores",
+      "title": "Shared stores",
+      "path": "docs/stores/",
+      "summary": "Install per-kernel shared reactive state, keep local signals separate, and preserve server authority and owned cleanup.",
+      "keywords": [
+        "stores",
+        "shared state",
+        "local signals",
+        "transaction",
+        "subscription",
+        "server authority"
+      ],
+      "source": "example/docs/stores/index.html",
+      "contentRoot": "article"
+    },
+    {
       "id": "external-interoperability",
       "title": "Turbo and htmx interoperability",
       "path": "docs/interoperability/",
-      "summary": "Install the shipped Turbo lifecycle bridge and review tested version boundaries, preservation, focus ownership, and future htmx limits.",
+      "summary": "Install the shipped Turbo and htmx lifecycle bridges and review their tested version boundaries, preservation, focus ownership, and limits.",
       "keywords": [
         "turbo",
         "htmx",
@@ -137,6 +199,40 @@
       "keywords": ["jquery", "migrate", "jquery ui", "jquery mobile", "sizzle", "qunit"],
       "source": "example/docs/ecosystem/index.html",
       "contentRoot": "summary"
+    },
+    {
+      "id": "jquery-ui-migration",
+      "title": "jQuery UI coexistence and migration",
+      "path": "docs/ecosystem/jquery-ui/",
+      "summary": "Isolate application-owned jQuery UI regions and migrate them feature by feature to semantic HTML and native jQStar components.",
+      "keywords": [
+        "jquery ui",
+        "coexistence",
+        "migration",
+        "widget factory",
+        "themeroller",
+        "adapter",
+        "destroy"
+      ],
+      "source": "example/docs/ecosystem/jquery-ui/index.html",
+      "contentRoot": "article"
+    },
+    {
+      "id": "jquery-mobile-migration",
+      "title": "jQuery Mobile migration",
+      "path": "docs/ecosystem/jquery-mobile/",
+      "summary": "Migrate archived jQuery Mobile applications route by route to server documents, semantic HTML, responsive CSS, jQuery 4, and bounded jQStar enhancement.",
+      "keywords": [
+        "jquery mobile",
+        "route migration",
+        "no runtime",
+        "data-role",
+        "virtual mouse",
+        "responsive",
+        "native forms"
+      ],
+      "source": "example/docs/ecosystem/jquery-mobile/index.html",
+      "contentRoot": "article"
     },
     {
       "id": "testing-harness",
@@ -203,7 +299,7 @@
       "id": "component-lab",
       "title": "Component Lab",
       "path": "components/lab/",
-      "summary": "The exhaustive browser proof for registry recipes, composed blocks, backend requests, and Datastar streams.",
+      "summary": "The full Lab is embedded on home and Components. This direct route runs the same recipes, blocks, and backend proof.",
       "keywords": ["component lab", "registry", "examples", "browser", "datastar", "accessibility"],
       "source": "example/components/lab/index.html",
       "contentRoot": "summary"
@@ -216,6 +312,23 @@
       "keywords": ["agent", "webmcp", "llms.txt", "corpus", "tools", "provenance"],
       "source": "config/agent-content.json",
       "contentRoot": "summary"
+    },
+    {
+      "id": "persistence",
+      "title": "Persisted preferences",
+      "path": "docs/persistence/",
+      "summary": "Persist selected browser preferences with synchronous hydration before boot, codecs, migrations, explicit recovery, and revision ordering.",
+      "keywords": [
+        "persistence",
+        "preferences",
+        "local storage",
+        "session storage",
+        "migration",
+        "recovery",
+        "Lamport"
+      ],
+      "source": "example/docs/persistence/index.html",
+      "contentRoot": "article"
     }
   ],
   "invariants": [
@@ -269,7 +382,7 @@
     },
     {
       "id": "external-render-ownership",
-      "statement": "Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo bridge uses the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots. The htmx bridge remains planned.",
+      "statement": "Turbo and htmx own requests, forms, history, focus, and DOM mutation. The shipped jquery-star/turbo and jquery-star/htmx bridges use the public render adapter only to release outgoing ownership, preserve exact approved identities, and enhance incoming roots.",
       "path": "docs/interoperability/",
       "sources": ["example/docs/interoperability/index.html", "docs/INTEROPERABILITY.md"]
     },
@@ -304,7 +417,7 @@
       "language": "html",
       "path": "docs/",
       "source": "example/docs/index.html",
-      "code": "<section id=\"counter\" data-signals=\"{ count: 0 }\">\n  <button data-on:click=\"$count++; $(el).fadeOut()\">\n    Increment and disappear\n  </button>\n\n  <output data-text=\"$count\"></output>\n</section>",
+      "code": "<section id=\"app\" data-jqs data-signals=\"{ count: 0 }\">\n  <button data-on:click=\"$count++; $(el).fadeOut()\">\n    Increment and disappear\n  </button>\n\n  <output data-text=\"$count\"></output>\n</section>",
       "keywords": ["signals", "$", "$count", "jquery", "data-on", "data-text"]
     },
     {
@@ -394,6 +507,13 @@
       "path": "docs/plugins/"
     },
     {
+      "id": "shared-stores",
+      "question": "When should several jQStar roots use a shared store, and can it hold secrets or authorize server work?",
+      "expectedIds": ["shared-stores"],
+      "requiredTerms": ["client coordination", "local signals", "server authority", "secrets"],
+      "path": "docs/stores/"
+    },
+    {
       "id": "datastar-transport",
       "question": "How must a backend generate Datastar server-sent events?",
       "expectedIds": ["datastar-integration", "datastar-sdk"],
@@ -429,11 +549,53 @@
       "path": ""
     },
     {
+      "id": "jquery-ui-migration-path",
+      "question": "How do I migrate a jQuery UI application to jQStar, and is there a compatibility adapter?",
+      "expectedIds": ["jquery-ui-migration"],
+      "requiredTerms": ["one feature at a time", "destroy", "no adapter"],
+      "path": "docs/ecosystem/jquery-ui/"
+    },
+    {
       "id": "troubleshooting",
       "question": "Where can I verify component behavior and diagnose copied registry files?",
       "expectedIds": ["component-lab", "copy-registry-recipes"],
       "requiredTerms": ["Component Lab", "jqstar doctor"],
       "path": "components/lab/"
+    },
+    {
+      "id": "persistence",
+      "question": "How do I persist selected browser preferences before jQStar applications start and recover corrupt stored data?",
+      "expectedIds": ["persistence"],
+      "requiredTerms": ["jquery-star/persist", "before", "reset()", "secrets"],
+      "path": "docs/persistence/"
+    },
+    {
+      "id": "request-profiles",
+      "question": "Does core.generic send implicit Datastar signals and which profile should ordinary JSON endpoints use?",
+      "expectedIds": ["datastar-integration"],
+      "requiredTerms": ["core.generic", "core.datastar", "explicit inputs"],
+      "path": "docs/datastar/"
+    },
+    {
+      "id": "morph-preservation",
+      "question": "Does a Datastar morph preserve every unsaved input value or only the active input value?",
+      "expectedIds": ["datastar-integration"],
+      "requiredTerms": ["active", "Other values can receive server updates", "removed nodes"],
+      "path": "docs/datastar/"
+    },
+    {
+      "id": "combined-reference",
+      "question": "Where is the combined jQStar usage reference with guides examples and registry contracts for headless agents?",
+      "expectedIds": ["getting-started"],
+      "requiredTerms": ["combined usage reference", "llms.txt", "registry contracts"],
+      "path": "docs/"
+    },
+    {
+      "id": "external-focus",
+      "question": "When a navigation plugin uses createRenderAdapter who owns DOM mutation and focus?",
+      "expectedIds": ["plugin-conformance"],
+      "requiredTerms": ["host owns DOM mutation and focus"],
+      "path": "docs/plugins/"
     }
   ],
   "agentGuide": {

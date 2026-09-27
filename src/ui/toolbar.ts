@@ -1,13 +1,22 @@
+import { isHTMLElement, isHTMLTag, isNode } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { StarContext, StarToolbarStatic, ToolbarTarget } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 type Orientation = "horizontal" | "vertical";
 
-interface ToolbarRecord {
-  active: HTMLElement | undefined;
-  cleanup: () => void;
+interface ToolbarRecord extends UIResources {
+  activeItem: HTMLElement | undefined;
   items: HTMLElement[];
-  root: HTMLElement;
 }
 
 interface ToolbarCollection {
@@ -19,7 +28,7 @@ const records = new WeakMap<HTMLElement, ToolbarRecord>();
 let toolbarId = 0;
 
 function toolbarRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="toolbar"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="toolbar"]') ? value : undefined;
 }
 
 function orientation(root: HTMLElement): Orientation {
@@ -28,7 +37,7 @@ function orientation(root: HTMLElement): Orientation {
 
 function toolbarItems(root: HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>('[data-part="item"]')).filter(
-    (item) => item.closest('[data-jqs="toolbar"]') === root,
+    (item) => isHTMLElement(item) && item.closest('[data-jqs="toolbar"]') === root,
   );
 }
 
@@ -57,9 +66,25 @@ function availableItems(record: ToolbarRecord): HTMLElement[] {
   return record.items.filter((item) => !disabled(item));
 }
 
+function current(record: ToolbarRecord): boolean {
+  const items = toolbarItems(record.root);
+  return (
+    uiCurrent(record) &&
+    records.get(record.root) === record &&
+    items.length === record.items.length &&
+    items.every((item, index) => item === record.items[index])
+  );
+}
+
+function recordFor(root: HTMLElement): ToolbarRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceToolbar(root);
+}
+
 function setActive(record: ToolbarRecord, item: HTMLElement, focus = false): HTMLElement {
-  if (!record.items.includes(item) || disabled(item)) return record.root;
-  record.active = item;
+  record.revision += 1;
+  if (!current(record) || !record.items.includes(item) || disabled(item)) return record.root;
+  record.activeItem = item;
   for (const candidate of record.items) candidate.tabIndex = candidate === item ? 0 : -1;
   const value = itemValue(item, record.items.indexOf(item));
   if (record.root.dataset.value !== value) record.root.dataset.value = value;
@@ -70,7 +95,7 @@ function setActive(record: ToolbarRecord, item: HTMLElement, focus = false): HTM
 function move(record: ToolbarRecord, offset: number): HTMLElement {
   const items = availableItems(record);
   if (items.length === 0) return record.root;
-  const current = record.active ? items.indexOf(record.active) : -1;
+  const current = record.activeItem ? items.indexOf(record.activeItem) : -1;
   let index = current + offset;
   if (record.root.dataset.loop === "false") {
     index = Math.max(0, Math.min(items.length - 1, index));
@@ -81,23 +106,25 @@ function move(record: ToolbarRecord, offset: number): HTMLElement {
 }
 
 function nativeArrowControl(element: EventTarget | null): boolean {
-  if (!(element instanceof HTMLElement)) return false;
+  if (!isHTMLElement(element)) return false;
   if (element.dataset.toolbarNav === "roving") return false;
-  if (element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) return true;
-  if (!(element instanceof HTMLInputElement)) return element.isContentEditable;
+  if (isHTMLTag(element, "textarea") || isHTMLTag(element, "select")) return true;
+  if (!isHTMLTag(element, "input")) return element.isContentEditable;
   return !["button", "checkbox", "radio", "reset", "submit"].includes(element.type);
 }
 
-function wire(record: ToolbarRecord): () => void {
+function wire(record: ToolbarRecord): void {
   const focusin = (event: FocusEvent): void => {
     const item = record.items.find(
-      (candidate) => candidate === event.target || candidate.contains(event.target as Node),
+      (candidate) =>
+        candidate === event.target || (isNode(event.target) && candidate.contains(event.target)),
     );
     if (item) setActive(record, item);
   };
   const keydown = (event: KeyboardEvent): void => {
     const item = record.items.find(
-      (candidate) => candidate === event.target || candidate.contains(event.target as Node),
+      (candidate) =>
+        candidate === event.target || (isNode(event.target) && candidate.contains(event.target)),
     );
     if (!item || nativeArrowControl(event.target)) return;
     const vertical = orientation(record.root) === "vertical";
@@ -114,12 +141,8 @@ function wire(record: ToolbarRecord): () => void {
       if (edge) setActive(record, edge, true);
     }
   };
-  record.root.addEventListener("focusin", focusin);
-  record.root.addEventListener("keydown", keydown);
-  return () => {
-    record.root.removeEventListener("focusin", focusin);
-    record.root.removeEventListener("keydown", keydown);
-  };
+  listenUI(record, () => current(record), record.root, "focusin", focusin as EventListener);
+  listenUI(record, () => current(record), record.root, "keydown", keydown as EventListener);
 }
 
 function enhanceToolbar(root: HTMLElement): ToolbarRecord {
@@ -132,20 +155,33 @@ function enhanceToolbar(root: HTMLElement): ToolbarRecord {
   const existing = records.get(root);
   const activeValue =
     root.dataset.value ||
-    (existing?.active ? itemValue(existing.active, existing.items.indexOf(existing.active)) : "");
-  existing?.cleanup();
-  const record: ToolbarRecord = { active: undefined, cleanup: () => undefined, items, root };
-  records.set(root, record);
-  const active =
-    items.find((item, index) => itemValue(item, index) === activeValue && !disabled(item)) ??
-    items.find((item) => item.tabIndex === 0 && !disabled(item)) ??
-    items.find((item) => !disabled(item));
-  if (active) setActive(record, active);
-  for (const item of items) {
-    if (item instanceof HTMLButtonElement && !item.hasAttribute("type")) item.type = "button";
-    if (disabled(item)) item.tabIndex = -1;
+    (existing?.activeItem
+      ? itemValue(existing.activeItem, existing.items.indexOf(existing.activeItem))
+      : "");
+  const reusable = existing && current(existing);
+  if (!reusable) existing?.cleanup();
+  const replacement = records.get(root);
+  if (!reusable && replacement) return replacement;
+  const record: ToolbarRecord = reusable
+    ? existing
+    : { ...uiResources(root), activeItem: undefined, items };
+  if (!reusable)
+    record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    const active =
+      items.find((item, index) => itemValue(item, index) === activeValue && !disabled(item)) ??
+      items.find((item) => item.tabIndex === 0 && !disabled(item)) ??
+      items.find((item) => !disabled(item));
+    if (active) setActive(record, active);
+    for (const item of items) {
+      if (isHTMLTag(item, "button") && !item.hasAttribute("type")) item.type = "button";
+      if (disabled(item)) item.tabIndex = -1;
+    }
+    if (!reusable) wire(record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+  } catch (error) {
+    failUISetup(record, error);
   }
-  record.cleanup = wire(record);
   return record;
 }
 
@@ -157,18 +193,16 @@ function resolveToolbar(target: ToolbarTarget, root: ParentNode = document): HTM
 }
 
 function controlledToolbar(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="toolbar"]')) return target;
+  if (isHTMLElement(target)) return resolveToolbar(target);
   if (typeof target === "string" && target.startsWith("#")) {
     return resolveToolbar(target, context.root);
   }
   const closest = context.element?.closest('[data-jqs="toolbar"]');
-  return resolveToolbar(closest instanceof HTMLElement ? closest : String(target));
+  return resolveToolbar(isHTMLElement(closest) ? closest : String(target), context.root);
 }
 
 function enhanceToolbars(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="toolbar"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="toolbar"]')) {
     const toolbar = toolbarRoot(element);
     if (toolbar) enhanceToolbar(toolbar);
   }
@@ -178,30 +212,31 @@ export function createToolbars(registerAction: ActionRegistrar): ToolbarCollecti
   const api: StarToolbarStatic = {
     focus: (target, value) => {
       const root = resolveToolbar(target);
-      const record = records.get(root) ?? enhanceToolbar(root);
-      const item = value === undefined ? record.active : record.items[valueIndex(record, value)];
+      const record = recordFor(root);
+      const item =
+        value === undefined ? record.activeItem : record.items[valueIndex(record, value)];
       if (!item) throw new Error(`Toolbar #${root.id} has no item with value "${value}".`);
       return setActive(record, item, true);
     },
     next: (target) => {
       const root = resolveToolbar(target);
-      return move(records.get(root) ?? enhanceToolbar(root), 1);
+      return move(recordFor(root), 1);
     },
     previous: (target) => {
       const root = resolveToolbar(target);
-      return move(records.get(root) ?? enhanceToolbar(root), -1);
+      return move(recordFor(root), -1);
     },
     value: (target) => {
       const root = resolveToolbar(target);
-      const record = records.get(root) ?? enhanceToolbar(root);
-      return record.active
-        ? itemValue(record.active, record.items.indexOf(record.active))
+      const record = recordFor(root);
+      return record.activeItem
+        ? itemValue(record.activeItem, record.items.indexOf(record.activeItem))
         : undefined;
     },
   };
   registerAction("ui.toolbar.focus", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
+    const explicit = (typeof first === "string" && first.startsWith("#")) || isHTMLElement(first);
     const target = controlledToolbar(context, explicit ? first : undefined);
     const value = explicit ? context.args?.[1] : first;
     return api.focus(target, typeof value === "string" ? value : undefined);

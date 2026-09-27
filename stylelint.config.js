@@ -1,6 +1,16 @@
 export default {
   extends: ["stylelint-config-standard"],
   ignoreFiles: ["coverage/**", "demo-dist/**", "dist/**", "server-dist/**", "node_modules/**"],
+  overrides: [
+    {
+      files: ["test/fixtures/navigation-decision/style.css"],
+      rules: { "at-rule-empty-line-before": null, "rule-empty-line-before": null },
+    },
+    {
+      files: ["e2e/fixtures/jquery-ui-migration/style.css"],
+      rules: { "media-feature-range-notation": "prefix" },
+    },
+  ],
   rules: {
     "alpha-value-notation": "number",
     "at-rule-no-unknown": [true, { ignoreAtRules: ["apply", "theme"] }],

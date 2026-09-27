@@ -55,6 +55,51 @@ describe("jQuery Star Multi Select", () => {
     expect(root().querySelector('[data-part="trigger"]')?.textContent).toContain("Design");
   });
 
+  it.each([
+    [
+      "nested control",
+      '<div data-part="control"><select multiple></select></div>',
+      'needs a direct select[data-part="control"]',
+    ],
+    [
+      "wrong direct element",
+      '<div data-part="control"></div>',
+      'needs a direct select[data-part="control"]',
+    ],
+    [
+      "wrong direct part",
+      '<select data-part="other" multiple></select>',
+      'needs a direct select[data-part="control"]',
+    ],
+    [
+      "single select",
+      '<select data-part="control"></select>',
+      "control needs the multiple attribute",
+    ],
+  ])("rejects a %s", (_kind, markup, message) => {
+    const invalid = document.createElement("div");
+    invalid.id = "invalid-multi-select";
+    invalid.dataset.jqs = "multi-select";
+    invalid.innerHTML = markup;
+    document.body.append(invalid);
+
+    expect(() => $.star.ui.enhance(invalid)).toThrow(message);
+    invalid.remove();
+  });
+
+  it("recreates a missing status with the native paragraph part", () => {
+    expect(root().querySelector('[data-part="content"]')?.tagName).toBe("DIV");
+    expect(root().querySelector('[data-part="tags"]')?.tagName).toBe("DIV");
+    root().querySelector('[data-part="status"]')?.remove();
+
+    $.star.ui.enhance(root());
+
+    const status = root().querySelector<HTMLElement>('[data-part="status"]');
+    expect(status?.tagName).toBe("P");
+    expect(status?.dataset.generated).toBe("");
+    expect(status?.getAttribute("aria-live")).toBe("polite");
+  });
+
   it("separates listbox focus from selection and toggles with Space", () => {
     root().querySelector<HTMLButtonElement>('[data-part="trigger"]')!.click();
     expect(root().dataset.state).toBe("open");
@@ -63,6 +108,72 @@ describe("jQuery Star Multi Select", () => {
     listbox().dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: " " }));
     expect($.star.ui.multiSelect.value(root())).toEqual(["design", "api"]);
     expect(root().querySelector('[data-value="api"]')?.getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("skips disabled options while wrapping keyboard focus", () => {
+    const qa = root().querySelector<HTMLElement>('[data-part="option"][data-value="qa"]');
+    const legacy = root().querySelector<HTMLElement>('[data-part="option"][data-value="legacy"]');
+    expect(qa).toBeTruthy();
+    expect(legacy?.getAttribute("aria-disabled")).toBe("true");
+    expect(legacy?.getAttribute("data-disabled")).toBe("");
+    $.star.ui.multiSelect.open(root());
+
+    listbox().dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowUp" }));
+    expect(listbox().getAttribute("aria-activedescendant")).toBe(qa?.id);
+
+    listbox().dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }));
+    const design = root().querySelector<HTMLElement>('[data-part="option"][data-value="design"]');
+    expect(listbox().getAttribute("aria-activedescendant")).toBe(design?.id);
+    expect($.star.ui.multiSelect.value(root())).toEqual(["design"]);
+  });
+
+  it("ignores listbox background and disabled-option clicks", () => {
+    $.star.ui.multiSelect.open(root());
+    const active = listbox().getAttribute("aria-activedescendant");
+    const disabled = root().querySelector<HTMLElement>('[data-part="option"][data-value="legacy"]');
+    if (!disabled) throw new Error("Missing generated disabled option.");
+
+    const errors: Event[] = [];
+    const captureError = (event: Event): void => {
+      errors.push(event);
+      event.preventDefault();
+    };
+    window.addEventListener("error", captureError);
+    try {
+      listbox().click();
+      disabled.click();
+    } finally {
+      window.removeEventListener("error", captureError);
+    }
+
+    expect(errors).toHaveLength(0);
+    expect($.star.ui.multiSelect.value(root())).toEqual(["design"]);
+    expect(listbox().getAttribute("aria-activedescendant")).toBe(active);
+  });
+
+  it("ignores a rendered option marked aria-disabled", () => {
+    $.star.ui.multiSelect.open(root());
+    const active = listbox().getAttribute("aria-activedescendant");
+    const option = root().querySelector<HTMLElement>('[data-part="option"][data-value="api"]');
+    if (!option) throw new Error("Missing generated option fixture.");
+    expect(option.hasAttribute("aria-disabled")).toBe(false);
+
+    option.setAttribute("aria-disabled", "true");
+    option.click();
+
+    expect($.star.ui.multiSelect.value(root())).toEqual(["design"]);
+    expect(listbox().getAttribute("aria-activedescendant")).toBe(active);
+  });
+
+  it("toggles an enabled option when clicked", () => {
+    $.star.ui.multiSelect.open(root());
+    const option = root().querySelector<HTMLElement>('[data-part="option"][data-value="api"]');
+    if (!option) throw new Error("Missing generated enabled option.");
+
+    option.click();
+
+    expect($.star.ui.multiSelect.value(root())).toEqual(["design", "api"]);
+    expect(option.getAttribute("aria-selected")).toBe("true");
   });
 
   it("supports select-all, tags, API, named actions, and the maximum", () => {
@@ -81,6 +192,23 @@ describe("jQuery Star Multi Select", () => {
     expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs"]);
     root().querySelector<HTMLButtonElement>('[data-part="remove"][data-value="api"]')!.click();
     expect($.star.ui.multiSelect.value(root())).toEqual(["docs"]);
+  });
+
+  it("uses an explicit native root in value actions and rejects a different component", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Multi Select application did not start.");
+    await app.run("ui.multi-select.set", { args: [root(), ["api", "docs"]] });
+    expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs"]);
+    await app.run("ui.multi-select.select", { args: [root(), "qa", true] });
+    expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs", "qa"]);
+    const foreign = document.getElementById("set");
+    if (!foreign) throw new Error("Missing Multi Select external action.");
+    await expect(
+      app.run("ui.multi-select.set", { element: control(), args: [foreign, ["design"]] }),
+    ).rejects.toThrow('Multi Select target did not match data-jqs="multi-select"');
+    expect($.star.ui.multiSelect.value(root())).toEqual(["api", "docs", "qa"]);
+    await app.run("ui.multi-select.select", { element: control(), args: ["api", false] });
+    expect($.star.ui.multiSelect.value(root())).toEqual(["docs", "qa"]);
   });
 
   it("honors canceled changes and accepts server-patched JSON", () => {

@@ -1,0 +1,214 @@
+@layer jqstar, mobile-migration-fixture;
+
+@import url("/jquery-mobile-migration/jquery-star-ui.css") layer(jqstar);
+
+@layer mobile-migration-fixture {
+  :root {
+    color-scheme: light dark;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: Canvas;
+    color: CanvasText;
+    overflow-wrap: anywhere;
+  }
+
+  .page-header,
+  #migration-app,
+  footer,
+  .network-message {
+    margin-inline: auto;
+    max-width: 72rem;
+    padding: 1rem;
+  }
+
+  .page-header,
+  .site-navigation nav,
+  .control-row,
+  .action-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .page-header {
+    justify-content: space-between;
+  }
+
+  .page-header > * {
+    min-width: 0;
+  }
+
+  .site-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .site-navigation summary {
+    display: none;
+  }
+
+  .content-header,
+  section,
+  form,
+  .table-scroll {
+    margin-block: 1rem;
+  }
+
+  .eyebrow {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .stack-form {
+    display: grid;
+    gap: 0.65rem;
+    max-width: 42rem;
+  }
+
+  .stack-form input,
+  .stack-form select,
+  .stack-form textarea,
+  .search-form input {
+    font: inherit;
+    padding: 0.65rem;
+  }
+
+  button,
+  .button-link,
+  summary,
+  .site-navigation a {
+    align-items: center;
+    display: inline-flex;
+    min-block-size: 2.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  button,
+  .button-link {
+    border: 1px solid ButtonBorder;
+    border-radius: 0.35rem;
+  }
+
+  :focus-visible {
+    outline: 0.2rem solid Highlight;
+    outline-offset: 0.15rem;
+  }
+
+  .table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    min-width: 42rem;
+    width: 100%;
+  }
+
+  caption,
+  th,
+  td {
+    padding: 0.65rem;
+    text-align: left;
+  }
+
+  th,
+  td {
+    border-block-end: 1px solid ButtonBorder;
+  }
+
+  .facts {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+
+  .facts div,
+  .status-card,
+  .gesture-surface,
+  .notice,
+  .error {
+    border: 1px solid ButtonBorder;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  .gesture-surface {
+    min-block-size: 5rem;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .notice {
+    border-color: #16803c;
+  }
+
+  .error,
+  .network-message {
+    border: 2px solid #a61b1b;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (width <= 48rem) {
+    .page-header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .site-navigation summary {
+      display: list-item;
+    }
+
+    .site-navigation nav {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .site-navigation a {
+      border-block-end: 1px solid ButtonBorder;
+    }
+
+    .control-row {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .control-row > * {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .facts div,
+    .status-card,
+    .gesture-surface,
+    .notice,
+    .error {
+      border-color: CanvasText;
+    }
+  }
+}

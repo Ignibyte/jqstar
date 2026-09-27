@@ -1,7 +1,7 @@
 ---
 id: 0027
 title: Enhance native forms without replaying writes
-status: planned
+status: declined
 created: 2026-08-30
 updated: 2026-09-01
 ---
@@ -26,6 +26,22 @@ write twice. Aborting fetch after dispatch also cannot prove that the server did
   drift from the platform.
 - Fetch does not provide portable upload progress and automatic redirect handling can replay a POST
   through 307/308. The supported write protocol must be narrower and explicit.
+
+### Disposition
+
+Ticket [0023](0023-decide-native-navigation.md) selects browser navigation and existing optional
+Turbo/htmx bridges. The
+[measured decision and supported patterns](../decisions/NATIVE_NAVIGATION.md#supported-navigation-patterns)
+record the exact workflow, retained failures, corrections, costs and sensitivity. The forms slice
+has no demonstrated need for native jQStar ownership after the comparison and correction ladder.
+
+Use native method/action/encoding/submitter/constraints; host enhancement must render canonical
+validation and 303 success. Never resend an uncertain dispatched write; the server guards
+versions/idempotency.
+
+This rejects activation under the gate below. The conditional design remains history and is not an
+available API. No native implementation or generic utility was added. Shared delivery verification
+in ticket 0023 authorizes this terminal disposition.
 
 ### Activation gate
 
@@ -87,7 +103,7 @@ supported path.
 
 ### Acceptance criteria
 
-- [ ] [AC-01] Activation links 0023's approved forms/no-replay contract and exact limits/metrics
+- [x] [AC-01] Activation links 0023's approved forms/no-replay contract and exact limits/metrics
       into a revalidated Plan; otherwise ordinary forms remain supported and no form runtime ships.
 - [ ] [AC-02] Pure eligibility returns stable reasons for scope/event/form/submitter/method/action/
       origin/target/enctype/dialog/validation/files/limits/competing-owner/capability without event
@@ -209,30 +225,57 @@ indeterminate state.
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File                                                                                                   | Purpose                                                                                           |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| This ticket                                                                                            | Record the rejected activation and preserve the conditional design.                               |
+| `docs/tickets/ROADMAP.md`, `docs/decisions/NATIVE_NAVIGATION.md`, `docs/INTEROPERABILITY.md`           | Document measured alternatives and this slice's supported contract.                               |
+| `test/navigation-decision-contract.test.mjs`, `scripts/quality-package.mjs`, `.dependency-cruiser.cjs` | Verify complete evidence and reject unapproved public exports, dependencies and research imports. |
 
 ### Design changes
 
-None recorded.
+The named decision rejects activation. No runtime implementation was added for this ticket.
 
 ## Test
 
-| Command   | Result      | Evidence                 |
-| --------- | ----------- | ------------------------ |
-| _Not run_ | Conditional | Waiting for ticket 0026. |
+| Command                                                                                                                                        | Result | Evidence                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx vitest run test/navigation-decision-contract.test.mjs test/navigation-decision-server.test.mjs test/navigation-host-corrections.test.mjs` | Pass   | All 14 focused checks pass, including complete installed measurement, declined slices, pinned package boundaries, costs, gaps and sensitivity. |
+| `npm run check` (`quality:delivery`)                                                                                                           | Pass   | Shared run `2026-09-05T23-39-37-490Z-84736` passes all 13 gates, including actual package/import exclusions and 481 browser checks.            |
+
+Shared full delivery verification is owned by ticket 0023.
 
 ## Document
 
 ### Documentation changed
 
-Pending activation.
+The decision, roadmap, interoperability guide, README, project brain and public bridge guide explain
+browser and host ownership, explicit recovery, private-page cache policy and server write
+protection. They make no native navigation package availability claim.
 
 ### Acceptance evidence
 
-Pending activation.
+| Criterion | Result               | Evidence                                                                                                                                                                                 |
+| --------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass                 | Ticket 0023 rejects activation under this ticket's gate. Its complete comparison, package/import guards and supported guidance establish the declined branch with no native residue.     |
+| AC-02     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-03     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-04     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-05     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-06     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-07     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-08     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-09     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-10     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-11     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-12     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-13     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-14     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
 
 ### Completion audit
 
-Pending activation.
+The named decision rejects activation. Every conditional criterion has an explicit disposition; this
+ticket adds no runtime behavior or partial public surface. The decision and interoperability guide
+document the supported alternative, and the shared delivery verifies exact package/import exclusion.
+Reopening requires a new evidence-backed decision and Plan validation.
+
+Status: Complete

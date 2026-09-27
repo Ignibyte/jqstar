@@ -79,11 +79,81 @@ describe("jQuery Star Toolbar", () => {
     expect(item("bold").tabIndex).toBe(0);
   });
 
+  it("accepts its native root as a named-action target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Toolbar application did not start.");
+
+    await app.run("ui.toolbar.focus", { args: [toolbar(), "italic"] });
+    expect(document.activeElement).toBe(item("italic"));
+    await app.run("ui.toolbar.next", { args: [toolbar()] });
+    expect(document.activeElement).toBe(item("font-size"));
+    const external = document.getElementById("focus-link");
+    if (!external) throw new Error("Missing external Toolbar action.");
+    await expect(
+      app.run("ui.toolbar.focus", {
+        element: item("bold"),
+        args: [external, "bold"],
+      }),
+    ).rejects.toThrow('Toolbar target did not match data-jqs="toolbar"');
+    expect(document.activeElement).toBe(item("font-size"));
+    await app.run("ui.toolbar.focus", { element: item("bold"), args: ["bold"] });
+    expect(document.activeElement).toBe(item("bold"));
+  });
+
   it("can stop arrow navigation at the edges", () => {
     toolbar().dataset.loop = "false";
     $.star.ui.enhance(toolbar());
     $.star.ui.toolbar.focus(toolbar(), "bold");
     $.star.ui.toolbar.previous(toolbar());
     expect(document.activeElement).toBe(item("bold"));
+  });
+
+  it("preserves native arrow keys in textarea and select items", () => {
+    const textarea = document.createElement("textarea");
+    textarea.dataset.part = "item";
+    textarea.dataset.value = "notes";
+    const select = document.createElement("select");
+    select.dataset.part = "item";
+    select.dataset.value = "style";
+    toolbar().append(textarea, select);
+    $.star.ui.enhance(toolbar());
+
+    for (const control of [textarea, select]) {
+      control.focus();
+      const key = new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        key: "ArrowRight",
+      });
+      control.dispatchEvent(key);
+      expect(key.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(control);
+    }
+  });
+
+  it("handles a synthetic key event from text inside an item", () => {
+    const text = item("bold").firstChild;
+    if (!text) throw new Error("Missing Toolbar item text.");
+    const key = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ArrowRight",
+    });
+    text.dispatchEvent(key);
+    expect(key.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(item("italic"));
+  });
+
+  it("recovers the first enabled item when a patch removes the active and tab-stop items", () => {
+    toolbar().dataset.value = "disabled";
+    toolbar().innerHTML = `
+      <button data-part="item" data-value="disabled" disabled tabindex="-1">Disabled</button>
+      <button data-part="item" data-value="new" tabindex="-1">New</button>
+      <button data-part="item" data-value="other" tabindex="-1">Other</button>
+    `;
+    $.star.ui.enhance(toolbar());
+    expect($.star.ui.toolbar.value(toolbar())).toBe("new");
+    expect(item("new").tabIndex).toBe(0);
+    expect(item("disabled").tabIndex).toBe(-1);
   });
 });

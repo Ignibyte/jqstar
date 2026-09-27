@@ -11,6 +11,10 @@ const agentArtifacts = [
 for (const path of [
   "demo-dist/index.html",
   "demo-dist/docs/csp/index.html",
+  "demo-dist/docs/compatibility/index.html",
+  "demo-dist/docs/migration/index.html",
+  "demo-dist/docs/security/index.html",
+  "demo-dist/docs/download/index.html",
   "demo-dist/docs/interoperability/index.html",
   "demo-dist/docs/ecosystem/index.html",
   ...agentArtifacts,

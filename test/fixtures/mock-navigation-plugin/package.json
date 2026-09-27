@@ -14,6 +14,6 @@
   ],
   "peerDependencies": {
     "jquery": ">=4.0.0 <5",
-    "jquery-star": "^0.1.0"
+    "jquery-star": "^1.0.0"
   }
 }

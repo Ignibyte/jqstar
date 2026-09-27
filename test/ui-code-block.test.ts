@@ -42,6 +42,43 @@ describe("jQuery Star Code Block", () => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
   });
 
+  it.each([false, true])(
+    "announces pending copy in replacement status, failure: %s",
+    async (fails) => {
+      const failure = new Error("copy denied");
+      let finish: (() => void) | undefined;
+      writeText.mockReturnValue(
+        new Promise<void>((resolve, reject) => {
+          finish = () => {
+            if (fails) reject(failure);
+            else resolve();
+          };
+        }),
+      );
+      const originalText = $.star.ui.codeBlock.text(root());
+      const copying = $.star.ui.codeBlock.copy(root()).then(
+        (value) => ({ value, error: undefined }),
+        (error: unknown) => ({ value: undefined, error }),
+      );
+      const oldStatus = status();
+      oldStatus.replaceWith(oldStatus.cloneNode(false));
+      const code = root().querySelector('[data-part="code"]');
+      if (!code || !finish) throw new Error("Missing copy fixture.");
+      code.textContent = "replacement text";
+      $.star.ui.enhance(root());
+      finish();
+      const result = await copying;
+      await $.star.whenEnhanced();
+      expect(writeText).toHaveBeenCalledWith(originalText);
+      expect($.star.ui.codeBlock.text(root())).toBe("replacement text");
+      expect(result).toEqual(
+        fails ? { value: undefined, error: failure } : { value: originalText, error: undefined },
+      );
+      expect(status().textContent).toContain(fails ? "Copy failed." : "Copied to clipboard.");
+      expect(oldStatus.textContent).toBe("");
+    },
+  );
+
   it("enhances authored code, copy control, and polite status", () => {
     const copy = root().querySelector<HTMLButtonElement>('[data-part="copy"]')!;
     expect(copy.type).toBe("button");

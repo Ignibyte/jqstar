@@ -135,6 +135,11 @@
       "id": "property-counterexample-replay",
       "file": "test/quality/quality-gates.test.mjs",
       "test": "replays the same generated counterexample from its seed and path"
+    },
+    {
+      "id": "property-inspection-retention",
+      "file": "test/property/inspection.property.test.ts",
+      "test": "preserves ordering, exact budgets and reversible policy under interleaved operations"
     }
   ]
 }

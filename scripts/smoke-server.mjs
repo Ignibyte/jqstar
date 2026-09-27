@@ -1,5 +1,113 @@
 import { spawn } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { brotliCompressSync } from "node:zlib";
 import { chromium } from "@playwright/test";
+
+async function checkInvalidPort(port) {
+  const candidate = spawn(process.execPath, ["server-dist/index.mjs"], {
+    cwd: process.cwd(),
+    env: { ...process.env, JQS_DATABASE_PATH: ":memory:", JQS_PORT: port },
+    stdio: ["ignore", "ignore", "pipe"],
+  });
+  let stderr = "";
+  candidate.stderr.setEncoding("utf8");
+  candidate.stderr.on("data", (chunk) => {
+    stderr += chunk;
+  });
+  try {
+    const code = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`Invalid port ${port} did not exit.`)),
+        5_000,
+      );
+      candidate.once("close", (result) => {
+        clearTimeout(timeout);
+        resolve(result);
+      });
+      candidate.once("error", (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+    });
+    if (code === 0 || !stderr.includes("JQS_PORT must be an integer from 0 to 65535")) {
+      throw new Error(`Invalid port ${port} was not rejected by the server contract: ${stderr}`);
+    }
+  } finally {
+    if (candidate.exitCode === null && candidate.signalCode === null) candidate.kill("SIGTERM");
+  }
+}
+
+async function checkSiteBundle(document, expectedStatus) {
+  const root = await mkdtemp(join(tmpdir(), "jqstar-site-smoke-"));
+  const archive = brotliCompressSync(Buffer.from(JSON.stringify(document)));
+  await writeFile(join(root, "site.br"), archive);
+  const candidate = spawn(process.execPath, ["server-dist/index.mjs"], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      JQS_DATABASE_PATH: ":memory:",
+      JQS_HOST: "127.0.0.1",
+      JQS_PORT: "0",
+      JQS_STATIC_DIR: root,
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let stderr = "";
+  candidate.stderr.setEncoding("utf8");
+  candidate.stderr.on("data", (chunk) => {
+    stderr += chunk;
+  });
+  try {
+    const origin = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`Temporary site server startup timed out: ${stderr}`)),
+        5_000,
+      );
+      candidate.stdout.setEncoding("utf8");
+      candidate.stdout.on("data", (chunk) => {
+        const match = String(chunk).match(/listening on (http:\/\/[^\s]+)/);
+        if (!match) return;
+        clearTimeout(timeout);
+        resolve(match[1]);
+      });
+      candidate.once("exit", (code) => {
+        clearTimeout(timeout);
+        reject(new Error(`Temporary site server exited with ${code}: ${stderr}`));
+      });
+    });
+    const response = await fetch(`${origin}/`, { headers: { Accept: "application/octet-stream" } });
+    const body = await response.text();
+    if (response.status !== expectedStatus || (expectedStatus === 200 && body !== "Hello")) {
+      throw new Error(
+        `Site bundle status ${response.status} did not match ${expectedStatus}; body: ${body}`,
+      );
+    }
+  } finally {
+    if (candidate.exitCode === null && candidate.signalCode === null) {
+      const stopped = new Promise((resolve) => candidate.once("exit", resolve));
+      candidate.kill("SIGTERM");
+      await stopped;
+    }
+    await rm(root, { recursive: true, force: true });
+  }
+}
+
+for (const port of ["-1", "1.5", "65536", "invalid"]) await checkInvalidPort(port);
+const validSite = ["index.html", "uHello"];
+await checkSiteBundle({ schema: "jqstar-site-bundle/2", files: [validSite] }, 200);
+for (const document of [
+  { schema: "wrong", files: [validSite] },
+  { files: [validSite] },
+  { schema: "jqstar-site-bundle/2", files: [[...validSite, "extra"]] },
+  { schema: "jqstar-site-bundle/2", files: [["/private.txt", "uPrivate"], validSite] },
+  { schema: "jqstar-site-bundle/2", files: [["../private.txt", "uPrivate"], validSite] },
+  { schema: "jqstar-site-bundle/2", files: [["bad.txt", "xInvalid"], validSite] },
+  { schema: "jqstar-site-bundle/2", files: [validSite, validSite] },
+]) {
+  await checkSiteBundle(document, 404);
+}
 
 const child = spawn(process.execPath, ["server-dist/index.mjs"], {
   cwd: process.cwd(),
@@ -55,13 +163,17 @@ try {
   if (!docsHead.ok || docsHead.headers.get("content-type") !== "text/html; charset=utf-8") {
     throw new Error("The self-hosted documentation HEAD contract failed.");
   }
-  const agentResources = [
+  const publicResources = [
     ["/docs/agents/", "text/html; charset=utf-8", "Agent-first parity:"],
+    ["/docs/compatibility/", "text/html; charset=utf-8", "Stable package entries"],
+    ["/docs/migration/", "text/html; charset=utf-8", "Migrate to 1.0"],
+    ["/docs/security/", "text/html; charset=utf-8", "Application responsibilities"],
+    ["/docs/download/", "text/html; charset=utf-8", "reviewed candidate tarball"],
     ["/llms.txt", "text/plain; charset=utf-8", "# jQStar"],
     ["/llms-full.txt", "text/plain; charset=utf-8", "@starfederation/datastar-sdk"],
     ["/jqstar-agent-index.json", "application/json; charset=utf-8", '"jqstar-agent-index/1"'],
   ];
-  for (const [path, contentType, marker] of agentResources) {
+  for (const [path, contentType, marker] of publicResources) {
     const response = await fetch(`${origin}${path}`);
     const body = await response.text();
     const head = await fetch(`${origin}${path}`, { method: "HEAD" });

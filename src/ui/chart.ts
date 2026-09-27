@@ -1,4 +1,15 @@
+import { isElementNode, isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
+import {
+  failUISetup,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 import type {
   ChartData,
   ChartSeries,
@@ -8,13 +19,18 @@ import type {
   StarContext,
 } from "../types";
 
-interface ChartRecord {
+interface ChartState {
   legend: HTMLElement | undefined;
   plot: SVGSVGElement;
-  root: HTMLElement;
-  signature: string;
+  signature: string | undefined;
+  status: HTMLElement | undefined;
   table: HTMLTableElement;
   type: ChartType;
+  content: Element | null;
+}
+
+interface ChartRecord extends ChartState, UIResources {
+  rendering: { signature: string } | undefined;
 }
 
 interface ChartCollection {
@@ -29,16 +45,35 @@ interface ChartEventDetail {
 }
 
 const records = new WeakMap<HTMLElement, ChartRecord>();
+const retained = new WeakMap<HTMLElement, ChartState>();
+const intents = new WeakMap<HTMLElement, number>();
 let chartId = 0;
 
 function chartRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="chart"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="chart"]') ? value : undefined;
 }
 
-function owned<T extends Element>(root: HTMLElement, selector: string): T[] {
-  return Array.from(root.querySelectorAll<T>(selector)).filter(
-    (element) => element.closest('[data-jqs="chart"]') === root,
+function owned(root: HTMLElement, selector: string): Element | undefined {
+  return Array.from(root.querySelectorAll(selector)).find(
+    (element) => element.closest('[data-jqs]:not(button[data-jqs="button"])') === root,
   );
+}
+
+function current(record: ChartRecord, revision = record.revision): boolean {
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.dataset.jqs === "chart" &&
+    owned(record.root, 'table[data-part="data"]') === record.table &&
+    owned(record.root, 'svg[data-part="plot"]') === record.plot &&
+    owned(record.root, '[data-part="legend"]') === record.legend &&
+    owned(record.root, '[data-part="status"]') === record.status
+  );
+}
+
+function snapshot(record: ChartRecord): ChartState {
+  const { legend, plot, signature, status, table, type, content } = record;
+  return { legend, plot, signature, status, table, type, content };
 }
 
 function chartType(root: HTMLElement): ChartType {
@@ -109,10 +144,11 @@ function cloneData(data: ChartData): ChartData {
 }
 
 function svgElement<K extends keyof SVGElementTagNameMap>(
+  parent: Element,
   name: K,
   attributes: Record<string, string | number> = {},
 ): SVGElementTagNameMap[K] {
-  const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+  const element = parent.ownerDocument.createElementNS("http://www.w3.org/2000/svg", name);
   for (const [attribute, value] of Object.entries(attributes)) {
     element.setAttribute(attribute, String(value));
   }
@@ -124,7 +160,7 @@ function svgText(
   value: string,
   attributes: Record<string, string | number>,
 ): SVGTextElement {
-  const text = svgElement("text", attributes);
+  const text = svgElement(parent, "text", attributes);
   text.textContent = value;
   parent.append(text);
   return text;
@@ -141,7 +177,7 @@ function formatNumber(value: number): string {
 }
 
 function addTitle(element: SVGElement, value: string): void {
-  const title = svgElement("title");
+  const title = svgElement(element, "title");
   title.textContent = value;
   element.append(title);
 }
@@ -151,12 +187,12 @@ function drawGrid(
   maximum: number,
   dimensions: { bottom: number; left: number; plotHeight: number; plotWidth: number; top: number },
 ): void {
-  const grid = svgElement("g", { "data-part": "grid" });
+  const grid = svgElement(content, "g", { "data-part": "grid" });
   for (const index of [0, 1, 2, 3, 4]) {
     const ratio = index / 4;
     const y = dimensions.bottom - dimensions.plotHeight * ratio;
     grid.append(
-      svgElement("line", {
+      svgElement(content, "line", {
         "data-part": "grid-line",
         x1: dimensions.left,
         x2: dimensions.left + dimensions.plotWidth,
@@ -205,7 +241,7 @@ function drawBars(
     data.series.forEach((series, seriesIndex) => {
       const value = series.values[labelIndex]!;
       const height = (value / maximum) * dimensions.plotHeight;
-      const bar = svgElement("rect", {
+      const bar = svgElement(content, "rect", {
         "data-part": "bar",
         "data-series": series.key,
         fill: series.color,
@@ -240,7 +276,7 @@ function drawLines(
       y: dimensions.bottom - (value / maximum) * dimensions.plotHeight,
     }));
     content.append(
-      svgElement("polyline", {
+      svgElement(content, "polyline", {
         "data-part": "line",
         "data-series": series.key,
         fill: "none",
@@ -249,7 +285,7 @@ function drawLines(
       }),
     );
     points.forEach((point, index) => {
-      const dot = svgElement("circle", {
+      const dot = svgElement(content, "circle", {
         "data-part": "point",
         "data-series": series.key,
         cx: point.x,
@@ -263,8 +299,8 @@ function drawLines(
   });
 }
 
-function renderLegend(record: ChartRecord, data: ChartData): void {
-  if (!record.legend) return;
+function legendContent(record: ChartRecord, data: ChartData): DocumentFragment {
+  const document = record.document;
   const fragment = document.createDocumentFragment();
   for (const series of data.series) {
     const item = document.createElement("span");
@@ -277,7 +313,7 @@ function renderLegend(record: ChartRecord, data: ChartData): void {
     item.append(swatch, document.createTextNode(series.label));
     fragment.append(item);
   }
-  record.legend.replaceChildren(fragment);
+  return fragment;
 }
 
 function emit(
@@ -289,134 +325,240 @@ function emit(
 ): boolean {
   const detail: ChartEventDetail = { chart: record.root, data: cloneData(data), type };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:chart:${name}`, { bubbles: true, cancelable, detail }),
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:chart:${name}`, {
+      bubbles: true,
+      cancelable,
+      detail,
+    }),
   );
 }
 
-function render(record: ChartRecord, data: ChartData, type: ChartType, signature: string): void {
-  if (!emit(record, "before-render", data, type, true)) return;
-  record.signature = signature;
-  record.type = type;
-  if (record.root.dataset.state !== "ready") record.root.dataset.state = "ready";
-  record.plot.setAttribute("viewBox", "0 0 640 300");
-  record.plot.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  record.plot.setAttribute("aria-hidden", "true");
-  record.plot.setAttribute("focusable", "false");
-
-  const content = svgElement("g", { "data-part": "plot-content" });
-  const dimensions = {
-    bottom: 258,
-    left: 52,
-    plotHeight: 224,
-    plotWidth: 568,
-    top: 34,
-  };
-  const maximum = niceMaximum(data);
-  drawGrid(content, maximum, dimensions);
-  drawLabels(content, data, dimensions);
-  if (type === "line") drawLines(content, data, maximum, dimensions);
-  else drawBars(content, data, maximum, dimensions);
-  record.plot.replaceChildren(content);
-  renderLegend(record, data);
-
-  const status = owned<HTMLElement>(record.root, '[data-part="status"]')[0];
-  if (status) {
-    const message = `${data.labels.length} categories and ${data.series.length} series rendered as a ${type} chart.`;
-    if (status.textContent !== message) status.textContent = message;
+function configuration(record: ChartRecord) {
+  if (!record.table.caption?.textContent?.trim()) {
+    throw new Error(`Chart table #${record.table.id} needs a non-empty caption.`);
   }
-  emit(record, "render", data, type);
+  const data = parseData(record.table);
+  const type = chartType(record.root);
+  return { data, type, signature: JSON.stringify({ data, type }) };
 }
 
-function enhanceChart(root: HTMLElement, force = false): ChartRecord {
-  root.id ||= `jqs-chart-${++chartId}`;
-  const table = owned<HTMLTableElement>(root, 'table[data-part="data"]')[0];
-  const plot = owned<SVGSVGElement>(root, 'svg[data-part="plot"]')[0];
-  if (!table || !plot) {
+function setAttribute(element: Element, name: string, value: string): void {
+  if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+}
+
+function render(record: ChartRecord, force = false, allowed: () => boolean = () => true): void {
+  const initialRevision = record.revision;
+  if (!current(record, initialRevision)) return;
+  const config = configuration(record);
+  if (!current(record, initialRevision)) return;
+  if (
+    !force &&
+    (record.rendering?.signature === config.signature ||
+      (record.signature === config.signature &&
+        record.content !== null &&
+        record.plot.firstElementChild === record.content))
+  )
+    return;
+  const revision = ++record.revision;
+  const rendering = { signature: config.signature };
+  record.rendering = rendering;
+  const valid = (): boolean =>
+    current(record, revision) &&
+    configuration(record).signature === config.signature &&
+    current(record, revision) &&
+    allowed();
+  let committed = false;
+  try {
+    const { data, type } = config;
+    if (!emit(record, "before-render", data, type, true) || !valid()) return;
+    const content = svgElement(record.plot, "g", { "data-part": "plot-content" });
+    const dimensions = { bottom: 258, left: 52, plotHeight: 224, plotWidth: 568, top: 34 };
+    const maximum = niceMaximum(data);
+    drawGrid(content, maximum, dimensions);
+    drawLabels(content, data, dimensions);
+    if (type === "line") drawLines(content, data, maximum, dimensions);
+    else drawBars(content, data, maximum, dimensions);
+    const legend = record.legend ? legendContent(record, data) : undefined;
+    if (!valid()) return;
+    setAttribute(record.root, "data-state", "ready");
+    for (const [name, value] of Object.entries({
+      viewBox: "0 0 640 300",
+      preserveAspectRatio: "xMidYMid meet",
+      "aria-hidden": "true",
+      focusable: "false",
+    })) {
+      if (!valid()) return;
+      setAttribute(record.plot, name, value);
+    }
+    if (!valid()) return;
+    record.plot.replaceChildren(content);
+    if (!valid()) return;
+    if (record.legend && legend) record.legend.replaceChildren(legend);
+    if (!valid()) return;
+    const status = record.status;
+    if (status) {
+      const message = `${data.labels.length} categories and ${data.series.length} series rendered as a ${type} chart.`;
+      if (status.textContent !== message) status.textContent = message;
+    }
+    if (!valid()) return;
+    record.signature = config.signature;
+    record.content = content;
+    record.type = type;
+    committed = true;
+    emit(record, "render", data, type);
+  } finally {
+    if (record.rendering === rendering) record.rendering = undefined;
+    if (record.revision === revision && !committed) record.signature = undefined;
+  }
+}
+
+function acquireChart(root: HTMLElement): ChartRecord {
+  const previous = records.get(root);
+  if (previous && current(previous)) return previous;
+  const saved = previous ? snapshot(previous) : retained.get(root);
+  previous?.cleanup();
+  const reentered = records.get(root);
+  if (reentered) return reentered;
+  const table = owned(root, 'table[data-part="data"]');
+  const plot = owned(root, 'svg[data-part="plot"]');
+  if (
+    !isHTMLTag(table, "table") ||
+    !isElementNode(plot) ||
+    plot.namespaceURI !== "http://www.w3.org/2000/svg" ||
+    plot.localName !== "svg"
+  ) {
     throw new Error(`Chart #${root.id} needs a table data-part="data" and svg data-part="plot".`);
   }
-  table.id ||= `${root.id}-data`;
-  const caption = table.caption;
-  if (!caption?.textContent?.trim()) {
-    throw new Error(`Chart table #${table.id} needs a non-empty caption.`);
+  const legend = owned(root, '[data-part="legend"]');
+  const status = owned(root, '[data-part="status"]');
+  const same =
+    saved?.table === table &&
+    saved.plot === plot &&
+    saved.legend === legend &&
+    saved.status === status;
+  const record: ChartRecord = {
+    ...uiResources(root),
+    table,
+    plot: plot as SVGSVGElement,
+    legend: isHTMLElement(legend) ? legend : undefined,
+    status: isHTMLElement(status) ? status : undefined,
+    signature: same ? saved.signature : undefined,
+    content: same ? saved.content : null,
+    type: saved?.type ?? chartType(root),
+    rendering: undefined,
+  };
+  record.cleanups.add(() => retained.set(root, snapshot(record)));
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    root.id ||= `jqs-chart-${++chartId}`;
+    if (current(record)) table.id ||= `${root.id}-data`;
+    if (current(record) && record.status) setAttribute(record.status, "aria-live", "polite");
+    if (current(record) && record.status) setAttribute(record.status, "aria-atomic", "true");
+  } catch (error) {
+    failUISetup(record, error);
   }
-  const type = chartType(root);
-  const data = parseData(table);
-  const signature = JSON.stringify({ data, type });
-  let record = records.get(root);
-  if (!record) {
-    record = {
-      legend: owned<HTMLElement>(root, '[data-part="legend"]')[0],
-      plot,
-      root,
-      signature: "",
-      table,
-      type,
-    };
-    records.set(root, record);
-  } else {
-    record.legend = owned<HTMLElement>(root, '[data-part="legend"]')[0];
-    record.plot = plot;
-    record.table = table;
+  return record;
+}
+
+function enhanceChart(root: HTMLElement): ChartRecord {
+  const record = acquireChart(root);
+  try {
+    render(record);
+  } catch (error) {
+    failUISetup(record, error);
   }
-  const status = owned<HTMLElement>(root, '[data-part="status"]')[0];
-  if (status) {
-    status.setAttribute("aria-live", "polite");
-    status.setAttribute("aria-atomic", "true");
-  }
-  if (force || record.signature !== signature) render(record, data, type, signature);
   return record;
 }
 
 function resolve(target: ChartTarget, root: ParentNode = document): HTMLElement {
   const resolved =
-    typeof target === "string" ? chartRoot(root.querySelector(target)) : chartRoot(target);
+    typeof target === "string"
+      ? chartRoot(isHTMLElement(root) && root.matches(target) ? root : root.querySelector(target))
+      : chartRoot(target);
   if (resolved) return resolved;
   throw new Error(`Chart target did not match data-jqs="chart": ${String(target)}`);
 }
 
-function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="chart"]')) return target;
-  if (typeof target === "string" && target.startsWith("#")) return resolve(target, context.root);
-  const closest = context.element?.closest('[data-jqs="chart"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+function actionRoot(context: StarContext, target?: unknown): HTMLElement {
+  if (isHTMLElement(target)) return resolve(target, context.root);
+  if (typeof target === "string") return resolve(target, context.root);
+  const closest =
+    context.element?.closest('[data-jqs="chart"]') ??
+    (isHTMLElement(context.root) ? chartRoot(context.root) : undefined);
+  return resolve(isHTMLElement(closest) ? closest : String(target));
+}
+
+function controlled(context: StarContext, owner: Document, target?: unknown): HTMLElement {
+  const root = actionRoot(context, target);
+  if (root.ownerDocument !== owner || !uiActive(root)) {
+    throw new Error("This UI target is unavailable in its owning Document.");
+  }
+  return root;
+}
+
+function request(
+  target: ChartTarget,
+  type?: ChartType,
+  allowed: () => boolean = () => true,
+): HTMLElement {
+  const root = resolve(target);
+  const requested = (intents.get(root) ?? 0) + 1;
+  intents.set(root, requested);
+  if (!allowed()) return root;
+  const record = acquireChart(root);
+  const revision = ++record.revision;
+  const valid = (): boolean =>
+    current(record, revision) && intents.get(root) === requested && allowed();
+  if (!valid()) return root;
+  if (type && root.dataset.type !== type) root.dataset.type = type;
+  if (valid()) render(record, type === undefined || record.rendering !== undefined, allowed);
+  return root;
+}
+
+function constrained(context: StarContext, root: HTMLElement): boolean {
+  const selector =
+    ':disabled,[disabled],[aria-disabled="true"],[data-disabled]:not([data-disabled="false"]),[inert]';
+  return Boolean(
+    root.closest(selector) ||
+    context.element?.closest(selector) ||
+    (context.event && "defaultPrevented" in context.event && context.event.defaultPrevented) ||
+    (context.event && "isDefaultPrevented" in context.event && context.event.isDefaultPrevented()),
+  );
 }
 
 function enhanceAll(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="chart"]')));
+  const elements = uiElements(root, '[data-jqs="chart"]');
   for (const element of elements) {
     const chart = chartRoot(element);
     if (chart) enhanceChart(chart);
   }
 }
 
-export function createCharts(registerAction: ActionRegistrar): ChartCollection {
+export function createCharts(registerAction: ActionRegistrar, owner: Document): ChartCollection {
   const api: StarChartStatic = {
-    refresh: (target) => enhanceChart(resolve(target), true).root,
+    refresh: (target) => request(target),
     setType: (target, type) => {
       if (!(["bar", "line"] as ChartType[]).includes(type)) {
         throw new Error(`Chart type must be "bar" or "line": ${String(type)}`);
       }
-      const root = resolve(target);
-      if (root.dataset.type !== type) root.dataset.type = type;
-      enhanceChart(root);
-      return root;
+      return request(target, type);
     },
     type: (target) => enhanceChart(resolve(target)).type,
     data: (target) => cloneData(parseData(enhanceChart(resolve(target)).table)),
   };
-  registerAction("ui.chart.refresh", (context) =>
-    api.refresh(controlled(context, context.args?.[0])),
-  );
+  registerAction("ui.chart.refresh", (context) => {
+    const root = controlled(context, owner, context.args?.[0]);
+    return request(root, undefined, () => !constrained(context, root));
+  });
   registerAction("ui.chart.type", (context) => {
     const first = context.args?.[0];
-    const explicit = typeof first === "string" && first.startsWith("#");
-    const target = controlled(context, explicit ? first : undefined);
+    const explicit = isHTMLElement(first) || context.args?.[1] !== undefined;
+    const target = controlled(context, owner, explicit ? first : undefined);
     const type = explicit ? context.args?.[1] : first;
     if (type !== "bar" && type !== "line") {
       throw new Error('ui.chart.type needs "bar" or "line".');
     }
-    return api.setType(target, type);
+    return request(target, type, () => !constrained(context, target));
   });
   return { api, enhance: enhanceAll };
 }

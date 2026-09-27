@@ -40,6 +40,7 @@ const bindings = new Set([
   "root",
   "signals",
   "state",
+  "stores",
 ]);
 const unsupportedWords = new Set([
   "break",
@@ -81,9 +82,7 @@ const assignmentOperators = new Set(["=", "+=", "-=", "*=", "/=", "%="]);
 const actionNamePattern = /^[A-Za-z_$][A-Za-z0-9_$-]*(?:\.[A-Za-z_$][A-Za-z0-9_$-]*)*$/;
 
 function frozenRecord<RecordType extends object>(fields: RecordType): Readonly<RecordType> {
-  return Object.freeze(
-    Object.assign(Object.create(null) as object, fields),
-  ) as Readonly<RecordType>;
+  return Object.freeze(Object.assign(Object.create(null) as object, fields));
 }
 
 function frozenArray<Value>(values: readonly Value[]): readonly Value[] {
@@ -606,7 +605,10 @@ class Parser {
     if (value.kind !== "member") return false;
     let root: CSPExpressionNode = value;
     while (root.kind === "member") root = root.object;
-    return root.kind === "binding" && (root.name === "state" || root.name === "signals");
+    return (
+      root.kind === "binding" &&
+      (root.name === "state" || root.name === "signals" || root.name === "stores")
+    );
   }
 
   private incrementPath(value: CSPExpressionNode, span: CSPSourceSpan): number {
@@ -683,7 +685,7 @@ class Parser {
   private node<NodeType extends CSPNode>(fields: NodeType): NodeType {
     this.nodeCount += 1;
     if (this.nodeCount > CSP_LIMITS.astNodes) this.failFull("nodeLimit");
-    return frozenRecord(fields) as NodeType;
+    return frozenRecord(fields);
   }
 
   private span(startOffset: number, endOffset: number): CSPSourceSpan {

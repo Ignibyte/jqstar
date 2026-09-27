@@ -101,6 +101,29 @@ describe("jQuery Star Menubar", () => {
     expect(document.activeElement).toBe(trigger("edit"));
   });
 
+  it("keeps the focused tab stop when an earlier menu closes after an outside press", () => {
+    $.star.ui.menubar.open(root(), "file");
+    $.star.ui.menubar.focus(root(), "edit");
+    expect(document.activeElement).toBe(trigger("edit"));
+    expect(trigger("edit").tabIndex).toBe(0);
+
+    document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+
+    expect(menu("file").dataset.state).toBe("closed");
+    expect(document.activeElement).toBe(trigger("edit"));
+    expect(trigger("edit").tabIndex).toBe(0);
+    expect(trigger("file").tabIndex).toBe(-1);
+  });
+
+  it("tracks a child menu opened directly through the Menu API", () => {
+    $.star.ui.menu.open(menu("edit"));
+
+    expect(root().dataset.state).toBe("open");
+    expect(root().dataset.value).toBe("edit");
+    expect(trigger("edit").tabIndex).toBe(0);
+    expect(trigger("file").tabIndex).toBe(-1);
+  });
+
   it("maps top-level navigation to the authored vertical orientation", () => {
     root().dataset.orientation = "vertical";
     $.star.ui.enhance(root());

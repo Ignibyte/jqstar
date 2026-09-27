@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/web";
 import { createReadStream, existsSync, readdirSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, resolve } from "node:path";
@@ -23,6 +24,7 @@ const hostAssets = new Map([
   ["/interop/assets/htmx-2.0.0.js", resolve(root, "node_modules/htmx-2-0-0/dist/htmx.min.js")],
   ["/interop/assets/htmx-2.0.10.js", resolve(root, "node_modules/htmx-2-0-10/dist/htmx.min.js")],
   ["/interop/recorder.js", resolve(root, "e2e/fixtures/interoperability-recorder.js")],
+  ["/interop/htmx-bridge.js", resolve(root, "e2e/fixtures/htmx-bridge-bootstrap.js")],
   ["/interop/turbo-bridge.js", resolve(root, "e2e/fixtures/turbo-bridge-bootstrap.js")],
 ]);
 const distribution = resolve(root, "dist");
@@ -38,12 +40,18 @@ function escapeHtml(value) {
   return value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 }
 
-function shell(host, version, route, content) {
+function shell(host, version, route, content, bridge = false, ui = false, backend = false) {
+  const uiQuery = ui ? "&ui=1" : "";
+  const backendQuery = backend ? "&backend=1" : "";
   const hostScript =
     host === "turbo"
       ? `<script type="importmap">{"imports":{"jquery":"/interop/assets/jquery-module.js"}}</script>
-    <script type="module" src="/interop/turbo-bridge.js?version=${escapeHtml(version)}"></script>`
-      : `<script src="/interop/assets/htmx-${version}.js" defer></script>`;
+    <script type="module" src="/interop/turbo-bridge.js?version=${escapeHtml(version)}${uiQuery}${backendQuery}"></script>`
+      : bridge
+        ? `<script type="importmap">{"imports":{"jquery":"/interop/assets/jquery-module.js"}}</script>
+    <script src="/interop/assets/htmx-${version}.js"></script>
+    <script type="module" src="/interop/htmx-bridge.js?version=${escapeHtml(version)}${uiQuery}${backendQuery}"></script>`
+        : `<script src="/interop/assets/htmx-${version}.js" defer></script>`;
   const bodyAttributes = host === "htmx" ? ' hx-boost="true" hx-target="#main"' : "";
   return `<!doctype html>
 <html lang="en">
@@ -67,19 +75,51 @@ function permanent(host, label, id = "permanent") {
   </section>`;
 }
 
-function turboPage(version, route) {
+function incomingCountdown() {
+  return '<section id="incoming-countdown" data-jqs="countdown" data-duration="31"><span data-part="seconds"></span></section>';
+}
+
+function incomingMessageScroller() {
+  return '<section id="incoming-message-scroller" data-jqs="message-scroller"><div data-part="viewport"><div data-part="content"></div></div><button data-part="latest">Latest</button></section>';
+}
+
+function incomingResizable() {
+  return '<section id="incoming-resizable" data-jqs="resizable" data-value="[50,50]" style="display:grid;width:400px;height:80px"><div data-part="panel">First</div><div data-part="handle" aria-label="Resize panels" style="width:16px;background:#888;touch-action:none"></div><div data-part="panel">Second</div></section>';
+}
+
+function backendApp(host, version, phase) {
+  const root = phase === "incoming" ? "incoming-backend" : "outgoing-backend";
+  const count = phase === "incoming" ? 21 : 1;
+  const base = `/interop/${host}/${version}/backend`;
+  return `<section id="${root}" data-jqs data-signals="{ count: ${count} }">
+    <output data-part="count" data-text="$count"></output>
+    <button type="button" data-part="json" data-on:click="@get('${base}/json?phase=${phase}', { profile: 'core.generic' })">JSON</button>
+    <button type="button" data-part="html" data-on:click="@get('${base}/html?phase=${phase}', { profile: 'core.generic', target: '#backend-target', mode: 'inner' })">HTML</button>
+    <button type="button" data-part="sse" data-on:click="@get('${base}/sse?phase=${phase}', { profile: 'core.datastar' })">SSE</button>
+    <div id="backend-target">Original target</div>
+  </section>`;
+}
+
+function turboPage(version, route, ui = false, backend = false, nested = false) {
   if (route === "frame") {
     return `<turbo-frame id="messages"><p id="frame-result" data-jqs>Frame replaced</p></turbo-frame>`;
   }
   const label = route === "next" ? "new-placeholder" : "original";
+  const options = new URLSearchParams();
+  if (ui) options.set("ui", "1");
+  if (backend) options.set("backend", "1");
+  if (nested) options.set("nested", "1");
+  const optionQuery = options.size > 0 ? `?${options}` : "";
   return shell(
     "turbo",
     version,
     route,
     `<header>${permanent("turbo", label)}</header>
-    <main id="main" data-jqs>
+    <main id="main"${nested ? ' data-jqs data-signals="{ outer: 100 }"' : backend ? "" : " data-jqs"}>
+      ${ui && route === "next" ? incomingCountdown() + incomingMessageScroller() + incomingResizable() : ""}
+      ${backend ? backendApp("turbo", version, route === "next" ? "incoming" : "outgoing") : ""}
       <h1>Turbo ${escapeHtml(route)}</h1>
-      <a id="document-link" href="/interop/turbo/${version}/next">Next document</a>
+      <a id="document-link" href="/interop/turbo/${version}/next${optionQuery}">Next document</a>
       <a id="cancel-link" href="/interop/turbo/${version}/cancel">Canceled document</a>
       <a id="no-content-link" href="/interop/turbo/${version}/no-content">No content</a>
       <a id="network-error-link" href="/interop/turbo/${version}/network-error">Network error</a>
@@ -101,11 +141,19 @@ function turboPage(version, route) {
         <button name="submitter" value="post">POST form</button>
       </form>
     </main>`,
+    false,
+    ui,
+    backend,
   );
 }
 
-function htmxPage(version, route) {
+function htmxPage(version, route, bridge = false, ui = false, backend = false, nested = false) {
   const label = route === "boosted" ? "new-placeholder" : "original";
+  const options = new URLSearchParams();
+  if (ui) options.set("ui", "1");
+  if (backend) options.set("backend", "1");
+  if (nested) options.set("nested", "1");
+  const optionQuery = options.size > 0 ? `?${options}` : "";
   return shell(
     "htmx",
     version,
@@ -113,11 +161,12 @@ function htmxPage(version, route) {
     `<header>${permanent("htmx", label)}</header>
     <main id="main">
       <h1>htmx ${escapeHtml(route)}</h1>
-      <section id="region">
+      <section id="region"${nested ? ' data-jqs data-signals="{ outer: 100 }"' : ""}>
         ${permanent("htmx", "region-original", "region-preserved")}
+        ${backend ? backendApp("htmx", version, "outgoing") : ""}
         <section id="nested-owner" data-interop-key="nested-owner" data-jqs><p id="nested-cleanup" data-interop-key="nested-cleanup" data-jqs><span id="nested-child" data-interop-key="nested-child" data-jqs>Old region</span></p></section>
       </section>
-      <button id="inner-swap" hx-get="/interop/htmx/${version}/fragment/inner" hx-target="#region" hx-swap="innerHTML">Inner</button>
+      <button id="inner-swap" hx-get="/interop/htmx/${version}/fragment/inner${optionQuery}" hx-target="#region" hx-swap="innerHTML">Inner</button>
       <button id="outer-swap" hx-get="/interop/htmx/${version}/fragment/outer" hx-target="#region" hx-swap="outerHTML">Outer</button>
       <ul id="list"><li>First</li></ul>
       <button id="append-swap" hx-get="/interop/htmx/${version}/fragment/item" hx-target="#list" hx-swap="beforeend">Append</button>
@@ -125,10 +174,10 @@ function htmxPage(version, route) {
       <aside id="adjacent">Anchor</aside>
       <button id="before-swap" hx-get="/interop/htmx/${version}/fragment/adjacent" hx-target="#adjacent" hx-swap="beforebegin">Before</button>
       <button id="after-swap" hx-get="/interop/htmx/${version}/fragment/adjacent" hx-target="#adjacent" hx-swap="afterend">After</button>
-      <div id="delete-target">Delete me</div>
+      <div id="delete-target" data-jqs>Delete me</div>
       <button id="delete-swap" hx-delete="/interop/htmx/${version}/fragment/empty" hx-target="#delete-target" hx-swap="delete">Delete</button>
       <button id="none-swap" hx-get="/interop/htmx/${version}/fragment/item" hx-target="#region" hx-swap="none">None</button>
-      <aside id="oob-target">Old out-of-band content</aside>
+      <aside id="oob-target" data-jqs>Old out-of-band content</aside>
       <button id="oob-swap" hx-get="/interop/htmx/${version}/fragment/oob" hx-target="#region" hx-swap="innerHTML">Out of band</button>
       <button id="cancel-swap" hx-get="/interop/htmx/${version}/fragment/inner" hx-target="#region">Cancel</button>
       <button id="no-content" hx-get="/interop/htmx/${version}/no-content" hx-target="#region">No content</button>
@@ -150,6 +199,9 @@ function htmxPage(version, route) {
       </form>
       <output id="form-result"></output>
     </main>`,
+    bridge,
+    ui,
+    backend,
   );
 }
 
@@ -160,6 +212,21 @@ function respond(response, status, type, body, headers = {}) {
     ...headers,
   });
   response.end(body);
+}
+
+async function sendWebResponse(source, destination) {
+  destination.writeHead(source.status, Object.fromEntries(source.headers));
+  const reader = source.body?.getReader();
+  if (!reader) {
+    destination.end();
+    return;
+  }
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    destination.write(Buffer.from(value));
+  }
+  destination.end();
 }
 
 async function formProofHeaders(request) {
@@ -201,6 +268,38 @@ const server = createServer(async (request, response) => {
   }
   const [, host, version, ...rest] = parts;
   const route = rest.join("/") || "start";
+  if (route.startsWith("backend/") && request.method === "GET") {
+    const phase = url.searchParams.get("phase") === "incoming" ? "incoming" : "outgoing";
+    if (route === "backend/json") {
+      respond(
+        response,
+        200,
+        "application/json; charset=utf-8",
+        JSON.stringify({ count: phase === "incoming" ? 27 : 7 }),
+      );
+      return;
+    }
+    if (route === "backend/html") {
+      respond(
+        response,
+        200,
+        "text/html; charset=utf-8",
+        `<button type="button" data-part="inserted" data-on:click="$count++">Increment</button><span data-part="html-phase">${phase}</span>`,
+      );
+      return;
+    }
+    if (route === "backend/sse") {
+      const sdkResponse = ServerSentEventGenerator.stream((stream) => {
+        stream.patchSignals(JSON.stringify({ count: phase === "incoming" ? 31 : 11 }));
+        stream.patchElements(
+          `<button type="button" data-part="streamed" data-on:click="$count++">Streamed</button><span data-part="sse-phase">${phase}</span>`,
+          { selector: "#backend-target", mode: "inner" },
+        );
+      });
+      await sendWebResponse(sdkResponse, response);
+      return;
+    }
+  }
   let redirectedFormProof = {};
   const proofId = route === "next" ? url.searchParams.get("proof") : null;
   if (proofId) {
@@ -243,7 +342,13 @@ const server = createServer(async (request, response) => {
       response,
       200,
       "text/html; charset=utf-8",
-      turboPage(version, route),
+      turboPage(
+        version,
+        route,
+        url.searchParams.get("ui") === "1",
+        url.searchParams.get("backend") === "1",
+        url.searchParams.get("nested") === "1",
+      ),
       redirectedFormProof,
     );
     return;
@@ -254,7 +359,7 @@ const server = createServer(async (request, response) => {
       response,
       200,
       "text/html; charset=utf-8",
-      '<h1 id="boosted-result">Boosted document</h1>',
+      '<h1 id="boosted-result" data-jqs>Boosted document</h1>',
     );
     return;
   }
@@ -262,23 +367,45 @@ const server = createServer(async (request, response) => {
   const fragments = {
     "fragment/inner":
       '<section id="region-preserved" hx-preserve data-jqs data-jqs-preserve><label>Preserved <input id="preserved-input" data-focus-key="preserved-input" value="region-new-placeholder"></label></section><p id="inner-result" data-jqs>Inner replaced</p>',
-    "fragment/outer": '<section id="region"><p id="outer-result">Outer replaced</p></section>',
-    "fragment/item": '<li class="added-item">Added</li>',
-    "fragment/adjacent": '<aside class="adjacent-result">Adjacent</aside>',
+    "fragment/outer":
+      '<section id="region"><p id="outer-result" data-jqs>Outer replaced</p></section>',
+    "fragment/item": '<li class="added-item" data-jqs>Added</li>',
+    "fragment/adjacent": '<aside class="adjacent-result" data-jqs>Adjacent</aside>',
     "fragment/empty": "",
-    "fragment/form": '<span id="form-response">Submitted</span>',
+    "fragment/form": '<span id="form-response" data-jqs>Submitted</span>',
     "fragment/oob":
-      '<p id="oob-main">Main replacement</p><aside id="oob-target" hx-swap-oob="outerHTML">New out-of-band content</aside>',
+      '<p id="oob-main" data-jqs>Main replacement</p><aside id="oob-target" data-jqs hx-swap-oob="outerHTML">New out-of-band content</aside>',
   };
   if (Object.hasOwn(fragments, route)) {
     const proofHeaders =
       route === "fragment/form" && request.method === "POST" ? await formProofHeaders(request) : {};
-    respond(response, 200, "text/html; charset=utf-8", fragments[route], proofHeaders);
+    const body =
+      route === "fragment/inner"
+        ? fragments[route] +
+          (url.searchParams.get("ui") === "1"
+            ? incomingCountdown() + incomingMessageScroller() + incomingResizable()
+            : "") +
+          (url.searchParams.get("backend") === "1" ? backendApp("htmx", version, "incoming") : "")
+        : fragments[route];
+    respond(response, 200, "text/html; charset=utf-8", body, proofHeaders);
     return;
   }
   const proofHeaders =
     route === "form" && request.method === "POST" ? await formProofHeaders(request) : {};
-  respond(response, 200, "text/html; charset=utf-8", htmxPage(version, route), proofHeaders);
+  respond(
+    response,
+    200,
+    "text/html; charset=utf-8",
+    htmxPage(
+      version,
+      route,
+      url.searchParams.get("bridge") === "1",
+      url.searchParams.get("ui") === "1",
+      url.searchParams.get("backend") === "1",
+      url.searchParams.get("nested") === "1",
+    ),
+    proofHeaders,
+  );
 });
 
 server.listen(port, "127.0.0.1", () => {

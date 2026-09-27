@@ -12,6 +12,10 @@ import { uiPlugin } from "/ui.js";
 const { document, window } = globalThis;
 const fetch = globalThis.fetch.bind(globalThis);
 const proof = window.__jqstarCSP;
+proof.runtimeErrors = 0;
+$(document).on("jquery-star:error.cspProof", () => {
+  proof.runtimeErrors = Math.min(proof.runtimeErrors + 1, 33);
+});
 const installed = installStarCSP($);
 const star = installed.star;
 const operations = [];
@@ -41,15 +45,48 @@ star.use({
 star.use(datastarPlugin);
 const ui = star.use(uiPlugin);
 star.boot(document.querySelector("#app"));
+let behaviorActivations = 0;
+$("#behavior").star({
+  state: { count: 1 },
+  computed: { double: ({ state }) => state.count * 2 },
+  actions: {
+    increment({ state }) {
+      behaviorActivations += 1;
+      state.count += 1;
+    },
+  },
+  ui: {
+    "#behavior-increment": { on: { click: "increment" } },
+    "#behavior-count": { text: ({ state }) => state.count },
+    "#behavior-double": { text: ({ computed }) => computed.double },
+  },
+});
 ui.enhance(document);
+ui.enhance(document);
+await star.nextUpdate();
+const initialComputed = document.querySelector("#double").textContent;
+const behaviorInitial = {
+  count: document.querySelector("#behavior-count").textContent,
+  double: document.querySelector("#behavior-double").textContent,
+};
 
 proof.restore();
 document.documentElement.dataset.jqstarCspReady = "true";
 window.__jqstarCSPReady = true;
 window.__finishJQStarCSPProof = async () => {
+  const finishButton = document.querySelector("#finish-proof");
+  finishButton.disabled = true;
+  finishButton.onclick = null;
   proof.arm();
   const root = document.querySelector("#app");
   const instance = $(root).star("instance");
+  const behavior = $("#behavior").star("instance");
+  const afterIncrementComputed = document.querySelector("#double").textContent;
+  const behaviorAfterKeyboard = {
+    count: document.querySelector("#behavior-count").textContent,
+    double: document.querySelector("#behavior-double").textContent,
+    activations: behaviorActivations,
+  };
   document.querySelector("#save").click();
   await new Promise((resolve) => window.setTimeout(resolve, 0));
   await star.nextUpdate();
@@ -61,6 +98,12 @@ window.__finishJQStarCSPProof = async () => {
   await instance.run(star.get("/csp-datastar", { profile: "core.datastar" }));
   await star.whenEnhanced();
   document.querySelector("#toggle").click();
+  await star.nextUpdate();
+  const finalComputed = document.querySelector("#double").textContent;
+  const behaviorAfterPatches = {
+    count: document.querySelector("#behavior-count").textContent,
+    double: document.querySelector("#behavior-double").textContent,
+  };
 
   const deniedEngine = createCSPExpressionEngine();
   let deniedCode = "none";
@@ -78,6 +121,17 @@ window.__finishJQStarCSPProof = async () => {
   await new Promise((resolve) => window.setTimeout(resolve, 0));
   $(root).star("destroy");
   await slow;
+  const behaviorSurvived = $("#behavior").star("instance") === behavior && !behavior.destroyed;
+  document.querySelector("#behavior-increment").click();
+  document.querySelector("#increment").click();
+  await star.nextUpdate();
+  const behaviorAfterRootDestroy = {
+    count: document.querySelector("#behavior-count").textContent,
+    double: document.querySelector("#behavior-double").textContent,
+    activations: behaviorActivations,
+    mainCount: instance.state.count,
+    survived: behaviorSurvived,
+  };
   const slowResult = operations.includes("request:cancelled") ? "cancelled" : "completed";
   stopOperations();
   const disposal = star.dispose();
@@ -100,6 +154,19 @@ window.__finishJQStarCSPProof = async () => {
       stream: document.querySelector("#stream").textContent.trim(),
       togglePressed: document.querySelector("#toggle").getAttribute("aria-pressed"),
     },
+    computed: {
+      initial: initialComputed,
+      afterIncrement: afterIncrementComputed,
+      final: finalComputed,
+    },
+    behavior: {
+      initial: behaviorInitial,
+      afterKeyboard: behaviorAfterKeyboard,
+      afterPatches: behaviorAfterPatches,
+      afterRootDestroy: behaviorAfterRootDestroy,
+      destroyedOnDispose: behavior.destroyed,
+    },
+    runtimeErrors: proof.runtimeErrors,
     deniedCode,
     slowResult,
     operations,
@@ -117,7 +184,15 @@ window.__finishJQStarCSPProof = async () => {
     runtimeCalls: proof.runtimeCalls,
   };
   proof.restore();
+  $(document).off(".cspProof");
   window.__jqstarCSPResult = result;
-  document.querySelector("#result").textContent = "Passed";
+  document.querySelector("#result").textContent =
+    proof.runtimeErrors === 0 ? "Completed" : "Failed";
   return result;
+};
+
+document.querySelector("#finish-proof").onclick = () => {
+  window.__finishJQStarCSPProof().catch(() => {
+    document.querySelector("#result").textContent = "Failed";
+  });
 };

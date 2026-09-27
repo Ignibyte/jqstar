@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ignibyte.github.io/jqstar/schema/browser-components-report.schema.json",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "mode",
+    "project",
+    "source",
+    "status",
+    "selectedTests",
+    "executedTests",
+    "passedTests",
+    "failedTests",
+    "flakyTests",
+    "skippedTests",
+    "listExitCode",
+    "runExitCode",
+    "artifacts",
+    "failures"
+  ],
+  "properties": {
+    "schema": { "const": "jqstar-browser-components/1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "mode": { "const": "execution" },
+    "project": { "const": "desktop-chromium" },
+    "source": { "const": "e2e/components.spec.ts" },
+    "status": { "enum": ["pass", "fail", "error"] },
+    "selectedTests": { "type": "integer", "minimum": 0 },
+    "executedTests": { "type": ["integer", "null"], "minimum": 0 },
+    "passedTests": { "type": ["integer", "null"], "minimum": 0 },
+    "failedTests": { "type": ["integer", "null"], "minimum": 0 },
+    "flakyTests": { "type": ["integer", "null"], "minimum": 0 },
+    "skippedTests": { "type": ["integer", "null"], "minimum": 0 },
+    "listExitCode": { "type": ["integer", "null"] },
+    "runExitCode": { "type": ["integer", "null"] },
+    "artifacts": {
+      "type": "object",
+      "required": ["root", "jsonReport", "testResults", "htmlReport"],
+      "properties": {
+        "root": { "type": "string", "minLength": 1 },
+        "jsonReport": { "type": "string", "minLength": 1 },
+        "testResults": { "type": "string", "minLength": 1 },
+        "htmlReport": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "failures": { "type": "array", "items": { "type": "string" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "pass" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "selectedTests": { "type": "integer", "minimum": 76 },
+          "executedTests": { "type": "integer", "minimum": 76 },
+          "passedTests": { "type": "integer", "minimum": 76 },
+          "failedTests": { "const": 0 },
+          "flakyTests": { "const": 0 },
+          "skippedTests": { "const": 0 },
+          "listExitCode": { "const": 0 },
+          "runExitCode": { "const": 0 },
+          "failures": { "type": "array", "maxItems": 0 }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

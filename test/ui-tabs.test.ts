@@ -52,6 +52,21 @@ describe("jQuery Star Tabs", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without activating nearby tabs", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Tabs application did not start.");
+    await expect(
+      app.run("ui.tabs.activate", { element: trigger("one"), args: [trigger("one"), "two"] }),
+    ).rejects.toThrow('Tabs target did not match a data-jqs="tabs" element');
+    expect($.star.ui.tabs.value(root())).toBe("one");
+    await app.run("ui.tabs.activate", { args: [root(), "two"] });
+    expect($.star.ui.tabs.value(root())).toBe("two");
+    await app.run("ui.tabs.activate", { args: ["#tabs", "one"] });
+    expect($.star.ui.tabs.value(root())).toBe("one");
+    await app.run("ui.tabs.activate", { element: trigger("one"), args: ["two"] });
+    expect($.star.ui.tabs.value(root())).toBe("two");
+  });
+
   it("wires roles, relationships, roving focus, and panel visibility", () => {
     const first = trigger("one");
     const second = trigger("two");

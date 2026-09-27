@@ -112,6 +112,21 @@ describe("jQuery Star Log Viewer", () => {
     expect($.star.ui.logViewer.state(root()).paused).toBe(true);
   });
 
+  it("rejects a wrong-kind element action target without pausing the nearby log", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Log Viewer application did not start.");
+    const pause = root().querySelector<HTMLButtonElement>('[data-part="pause"]');
+    if (!pause) throw new Error("Missing Log Viewer pause button.");
+    await expect(app.run("ui.log-viewer.pause", { element: pause, args: [pause] })).rejects.toThrow(
+      'Log Viewer target did not match data-jqs="log-viewer"',
+    );
+    expect($.star.ui.logViewer.state(root()).paused).toBe(false);
+    await app.run("ui.log-viewer.pause", { args: [root()] });
+    expect($.star.ui.logViewer.state(root()).paused).toBe(true);
+    await app.run("ui.log-viewer.resume", { element: pause });
+    expect($.star.ui.logViewer.state(root()).paused).toBe(false);
+  });
+
   it("clears through the API and honors cancelable lifecycle events", () => {
     const cancel = (event: Event): void => event.preventDefault();
     root().addEventListener("jquery-star:log-viewer:before-clear", cancel);

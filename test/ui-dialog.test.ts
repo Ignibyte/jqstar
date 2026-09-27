@@ -45,6 +45,26 @@ describe("jQuery Star dialog", () => {
     vi.unstubAllGlobals();
   });
 
+  it("rejects a wrong-kind element target without opening its controlled dialog", async () => {
+    const app = $("#app").star("instance");
+    const dialog = document.querySelector<HTMLDialogElement>("#dialog");
+    const controlled = document.querySelector<HTMLButtonElement>("#controlled");
+    if (!app || !dialog || !controlled) throw new Error("Missing Dialog action fixture.");
+    vi.stubGlobal("CSS", { escape: (value: string) => value });
+    await expect(
+      app.run("ui.dialog.open", { element: controlled, args: [controlled] }),
+    ).rejects.toThrow("Dialog target did not match a <dialog>.");
+    expect(dialog.open).toBe(false);
+    await app.run("ui.dialog.open", { args: [dialog] });
+    expect(dialog.open).toBe(true);
+    $.star.ui.dialog.close(dialog);
+    await app.run("ui.dialog.open", { args: ["#dialog"] });
+    expect(dialog.open).toBe(true);
+    $.star.ui.dialog.close(dialog);
+    await app.run("ui.dialog.open", { element: controlled });
+    expect(dialog.open).toBe(true);
+  });
+
   it("opens through a named action and wires accessible relationships", () => {
     $("#open").trigger("click");
 

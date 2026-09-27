@@ -109,12 +109,43 @@ describe("self-hosted proof API", () => {
     expect(body).toContain("appended 3 log entries");
   });
 
+  it("routes dashboard logs to a fixed target and rejects arbitrary stream selectors", async () => {
+    const response = await fetch(
+      `${origin}/api/demo/runtime/stream?target=dashboard&datastar=%7B%7D`,
+    );
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("selector #dashboard-runtime-log-entries");
+    expect(body).not.toContain("selector #runtime-log-entries");
+    expect(body.match(/event: datastar-patch-elements/g)).toHaveLength(3);
+    for (const target of ["#main", "", "dashboard-extra"]) {
+      const rejected = await fetch(
+        `${origin}/api/demo/runtime/stream?target=${encodeURIComponent(target)}&datastar=%7B%7D`,
+      );
+      expect(rejected.status).toBe(400);
+      expect(await rejected.text()).toBe("Unknown runtime stream target.");
+    }
+  });
+
   it("filters and paginates the shared feed contract", async () => {
     const response = await fetch(`${origin}/api/demo/feed?query=official%20sdk&cursor=0`);
     const body = await response.json();
     expect(body.total).toBe(1);
     expect(body.items[0].value).toBe("datastar");
     expect(body.done).toBe(true);
+
+    const first = await (await fetch(`${origin}/api/demo/feed?cursor=0`)).json();
+    const second = await (await fetch(`${origin}/api/demo/feed?cursor=1`)).json();
+    expect(first.items).toHaveLength(3);
+    expect(first.cursor).toBe("3");
+    expect(second.items).toHaveLength(3);
+    expect(second.items[0]).toEqual(first.items[1]);
+    expect(second.cursor).toBe("4");
+    for (const cursor of ["-1", "1.5", "Infinity"]) {
+      const invalid = await (await fetch(`${origin}/api/demo/feed?cursor=${cursor}`)).json();
+      expect(invalid.items).toEqual(first.items);
+      expect(invalid.cursor).toBe(first.cursor);
+    }
   });
 
   it("patches filtered project rows and Pagination through the Datastar SDK", async () => {
@@ -1033,6 +1064,34 @@ describe("self-hosted proof API", () => {
       body: JSON.stringify({ displayName: "", email: "invalid" }),
     });
     expect(invalid.status).toBe(422);
+
+    for (const body of [
+      { displayName: "", email: "grace@example.com" },
+      { displayName: "Grace Hopper", email: "" },
+      { displayName: "Grace Hopper", email: "invalid" },
+    ]) {
+      const rejected = await fetch(`${origin}/api/demo/profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      expect(rejected.status).toBe(422);
+      expect(await rejected.json()).toEqual({
+        error: "Display name and a valid email address are required.",
+      });
+    }
+
+    const normalized = await fetch(`${origin}/api/demo/profile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ displayName: "  Grace Hopper  ", email: "  grace@example.com  " }),
+    });
+    expect(normalized.status).toBe(200);
+    expect(await normalized.json()).toMatchObject({
+      displayName: "Grace Hopper",
+      email: "grace@example.com",
+      revision: 2,
+    });
 
     const invite = await fetch(`${origin}/api/demo/profile/invite`, { method: "POST" });
     expect(await invite.json()).toEqual({

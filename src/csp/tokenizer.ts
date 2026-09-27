@@ -173,6 +173,72 @@ function readString(
   );
 }
 
+function readNumber(
+  source: string,
+  start: number,
+  location: StarExpressionLocation | undefined,
+): { readonly end: number; readonly value: number } {
+  let index = start;
+
+  index += 1;
+  while (isDigit(source[index])) index += 1;
+  if (source[start] === "0" && index - start > 1) {
+    while (isIdentifierPart(source[index])) index += 1;
+    throw cspError(
+      CSP_DIAGNOSTICS.numberFormat.code,
+      CSP_DIAGNOSTICS.numberFormat.phase,
+      source,
+      start,
+      index,
+      location,
+    );
+  }
+  if (source[index] === "." && isDigit(source[index + 1])) {
+    index += 2;
+    while (isDigit(source[index])) index += 1;
+  }
+  if (source[index] === "e" || source[index] === "E") {
+    index += 1;
+    if (source[index] === "+" || source[index] === "-") index += 1;
+    const exponentStart = index;
+    while (isDigit(source[index])) index += 1;
+    if (index === exponentStart) {
+      throw cspError(
+        CSP_DIAGNOSTICS.numberFormat.code,
+        CSP_DIAGNOSTICS.numberFormat.phase,
+        source,
+        start,
+        index,
+        location,
+      );
+    }
+  }
+  if (isIdentifierStart(source[index]) || source[index] === "_") {
+    while (isIdentifierPart(source[index])) index += 1;
+    throw cspError(
+      CSP_DIAGNOSTICS.numberFormat.code,
+      CSP_DIAGNOSTICS.numberFormat.phase,
+      source,
+      start,
+      index,
+      location,
+    );
+  }
+  const raw = source.slice(start, index);
+  const value = Number(raw);
+  if (!Number.isFinite(value)) {
+    throw cspError(
+      CSP_DIAGNOSTICS.numberFormat.code,
+      CSP_DIAGNOSTICS.numberFormat.phase,
+      source,
+      start,
+      index,
+      location,
+    );
+  }
+  return { value, end: index };
+}
+
 export function tokenizeCSP(
   input: unknown,
   location?: StarExpressionLocation,
@@ -264,63 +330,9 @@ export function tokenizeCSP(
     }
 
     if (isDigit(character)) {
-      index += 1;
-      while (isDigit(source[index])) index += 1;
-      if (source[start] === "0" && index - start > 1) {
-        while (isIdentifierPart(source[index])) index += 1;
-        throw cspError(
-          CSP_DIAGNOSTICS.numberFormat.code,
-          CSP_DIAGNOSTICS.numberFormat.phase,
-          source,
-          start,
-          index,
-          location,
-        );
-      }
-      if (source[index] === "." && isDigit(source[index + 1])) {
-        index += 2;
-        while (isDigit(source[index])) index += 1;
-      }
-      if (source[index] === "e" || source[index] === "E") {
-        index += 1;
-        if (source[index] === "+" || source[index] === "-") index += 1;
-        const exponentStart = index;
-        while (isDigit(source[index])) index += 1;
-        if (index === exponentStart) {
-          throw cspError(
-            CSP_DIAGNOSTICS.numberFormat.code,
-            CSP_DIAGNOSTICS.numberFormat.phase,
-            source,
-            start,
-            index,
-            location,
-          );
-        }
-      }
-      if (isIdentifierStart(source[index]) || source[index] === "_") {
-        while (isIdentifierPart(source[index])) index += 1;
-        throw cspError(
-          CSP_DIAGNOSTICS.numberFormat.code,
-          CSP_DIAGNOSTICS.numberFormat.phase,
-          source,
-          start,
-          index,
-          location,
-        );
-      }
-      const raw = source.slice(start, index);
-      const value = Number(raw);
-      if (!Number.isFinite(value)) {
-        throw cspError(
-          CSP_DIAGNOSTICS.numberFormat.code,
-          CSP_DIAGNOSTICS.numberFormat.phase,
-          source,
-          start,
-          index,
-          location,
-        );
-      }
-      push("number", value, start, index);
+      const result = readNumber(source, start, location);
+      index = result.end;
+      push("number", result.value, start, index);
       continue;
     }
 

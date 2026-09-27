@@ -56,6 +56,38 @@ describe("jQuery Star Toggle and Toggle Group", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a non-button element target without toggling the nearby native button", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Toggle application did not start.");
+    const child = document.createElement("span");
+    toggle().append(child);
+    await expect(app.run("ui.toggle.toggle", { element: child, args: [child] })).rejects.toThrow(
+      'Toggle target did not match a button[data-jqs="toggle"]',
+    );
+    expect($.star.ui.toggle.pressed(toggle())).toBe(false);
+    await app.run("ui.toggle.toggle", { args: [toggle()] });
+    expect($.star.ui.toggle.pressed(toggle())).toBe(true);
+    await app.run("ui.toggle.press", { args: ["#preview-toggle", false] });
+    expect($.star.ui.toggle.pressed(toggle())).toBe(false);
+    await app.run("ui.toggle.toggle", { element: child });
+    expect($.star.ui.toggle.pressed(toggle())).toBe(true);
+  });
+
+  it("rejects a non-button press target before treating it as a boolean", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Toggle application did not start.");
+    const child = document.createElement("span");
+    toggle().append(child);
+    await expect(
+      app.run("ui.toggle.press", { element: child, args: [child, true] }),
+    ).rejects.toThrow('Toggle target did not match a button[data-jqs="toggle"]');
+    expect($.star.ui.toggle.pressed(toggle())).toBe(false);
+    await app.run("ui.toggle.press", { args: [toggle(), true] });
+    expect($.star.ui.toggle.pressed(toggle())).toBe(true);
+    await app.run("ui.toggle.press", { element: child, args: [false] });
+    expect($.star.ui.toggle.pressed(toggle())).toBe(false);
+  });
+
   it("maintains standalone pressed state through pointer, API, and named actions", () => {
     expect(toggle().getAttribute("aria-pressed")).toBe("false");
     toggle().click();
@@ -67,6 +99,46 @@ describe("jQuery Star Toggle and Toggle Group", () => {
 
     $.star.ui.toggle.press(toggle());
     expect(toggle().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("accepts its native button as a named-action target", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Toggle application did not start.");
+
+    await app.run("ui.toggle.toggle", { args: [toggle()] });
+    expect(toggle().getAttribute("aria-pressed")).toBe("true");
+    await app.run("ui.toggle.press", { args: [toggle(), false] });
+    expect(toggle().getAttribute("aria-pressed")).toBe("false");
+    const external = document.getElementById("external-toggle");
+    if (!external) throw new Error("Missing external Toggle action.");
+    await expect(
+      app.run("ui.toggle.press", {
+        element: toggle(),
+        args: [external, true],
+      }),
+    ).rejects.toThrow('Toggle target did not match a button[data-jqs="toggle"]');
+    expect(toggle().getAttribute("aria-pressed")).toBe("false");
+    await app.run("ui.toggle.press", { element: toggle(), args: [true] });
+    expect(toggle().getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("accepts a Toggle Group element target without choosing an implicit group", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Toggle Group application did not start.");
+
+    await app.run("ui.toggle-group.select", { args: [group(), "italic"] });
+    expect($.star.ui.toggleGroup.value(group())).toEqual(["bold", "italic"]);
+    await app.run("ui.toggle-group.toggle", { args: [group(), "italic"] });
+    expect($.star.ui.toggleGroup.value(group())).toEqual(["bold"]);
+    await expect(
+      app.run("ui.toggle-group.select", {
+        element: item("bold"),
+        args: [toggle(), "italic"],
+      }),
+    ).rejects.toThrow('Toggle Group target did not match data-jqs="toggle-group"');
+    expect($.star.ui.toggleGroup.value(group())).toEqual(["bold"]);
+    await app.run("ui.toggle-group.select", { element: item("bold"), args: ["italic"] });
+    expect($.star.ui.toggleGroup.value(group())).toEqual(["bold", "italic"]);
   });
 
   it("supports multiple values, ordered form fields, and cancelable changes", () => {
@@ -118,5 +190,27 @@ describe("jQuery Star Toggle and Toggle Group", () => {
     expect(document.activeElement).toBe(underline);
     underline.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Home" }));
     expect(document.activeElement).toBe(bold);
+  });
+
+  it("does not take keyboard or focus ownership from a nested foreign button", () => {
+    const bold = item("bold");
+    const italic = item("italic");
+    bold.focus();
+    const wrapper = document.createElement("span");
+    wrapper.innerHTML = '<button data-part="item" data-value="foreign">Foreign</button>';
+    group().append(wrapper);
+    const foreign = wrapper.querySelector("button");
+    if (!foreign) throw new Error("Missing foreign Toggle Group button.");
+
+    const key = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ArrowRight",
+    });
+    foreign.dispatchEvent(key);
+    foreign.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    expect(key.defaultPrevented).toBe(false);
+    expect(bold.tabIndex).toBe(0);
+    expect(italic.tabIndex).toBe(-1);
   });
 });

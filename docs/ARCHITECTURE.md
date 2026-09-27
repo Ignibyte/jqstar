@@ -35,6 +35,17 @@ setup succeeds. Failed setup rolls back staged work. Destruction removes cleanup
 invoking them, attempts every event, effect, request, mount, directive, observer, and data cleanup,
 removes the kernel record, and then reports one error or an aggregate.
 
+An application rooted on a plain `data-jqs` marker stops at descendant plain `data-jqs` application
+islands. It does not read their signals or computed values, bind their directives, or cancel
+requests claimed by them during subtree cleanup. A page-wide `$.star.boot()` root retains its
+documented document scope, including plain descendants. A named marker such as `data-jqs="button"`
+remains in its parent's directive scope as a UI component. Explicitly starting a separate
+application on a named component marker is a distinct ownership case still under review.
+
+Behavior applications, declarative applications and signal patches share the same recursive state
+copy routine. It copies arrays and plain records while retaining other object and function values by
+identity. Requests and patches reuse the same plain-record check.
+
 Persistent UI document/window listeners and observers are installed through the document host and
 released during idempotent public disposal. `$.star.dispose()` returns a frozen terminal report,
 memoizes the same report or typed aggregate failure for repeated calls, removes only its own jQuery
@@ -43,12 +54,38 @@ expression engine remains permanently claimed and cannot be installed into anoth
 [RUNTIME_OWNERSHIP.md](RUNTIME_OWNERSHIP.md) for the complete retained-state matrix and the work
 assigned to later extension tickets.
 
-The package has six JavaScript boundaries. The root is auto-installing ESM/CommonJS and the only UMD
-global. `core`, `ui`, `datastar`, `testing`, and `datastar/testing` are side-effect-free
-ESM/CommonJS preview entries with isolated declarations. Core declarations return a typed installed
-jQuery value and do not augment global jQuery; only root declarations retain ambient augmentation.
-Generic testing imports core but no DOM implementation, runner, UI, or Datastar code. Datastar test
-fixtures stay in the separate SDK-backed entry. UI CSS remains a separate explicit import.
+The package has stable root and modular JavaScript boundaries. The root is auto-installing
+ESM/CommonJS and the only UMD global. `core`, `ui`, `datastar`, `csp`, `testing`,
+`datastar/testing`, `htmx`, `stores`, `persist`, and `turbo` are stable, side-effect-free
+ESM/CommonJS entries with isolated declarations. Core declarations return a typed installed jQuery
+value and do not augment global jQuery; only root declarations retain ambient augmentation. Generic
+testing imports core but no DOM implementation, runner, UI, or Datastar code. Datastar test fixtures
+stay in the separate SDK-backed entry. UI CSS remains a separate explicit import.
+
+## Shared-store boundary
+
+`jquery-star/stores` installs one official plugin before the first application starts. The plugin
+commits a fixed optional `stores` context binding and returns a frozen per-kernel facade. Its stable
+reactive namespace can publish a store after applications mount, so an effect that read a missing
+name runs again when that definition commits. The namespace is read-only, while each published store
+is a mutable reactive proxy.
+
+Definitions and setup stage before namespace publication. Accepted initial data is cloned from
+descriptor-checked plain acyclic graphs; function leaves retain identity as ordinary methods. Failed
+setup aborts finite work and releases registered subscriptions, effects, tasks, and cleanup in
+reverse order. A provisional kernel resource owns the store lifetime before setup begins. Successful
+setup transfers ownership to the final lifetime resource, preserving abort-before-cleanup ordering
+at normal disposal. Interrupted ownership releases the acquired resource immediately, and ended
+contexts cannot start new callback work. Name/definition reservations reject recursive setup, and
+transactions recheck lifetime before committing their drafts. Successful records live until kernel
+disposal. Application destruction stops application-owned store readers without removing the
+kernel-owned store. See [STORES.md](STORES.md) for the public API and authority boundary.
+
+The fixed context seam is separate from the committed helper tree. `stores` therefore cannot be
+shadowed by a plugin helper and resolves to `undefined` when the stores plugin is absent. `$store`
+continues to resolve through the current application's signal state. Kernel operation observers can
+receive value-free store definition, setup, change, subscription, task, effect, and cleanup records;
+application observers do not receive those kernel-only records.
 
 ## jQuery ecosystem boundary
 
@@ -60,6 +97,23 @@ The dated, schema-validated decisions and downstream ownership IDs live in
 [`quality/jquery-ecosystem.json`](../quality/jquery-ecosystem.json) and are explained in
 [JQUERY_ECOSYSTEM.md](JQUERY_ECOSYSTEM.md).
 
+jQuery UI coexistence is an application boundary, not a runtime extension seam. Legacy regions own
+their installed UI instances, generated wrappers, data keys, delegated handlers, theme, portals, and
+explicit destroy calls. Adjacent jQStar regions own their `data-jqs` roots, `data-part` slots,
+state, actions, focus, and disposal. Server rendering replaces one named island at a time after its
+current owner disposes it. jQStar does not import UI, patch Widget Factory, adopt UI data, or infer
+cleanup from legacy markup. The complete map and no-adapter decision are in
+[JQUERY_UI_MIGRATION.md](JQUERY_UI_MIGRATION.md).
+
+jQuery Mobile migration uses a route boundary, not a runtime seam. Legacy routes remain isolated on
+their compatible stack while modern routes are complete server documents using native links/forms,
+responsive CSS, jQuery 4, and optional local jQStar regions. Full document navigation owns history,
+head, focus, scroll, errors, reload, and new tabs. A named Datastar update may patch one region with
+official-SDK SSE. Turbo or htmx may instead own navigation only through its explicit lifecycle
+bridge. The architecture has no Mobile page container, Ajax router, virtual input layer, role
+initializer, transition/theme runtime, or generic bridge facade. See
+[JQUERY_MOBILE_MIGRATION.md](JQUERY_MOBILE_MIGRATION.md).
+
 ## Public testing boundary
 
 `src/testing/` owns a consumer-facing harness around `installStarCore()`. Creation validates one
@@ -70,7 +124,9 @@ back the claimed core installation and restores every replaced fetch descriptor.
 
 `withStarDOMRealm()` is an opt-in process-local compatibility lease, not the normal ownership model.
 It snapshots a finite browser-global allowlist, rejects overlapping leases before mutation, and
-restores exact descriptors in reverse order after callback and cleanup failures. DOM creation and
+attempts exact descriptor restoration in reverse order after callback and cleanup failures. A
+refused deletion is reported alongside any callback failure without skipping other restorations; the
+process lease is released even if a caller-made non-configurable property remains. DOM creation and
 jQuery loading remain the caller's responsibility.
 
 Harness `flush()` combines the public enhancement barrier with pending queued responses and
@@ -102,13 +158,20 @@ events to that adapter. It shares a lifecycle state machine, overlap policy, red
 shape, and preservation checks without inventing a common host event API. Turbo and htmx retain
 ownership of requests, forms, redirects, cache, history, focus, and DOM mutation.
 
-`jquery-star/turbo` is the side-effect-free Turbo implementation of this boundary. Its explicit
-factory validates the injected capability and version before its document-scoped plugin registers
-listeners. It wraps only Turbo's public document and Frame render callbacks, owns only short-lived
-jQStar render transactions and bounded redacted observations, and leaves Turbo in control of every
-request and mutation. Ticket 0037 owns the separate future htmx plugin. Both follow the exact
-manifest in `quality/external-bridge-contract.json`. Core, root, UI, Datastar, CSP, and testing
-entries remain free of Turbo and htmx code.
+`jquery-star/turbo` and `jquery-star/htmx` are side-effect-free, host-specific implementations of
+this boundary. Each explicit factory validates its injected capability and version before its
+document-scoped plugin registers listeners. Turbo wraps public document and Frame render callbacks.
+The htmx bridge correlates public request, swap, cleanup, settle, out-of-band, history, and error
+events without calling a host rendering API. Both own only short-lived jQStar render transactions
+and bounded redacted observations, and both leave the host in control of every request and mutation.
+They follow the exact manifest in `quality/external-bridge-contract.json`. Core, root, UI, Datastar,
+CSP, and testing entries remain free of Turbo and htmx code.
+
+The [navigation decision](decisions/NATIVE_NAVIGATION.md) retains that ownership split and declines
+native documents, forms, regions and prefetch. Its installed comparison uses useful complete HTML
+with and without JavaScript. Application-owned host configuration and public recovery hooks stay
+outside the generic runtime. A server revision/idempotency guard protects writes even when an
+underlying browser transport retries; a lost response never authorizes application replay.
 
 ## Plugin transactions
 
@@ -124,20 +187,29 @@ cycles fail, and installers do not run until the graph is valid. Reentrant insta
 
 Each installer receives only a staging registrar for namespaced actions, exact or prefix directives,
 expression helpers, request middleware, protocol profiles, application hooks, operation observers,
-and cleanup callbacks. `src/registry.ts`, `src/directive.ts`, `src/request-middleware.ts`,
-`src/protocol.ts`, and `src/observation.ts` prepare replacement action, directive, helper,
-namespace, middleware, profile, and inactive observer records without publishing them. After all
-synchronous installers return, the plugin host commits those snapshots with its installed-plugin,
-hook, cleanup, and facade snapshots. A failure runs represented cleanup in reverse order and exposes
-none of the staged state.
+cleanup callbacks, and staged document-host work. The document host exposes optional task and
+kernel-observation hooks only to framework-marked official plugins. The kernel derives its fixed
+`stores` context binding from the atomically committed official facade; external plugins cannot
+publish fixed bindings or access those optional hooks. `src/registry.ts`, `src/directive.ts`,
+`src/request-middleware.ts`, `src/protocol.ts`, and `src/observation.ts` prepare replacement action,
+directive, helper, namespace, middleware, profile, and inactive observer records without publishing
+them. After all synchronous installers return, the plugin host commits those snapshots with its
+installed-plugin, hook, cleanup, and facade snapshots. A failure runs represented cleanup in reverse
+order and exposes none of the staged state. The host rechecks the structural lock after every
+installer and activation, before another callback or publication. Staged document resources own
+cancellation immediately; rollback releases provisional cleanup even before activation, and failed
+observer ownership disconnects the provisional observer. Returned activation cleanup is retained
+before checking for owner disposal.
 
 The first application identity allocation closes structural installation. Application construction
 still happens first; `Kernel.trackApplication()` then runs plugin hooks before committing the kernel
-record and jQuery data. Hook failure reverses earlier hook cleanup and lets the existing outer
-application transaction destroy the uncommitted application. A committed kernel record owns its hook
-cleanup, so explicit destruction, patch removal, and kernel disposal use one exact-once path. Kernel
-disposal destroys applications before plugin-level cleanup, then clears actions and disposes the
-expression engine while aggregating failures.
+record and jQuery data. Each hook's returned cleanup is retained before checking application and
+host lifetime. Destruction or disposal stops later hooks and rejects application commit. Hook
+failure reverses earlier hook cleanup and lets the existing outer application transaction destroy
+the uncommitted application. A committed kernel record owns its hook cleanup, so explicit
+destruction, patch removal, and kernel disposal use one exact-once path. Kernel disposal destroys
+applications before plugin-level cleanup, then clears actions and disposes the expression engine
+while aggregating failures.
 
 External plugin names are dot-qualified stable namespaces. `core` and `ui` plus their descendants
 are reserved, and namespace claims cannot overlap. Framework-marked immutable `core.datastar` and
@@ -161,12 +233,13 @@ One engine object cannot be shared between kernels. The scope keeps these meanin
 - `$name` reads or writes `state.name`.
 - `el`, `$el`, `evt`, `root`, and `$root` describe the current element and application.
 - `state`, `signals`, and `computed` expose explicit state objects.
+- `stores` exposes the fixed optional read-only namespace; `$store` remains local state.
 - `@name(arguments)` resolves through the named action registry.
 - `<plugin>.<helper>` resolves through the committed per-kernel helper snapshot.
 
-Helper roots enter the scope before fixed bindings, so `$`, state, context, language, and browser
-authorities cannot be shadowed even if registry validation regresses. The helper scope travels in
-`StarContext`, which keeps custom expression engines on the same conformance contract.
+Helper roots enter the scope before fixed bindings, so `$`, stores, state, context, language, and
+browser authorities cannot be shadowed even if registry validation regresses. The helper scope
+travels in `StarContext`, which keeps custom expression engines on the same conformance contract.
 
 Compilation accepts an optional authored attribute plus parser-provided line and column. Trusted
 engine failures preserve the expression source and distinguish compilation, synchronous evaluation,
@@ -219,6 +292,11 @@ provided, and otherwise clean and remount. Their owned effects use the applicati
 finite tasks use abort signals and the kernel resource/enhancement ledgers. `MutationObserver`
 support lets newly patched nodes mount without a page reload. UI controllers must also tolerate
 repeated `$.star.ui.enhance()` calls because server patches can replace their internal elements.
+
+Provisional directive cleanup is registered before mount callbacks run. Destruction during a
+callback stops further scanning and resource registration, and a cleanup returned after release runs
+immediately. Task registration owns rollback before invoking its factory, and effect registration
+stops its runner if the initial callback releases the application or directive.
 
 ## Backend responses
 
@@ -300,6 +378,11 @@ observer with `registrar.observeOperations()`. Every subscription is a kernel le
 Application destruction, plugin disposal or rollback, and kernel disposal release the corresponding
 records through idempotent cleanup functions.
 
+The stores plugin also publishes terminal `kind: "store"` records for definition, setup, change,
+subscription, effect, task, and cleanup work. These records use a kernel owner and carry stable
+category, name, and resource identifiers without store values or callbacks, so application-scoped
+observers do not receive them.
+
 Delivery is synchronous and uses a stable subscriber snapshot. Observer return values are not
 awaited. A throw or rejected promise goes only to that subscription's optional `onError` handler and
 cannot change the action or request. Records are recursively frozen data. They contain no live
@@ -349,3 +432,92 @@ the reference server-driven block: Data Table owns table semantics and selection
 navigation semantics, the block owns request and presentation state, and the server owns validated
 queries, grouping, page/virtual slicing, aggregates, and versioned writes. `server/project-store.ts`
 isolates the migration-managed SQLite implementation so a host can inject another database adapter.
+
+## Store persistence
+
+`jquery-star/persist` depends on the installed stores facade through
+`registrar.dependency("core.stores")`. Dependency lookup is restricted to declared dependencies and
+can resolve earlier plugins in a staged installation. `registrar.assertBeforeApplications()` uses
+the durable plugin lock, including after a failed or destroyed first application.
+
+Persistence selects data through synchronous codecs, validates an entire detached migration/decode
+pipeline, and commits through the public store transaction. It owns no store dependency internals.
+Each attachment owns one subscription, bounded trailing timer, storage listener, accepted revision,
+and redacted status subscribers. Kernel services dispose attachments before shared stores become
+terminal. [PERSISTENCE.md](PERSISTENCE.md) defines recovery, revisions, and adapter boundaries.
+
+## Coordinated asynchronous reads
+
+Ticket [0020](tickets/0020-prove-resource-strategy.md) retains server patches and declines native
+resources and mutations. The [decision and measurements](decisions/RESOURCE_STRATEGY.md) compare one
+coordinated SDK response with external and native cache prototypes. These remain test fixtures.
+
+A registry block can place independently owned consumer applications inside an outer coordinator
+application. One named action requests canonical HTML for their stable content targets. This
+respects the existing initiating-application patch boundary. A store shares selection, while the
+block owns the request and subscription lifecycle. Initial HTML, native navigation and versioned
+form submissions remain usable without JavaScript. Successful writes trigger canonical refresh. No
+new runtime service, export or global facade is part of this decision.
+
+## Inspection metadata
+
+`$.star.metadata()` supplies safe inventory visitation, public operation observation, resource
+ownership and final disposal notification. It exposes no private kernel collection. Plugin metadata
+registrations stage and commit with the existing plugin transaction. UI and Datastar use the public
+plugin inventory; stores, persistence and bridges supply frozen aggregate count views.
+
+The optional `jquery-star/inspect` entry turns that capability into bounded data documents. A lazy
+weak registry keyed by the installed `$.star` shares one adapter and collector across module copies.
+The core does not import the adapter or collector. Each caller holds an independent lease; only the
+trace controller can change bounds and policy. Capture projects approved scalar fields before
+retention, and read/export makes immutable copies. See [INSPECTION.md](INSPECTION.md).
+
+## Shared value boundaries
+
+Internal `src/value-checks.ts` shares plain-record checks, thenable detection, and bounded
+diagnostic text across core consumers. Internal `src/request-headers.ts` shares the browser-owned
+header predicate between protocol preparation and middleware policy. These helpers retain the
+existing value-check, whitespace, control-character, and truncation behavior. Error-field extraction
+guards prototype traps and reads each accessor once. Disposal also contains failed string conversion
+while preserving its own empty-message and truncation policy. These internal helpers add no public
+export or optional runtime dependency. Installed core budgets use the unchanged consumer and gzip
+defaults; supported Node compressor versions can produce different sizes for the same JavaScript, so
+release evidence names its toolchain.
+
+## Shared distribution runtime
+
+One build emits the core and CSP module entries. The complete static import graph rooted at
+`src/runtime.ts` occupies a shared chunk, while the trusted expression compiler and render adapter
+remain separate. Frozen CSP grammar metadata has its own chunk. Assigning all runtime dependencies
+together prevents a shared helper from creating a path back into the trusted compiler. The package
+graph checks inspect every transitive CSP module in both formats. No entry exports or expression
+semantics change; direct module hosting must retain the related files in `dist`.
+
+The CSP evaluator shares a fixed, private set of methods requiring literal arguments. Frames read
+that policy without retaining application data in it. The `html` setter uses the same literal check
+as the other listed methods; the complete arity table and unknown-method refusal remain separate.
+
+## Behavior setup lifetime
+
+Behavior rules can destroy their application during initial binding or mounting. The runtime stops
+an initial runner before retaining it if its callback released the owner, and stops later rule,
+mount and observer setup. A mount has a provisional record before its callback runs; if cleanup
+removes that record, returned cleanup runs immediately. Root teardown releases every owned mount,
+including nodes detached before observer delivery. Subtree teardown still respects containment and
+preserved roots, and cleanup errors retain the existing aggregation behavior.
+
+Declarative full root cleanup visits the application's complete attribute-cleanup map, including
+detached elements. A scoped subtree cleanup still checks containment and preserved roots. Removing
+each owned map entry before invoking its callbacks preserves cleanup ordering and failure handling.
+
+The kernel resource ledger also accepts optional Element scopes. Render boundaries prevent new
+acquisition during removal and release scoped work before changing DOM. A shared document observer
+handles native removal while retaining connected moves and in-progress preservation. UI ownership
+uses these capabilities through `src/ui/lifecycle.ts`; ticket 0006 tracks remaining controller
+enrollment and bundle verification. UI modules receive document capabilities, never a Kernel.
+
+All six core/plugin conformance cases share one internal harness owner. It records explicit terminal
+cleanup attempts and otherwise disposes after completion or early failure. A distinct cleanup error
+is aggregated with the original work error and caught cause. Existing disposal assertions retain
+their result/error identities. Report construction shares a private reference to the native freeze
+function; it retains no application data. The caller owns the DOM realm.

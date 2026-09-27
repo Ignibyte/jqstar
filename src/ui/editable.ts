@@ -1,19 +1,28 @@
+import { isHTMLElement, isHTMLTag } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { EditableTarget, StarContext, StarEditableStatic } from "../types";
+import {
+  failUISetup,
+  listenUI,
+  ownUIRecord,
+  releaseUIResources,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
 interface EditableCollection {
   api: StarEditableStatic;
   enhance(root: ParentNode): void;
 }
 
-interface EditableRecord {
-  cleanup: () => void;
-  control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-  display: HTMLElement;
+interface EditableRecord extends UIResources {
+  input: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  view: HTMLElement;
   edit: HTMLButtonElement;
-  editor: HTMLElement;
-  preview: HTMLElement;
-  root: HTMLElement;
+  panel: HTMLElement;
+  text: HTMLElement;
   status: HTMLElement | undefined;
   value: string;
 }
@@ -29,12 +38,12 @@ const records = new WeakMap<HTMLElement, EditableRecord>();
 let editableId = 0;
 
 function editableRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="editable"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="editable"]') ? value : undefined;
 }
 
 function owned<T extends HTMLElement>(root: HTMLElement, selector: string): T | undefined {
   return Array.from(root.querySelectorAll<T>(selector)).find(
-    (element) => element.closest('[data-jqs="editable"]') === root,
+    (element) => isHTMLElement(element) && element.closest('[data-jqs="editable"]') === root,
   );
 }
 
@@ -52,7 +61,7 @@ function unavailable(record: EditableRecord): boolean {
   return (
     record.root.hasAttribute("disabled") ||
     record.root.getAttribute("aria-disabled") === "true" ||
-    record.control.disabled
+    record.input.disabled
   );
 }
 
@@ -68,13 +77,13 @@ function emit(
   previousValue = record.value,
 ): boolean {
   const detail: EditableEventDetail = {
-    control: record.control,
+    control: record.input,
     editable: record.root,
     previousValue,
     value,
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:editable:${name}`, {
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:editable:${name}`, {
       bubbles: true,
       cancelable,
       detail,
@@ -85,8 +94,8 @@ function emit(
 function setMode(record: EditableRecord, editing: boolean): void {
   const state = editing ? "editing" : "display";
   if (record.root.dataset.state !== state) record.root.dataset.state = state;
-  if (record.display.hidden !== editing) record.display.hidden = editing;
-  if (record.editor.hidden === editing) record.editor.hidden = !editing;
+  if (record.view.hidden !== editing) record.view.hidden = editing;
+  if (record.panel.hidden === editing) record.panel.hidden = !editing;
   if (record.edit.getAttribute("aria-expanded") !== String(editing)) {
     record.edit.setAttribute("aria-expanded", String(editing));
   }
@@ -95,45 +104,88 @@ function setMode(record: EditableRecord, editing: boolean): void {
 function sync(record: EditableRecord): void {
   const disabled = unavailable(record);
   if (record.edit.disabled !== disabled) record.edit.disabled = disabled;
-  if (record.edit.getAttribute("aria-controls") !== record.editor.id) {
-    record.edit.setAttribute("aria-controls", record.editor.id);
+  if (record.edit.getAttribute("aria-controls") !== record.panel.id) {
+    record.edit.setAttribute("aria-controls", record.panel.id);
   }
   const preview = previewText(record, record.value);
-  if (record.preview.textContent !== preview) record.preview.textContent = preview;
+  if (record.text.textContent !== preview) record.text.textContent = preview;
   if (record.root.dataset.value !== record.value) record.root.dataset.value = record.value;
-  if (record.root.dataset.state !== "editing") setMode(record, false);
+  setMode(record, record.root.dataset.state === "editing");
+}
+
+function current(record: EditableRecord, revision = record.revision): boolean {
+  if (!uiCurrent(record, revision) || records.get(record.root) !== record) return false;
+  return (
+    [
+      ["display", record.view],
+      ["preview", record.text],
+      ["editor", record.panel],
+      ["control", record.input],
+      ["edit", record.edit],
+      ["status", record.status],
+    ] as const
+  ).every(([part, element]) => owned(record.root, `[data-part="${part}"]`) === element);
+}
+
+function snapshot(record: EditableRecord): string {
+  return JSON.stringify([record.root.dataset.value, record.root.dataset.state, record.input.value]);
 }
 
 function edit(record: EditableRecord): HTMLElement {
+  const revision = ++record.revision;
+  const before = snapshot(record);
+  if (!current(record)) return record.root;
   if (unavailable(record) || record.root.dataset.state === "editing") return record.root;
-  if (!emit(record, "before-edit", record.value, true)) return record.root;
-  record.control.value = record.value;
+  if (
+    !emit(record, "before-edit", record.value, true) ||
+    !current(record, revision) ||
+    snapshot(record) !== before ||
+    unavailable(record)
+  )
+    return record.root;
+  record.input.value = record.value;
   setMode(record, true);
-  record.control.focus();
-  if (record.root.hasAttribute("data-select-on-edit") && "select" in record.control) {
-    record.control.select();
+  record.input.focus();
+  if (!current(record, revision)) return record.root;
+  if (record.root.hasAttribute("data-select-on-edit") && "select" in record.input) {
+    record.input.select();
   }
+  if (!current(record, revision)) return record.root;
   if (record.status) record.status.textContent = record.root.dataset.editMessage ?? "Editing.";
   emit(record, "edit", record.value);
   return record.root;
 }
 
 function commit(record: EditableRecord): HTMLElement {
+  const revision = ++record.revision;
+  const before = snapshot(record);
+  if (!current(record)) return record.root;
   if (unavailable(record) || record.root.dataset.state !== "editing") return record.root;
-  if (!record.control.checkValidity()) {
-    record.control.reportValidity();
+  const valid = record.input.checkValidity();
+  if (!current(record, revision) || snapshot(record) !== before || unavailable(record))
+    return record.root;
+  if (!valid) {
+    record.input.reportValidity();
+    if (!current(record, revision)) return record.root;
     if (record.status) {
       record.status.textContent =
-        record.control.validationMessage || record.root.dataset.invalidMessage || "Invalid value.";
+        record.input.validationMessage || record.root.dataset.invalidMessage || "Invalid value.";
     }
-    emit(record, "invalid", record.control.value);
+    emit(record, "invalid", record.input.value);
     return record.root;
   }
-  const value = record.control.value;
-  if (!emit(record, "before-change", value, true)) return record.root;
+  const value = record.input.value;
+  if (
+    !emit(record, "before-change", value, true) ||
+    !current(record, revision) ||
+    snapshot(record) !== before ||
+    unavailable(record) ||
+    !record.input.validity.valid
+  )
+    return record.root;
   const previous = record.value;
   record.value = value;
-  record.preview.textContent = previewText(record, value);
+  record.text.textContent = previewText(record, value);
   record.root.dataset.value = value;
   setMode(record, false);
   if (record.status) {
@@ -143,54 +195,59 @@ function commit(record: EditableRecord): HTMLElement {
         : (record.root.dataset.successMessage ?? "Value updated.");
   }
   if (value !== previous) {
-    record.control.dispatchEvent(new Event("change", { bubbles: true }));
+    record.input.dispatchEvent(
+      new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+    );
   }
+  if (!current(record, revision)) return record.root;
   emit(record, "change", value, false, previous);
-  record.edit.focus();
+  if (current(record, revision)) record.edit.focus();
   return record.root;
 }
 
 function cancel(record: EditableRecord): HTMLElement {
+  const revision = ++record.revision;
+  if (!current(record)) return record.root;
   if (record.root.dataset.state !== "editing") return record.root;
-  const draft = record.control.value;
-  record.control.value = record.value;
+  const draft = record.input.value;
+  record.input.value = record.value;
   setMode(record, false);
   if (record.status)
     record.status.textContent = record.root.dataset.cancelMessage ?? "Edit canceled.";
   emit(record, "cancel", draft);
-  record.edit.focus();
+  if (current(record, revision)) record.edit.focus();
   return record.root;
 }
 
 function setValue(record: EditableRecord, value: string): HTMLElement {
+  const revision = ++record.revision;
+  const before = snapshot(record);
+  if (!current(record)) return record.root;
   const previous = record.value;
-  if (!emit(record, "before-change", value, true)) return record.root;
-  record.control.value = value;
+  if (
+    !emit(record, "before-change", value, true) ||
+    !current(record, revision) ||
+    snapshot(record) !== before
+  )
+    return record.root;
+  record.input.value = value;
   record.value = value;
-  record.preview.textContent = previewText(record, value);
+  record.text.textContent = previewText(record, value);
   record.root.dataset.value = value;
   setMode(record, false);
   if (record.status)
     record.status.textContent = record.root.dataset.successMessage ?? "Value updated.";
-  if (value !== previous) record.control.dispatchEvent(new Event("change", { bubbles: true }));
+  if (value !== previous)
+    record.input.dispatchEvent(
+      new (record.window as Window & typeof globalThis).Event("change", { bubbles: true }),
+    );
+  if (!current(record, revision)) return record.root;
   emit(record, "change", value, false, previous);
   return record.root;
 }
 
 function enhanceEditable(root: HTMLElement): EditableRecord {
   const existing = records.get(root);
-  if (existing) {
-    if (root.dataset.state !== "editing") {
-      if (root.dataset.value !== undefined && root.dataset.value !== existing.value) {
-        existing.value = root.dataset.value;
-        existing.control.value = existing.value;
-      } else if (existing.control.value !== existing.value) {
-        existing.value = existing.control.value;
-      }
-    }
-    sync(existing);
-    return existing;
-  }
 
   root.id ||= `jqs-editable-${++editableId}`;
   const display = requirePart<HTMLElement>(root, '[data-part="display"]', 'data-part="display"');
@@ -218,42 +275,62 @@ function enhanceEditable(root: HTMLElement): EditableRecord {
     status.setAttribute("aria-atomic", "true");
     editButton.setAttribute("aria-describedby", status.id);
   }
-  const record: EditableRecord = {
-    cleanup: () => undefined,
-    control,
-    display,
-    edit: editButton,
-    editor,
-    preview,
-    root,
-    status,
-    value: root.dataset.value ?? control.value,
-  };
-  const keydown = (rawEvent: Event): void => {
-    const event = rawEvent as KeyboardEvent;
-    if (event.key === "Escape") {
-      event.preventDefault();
-      cancel(record);
-      return;
+  const reusable = existing && current(existing);
+  if (!reusable) existing?.cleanup();
+  const replacement = records.get(root);
+  if (!reusable && replacement) return replacement;
+  const record: EditableRecord = reusable
+    ? existing
+    : {
+        ...uiResources(root),
+        value: existing?.value ?? root.dataset.value ?? control.value,
+        input: control,
+        view: display,
+        edit: editButton,
+        panel: editor,
+        text: preview,
+        status,
+      };
+  if (!reusable)
+    record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    const previous = record.value;
+    if (root.dataset.state !== "editing") {
+      if (root.dataset.value !== undefined && root.dataset.value !== record.value) {
+        record.value = root.dataset.value;
+        control.value = record.value;
+      } else if (existing && control.value !== record.value) record.value = control.value;
+      else if (!existing) control.value = record.value;
     }
-    const submit =
-      event.key === "Enter" &&
-      (!(control instanceof HTMLTextAreaElement) || event.metaKey || event.ctrlKey);
-    if (submit) {
-      event.preventDefault();
-      commit(record);
-    }
-  };
-  control.addEventListener("keydown", keydown);
-  record.cleanup = () => control.removeEventListener("keydown", keydown);
-  records.set(root, record);
-  control.value = record.value;
-  sync(record);
+    if (record.value !== previous) record.revision += 1;
+    const keydown = (rawEvent: Event): void => {
+      const event = rawEvent as KeyboardEvent;
+      if (event.isComposing || event.defaultPrevented) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        cancel(record);
+        return;
+      }
+      const submit =
+        event.key === "Enter" &&
+        (!isHTMLTag(control, "textarea") || event.metaKey || event.ctrlKey);
+      if (submit) {
+        event.preventDefault();
+        commit(record);
+      }
+    };
+    if (!reusable) listenUI(record, () => current(record), control, "keydown", keydown);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    sync(record);
+  } catch (error) {
+    failUISetup(record, error);
+  }
   return record;
 }
 
 function recordFor(root: HTMLElement): EditableRecord {
-  return records.get(root) ?? enhanceEditable(root);
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceEditable(root);
 }
 
 function resolve(target: EditableTarget, root: ParentNode = document): HTMLElement {
@@ -264,16 +341,14 @@ function resolve(target: EditableTarget, root: ParentNode = document): HTMLEleme
 }
 
 function controlled(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="editable"]')) return target;
+  if (isHTMLElement(target)) return resolve(target, context.root);
   if (typeof target === "string") return resolve(target, context.root);
   const closest = context.element?.closest('[data-jqs="editable"]');
-  return resolve(closest instanceof HTMLElement ? closest : String(target));
+  return resolve(isHTMLElement(closest) ? closest : String(target), context.root);
 }
 
 function enhanceAll(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="editable"]')));
-  for (const element of elements) {
+  for (const element of uiElements(root, '[data-jqs="editable"]')) {
     const editable = editableRoot(element);
     if (editable) enhanceEditable(editable);
   }

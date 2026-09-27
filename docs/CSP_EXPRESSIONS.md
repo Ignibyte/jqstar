@@ -256,6 +256,13 @@ results receive the same finite-scalar and inert-plain-data classification. Bigi
 non-finite, promise, DOM/jQuery, date, and other custom live-object values fail closed. A path
 through `undefined` fails with `CSP_PROPERTY_ABSENT`.
 
+Declarative `data-computed:name` values are readable through `$name`, `state.name`, and
+`signals.name`. The runtime recognizes only the getter owned by that live declaration on its
+original application state and key. Copying a getter to another key, object, or application does not
+grant access. Removing or replacing the declaration, or destroying the application, revokes that
+getter. Computed values and their nested results remain read-only. Arbitrary state/data getters are
+refused before invocation.
+
 Operators do not use JavaScript coercion:
 
 - `!` uses CSP truthiness. `null`, `undefined`, `false`, `0`, and `""` are false. Other allowed
@@ -277,10 +284,12 @@ construction they are inert data unless assigned into state through an approved 
 
 ## L-values and mutation
 
-The only l-values are `$name` and safe paths rooted at `state` or `signals`. The last path segment
-may be created. Earlier segments must exist as state or inert plain data. Computed bracket keys must
-evaluate to a safe string or an in-range nonnegative array index. Fixed bindings, computed values,
-events, arguments, DOM, jQuery values, literals, helpers, actions, and call results are read-only.
+The l-values are `$name`, safe paths rooted at `state` or `signals`, and safe paths below a named
+store in an installed `stores` namespace. The store namespace and each store-name slot remain
+read-only. The last data path segment may be created. Earlier segments must exist as state, store
+data, or inert plain data. Computed bracket keys must evaluate to a safe string or an in-range
+nonnegative array index. Other fixed bindings, computed values, events, arguments, DOM, jQuery
+values, literals, helpers, actions, and call results are read-only.
 
 Assignment supports `=`, `+=`, `-=`, `*=`, `/=`, and `%=`. Postfix `++` and `--` require a finite
 number. Prefix update is not in the grammar. Deletion and object spread are unsupported.
@@ -301,6 +310,7 @@ escaped, concatenated, helper-returned, action-returned, and result-derived valu
 | `$name`               | Named state value                                       | Same signal                          | Never callable                          |
 | `state`, `signals`    | Safe framework state path                               | Safe state path                      | Never callable                          |
 | `computed`            | Safe committed computed path                            | None                                 | Never callable                          |
+| `stores`              | Safe installed store names and accepted data paths      | Below a store name only              | Store methods are not CSP capabilities  |
 | `args`                | `length`, indexes `0` through `127`                     | None                                 | Reviewed array methods                  |
 | `evt`                 | Reviewed event members                                  | None                                 | `preventDefault()`, `stopPropagation()` |
 | `el`, `root`          | Reviewed same-realm DOM members                         | None                                 | Wrap with `$()` for mutation            |
@@ -320,6 +330,13 @@ operation, and treats a thrown trap as `CSP_CAPABILITY_ACCESSOR`.
 Cross-realm values do not gain authority through `instanceof`. DOM and jQuery capability adapters
 bind to the kernel's supplied window, document, and canonical jQuery peer. Foreign DOM/jQuery values
 fail with `CSP_CAPABILITY_VALUE`.
+
+`stores` is a fixed optional binding. Without `jquery-star/stores`, it is `undefined` and cannot
+fall through to a browser global. Installed store values use the same read and safe-key checks as
+state. Expressions can assign data below `stores.name`, but cannot assign, delete, or replace the
+namespace or its name slots. `$store` remains the local signal named `store`. Function-valued store
+methods are intentionally not callable from the finite CSP grammar; use a registered action for that
+authority. See [STORES.md](STORES.md).
 
 ### DOM and event members
 
@@ -406,6 +423,11 @@ Plain-data path traversal tracks object identity for that path. Re-entering an i
 path finishes fails with `CSP_EVALUATE_CYCLE`. The evaluator never recursively clones or sanitizes a
 graph. This keeps cycle handling bounded by the eight-segment path limit.
 
+Dependent declarative computed reads share the caller's 128-step evaluation budget. Calling an
+already active computed getter fails with `CSP_EVALUATE_CYCLE`; exceeding the shared budget fails
+with `CSP_LIMIT_EVALUATION_STEPS`. These failures cannot be concealed by a helper that catches an
+inner evaluation error. A later independent evaluation starts with a fresh budget.
+
 ## Diagnostics and locations
 
 Every error has `name: "StarCSPExpressionError"`, one code below, `phase`,
@@ -449,3 +471,24 @@ registered integration action. The trusted JavaScript engine keeps all existing 
 Run `npm run csp:inventory` after editing README, registry, website, example, or browser-fixture
 expression markup. Review the generated dispositions, then run `npm run test:csp-contract`. A new or
 changed occurrence without a deterministic mapping fails the repository gate.
+
+## Installed browser verification
+
+The package proof exercises the installed CSP entry under the response policy above in Chromium,
+Firefox, and WebKit. It observes computed values through initial state, keyboard interaction, and
+SDK patches, with separate declarative and behavior applications, repeated enhancement, independent
+destruction, and complete kernel cleanup. A listener installed before application setup rejects
+handled runtime errors as well as unexpected page and policy errors.
+
+Every engine also runs reduced-motion, forced-colors, and zoom/reflow profiles. Native links and GET
+forms navigate successfully with JavaScript disabled and preserve the submitted value and response
+policy. The proof's named controls support the separate manual accessibility charters; automated
+keyboard and axe results do not replace real screen-reader testing. See the
+[testing contract](TESTING.md) for the required evidence.
+
+## Serving the published modules
+
+Keep the published `dist` files together when serving modules directly. The CSP entry imports shared
+runtime and grammar chunks; copying only `csp.js` is insufficient. Package-aware bundlers resolve
+these imports automatically. The shared runtime contains no trusted compiler, and CSP's complete
+transitive graph remains subject to the no-dynamic-code checks above.

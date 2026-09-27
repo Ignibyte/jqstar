@@ -1,7 +1,7 @@
 ---
 id: 0025
 title: Commit documents and reconcile the head
-status: planned
+status: declined
 created: 2026-08-30
 updated: 2026-09-01
 ---
@@ -26,6 +26,22 @@ full native navigation before jQStar destroys the current applications.
   preservation identities; native navigation must use it rather than private application maps.
 - A fetch response's CSP headers/nonces do not become the active document policy. Copying a response
   nonce or executing newly fetched script under the old document can create false security.
+
+### Disposition
+
+Ticket [0023](0023-decide-native-navigation.md) selects browser navigation and existing optional
+Turbo/htmx bridges. The
+[measured decision and supported patterns](../decisions/NATIVE_NAVIGATION.md#supported-navigation-patterns)
+record the exact workflow, retained failures, corrections, costs and sensitivity. The documents
+slice has no demonstrated need for native jQStar ownership after the comparison and correction
+ladder.
+
+The chosen host owns document/head/script policy; jQStar's public render bridge owns application
+teardown/preservation/enhancement. Use native boundaries for changed head/script policy.
+
+This rejects activation under the gate below. The conditional design remains history and is not an
+available API. No native implementation or generic utility was added. Shared delivery verification
+in ticket 0023 authorizes this terminal disposition.
 
 ### Activation gate
 
@@ -78,7 +94,7 @@ navigation was declined, mark this and dependents `declined` with no residue.
 
 ### Acceptance criteria
 
-- [ ] [AC-01] Activation imports the exact approved 0023/0024 head/body/permanence/fallback tables,
+- [x] [AC-01] Activation imports the exact approved 0023/0024 head/body/permanence/fallback tables,
       limits, and metrics into a revalidated Plan; otherwise this ticket is `declined` with no code.
 - [ ] [AC-02] Planning claims one live stage and produces an immutable, single-use plan only after
       validating kernel/realm/visit generation, final URL/origin, one html/head/body, node/byte
@@ -211,30 +227,57 @@ page's CSP and trust boundary after insertion.
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File                                                                                                   | Purpose                                                                                           |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| This ticket                                                                                            | Record the rejected activation and preserve the conditional design.                               |
+| `docs/tickets/ROADMAP.md`, `docs/decisions/NATIVE_NAVIGATION.md`, `docs/INTEROPERABILITY.md`           | Document measured alternatives and this slice's supported contract.                               |
+| `test/navigation-decision-contract.test.mjs`, `scripts/quality-package.mjs`, `.dependency-cruiser.cjs` | Verify complete evidence and reject unapproved public exports, dependencies and research imports. |
 
 ### Design changes
 
-None recorded.
+The named decision rejects activation. No runtime implementation was added for this ticket.
 
 ## Test
 
-| Command   | Result      | Evidence                 |
-| --------- | ----------- | ------------------------ |
-| _Not run_ | Conditional | Waiting for ticket 0024. |
+| Command                                                                                                                                        | Result | Evidence                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx vitest run test/navigation-decision-contract.test.mjs test/navigation-decision-server.test.mjs test/navigation-host-corrections.test.mjs` | Pass   | All 14 focused checks pass, including complete installed measurement, declined slices, pinned package boundaries, costs, gaps and sensitivity. |
+| `npm run check` (`quality:delivery`)                                                                                                           | Pass   | Shared run `2026-09-05T23-39-37-490Z-84736` passes all 13 gates, including actual package/import exclusions and 481 browser checks.            |
+
+Shared full delivery verification is owned by ticket 0023.
 
 ## Document
 
 ### Documentation changed
 
-Pending activation.
+The decision, roadmap, interoperability guide, README, project brain and public bridge guide explain
+browser and host ownership, explicit recovery, private-page cache policy and server write
+protection. They make no native navigation package availability claim.
 
 ### Acceptance evidence
 
-Pending activation.
+| Criterion | Result               | Evidence                                                                                                                                                                                 |
+| --------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01     | Pass                 | Ticket 0023 rejects activation under this ticket's gate. Its complete comparison, package/import guards and supported guidance establish the declined branch with no native residue.     |
+| AC-02     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-03     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-04     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-05     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-06     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-07     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-08     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-09     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-10     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-11     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-12     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-13     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
+| AC-14     | Approved-Disposition | Conditional implementation rejected by ticket 0023 under this ticket's activation gate. The navigation decision and interoperability guide document the supported browser/host contract. |
 
 ### Completion audit
 
-Pending activation.
+The named decision rejects activation. Every conditional criterion has an explicit disposition; this
+ticket adds no runtime behavior or partial public surface. The decision and interoperability guide
+document the supported alternative, and the shared delivery verifies exact package/import exclusion.
+Reopening requires a new evidence-backed decision and Plan validation.
+
+Status: Complete

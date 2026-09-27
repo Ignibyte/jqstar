@@ -8,6 +8,9 @@ import tseslint from "typescript-eslint";
 const metrics = JSON.parse(
   readFileSync(new URL("./quality/metrics.json", import.meta.url), "utf8"),
 );
+const lintBoundaries = JSON.parse(
+  readFileSync(new URL("./quality/lint-boundaries.json", import.meta.url), "utf8"),
+);
 const requestedComplexity = Number(
   process.env.JQS_MAX_COGNITIVE_COMPLEXITY ?? metrics.sonarjs.cognitiveComplexityMaximum,
 );
@@ -41,17 +44,20 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/no-base-to-string": "off",
-      "@typescript-eslint/no-confusing-void-expression": "off",
-      "@typescript-eslint/no-dynamic-delete": "off",
-      "@typescript-eslint/no-invalid-void-type": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/no-this-alias": "off",
-      "@typescript-eslint/no-unnecessary-condition": "off",
-      "@typescript-eslint/no-unnecessary-type-arguments": "off",
-      "@typescript-eslint/no-unnecessary-type-assertion": "off",
-      "@typescript-eslint/no-unnecessary-type-conversion": "off",
-      "@typescript-eslint/no-unnecessary-type-parameters": "off",
+      "@typescript-eslint/no-base-to-string": "error",
+      "@typescript-eslint/no-confusing-void-expression": [
+        "error",
+        { ignoreArrowShorthand: true, ignoreVoidReturningFunctions: true },
+      ],
+      "@typescript-eslint/no-dynamic-delete": "error",
+      "@typescript-eslint/no-invalid-void-type": ["error", { allowAsThisParameter: true }],
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "@typescript-eslint/no-this-alias": "error",
+      "@typescript-eslint/no-unnecessary-condition": "error",
+      "@typescript-eslint/no-unnecessary-type-arguments": "error",
+      "@typescript-eslint/no-unnecessary-type-assertion": "error",
+      "@typescript-eslint/no-unnecessary-type-conversion": "error",
+      "@typescript-eslint/no-unnecessary-type-parameters": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -59,12 +65,12 @@ export default tseslint.config(
           varsIgnorePattern: "^_",
         },
       ],
-      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/require-await": "error",
       "@typescript-eslint/restrict-template-expressions": [
         "error",
         { allowBoolean: true, allowNullish: true, allowNumber: true },
       ],
-      "@typescript-eslint/unified-signatures": "off",
+      "@typescript-eslint/unified-signatures": "error",
       "sonarjs/cognitive-complexity": ["error", cognitiveComplexityMaximum],
       "sonarjs/no-duplicated-branches": "error",
       "sonarjs/no-identical-conditions": "error",
@@ -75,10 +81,19 @@ export default tseslint.config(
   {
     files: ["**/*.{js,mjs,cjs}"],
     extends: [tseslint.configs.disableTypeChecked],
+    plugins: { sonarjs },
+    rules: {
+      "sonarjs/cognitive-complexity": ["error", cognitiveComplexityMaximum],
+      "sonarjs/no-duplicated-branches": "error",
+      "sonarjs/no-identical-conditions": "error",
+      "sonarjs/no-inverted-boolean-check": "error",
+      "sonarjs/no-nested-switch": "error",
+    },
   },
   {
     files: ["test/**/*.ts", "e2e/**/*.ts"],
     rules: {
+      "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-misused-spread": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
@@ -88,6 +103,41 @@ export default tseslint.config(
       "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/unbound-method": "off",
     },
+  },
+  ...lintBoundaries.allowances.map(({ path, rule }) => ({
+    files: [path],
+    rules: { [rule]: "off" },
+  })),
+  {
+    files: ["*.config.{js,mjs,cjs}", "eslint.config.js", ".dependency-cruiser.cjs"],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: [
+      "src/directive.ts",
+      "src/idiomorph.d.ts",
+      "src/plugin.ts",
+      "src/stores/types.ts",
+      "src/types.ts",
+    ],
+    rules: { "@typescript-eslint/no-invalid-void-type": "off" },
+  },
+  {
+    files: [
+      "src/persist/adapters.ts",
+      "src/protocol.ts",
+      "src/stores.ts",
+      "test/turbo-bridge.test.ts",
+    ],
+    rules: { "@typescript-eslint/no-confusing-void-expression": "off" },
+  },
+  {
+    files: ["src/types.ts"],
+    rules: { "@typescript-eslint/unified-signatures": "off" },
+  },
+  {
+    files: ["test/fixtures/resource-strategy/common.ts"],
+    rules: { "@typescript-eslint/no-unnecessary-type-assertion": "off" },
   },
   {
     files: ["src/expression.ts"],

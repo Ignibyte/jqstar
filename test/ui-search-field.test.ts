@@ -60,6 +60,104 @@ describe("jQuery Star Search Field", () => {
     expect($.star.ui.searchField.value(root())).toBe("");
   });
 
+  it("uses an explicit native root in the set action and rejects a different component", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Search Field application did not start.");
+    await app.run("ui.search-field.set", { args: [root(), "native target"] });
+    expect(control().value).toBe("native target");
+    const foreign = document.getElementById("set");
+    if (!foreign) throw new Error("Missing Search Field external action.");
+    await expect(
+      app.run("ui.search-field.set", { element: control(), args: [foreign, "redirected"] }),
+    ).rejects.toThrow('Search Field target did not match data-jqs="search-field"');
+    expect(control().value).toBe("native target");
+    await app.run("ui.search-field.set", { element: control(), args: ["implicit"] });
+    expect(control().value).toBe("implicit");
+  });
+
+  it("leaves disabled native search and submit controls inert", () => {
+    const search = vi.fn((event: Event) => event.preventDefault());
+    const form = document.querySelector<HTMLFormElement>("#search-form");
+    if (!form) throw new Error("Missing Search Field form.");
+    form.addEventListener("submit", search);
+    control().disabled = true;
+    $.star.ui.searchField.set(root(), "blocked");
+    $.star.ui.searchField.submit(root());
+    expect(control().value).toBe("jquery");
+    expect(search).not.toHaveBeenCalled();
+  });
+
+  it("restores canceled typing and lets a newer native change win", () => {
+    const lifecycle = vi.fn();
+    root().addEventListener("jquery-star:search-field:change", lifecycle);
+    const cancel = (event: Event): void => {
+      if ((event as CustomEvent<{ value: string }>).detail.value === "blocked")
+        event.preventDefault();
+    };
+    root().addEventListener("jquery-star:search-field:before-change", cancel);
+    control().value = "blocked";
+    control().dispatchEvent(new Event("input", { bubbles: true }));
+    expect(control().value).toBe("jquery");
+    expect(lifecycle).not.toHaveBeenCalled();
+    root().removeEventListener("jquery-star:search-field:before-change", cancel);
+
+    control().addEventListener("change", () => {
+      if (control().value === "older") $.star.ui.searchField.set(root(), "newer");
+    });
+    $.star.ui.searchField.set(root(), "older");
+    expect(control().value).toBe("newer");
+    expect(root().dataset.value).toBe("newer");
+    expect(lifecycle).toHaveBeenCalledOnce();
+    expect((lifecycle.mock.calls[0]?.[0] as CustomEvent<{ value: string }>).detail.value).toBe(
+      "newer",
+    );
+  });
+
+  it("keeps a newer before-change write when native typing reenters", () => {
+    const lifecycle = vi.fn();
+    root().addEventListener("jquery-star:search-field:change", lifecycle);
+    root().addEventListener("jquery-star:search-field:before-change", (event) => {
+      if ((event as CustomEvent<{ value: string }>).detail.value === "draft")
+        $.star.ui.searchField.set(root(), "newer");
+    });
+    control().value = "draft";
+    control().dispatchEvent(new Event("input", { bubbles: true }));
+    expect(control().value).toBe("newer");
+    expect(root().dataset.value).toBe("newer");
+    expect(lifecycle).toHaveBeenCalledOnce();
+    $.star.ui.searchField.focus(root());
+    expect(document.activeElement).toBe(control());
+  });
+
+  it("keeps a reentrant replacement binding during old listener cleanup", () => {
+    const previous = control();
+    const replacement = document.createElement("input");
+    replacement.type = "search";
+    replacement.name = "query";
+    replacement.dataset.part = "control";
+    previous.replaceWith(replacement);
+    const remove = previous.removeEventListener.bind(previous);
+    let reentered = false;
+    vi.spyOn(previous, "removeEventListener").mockImplementation((type, listener, options) => {
+      remove(type, listener, options);
+      if (reentered) return;
+      reentered = true;
+      $.star.ui.searchField.value(root());
+    });
+    $.star.ui.enhance(root());
+    expect(reentered).toBe(true);
+    $.star.ui.searchField.set(root(), "current");
+    expect(replacement.value).toBe("current");
+    previous.value = "stale";
+    previous.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(replacement.value).toBe("current");
+  });
+
+  it("rejects a missing native search control during enhancement", () => {
+    control().remove();
+    expect(() => $.star.ui.enhance(root())).toThrow('needs an input data-part="control"');
+  });
+
   it("honors canceled changes and accepts server-patched values", () => {
     root().addEventListener("jquery-star:search-field:before-change", (event) => {
       if ((event as CustomEvent<{ value: string }>).detail.value === "blocked") {

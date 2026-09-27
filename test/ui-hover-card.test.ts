@@ -39,6 +39,21 @@ describe("jQuery Star Hover Card", () => {
     vi.useRealTimers();
   });
 
+  it("rejects a wrong-kind element action target without opening the nearby card", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Hover Card application did not start.");
+    await expect(
+      app.run("ui.hover-card.open", { element: trigger(), args: [trigger()] }),
+    ).rejects.toThrow('Hover Card target did not match a data-jqs="hover-card" element');
+    expect(content().hidden).toBe(true);
+    await app.run("ui.hover-card.open", { args: [root()] });
+    expect(content().hidden).toBe(false);
+    await app.run("ui.hover-card.close", { args: ["#profile-card"] });
+    expect(content().hidden).toBe(true);
+    await app.run("ui.hover-card.open", { element: trigger() });
+    expect(content().hidden).toBe(false);
+  });
+
   it("connects trigger and content without flattening interactive content into a description", () => {
     expect(content().getAttribute("popover")).toBe("manual");
     expect(content().hidden).toBe(true);

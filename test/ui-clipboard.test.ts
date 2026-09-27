@@ -35,6 +35,39 @@ describe("jQuery Star Clipboard", () => {
     else Reflect.deleteProperty(navigator, "clipboard");
   });
 
+  it.each(["success", "refused", "copy-throws", "selection-throws"])(
+    "removes only the temporary legacy control on %s",
+    async (outcome) => {
+      vi.useFakeTimers();
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+      const original = Object.getOwnPropertyDescriptor(document, "execCommand");
+      Object.defineProperty(document, "execCommand", {
+        configurable: true,
+        value: () => {
+          if (outcome === "copy-throws") throw new Error("copy failed");
+          return outcome !== "refused";
+        },
+      });
+      const select = vi.spyOn(HTMLTextAreaElement.prototype, "select");
+      if (outcome === "selection-throws")
+        select.mockImplementation(() => {
+          throw new Error("selection failed");
+        });
+      const unrelated = document.createElement("textarea");
+      document.body.append(unrelated);
+      try {
+        const copy = $.star.ui.clipboard.copy(root(), "synthetic text");
+        if (outcome === "success") await expect(copy).resolves.toBe("synthetic text");
+        else await expect(copy).rejects.toThrow();
+        expect([...document.querySelectorAll("textarea")]).toEqual([unrelated]);
+      } finally {
+        select.mockRestore();
+        if (original) Object.defineProperty(document, "execCommand", original);
+        else Reflect.deleteProperty(document, "execCommand");
+      }
+    },
+  );
+
   it("copies a live native control value and announces lifecycle state", async () => {
     vi.useFakeTimers();
     const writeText = vi.fn().mockResolvedValue(undefined);

@@ -1,0 +1,1215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jqstar.com/schema/inspection.schema.json",
+  "title": "jQStar bounded inspection documents",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/snapshot"
+    },
+    {
+      "$ref": "#/$defs/trace"
+    },
+    {
+      "$ref": "#/$defs/service"
+    }
+  ],
+  "$defs": {
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace", "schema", "boundary", "counts"],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "maxLength": 96,
+          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+        },
+        "schema": {
+          "const": "jqstar-service-counts/1"
+        },
+        "boundary": {
+          "enum": ["capabilities", "service-resources", "attachments", "bridge"]
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "installed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "capabilities": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "records": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subscriptions": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "effects": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "tasks": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "attachments": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "pending": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "disabled": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "disposed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "renders": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "observers": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "waiters": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "history": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "requests": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "listeners": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "purpose", "maxLength", "retain", "export", "expiresInMs"],
+      "properties": {
+        "field": {
+          "enum": ["actionCapability", "storeName"]
+        },
+        "purpose": {
+          "enum": ["debugging", "support"]
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 96
+        },
+        "retain": {
+          "type": "boolean"
+        },
+        "export": {
+          "type": "boolean"
+        },
+        "expiresInMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        }
+      }
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observed",
+        "filtered",
+        "sampled",
+        "retained",
+        "evicted",
+        "oversized",
+        "purged",
+        "failures"
+      ],
+      "properties": {
+        "observed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "filtered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sampled": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "retained": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "evicted": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "oversized": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "purged": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "failures": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "configuration",
+            "capture",
+            "serializer",
+            "reentrant",
+            "clock",
+            "export",
+            "cleanup"
+          ],
+          "properties": {
+            "configuration": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "capture": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "serializer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "reentrant": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "clock": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "export": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "cleanup": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      }
+    },
+    "traceState": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "maxEntries",
+            "maxBytes",
+            "entries",
+            "bytes",
+            "sequence",
+            "policyId",
+            "kinds",
+            "outcomes",
+            "everyNth",
+            "policies",
+            "counters"
+          ],
+          "properties": {
+            "enabled": {
+              "const": true
+            },
+            "maxEntries": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4096
+            },
+            "maxBytes": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 1048576
+            },
+            "entries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4096
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 1048576
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "policyId": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kinds": {
+              "type": "array",
+              "maxItems": 6,
+              "items": {
+                "enum": ["action", "request", "store", "turbo", "htmx", "policy"]
+              },
+              "uniqueItems": true
+            },
+            "outcomes": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "enum": ["pending", "completed", "cancelled", "failed"]
+              },
+              "uniqueItems": true
+            },
+            "everyNth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "policies": {
+              "type": "array",
+              "maxItems": 2,
+              "items": {
+                "$ref": "#/$defs/policy"
+              }
+            },
+            "counters": {
+              "$ref": "#/$defs/counters"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "maxEntries",
+            "maxBytes",
+            "entries",
+            "bytes",
+            "sequence",
+            "policyId",
+            "kinds",
+            "outcomes",
+            "everyNth",
+            "policies",
+            "counters"
+          ],
+          "properties": {
+            "enabled": {
+              "const": false
+            },
+            "maxEntries": {
+              "const": 0
+            },
+            "maxBytes": {
+              "const": 0
+            },
+            "entries": {
+              "const": 0
+            },
+            "bytes": {
+              "const": 0
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "policyId": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kinds": {
+              "type": "array",
+              "maxItems": 0,
+              "items": {
+                "enum": ["action", "request", "store", "turbo", "htmx", "policy"]
+              }
+            },
+            "outcomes": {
+              "type": "array",
+              "maxItems": 0,
+              "items": {
+                "enum": ["pending", "completed", "cancelled", "failed"]
+              }
+            },
+            "everyNth": {
+              "const": 1
+            },
+            "policies": {
+              "type": "array",
+              "maxItems": 0,
+              "items": {
+                "$ref": "#/$defs/policy"
+              }
+            },
+            "counters": {
+              "$ref": "#/$defs/counters"
+            }
+          }
+        }
+      ]
+    },
+    "record": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sequence", "kind", "phase", "outcome", "elapsedMs", "id", "ownerId"],
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "const": "action"
+            },
+            "phase": {
+              "enum": ["started", "completed", "cancelled", "failed"]
+            },
+            "outcome": {
+              "enum": ["pending", "completed", "cancelled", "failed"]
+            },
+            "elapsedMs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "id": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(store-)?operation-[1-9][0-9]*$"
+            },
+            "ownerId": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(application-[1-9][0-9]*|core\\.stores)$"
+            },
+            "actionCapability": {
+              "type": "string",
+              "maxLength": 96,
+              "pattern": "^[a-z][a-zA-Z0-9]*$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sequence",
+            "kind",
+            "phase",
+            "outcome",
+            "elapsedMs",
+            "id",
+            "ownerId",
+            "method",
+            "attempt"
+          ],
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "const": "request"
+            },
+            "phase": {
+              "enum": ["started", "progress", "retrying", "completed", "cancelled", "failed"]
+            },
+            "outcome": {
+              "enum": ["pending", "completed", "cancelled", "failed"]
+            },
+            "elapsedMs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "id": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(store-)?operation-[1-9][0-9]*$"
+            },
+            "ownerId": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(application-[1-9][0-9]*|core\\.stores)$"
+            },
+            "method": {
+              "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 599
+            },
+            "parentId": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^operation-[1-9][0-9]*$"
+            },
+            "loaded": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sequence",
+            "kind",
+            "phase",
+            "outcome",
+            "elapsedMs",
+            "id",
+            "ownerId",
+            "category"
+          ],
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "const": "store"
+            },
+            "phase": {
+              "enum": ["completed", "cancelled", "failed"]
+            },
+            "outcome": {
+              "enum": ["pending", "completed", "cancelled", "failed"]
+            },
+            "elapsedMs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "id": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(store-)?operation-[1-9][0-9]*$"
+            },
+            "ownerId": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(application-[1-9][0-9]*|core\\.stores)$"
+            },
+            "category": {
+              "enum": ["cleanup", "definition", "effect", "setup", "subscription", "task", "change"]
+            },
+            "storeName": {
+              "type": "string",
+              "maxLength": 96,
+              "pattern": "^[a-z][a-zA-Z0-9]*$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sequence",
+            "kind",
+            "phase",
+            "outcome",
+            "elapsedMs",
+            "id",
+            "category",
+            "removals"
+          ],
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "enum": ["turbo", "htmx"]
+            },
+            "phase": {
+              "enum": [
+                "prepared",
+                "removing",
+                "externally-mutated",
+                "enhancing",
+                "committed",
+                "canceled",
+                "failed"
+              ]
+            },
+            "outcome": {
+              "enum": ["pending", "completed", "cancelled", "failed"]
+            },
+            "elapsedMs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "id": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(turbo|htmx)-[1-9][0-9]*$"
+            },
+            "category": {
+              "enum": ["document", "frame", "region", "out-of-band", "history"]
+            },
+            "removals": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "renderId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sequence", "kind", "phase", "outcome", "elapsedMs", "field", "policyId"],
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "const": "policy"
+            },
+            "phase": {
+              "enum": ["allowed", "denied", "expired"]
+            },
+            "outcome": {
+              "const": "completed"
+            },
+            "elapsedMs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "field": {
+              "enum": ["actionCapability", "storeName"]
+            },
+            "policyId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      ]
+    },
+    "disposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempted", "released", "failed", "remaining"],
+      "properties": {
+        "attempted": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "application",
+            "effect",
+            "hook",
+            "listener",
+            "observer",
+            "plugin",
+            "request",
+            "service",
+            "subscription",
+            "task"
+          ],
+          "properties": {
+            "application": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "effect": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hook": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "listener": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "observer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "plugin": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "request": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "service": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subscription": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "task": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "released": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "application",
+            "effect",
+            "hook",
+            "listener",
+            "observer",
+            "plugin",
+            "request",
+            "service",
+            "subscription",
+            "task"
+          ],
+          "properties": {
+            "application": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "effect": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hook": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "listener": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "observer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "plugin": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "request": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "service": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subscription": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "task": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "failed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "application",
+            "effect",
+            "hook",
+            "listener",
+            "observer",
+            "plugin",
+            "request",
+            "service",
+            "subscription",
+            "task"
+          ],
+          "properties": {
+            "application": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "effect": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hook": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "listener": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "observer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "plugin": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "request": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "service": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subscription": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "task": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "remaining": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "application",
+            "effect",
+            "hook",
+            "listener",
+            "observer",
+            "plugin",
+            "request",
+            "service",
+            "subscription",
+            "task"
+          ],
+          "properties": {
+            "application": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "effect": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hook": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "listener": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "observer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "plugin": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "request": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "service": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subscription": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "task": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      }
+    },
+    "kernel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applications",
+        "applicationCount",
+        "plugins",
+        "pluginCount",
+        "serviceCount",
+        "ownership",
+        "pendingEnhancements",
+        "pendingTasks",
+        "protocolProfiles",
+        "protocolBodies",
+        "middleware",
+        "expression"
+      ],
+      "properties": {
+        "applications": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "mode"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^application-[1-9][0-9]*$"
+              },
+              "mode": {
+                "enum": ["attributes", "behavior"]
+              }
+            }
+          }
+        },
+        "applicationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "plugins": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "version"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 96,
+                "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+              },
+              "version": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+              }
+            }
+          }
+        },
+        "pluginCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "serviceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ownership": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["effect", "listener", "observer", "service", "subscription", "task"],
+          "properties": {
+            "effect": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "listener": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "observer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "service": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subscription": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "task": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "pendingEnhancements": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pendingTasks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "protocolProfiles": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "protocolBodies": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "middleware": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expression": {
+          "const": "installed"
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "kernelId", "trace", "records"],
+      "properties": {
+        "schema": {
+          "const": "jqstar-inspection-trace/1"
+        },
+        "kernelId": {
+          "type": "string",
+          "maxLength": 39,
+          "pattern": "^kernel-[0-9a-f]{32}$"
+        },
+        "trace": {
+          "$ref": "#/$defs/traceState"
+        },
+        "records": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/record"
+          }
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "version",
+        "kernelId",
+        "sequence",
+        "lifecycle",
+        "kernel",
+        "services",
+        "omitted",
+        "trace",
+        "disposal"
+      ],
+      "properties": {
+        "schema": {
+          "const": "jqstar-inspection-snapshot/1"
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 32,
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "kernelId": {
+          "type": "string",
+          "maxLength": 39,
+          "pattern": "^kernel-[0-9a-f]{32}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "lifecycle": {
+          "enum": ["active", "disposed", "released"]
+        },
+        "kernel": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/kernel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "services": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/service"
+          }
+        },
+        "omitted": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["applications", "plugins", "services"],
+          "properties": {
+            "applications": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "plugins": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "services": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "trace": {
+          "$ref": "#/$defs/traceState"
+        },
+        "disposal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/disposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

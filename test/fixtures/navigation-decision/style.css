@@ -1,0 +1,59 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+body {
+  margin: 1rem auto;
+  max-width: 64rem;
+  padding: 0 1rem;
+  overflow-wrap: anywhere;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: Canvas;
+}
+#destination {
+  scroll-margin-top: 8rem;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+form {
+  display: grid;
+  gap: 0.5rem;
+  margin-block: 1rem;
+  max-width: 32rem;
+}
+input,
+button {
+  box-sizing: border-box;
+  font: inherit;
+  max-width: 100%;
+  min-width: 0;
+}
+:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+.long-content {
+  height: 1200px;
+}
+.htmx-request #progress,
+html[aria-busy="true"] #progress {
+  display: block;
+}
+html:has(#recovery:not([hidden])) .turbo-progress-bar {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+    animation: none;
+    transition: none;
+  }
+}

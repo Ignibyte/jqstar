@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Migrate to 1.0 · jQStar</title>
+    <meta
+      name="description"
+      content="Upgrade a jQStar 0.1 application to the stable 1.0 package and optional entries."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Migrate to 1.0 · jQStar" />
+    <meta property="og:description" content="The tested jQStar 0.1-to-1.0 migration path." />
+    <meta property="og:type" content="article" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body class="docs-page" data-signals="{ siteSearch: '' }">
+    <article class="docs-article">
+      <h1>Migrate to 1.0</h1>
+      <p class="docs-lede">
+        The 1.0 root entry preserves the 0.1 compatibility baseline. The main upgrade is choosing
+        whether to keep that complete root or adopt stable, explicit package entries.
+      </p>
+
+      <h2>Keep the compatibility root</h2>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>main.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>import $ from "jquery";
+import "jquery-star";
+
+$("#app").star();</code></pre>
+      </div>
+      <p>
+        This still auto-installs core, Datastar, and UI behavior. It still uses trusted JavaScript
+        expressions and the <code>core.datastar</code> request profile by default. Existing
+        <code>data-signals</code>, directives, actions, request events, and UI methods retain their
+        recorded meanings.
+      </p>
+
+      <h2>Choose explicit entries when needed</h2>
+      <div class="code-block">
+        <div class="code-heading">
+          <span>main.ts</span><button type="button" data-on:click="@site.copyCode">Copy</button>
+        </div>
+        <pre><code>import $ from "jquery";
+import { installStarCore } from "jquery-star/core";
+import { datastarPlugin } from "jquery-star/datastar";
+import { uiPlugin } from "jquery-star/ui";
+
+const installed = installStarCore($);
+installed.star.use([datastarPlugin, uiPlugin]);
+installed.star.boot(document);</code></pre>
+      </div>
+      <p>
+        Modular imports are inert until explicitly installed. Import
+        <code>jquery-star/testing</code> only in tests. Use
+        <code>jquery-star/datastar/testing</code> for deterministic Datastar fixtures.
+      </p>
+
+      <h2>Review lifecycle and extension changes</h2>
+      <ul>
+        <li>
+          Register plugins before the first application starts; installation is transactional.
+        </li>
+        <li>Use <code>$.star.whenEnhanced()</code> before inspecting a server-patched DOM.</li>
+        <li>
+          Use <code>$.star.dispose()</code> for terminal document shutdown and inspect its report.
+        </li>
+        <li>
+          Move reusable behavior into namespaced public plugins, directives, helpers, or actions.
+        </li>
+        <li>
+          Use the testing harness with a caller-owned same-realm document and jQuery instance.
+        </li>
+      </ul>
+
+      <h2>CSP, Turbo, and htmx are opt-in</h2>
+      <p>
+        The root does not silently switch expression languages. Install
+        <code>jquery-star/csp</code> before other plugins to use the finite grammar; move ambient
+        globals, arbitrary calls, and unapproved jQuery methods into registered application actions
+        or helpers. Do not import the compatibility root into the same jQuery owner.
+      </p>
+      <p>
+        Turbo and htmx continue to own requests, history, focus, and DOM mutation. Their explicit
+        bridges add jQStar cleanup, preservation, and re-enhancement around supported host events.
+        See <a href="%BASE_URL%docs/interoperability/">the bridge contract</a>.
+      </p>
+
+      <h2>jQuery UI and Mobile applications</h2>
+      <p>
+        jQStar does not bundle either archived runtime and does not claim to be an official
+        successor. Isolate and destroy application-owned jQuery UI regions while migrating them to
+        native components. Migrate jQuery Mobile route by route to server documents, semantic HTML,
+        responsive CSS, native forms, jQuery 4, and bounded jQStar enhancement.
+      </p>
+      <p>
+        Continue with the detailed
+        <a href="%BASE_URL%docs/ecosystem/jquery-ui/">jQuery UI guide</a> or
+        <a href="%BASE_URL%docs/ecosystem/jquery-mobile/">jQuery Mobile guide</a>.
+      </p>
+
+      <h2>Names that do not change</h2>
+      <p>
+        Use <strong>jQStar</strong> for the product, <code>jquery-star</code> for npm imports,
+        <code>jqstar</code> for the CLI and repository, and <code>data-jqs</code> for component
+        roots. The plugin API remains <code>0.1.0</code>; the CSP grammar remains
+        <code>jqstar-csp-expression/1</code>.
+      </p>
+    </article>
+    <script type="module" src="/site.ts"></script>
+  </body>
+</html>

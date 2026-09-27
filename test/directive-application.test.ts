@@ -1,11 +1,145 @@
 import $ from "jquery";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { installStarCore } from "../src/core";
 import { DeclarativeApplication } from "../src/declarative";
 import { patchElements } from "../src/patch";
-import { nextUpdate } from "../src/reactivity";
-import type { StarDirectiveContext } from "../src/directive";
+import { nextUpdate, stop, type ReactiveEffect } from "../src/reactivity";
+import type { StarDirective, StarDirectiveContext } from "../src/directive";
 import type { StarPlugin, StarPluginRegistrar } from "../src/plugin";
 import { TrustedKernel as Kernel } from "./helpers/trusted-kernel";
+
+describe("built-in binding registration after initial teardown", () => {
+  let api: ReturnType<typeof installStarCore>["star"];
+  let retained: StarDirectiveContext | undefined;
+  let evaluations: number;
+  let removeTestListener: (() => void) | undefined;
+
+  function current(): StarDirectiveContext {
+    if (!retained) throw new Error("The capture directive did not mount.");
+    return retained;
+  }
+
+  function effects(): Set<ReactiveEffect> {
+    return (current().application as unknown as { ownedEffects: Set<ReactiveEffect> }).ownedEffects;
+  }
+
+  function bootBinding(attribute: string, destroyInitially: boolean): HTMLInputElement {
+    api.use({
+      name: "proof.binding",
+      version: "1.0.0",
+      apiVersion: "^0.1.0",
+      install(registrar) {
+        registrar.directive({
+          id: "proof.binding.capture",
+          match: { name: "data-proof.binding:capture" },
+          mount(context) {
+            retained = context;
+          },
+        });
+        registrar.helper("proof.binding.value", (value: unknown) => {
+          evaluations++;
+          if (destroyInitially) current().application.destroy();
+          return value;
+        });
+        return {};
+      },
+    });
+    document.body.innerHTML = `
+      <section id="binding" data-signals="{ count: 0 }" data-proof.binding:capture="">
+        <input><output data-text="$count"></output>
+      </section>`;
+    const input = document.querySelector("input");
+    if (!input) throw new Error("The binding fixture has no input.");
+    input.setAttribute(
+      attribute,
+      attribute === "data-bind:count" ? "" : "proof.binding.value($count)",
+    );
+    if (attribute === "data-bind:count") {
+      const onWrite = (): void => {
+        evaluations++;
+        if (destroyInitially) current().application.destroy();
+      };
+      input.addEventListener("jquery-star:model-write", onWrite);
+      removeTestListener = () => input.removeEventListener("jquery-star:model-write", onWrite);
+    }
+    if (destroyInitially)
+      expect(() => api.boot("#binding")).toThrow("destroyed the application during setup");
+    else api.boot("#binding");
+    return input;
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    retained = undefined;
+    evaluations = 0;
+    removeTestListener = undefined;
+    api = installStarCore($, { document }).star;
+  });
+
+  afterEach(() => {
+    removeTestListener?.();
+    if (retained) {
+      retained.application.destroy();
+      // Original-source controls can retain effects and input handlers after destruction.
+      for (const runner of effects()) stop(runner);
+      effects().clear();
+      $("#binding input").off();
+    }
+    api.dispose();
+    document.body.innerHTML = "";
+  });
+
+  it.each(["data-effect", "data-show", "data-text"])(
+    "stops %s when its first evaluation destroys its application",
+    async (attribute) => {
+      bootBinding(attribute, true);
+      expect(current().application.destroyed).toBe(true);
+      expect(evaluations).toBe(1);
+      current().application.state.count = 7;
+      await api.nextUpdate();
+      expect(evaluations).toBe(1);
+      expect(effects().size).toBe(0);
+      expect(document.querySelector("output")?.textContent).toBe("");
+    },
+  );
+
+  it.each(["data-effect", "data-show", "data-text"])(
+    "retains ordinary %s reactivity until destruction",
+    async (attribute) => {
+      bootBinding(attribute, false);
+      expect(evaluations).toBe(1);
+      current().application.state.count = 7;
+      await api.nextUpdate();
+      expect(evaluations).toBe(2);
+      expect(document.querySelector("output")?.textContent).toBe("7");
+      current().application.destroy();
+      current().application.state.count = 9;
+      await api.nextUpdate();
+      expect(evaluations).toBe(2);
+      expect(effects().size).toBe(0);
+    },
+  );
+
+  it.each([true, false])(
+    "owns model effects and input handlers after initial destruction=%s",
+    async (destroyInitially) => {
+      const input = bootBinding("data-bind:count", destroyInitially);
+      expect(input.value).toBe("0");
+      current().application.state.count = 7;
+      await api.nextUpdate();
+      expect(input.value).toBe(destroyInitially ? "0" : "7");
+      input.value = "42";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(current().application.state.count).toBe(destroyInitially ? 7 : "42");
+      await api.nextUpdate();
+      current().application.destroy();
+      input.value = "99";
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(current().application.state.count).toBe(destroyInitially ? 7 : "42");
+      expect(effects().size).toBe(0);
+    },
+  );
+});
 
 const mounts: string[] = [];
 const updates: string[] = [];
@@ -454,4 +588,304 @@ describe("registered directive applications", () => {
     ]);
     frame.remove();
   });
+});
+
+describe("directive registration rollback", () => {
+  let api: ReturnType<typeof installStarCore>["star"];
+  let retained: StarDirectiveContext | undefined;
+  let failures: unknown[];
+
+  function boot(
+    mount: StarDirective["mount"],
+    update?: StarDirective["update"],
+  ): StarDirectiveContext {
+    api.use({
+      name: "proof.rollback",
+      version: "1.0.0",
+      apiVersion: "^0.1.0",
+      install(registrar) {
+        registrar.directive({
+          id: "proof.rollback.run",
+          match: { name: "data-proof.rollback:run" },
+          mount(context) {
+            retained = context;
+            return mount(context);
+          },
+          ...(update ? { update } : {}),
+        });
+        return {};
+      },
+    });
+    document.body.innerHTML = `
+      <section id="rollback" data-signals="{ count: 0 }" data-proof.rollback:run="first">
+        <output data-text="$count"></output>
+      </section>`;
+    $("#rollback").on("jquery-star:error", (_event, detail: unknown) => {
+      failures.push(
+        detail !== null && typeof detail === "object" && "error" in detail ? detail.error : detail,
+      );
+    });
+    try {
+      api.boot("#rollback");
+    } catch (error) {
+      failures.push(error);
+    }
+    if (!retained) throw new Error("The registered directive did not mount.");
+    return retained;
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    failures = [];
+    retained = undefined;
+    api = installStarCore($, { document }).star;
+  });
+
+  afterEach(() => {
+    const application = retained?.application;
+    if (application) {
+      application.destroy();
+      // Original-source controls can expose a runner that destruction already missed.
+      const effects = (application as unknown as { ownedEffects: Set<ReactiveEffect> })
+        .ownedEffects;
+      for (const runner of effects) stop(runner);
+      effects.clear();
+    }
+    api.dispose();
+    document.body.innerHTML = "";
+  });
+
+  it.each(["throw", "invalid"] as const)("aborts a task whose factory is %s", (failure) => {
+    let signal: AbortSignal | undefined;
+    const original = new Error("Factory failed.");
+    const cleanup = vi.fn();
+    const context = boot((directive) => {
+      directive.cleanup(cleanup);
+      directive.task((current) => {
+        signal = current;
+        if (failure === "throw") throw original;
+        return undefined as unknown as PromiseLike<unknown>;
+      });
+    });
+    expect(signal?.aborted).toBe(true);
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(failures).toHaveLength(1);
+    if (failure === "throw") expect(failures[0]).toBe(original);
+    else
+      expect(failures[0]).toMatchObject({
+        message: expect.stringContaining("must return a thenable"),
+      });
+    context.application.destroy();
+    expect(cleanup).toHaveBeenCalledOnce();
+  });
+
+  it("preserves a factory failure while attempting every registered rollback", () => {
+    let signal: AbortSignal | undefined;
+    const factoryFailure = new Error("Factory failed.");
+    const cleanupFailure = new Error("Cleanup failed.");
+    const completed = vi.fn();
+    boot((context) => {
+      context.cleanup(completed);
+      context.cleanup(() => {
+        throw cleanupFailure;
+      });
+      context.task((current) => {
+        signal = current;
+        throw factoryFailure;
+      });
+    });
+    expect(signal?.aborted).toBe(true);
+    expect(completed).toHaveBeenCalledOnce();
+    expect(failures).toEqual([
+      expect.objectContaining({ name: "AggregateError", errors: [factoryFailure, cleanupFailure] }),
+    ]);
+  });
+
+  it.each(["task", "effect"] as const)(
+    "rolls back %s registration when its initial callback destroys the application",
+    async (kind) => {
+      let signal: AbortSignal | undefined;
+      let rejectTask: ((error: Error) => void) | undefined;
+      const pending = new Promise<void>((_resolve, reject) => {
+        rejectTask = reject;
+      });
+      const cleanup = vi.fn();
+      const effect = vi.fn();
+      try {
+        const context = boot((directive) => {
+          directive.cleanup(cleanup);
+          if (kind === "task") {
+            directive.task((current) => {
+              signal = current;
+              directive.application.destroy();
+              return pending;
+            });
+          } else {
+            directive.effect(() => {
+              void directive.application.state.count;
+              effect();
+              directive.application.destroy();
+            });
+          }
+        });
+        expect(context.application.destroyed).toBe(true);
+        expect(cleanup).toHaveBeenCalledOnce();
+        if (kind === "task") expect(signal?.aborted).toBe(true);
+        const reportsBeforeRejection = failures.length;
+        if (kind === "task") rejectTask?.(new Error("Released task failed later."));
+        context.application.state.count = 1;
+        await nextUpdate();
+        expect(effect).toHaveBeenCalledTimes(kind === "effect" ? 1 : 0);
+        expect($("output").text()).toBe("");
+        expect(failures).toHaveLength(reportsBeforeRejection);
+        const later = vi.fn();
+        expect(() => context.effect(later)).toThrow("already been released");
+        expect(() =>
+          context.task(async () => {
+            later();
+          }),
+        ).toThrow("already been released");
+        expect(later).not.toHaveBeenCalled();
+        await api.whenEnhanced();
+      } finally {
+        void pending.catch(() => undefined);
+        rejectTask?.(new Error("Fixture cleanup."));
+      }
+    },
+  );
+
+  it.each(["mount", "update"] as const)(
+    "runs registered and returned cleanup when %s destroys its application",
+    async (phase) => {
+      const registered = vi.fn();
+      const returned = vi.fn();
+      const destroy = (context: StarDirectiveContext): (() => void) => {
+        context.cleanup(registered);
+        context.application.destroy();
+        return returned;
+      };
+      const context = boot(
+        phase === "mount" ? destroy : () => undefined,
+        phase === "update" ? destroy : undefined,
+      );
+      if (phase === "update") {
+        $("#rollback").attr("data-proof.rollback:run", "second");
+        await api.whenEnhanced();
+      }
+      expect(context.application.destroyed).toBe(true);
+      expect(registered).toHaveBeenCalledOnce();
+      expect(returned).toHaveBeenCalledOnce();
+      context.application.state.count = 1;
+      await nextUpdate();
+      expect($("output").text()).toBe(phase === "mount" ? "" : "0");
+      context.application.destroy();
+      expect(registered).toHaveBeenCalledOnce();
+      expect(returned).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("aborts and observes a task rejected after kernel registration fails", async () => {
+    let signal: AbortSignal | undefined;
+    let rejectTask: ((error: Error) => void) | undefined;
+    const pending = new Promise<void>((_resolve, reject) => {
+      rejectTask = reject;
+    });
+    try {
+      boot((context) => {
+        context.task((current) => {
+          signal = current;
+          api.dispose();
+          return pending;
+        });
+      });
+      expect(signal?.aborted).toBe(true);
+      expect(
+        failures.some((error) => error instanceof Error && error.message.includes("disposed")),
+      ).toBe(true);
+      const reports = failures.length;
+      rejectTask?.(new Error("Task rejected after failed registration."));
+      await nextUpdate();
+      expect(failures).toHaveLength(reports);
+    } finally {
+      void pending.catch(() => undefined);
+      rejectTask?.(new Error("Fixture cleanup."));
+    }
+  });
+
+  it.each([false, true])(
+    "detaches task registration that releases its owner before returning (detach throws: %s)",
+    async (detachThrows) => {
+      const frame = document.createElement("iframe");
+      document.body.append(frame);
+      const owner = frame.contentDocument;
+      if (!owner) throw new Error("The fixture frame has no document.");
+      const isolated = new Kernel($, owner);
+      const root = owner.createElement("section");
+      root.setAttribute("data-proof.rollback:run", "");
+      owner.body.append(root);
+      let context: StarDirectiveContext | undefined;
+      let signal: AbortSignal | undefined;
+      let finish: (() => void) | undefined;
+      const pending = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      const detachFailure = new Error("Task detach failed.");
+      const detach = vi.fn();
+      const reports: unknown[] = [];
+      $(root).on("jquery-star:error", (_event, detail: { error: unknown }) =>
+        reports.push(detail.error),
+      );
+      isolated.plugins.use({
+        name: "proof.rollback",
+        version: "1.0.0",
+        apiVersion: "^0.1.0",
+        install(registrar) {
+          registrar.directive({
+            id: "proof.rollback.run",
+            match: { name: "data-proof.rollback:run" },
+            mount(current) {
+              context = current;
+              current.task((currentSignal) => {
+                signal = currentSignal;
+                return pending;
+              });
+            },
+          });
+          return {};
+        },
+      });
+      const capabilities = isolated.applicationCapabilities;
+      try {
+        const application = new DeclarativeApplication($, root, {
+          ...capabilities,
+          task(taskOwner, work, report) {
+            const release = capabilities.task(taskOwner, work, report);
+            if (!context) throw new Error("Task registration did not have a directive owner.");
+            context.application.destroy();
+            return () => {
+              detach();
+              release();
+              if (detachThrows) throw detachFailure;
+            };
+          },
+        });
+        expect(application.destroyed).toBe(true);
+        expect(signal?.aborted).toBe(true);
+        expect(detach).toHaveBeenCalledOnce();
+        expect(isolated.resourceSummary().filter(({ kind }) => kind === "task")).toEqual([]);
+        await isolated.whenEnhanced();
+        if (detachThrows) expect(reports).toEqual([detachFailure]);
+        else
+          expect(reports).toEqual([
+            expect.objectContaining({ message: expect.stringContaining("already been released") }),
+          ]);
+        application.destroy();
+        expect(detach).toHaveBeenCalledOnce();
+      } finally {
+        finish?.();
+        isolated.dispose();
+        frame.remove();
+      }
+    },
+  );
 });

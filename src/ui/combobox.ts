@@ -1,21 +1,43 @@
+import { isHTMLElement, isHTMLTag, isNode } from "../dom";
 import type { ActionRegistrar } from "../registry";
 import type { DocumentHost } from "../kernel";
 import type { ComboboxTarget, StarComboboxStatic, StarContext } from "../types";
 import {
-  documentRecordCleanup,
+  copyGeneratedAttributes,
   documentRecords,
   hideFloating,
+  identifyElements,
+  identifyControlLabel,
+  identifyLabel,
   listenToViewportChanges,
   positionFloating,
   prepareFloating,
   showFloating,
   usesNativePopover,
 } from "./floating";
+import {
+  failUISetup,
+  listenUI,
+  listenUIReset,
+  ownUIRecord,
+  releaseUIResources,
+  uiActive,
+  uiCurrent,
+  uiElements,
+  uiResources,
+  type UIResources,
+} from "./lifecycle";
 
-interface ComboboxRecord {
+interface ComboboxRecord extends UIResources {
   activeValue: string | undefined;
-  cleanups: Array<() => void>;
-  committing: boolean;
+  form: HTMLFormElement | null;
+  valueForm: HTMLFormElement | null;
+  inline: boolean;
+  composing: boolean;
+  nativeEvent?: Event;
+  options: HTMLElement[];
+  optionsSignature: string;
+  query: string;
   content: HTMLElement;
   control: HTMLInputElement;
   defaultQuery: string;
@@ -44,10 +66,22 @@ interface ComboboxCollection {
 
 const records = new WeakMap<HTMLElement, ComboboxRecord>();
 const activeRecords = new Set<ComboboxRecord>();
+const reflected = new WeakMap<HTMLElement, string>();
+const defaults = new WeakMap<HTMLInputElement, string>();
+interface RetainedCombobox {
+  open: boolean;
+  activeValue: string | undefined;
+  composing: boolean;
+  control: HTMLInputElement;
+  value: string;
+  selectedLabel: string | undefined;
+}
+const retained = new WeakMap<HTMLElement, RetainedCombobox>();
+const documentRevisions = new WeakMap<Document, number>();
 let comboboxId = 0;
 
 function comboboxRoot(value: Element | null): HTMLElement | undefined {
-  return value instanceof HTMLElement && value.matches('[data-jqs="combobox"]') ? value : undefined;
+  return isHTMLElement(value) && value.matches('[data-jqs="combobox"]') ? value : undefined;
 }
 
 function directPart(
@@ -56,13 +90,13 @@ function directPart(
 ): HTMLElement | undefined {
   return Array.from(root.children).find(
     (child): child is HTMLElement =>
-      child instanceof HTMLElement && child.getAttribute("data-part") === part,
+      isHTMLElement(child) && child.getAttribute("data-part") === part,
   );
 }
 
 function inputControl(root: HTMLElement): HTMLInputElement {
   const control = directPart(root, "control");
-  if (!(control instanceof HTMLInputElement) || control.type === "hidden") {
+  if (!isHTMLTag(control, "input") || control.type === "hidden") {
     throw new Error(`Combobox #${root.id} needs a direct text <input data-part="control">.`);
   }
   return control;
@@ -71,12 +105,12 @@ function inputControl(root: HTMLElement): HTMLInputElement {
 function valueControl(root: HTMLElement, control: HTMLInputElement): HTMLInputElement {
   const existing = directPart(root, "value");
   if (existing) {
-    if (!(existing instanceof HTMLInputElement) || existing.type !== "hidden") {
+    if (!isHTMLTag(existing, "input") || existing.type !== "hidden") {
       throw new Error(`Combobox #${root.id} data-part="value" must be a hidden input.`);
     }
     return existing;
   }
-  const hidden = document.createElement("input");
+  const hidden = root.ownerDocument.createElement("input");
   hidden.type = "hidden";
   hidden.dataset.part = "value";
   hidden.dataset.generated = "";
@@ -94,7 +128,7 @@ function contentPart(root: HTMLElement): HTMLElement {
 
 function ownedParts(record: ComboboxRecord, part: string): HTMLElement[] {
   return Array.from(record.content.querySelectorAll<HTMLElement>(`[data-part="${part}"]`)).filter(
-    (element) => element.closest('[data-jqs="combobox"]') === record.root,
+    (element) => isHTMLElement(element) && element.closest('[data-jqs="combobox"]') === record.root,
   );
 }
 
@@ -125,7 +159,11 @@ function optionFor(record: ComboboxRecord, value: string): HTMLElement | undefin
 }
 
 function visibleOptions(record: ComboboxRecord): HTMLElement[] {
-  return options(record).filter((option) => !option.hidden && !isDisabled(option));
+  return options(record).filter(selectable);
+}
+
+function selectable(option: HTMLElement): boolean {
+  return !option.hidden && !isDisabled(option);
 }
 
 function emit(
@@ -151,12 +189,79 @@ function emit(
     ...(option ? { label: optionLabel(option), option } : {}),
   };
   return record.root.dispatchEvent(
-    new CustomEvent(`jquery-star:combobox:${name}`, {
+    new (record.window as Window & typeof globalThis).CustomEvent(`jquery-star:combobox:${name}`, {
       bubbles: true,
       cancelable,
       detail,
     }),
   );
+}
+
+function optionSignature(record: ComboboxRecord): string {
+  return JSON.stringify(
+    options(record).map((option) => [
+      option.getAttribute("data-value"),
+      optionLabel(option),
+      isDisabled(option),
+    ]),
+  );
+}
+
+function current(record: ComboboxRecord, revision = record.revision): boolean {
+  const present = options(record);
+  return (
+    uiCurrent(record, revision) &&
+    records.get(record.root) === record &&
+    record.root.matches('[data-jqs="combobox"]') &&
+    directPart(record.root, "control") === record.control &&
+    record.control.type !== "hidden" &&
+    directPart(record.root, "value") === record.valueControl &&
+    record.valueControl.type === "hidden" &&
+    directPart(record.root, "content") === record.content &&
+    record.control.form === record.form &&
+    record.valueControl.form === record.valueForm &&
+    record.root.hasAttribute("data-inline") === record.inline &&
+    present.length === record.options.length &&
+    present.every((option, index) => option === record.options[index]) &&
+    optionSignature(record) === record.optionsSignature
+  );
+}
+
+function currentOpen(record: ComboboxRecord, revision = record.revision): boolean {
+  return current(record, revision) && record.open;
+}
+
+function unavailable(record: ComboboxRecord): boolean {
+  return record.control.matches(":disabled") || record.control.readOnly;
+}
+
+function unchanged(
+  record: ComboboxRecord,
+  revision: number,
+  query: string,
+  value: string,
+): boolean {
+  return (
+    current(record, revision) &&
+    record.control.value === query &&
+    record.valueControl.value === value
+  );
+}
+
+function nativeEvent(
+  record: ComboboxRecord,
+  target: HTMLInputElement,
+  type: "input" | "change",
+): void {
+  const previous = record.nativeEvent;
+  const event = new (record.window as Window & typeof globalThis).Event(type, { bubbles: true });
+  record.nativeEvent = event;
+  try {
+    target.dispatchEvent(event);
+  } finally {
+    if (previous) record.nativeEvent = previous;
+    else delete record.nativeEvent;
+  }
 }
 
 function syncEmptyState(record: ComboboxRecord): void {
@@ -211,6 +316,7 @@ function initialOption(record: ComboboxRecord): HTMLElement | undefined {
 }
 
 function renderSelection(record: ComboboxRecord): void {
+  reflected.set(record.root, record.value);
   if (record.root.dataset.value !== record.value) record.root.dataset.value = record.value;
   if (record.valueControl.value !== record.value) record.valueControl.value = record.value;
   for (const option of options(record)) {
@@ -222,13 +328,8 @@ function renderSelection(record: ComboboxRecord): void {
 
 function syncState(record: ComboboxRecord, open: boolean): void {
   record.open = open;
-  if (open) {
-    for (const other of [...activeRecords]) {
-      if (other !== record) closeCombobox(other.root, false);
-    }
-    activeRecords.delete(record);
-    activeRecords.add(record);
-  } else {
+  if (open) activeRecords.add(record);
+  else {
     activeRecords.delete(record);
     setActive(record, undefined);
   }
@@ -238,7 +339,9 @@ function syncState(record: ComboboxRecord, open: boolean): void {
 }
 
 function positionCombobox(record: ComboboxRecord): void {
-  if (record.root.hasAttribute("data-inline")) {
+  const revision = record.revision;
+  if (!currentOpen(record, revision)) return;
+  if (record.inline) {
     record.content.style.removeProperty("left");
     record.content.style.removeProperty("top");
     record.content.style.removeProperty("min-width");
@@ -246,93 +349,190 @@ function positionCombobox(record: ComboboxRecord): void {
     delete record.content.dataset.align;
     return;
   }
-  record.content.style.minWidth = `${record.control.getBoundingClientRect().width}px`;
-  positionFloating(record.root, record.control, record.content, {
-    align: "start",
-    side: "bottom",
-  });
+  const width = record.control.getBoundingClientRect().width;
+  const accepted = (): boolean => currentOpen(record, revision);
+  if (!accepted()) return;
+  record.content.style.minWidth = `${width}px`;
+  positionFloating(
+    record.root,
+    record.control,
+    record.content,
+    {
+      align: "start",
+      side: "bottom",
+    },
+    accepted,
+  );
 }
 
 function showContent(record: ComboboxRecord): void {
-  if (record.root.hasAttribute("data-inline")) record.content.hidden = false;
+  if (record.inline) record.content.hidden = false;
   else showFloating(record.content);
 }
 
 function hideContent(record: ComboboxRecord): void {
-  if (record.root.hasAttribute("data-inline")) record.content.hidden = true;
+  if (record.inline) record.content.hidden = true;
   else hideFloating(record.content);
 }
 
-function openCombobox(root: HTMLElement): HTMLElement {
-  const record = records.get(root) ?? enhanceCombobox(root);
-  if (record.open || record.control.disabled || !emit(record, "before-open", true)) return root;
-  filterOptions(record);
-  showContent(record);
+function settleFloating(record: ComboboxRecord, opening: boolean): void {
+  const latest = records.get(record.root);
+  const wantsOpen = latest?.content === record.content && current(latest) && latest.open;
+  if (opening && !wantsOpen) hideContent(record);
+  else if (!opening && wantsOpen) showContent(latest);
+}
+
+function nativeOpen(record: ComboboxRecord): boolean | undefined {
+  if (record.inline || !usesNativePopover(record.content)) return undefined;
+  try {
+    return record.content.matches(":popover-open");
+  } catch {
+    return undefined;
+  }
+}
+
+function show(record: ComboboxRecord, revision: number): boolean {
   syncState(record, true);
+  try {
+    showContent(record);
+  } catch (error) {
+    if (current(record, revision)) {
+      syncState(record, false);
+      hideContent(record);
+    }
+    throw error;
+  }
+  if (!currentOpen(record, revision)) {
+    settleFloating(record, true);
+    return false;
+  }
+  if (nativeOpen(record) === false) {
+    syncState(record, false);
+    return false;
+  }
+  return true;
+}
+
+function openCombobox(root: HTMLElement): HTMLElement {
+  const record = recordFor(root);
+  const revision = ++record.revision;
+  const documentRevision = (documentRevisions.get(record.document) ?? 0) + 1;
+  documentRevisions.set(record.document, documentRevision);
+  const accepted = (): boolean =>
+    current(record, revision) && documentRevisions.get(record.document) === documentRevision;
+  if (
+    !current(record, revision) ||
+    record.open ||
+    unavailable(record) ||
+    !emit(record, "before-open", true) ||
+    !accepted() ||
+    unavailable(record)
+  )
+    return root;
+  for (const other of documentRecords(activeRecords, record.document)) {
+    if (other !== record && current(other)) closeCombobox(other.root, false);
+    if (!accepted() || (other !== record && currentOpen(other))) return root;
+  }
+  filterOptions(record);
+  if (!show(record, revision)) return root;
   setActive(record, initialOption(record));
+  if (!accepted() || !currentOpen(record, revision)) return root;
   positionCombobox(record);
+  if (!accepted() || !currentOpen(record, revision)) return root;
   record.control.focus();
-  emit(record, "open");
+  if (accepted() && currentOpen(record, revision)) emit(record, "open");
   return root;
 }
 
 function closeCombobox(root: HTMLElement, restoreFocus = true): HTMLElement {
-  const record = records.get(root) ?? enhanceCombobox(root);
-  if (!record.open || !emit(record, "before-close", true)) return root;
-  hideContent(record);
+  const record = recordFor(root);
+  const revision = ++record.revision;
+  if (
+    !currentOpen(record, revision) ||
+    !emit(record, "before-close", true) ||
+    !current(record, revision)
+  )
+    return root;
   syncState(record, false);
+  hideContent(record);
+  if (!current(record, revision)) {
+    settleFloating(record, false);
+    return root;
+  }
   if (restoreFocus && record.control.isConnected) record.control.focus();
-  emit(record, "close");
+  if (current(record, revision) && !currentOpen(record, revision)) emit(record, "close");
   return root;
 }
 
 function toggleCombobox(root: HTMLElement): HTMLElement {
-  return (records.get(root) ?? enhanceCombobox(root)).open
-    ? closeCombobox(root)
-    : openCombobox(root);
+  const record = recordFor(root);
+  if (!current(record)) return root;
+  return record.open ? closeCombobox(root) : openCombobox(root);
 }
 
-function dispatchValue(record: ComboboxRecord): void {
-  record.valueControl.dispatchEvent(new Event("input", { bubbles: true }));
-  record.valueControl.dispatchEvent(new Event("change", { bubbles: true }));
+function dispatchValue(record: ComboboxRecord, revision: number): boolean {
+  const query = record.control.value;
+  const value = record.valueControl.value;
+  nativeEvent(record, record.valueControl, "input");
+  if (!unchanged(record, revision, query, value)) return false;
+  nativeEvent(record, record.valueControl, "change");
+  return unchanged(record, revision, query, value);
 }
 
 function dispatchQuery(record: ComboboxRecord): void {
-  record.control.dispatchEvent(new Event("change", { bubbles: true }));
+  nativeEvent(record, record.control, "change");
 }
 
-function clearSelection(record: ComboboxRecord, clearQuery: boolean, notify: boolean): void {
+function clearSelection(
+  record: ComboboxRecord,
+  clearQuery: boolean,
+  notify: boolean,
+  revision = ++record.revision,
+): boolean {
+  if (!current(record, revision) || (clearQuery && unavailable(record))) return false;
   const changed = record.value !== "";
-  record.committing = true;
   record.value = "";
   record.selectedLabel = undefined;
   record.valueControl.value = "";
   if (clearQuery) record.control.value = "";
+  record.query = record.control.value;
+  const query = record.query;
   renderSelection(record);
-  if (notify && changed) dispatchValue(record);
+  if (notify && changed && !dispatchValue(record, revision)) return false;
   if (notify && clearQuery) dispatchQuery(record);
-  record.committing = false;
+  if (!unchanged(record, revision, query, "")) return false;
   if (changed || clearQuery) emit(record, "clear");
+  return unchanged(record, revision, query, "");
 }
 
-function commitOption(record: ComboboxRecord, option: HTMLElement): boolean {
-  if (option.hidden || isDisabled(option) || !emit(record, "before-select", true, option)) {
-    return false;
-  }
+function commitOption(record: ComboboxRecord, option: HTMLElement): number | undefined {
+  const revision = ++record.revision;
+  if (!current(record, revision) || unavailable(record) || !selectable(option)) return undefined;
   const value = optionValue(option);
   const label = optionLabel(option);
-  record.committing = true;
+  const previousQuery = record.control.value;
+  const previousValue = record.valueControl.value;
+  if (
+    !emit(record, "before-select", true, option) ||
+    !unchanged(record, revision, previousQuery, previousValue) ||
+    unavailable(record) ||
+    !selectable(option) ||
+    optionFor(record, value) !== option ||
+    optionLabel(option) !== label
+  )
+    return undefined;
   record.value = value;
   record.selectedLabel = label;
   record.valueControl.value = value;
   record.control.value = label;
+  record.query = label;
   record.activeValue = value;
   renderSelection(record);
-  dispatchValue(record);
+  if (!dispatchValue(record, revision)) return undefined;
   dispatchQuery(record);
-  record.committing = false;
+  if (!unchanged(record, revision, label, value)) return undefined;
   emit(record, "select", false, option);
-  return true;
+  return unchanged(record, revision, label, value) ? revision : undefined;
 }
 
 function moveActive(record: ComboboxRecord, offset: number): void {
@@ -351,33 +551,53 @@ function minimumLength(record: ComboboxRecord): number {
 }
 
 function handleQuery(record: ComboboxRecord, notify: boolean, open: boolean): void {
-  if (record.committing) return;
-  if (record.value && record.control.value !== record.selectedLabel) {
-    clearSelection(record, false, notify);
-  }
+  const revision = ++record.revision;
+  record.query = record.control.value;
+  const query = record.query;
+  if (
+    record.value &&
+    query !== record.selectedLabel &&
+    !clearSelection(record, false, notify, revision)
+  )
+    return;
+  const value = record.valueControl.value;
   filterOptions(record);
   if (record.open) setActive(record, initialOption(record));
+  if (!unchanged(record, revision, query, value)) return;
   if (notify) emit(record, "query");
+  if (!unchanged(record, revision, query, value)) return;
   if (open) {
-    if (record.control.value.length >= minimumLength(record)) openCombobox(record.root);
+    if (query.length >= minimumLength(record)) openCombobox(record.root);
     else closeCombobox(record.root, false);
   }
 }
 
+function selectAndClose(record: ComboboxRecord, option: HTMLElement): void {
+  const revision = commitOption(record, option);
+  if (revision !== undefined && currentOpen(record, revision)) closeCombobox(record.root);
+}
+
 function keydown(record: ComboboxRecord, event: KeyboardEvent): void {
-  if (event.key === "ArrowDown") {
-    event.preventDefault();
-    if (record.open) moveActive(record, 1);
-    else openCombobox(record.root);
+  if (
+    unavailable(record) ||
+    record.composing ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey
+  )
     return;
-  }
-  if (event.key === "ArrowUp") {
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
-    if (record.open) moveActive(record, -1);
+    record.revision += 1;
+    if (record.open) moveActive(record, event.key === "ArrowDown" ? 1 : -1);
     else {
+      const revision = record.revision + 1;
       openCombobox(record.root);
-      const available = visibleOptions(record);
-      setActive(record, available[available.length - 1]);
+      if (currentOpen(record, revision) && event.key === "ArrowUp") {
+        const available = visibleOptions(record);
+        setActive(record, available[available.length - 1]);
+      }
     }
     return;
   }
@@ -385,7 +605,7 @@ function keydown(record: ComboboxRecord, event: KeyboardEvent): void {
     const option = optionFor(record, record.activeValue);
     if (!option) return;
     event.preventDefault();
-    if (commitOption(record, option)) closeCombobox(record.root);
+    selectAndClose(record, option);
     return;
   }
   if (event.key === "Escape" && record.open) {
@@ -398,8 +618,9 @@ function keydown(record: ComboboxRecord, event: KeyboardEvent): void {
 
 function configureOptions(record: ComboboxRecord): void {
   const values = new Set<string>();
-  let index = 0;
-  for (const option of options(record)) {
+  const current = options(record);
+  identifyElements(current, `${record.root.id}-option`);
+  for (const option of current) {
     const value = optionValue(option);
     if (values.has(value)) {
       throw new Error(
@@ -407,7 +628,6 @@ function configureOptions(record: ComboboxRecord): void {
       );
     }
     values.add(value);
-    option.id ||= `${record.root.id}-option-${index++}`;
     option.setAttribute("role", "option");
     option.tabIndex = -1;
     if (isDisabled(option)) option.setAttribute("aria-disabled", "true");
@@ -419,107 +639,166 @@ function configureOptions(record: ComboboxRecord): void {
 }
 
 function wire(record: ComboboxRecord): void {
-  const input = (): void => handleQuery(record, true, true);
-  const modelWrite = (): void => handleQuery(record, false, false);
-  const key = (event: KeyboardEvent): void => keydown(record, event);
-  const click = (): void => {
+  const listen = (target: EventTarget, type: string, callback: EventListener): void =>
+    listenUI(record, () => current(record), target, type, callback);
+  listen(record.control, "input", (event) => {
+    if (event !== record.nativeEvent) handleQuery(record, true, true);
+  });
+  listen(record.control, "jquery-star:model-write", () => handleQuery(record, false, false));
+  listen(record.control, "keydown", (event) => keydown(record, event as KeyboardEvent));
+  listen(record.control, "click", () => {
     openCombobox(record.root);
-  };
-  const focus = (): void => {
+  });
+  listen(record.control, "focus", () => {
     if (record.root.hasAttribute("data-open-on-focus")) openCombobox(record.root);
-  };
-  record.control.addEventListener("input", input);
-  record.control.addEventListener("jquery-star:model-write", modelWrite);
-  record.control.addEventListener("keydown", key);
-  record.control.addEventListener("click", click);
-  record.control.addEventListener("focus", focus);
-  record.cleanups.push(
-    () => record.control.removeEventListener("input", input),
-    () => record.control.removeEventListener("jquery-star:model-write", modelWrite),
-    () => record.control.removeEventListener("keydown", key),
-    () => record.control.removeEventListener("click", click),
-    () => record.control.removeEventListener("focus", focus),
-  );
-
-  const valueWrite = (): void => {
-    if (record.committing) return;
-    const value = record.valueControl.value;
-    const option = optionFor(record, value);
-    record.value = value;
+  });
+  listen(record.control, "compositionstart", () => {
+    record.composing = true;
+  });
+  listen(record.control, "compositionend", () => {
+    record.composing = false;
+  });
+  const valueWrite = (event: Event): void => {
+    if (event === record.nativeEvent) return;
+    record.revision += 1;
+    record.value = record.valueControl.value;
+    const option = optionFor(record, record.value);
     record.selectedLabel = option ? optionLabel(option) : undefined;
     if (record.selectedLabel !== undefined) record.control.value = record.selectedLabel;
+    record.query = record.control.value;
     renderSelection(record);
   };
-  record.valueControl.addEventListener("change", valueWrite);
-  record.valueControl.addEventListener("jquery-star:model-write", valueWrite);
-  record.cleanups.push(
-    () => record.valueControl.removeEventListener("change", valueWrite),
-    () => record.valueControl.removeEventListener("jquery-star:model-write", valueWrite),
-  );
-
-  const reset = (): void => {
-    const applyDefaults = (): void => {
+  listen(record.valueControl, "change", valueWrite);
+  listen(record.valueControl, "jquery-star:model-write", valueWrite);
+  for (const option of record.options) {
+    listen(option, "pointerdown", (event) => event.preventDefault());
+    listen(option, "pointermove", () => {
+      if (!record.open || unavailable(record)) return;
+      record.revision += 1;
+      setActive(record, option);
+    });
+    listen(option, "click", () => selectAndClose(record, option));
+  }
+  listenUIReset(
+    record,
+    () => current(record),
+    record.form,
+    () => {
+      const revision = record.revision;
       record.value = record.defaultValue;
       const selected = optionFor(record, record.defaultValue);
       record.selectedLabel = selected ? optionLabel(selected) : undefined;
       record.valueControl.value = record.defaultValue;
       record.control.value = record.selectedLabel ?? record.defaultQuery;
+      record.query = record.control.value;
       renderSelection(record);
       filterOptions(record);
-    };
-    record.committing = true;
-    applyDefaults();
-    record.committing = false;
-    window.setTimeout(() => {
-      record.committing = true;
-      applyDefaults();
-      dispatchValue(record);
-      dispatchQuery(record);
-      record.committing = false;
-    }, 0);
-  };
-  record.control.form?.addEventListener("reset", reset);
-  if (record.control.form) {
-    const form = record.control.form;
-    record.cleanups.push(() => form.removeEventListener("reset", reset));
-  }
-
-  for (const option of options(record)) {
-    const pointerDown = (event: PointerEvent): void => event.preventDefault();
-    const pointerMove = (): void => setActive(record, option);
-    const optionClick = (): void => {
-      if (commitOption(record, option)) closeCombobox(record.root);
-    };
-    option.addEventListener("pointerdown", pointerDown);
-    option.addEventListener("pointermove", pointerMove);
-    option.addEventListener("click", optionClick);
-    record.cleanups.push(
-      () => option.removeEventListener("pointerdown", pointerDown),
-      () => option.removeEventListener("pointermove", pointerMove),
-      () => option.removeEventListener("click", optionClick),
-    );
-  }
+      if (dispatchValue(record, revision)) dispatchQuery(record);
+    },
+  );
 }
 
 function labelCombobox(record: ComboboxRecord): void {
-  const label = record.control.labels?.[0];
-  const labelledBy = record.control.getAttribute("aria-labelledby");
-  const ariaLabel =
-    record.control.getAttribute("aria-label") || record.root.getAttribute("aria-label");
-  if (label) {
-    label.id ||= `${record.root.id}-label`;
-    record.content.setAttribute("aria-labelledby", label.id);
-  } else if (labelledBy) {
-    record.content.setAttribute("aria-labelledby", labelledBy);
-  } else if (ariaLabel) {
-    record.content.setAttribute("aria-label", ariaLabel);
-  } else {
-    record.control.setAttribute("aria-label", record.control.name || "Search options");
-    record.content.setAttribute("aria-label", record.control.name || "Search options");
+  identifyLabel(
+    record.control,
+    undefined,
+    record.control.labels?.length
+      ? undefined
+      : record.root.getAttribute("aria-label") || record.control.name || "Search options",
+  );
+  identifyControlLabel(record.root, record.control, record.content, "Search options");
+}
+
+function metadata(record: ComboboxRecord): void {
+  const { control, content } = record;
+  control.setAttribute("role", "combobox");
+  control.setAttribute("aria-autocomplete", "list");
+  control.setAttribute("aria-haspopup", "listbox");
+  control.setAttribute("aria-controls", content.id);
+  control.setAttribute("aria-disabled", String(record.control.matches(":disabled")));
+  control.autocomplete = "off";
+  content.setAttribute("role", "listbox");
+  labelCombobox(record);
+}
+
+function refreshOpen(record: ComboboxRecord): void {
+  const revision = record.revision;
+  if (!currentOpen(record, revision)) return;
+  const active =
+    record.activeValue === undefined ? undefined : optionFor(record, record.activeValue);
+  setActive(
+    record,
+    active && !active.hidden && !isDisabled(active) ? active : initialOption(record),
+  );
+  if (!currentOpen(record, revision)) return;
+  if (nativeOpen(record) === false && !show(record, revision)) return;
+  if (currentOpen(record, revision)) positionCombobox(record);
+}
+
+function syncNative(record: ComboboxRecord, initial = false): boolean {
+  const requested = record.root.dataset.value;
+  const patched = requested !== undefined && requested !== reflected.get(record.root);
+  const value = patched ? requested : record.valueControl.value;
+  const selected = optionFor(record, value);
+  const label = selected ? optionLabel(selected) : undefined;
+  if (patched || value !== record.value || record.control.value !== record.query)
+    record.revision += 1;
+  if (
+    label !== undefined &&
+    (patched ||
+      value !== record.value ||
+      (initial && !record.control.value) ||
+      record.control.value === record.selectedLabel)
+  ) {
+    if (record.control.value !== label) record.control.value = label;
   }
+  record.value = value;
+  record.selectedLabel = label;
+  record.query = record.control.value;
+  renderSelection(record);
+  filterOptions(record);
+  return patched;
+}
+
+function snapshot(record: ComboboxRecord, open = record.open): RetainedCombobox {
+  return {
+    open,
+    activeValue: record.activeValue,
+    composing: record.composing,
+    control: record.control,
+    value: record.value,
+    selectedLabel: record.selectedLabel,
+  };
+}
+
+function defaultFor(control: HTMLInputElement): string {
+  const previous = defaults.get(control);
+  if (previous !== undefined) return previous;
+  defaults.set(control, control.value);
+  return control.value;
 }
 
 function enhanceCombobox(root: HTMLElement): ComboboxRecord {
+  const existing = records.get(root);
+  if (existing && current(existing)) {
+    metadata(existing);
+    if (
+      existing.resetRevision === existing.revision &&
+      root.dataset.value === reflected.get(root)
+    ) {
+      refreshOpen(existing);
+      return existing;
+    }
+    const notify = syncNative(existing);
+    if (notify) dispatchValue(existing, existing.revision);
+    refreshOpen(existing);
+    return existing;
+  }
+  const previous = existing ? snapshot(existing) : retained.get(root);
+  existing?.cleanup();
+  const replacement = records.get(root);
+  if (replacement) return replacement;
+  if (existing && !uiActive(root)) return existing;
   root.id ||= `jqs-combobox-${++comboboxId}`;
   const control = inputControl(root);
   const hidden = valueControl(root, control);
@@ -530,79 +809,80 @@ function enhanceCombobox(root: HTMLElement): ComboboxRecord {
   const inline = root.hasAttribute("data-inline");
   if (inline) content.removeAttribute("popover");
   else prepareFloating(content);
-
-  let record = records.get(root);
-  let notifyExternalValue = false;
-  if (!record) {
-    const requested = root.getAttribute("data-value") ?? hidden.value;
-    const selected = Array.from(content.querySelectorAll<HTMLElement>('[data-part="option"]')).find(
-      (option) => option.getAttribute("data-value") === requested,
-    );
-    record = {
-      activeValue: requested || undefined,
-      cleanups: [],
-      committing: false,
-      content,
-      control,
-      defaultQuery: control.value,
-      defaultValue: hidden.value,
-      open: false,
-      root,
-      selectedLabel: selected ? optionLabel(selected) : undefined,
-      value: requested,
-      valueControl: hidden,
-    };
-    if (!control.value && record.selectedLabel !== undefined) control.value = record.selectedLabel;
-    records.set(root, record);
-    if (inline || !usesNativePopover(content)) content.hidden = true;
-  } else {
-    const contentChanged = record.content !== content;
-    const controlChanged = record.control !== control;
-    const valueControlChanged = record.valueControl !== hidden;
-    if (contentChanged && record.open) hideContent(record);
-    for (const cleanup of record.cleanups) cleanup();
-    record.cleanups = [];
-    record.control = control;
-    record.valueControl = hidden;
-    record.content = content;
-    if (controlChanged) record.defaultQuery = control.value;
-    if (valueControlChanged) record.defaultValue = hidden.value;
-    const requested = root.getAttribute("data-value");
-    if (requested !== null && requested !== record.value) {
-      record.value = requested;
-      hidden.value = requested;
-      const selected = optionFor(record, requested);
-      record.selectedLabel = selected ? optionLabel(selected) : undefined;
-      if (record.selectedLabel !== undefined) control.value = record.selectedLabel;
-      notifyExternalValue = true;
-    } else {
-      const selected = optionFor(record, record.value);
-      if (selected && control.value === record.selectedLabel) control.value = optionLabel(selected);
-      record.selectedLabel = selected ? optionLabel(selected) : undefined;
+  if (existing) {
+    copyGeneratedAttributes(existing.control, control);
+    copyGeneratedAttributes(existing.content, content);
+  }
+  const record: ComboboxRecord = {
+    ...uiResources(root),
+    activeValue:
+      previous?.value === hidden.value ? previous.activeValue : hidden.value || undefined,
+    form: control.form,
+    valueForm: hidden.form,
+    inline,
+    composing: previous?.control === control && previous.composing,
+    content,
+    control,
+    defaultQuery: defaultFor(control),
+    defaultValue: defaultFor(hidden),
+    open: false,
+    options: [],
+    optionsSignature: "",
+    query: control.value,
+    root,
+    selectedLabel: previous?.control === control ? previous.selectedLabel : undefined,
+    value: hidden.value,
+    valueControl: hidden,
+  };
+  record.cleanups.add(() => {
+    retained.set(root, snapshot(record, record.open && record.document !== root.ownerDocument));
+    const wasOpen = record.open;
+    activeRecords.delete(record);
+    record.open = false;
+    const latest = records.get(root);
+    if (!latest || latest.content !== content) {
+      root.dataset.state = "closed";
+      content.dataset.state = "closed";
+      control.setAttribute("aria-expanded", "false");
+      control.removeAttribute("aria-activedescendant");
+      if (wasOpen) {
+        hideContent(record);
+        settleFloating(record, false);
+      }
     }
-    if (inline || !usesNativePopover(content)) content.hidden = !record.open;
-    if (contentChanged && record.open) showContent(record);
+  });
+  record.cleanup = ownUIRecord(records, root, record, () => releaseUIResources(record));
+  try {
+    if (!record.active) return record;
+    configureOptions(record);
+    record.options = options(record);
+    record.optionsSignature = optionSignature(record);
+    metadata(record);
+    const notify = syncNative(record, true) && reflected.has(root) && previous !== undefined;
+    const activeValue = record.activeValue;
+    syncState(record, false);
+    record.activeValue = activeValue;
+    if (inline || !usesNativePopover(content)) content.hidden = true;
+    wire(record);
+    if (!current(record)) throw new Error("This UI root cannot acquire resources.");
+    if (notify) dispatchValue(record, record.revision);
+    const revision = record.revision;
+    if (
+      previous?.open &&
+      current(record, revision) &&
+      !unavailable(record) &&
+      show(record, revision)
+    )
+      refreshOpen(record);
+  } catch (error) {
+    failUISetup(record, error);
   }
-
-  control.setAttribute("role", "combobox");
-  control.setAttribute("aria-autocomplete", "list");
-  control.setAttribute("aria-haspopup", "listbox");
-  control.setAttribute("aria-controls", content.id);
-  control.setAttribute("aria-disabled", String(control.disabled));
-  control.autocomplete = "off";
-  content.setAttribute("role", "listbox");
-  labelCombobox(record);
-  configureOptions(record);
-  filterOptions(record);
-  renderSelection(record);
-  syncState(record, record.open);
-  if (record.open) {
-    setActive(record, initialOption(record));
-    positionCombobox(record);
-  }
-  wire(record);
-  if (notifyExternalValue) dispatchValue(record);
   return record;
+}
+
+function recordFor(root: HTMLElement): ComboboxRecord {
+  const record = records.get(root);
+  return record && current(record) ? record : enhanceCombobox(root);
 }
 
 function installGlobalListeners(host: DocumentHost): void {
@@ -611,9 +891,10 @@ function installGlobalListeners(host: DocumentHost): void {
     document,
     "pointerdown",
     (event) => {
-      if (!(event.target instanceof Node)) return;
+      if (!isNode(event.target)) return;
       for (const record of documentRecords(activeRecords, document)) {
-        if (!record.root.isConnected) activeRecords.delete(record);
+        if (!current(record) || record.document !== document || !record.root.isConnected)
+          activeRecords.delete(record);
         else if (!record.root.contains(event.target)) closeCombobox(record.root, false);
       }
     },
@@ -623,26 +904,27 @@ function installGlobalListeners(host: DocumentHost): void {
     document,
     "focusin",
     (event) => {
-      if (!(event.target instanceof Node)) return;
+      if (!isNode(event.target)) return;
       for (const record of documentRecords(activeRecords, document)) {
-        if (!record.root.contains(event.target)) closeCombobox(record.root, false);
+        if (!current(record) || record.document !== document || !record.root.isConnected)
+          activeRecords.delete(record);
+        else if (!record.root.contains(event.target)) closeCombobox(record.root, false);
       }
     },
     true,
   );
   const reposition = (): void => {
     for (const record of documentRecords(activeRecords, document)) {
-      if (record.root.isConnected) positionCombobox(record);
+      if (current(record) && record.document === document && record.root.isConnected)
+        positionCombobox(record);
       else activeRecords.delete(record);
     }
   };
   listenToViewportChanges(host, reposition);
-  host.own("service", "ui:combobox:active-records", documentRecordCleanup(activeRecords, document));
 }
 
 function enhanceTree(root: ParentNode): void {
-  const elements: Element[] = root instanceof Element ? [root] : [];
-  elements.push(...Array.from(root.querySelectorAll('[data-jqs="combobox"]')));
+  const elements = uiElements(root, '[data-jqs="combobox"]');
   for (const element of elements) {
     const combobox = comboboxRoot(element);
     if (combobox) enhanceCombobox(combobox);
@@ -651,16 +933,19 @@ function enhanceTree(root: ParentNode): void {
 
 function resolveRoot(target: ComboboxTarget, root: ParentNode = document): HTMLElement {
   const resolved =
-    typeof target === "string" ? comboboxRoot(root.querySelector(target)) : comboboxRoot(target);
+    typeof target === "string"
+      ? comboboxRoot(
+          isHTMLElement(root) && root.matches(target) ? root : root.querySelector(target),
+        )
+      : comboboxRoot(target);
   if (resolved) return resolved;
   throw new Error(`Combobox target did not match data-jqs="combobox": ${String(target)}`);
 }
 
 function controlledCombobox(context: StarContext, target?: unknown): HTMLElement {
-  if (target instanceof HTMLElement && target.matches('[data-jqs="combobox"]')) return target;
+  if (isHTMLElement(target)) return resolveRoot(target, context.root);
   if (typeof target === "string" && target.startsWith("#")) {
-    const local = context.root.querySelector(target);
-    return resolveRoot(local instanceof HTMLElement ? local : target);
+    return resolveRoot(target, context.root);
   }
   const root = context.element?.closest('[data-jqs="combobox"]') ?? null;
   const resolved = comboboxRoot(root);
@@ -695,15 +980,16 @@ export function createComboboxes(
   const api: StarComboboxStatic = {
     select: (target, value) => {
       const root = resolveRoot(target);
-      const record = records.get(root) ?? enhanceCombobox(root);
+      const record = recordFor(root);
+      if (!current(record)) return root;
       const option = optionFor(record, value);
       if (!option) throw new Error(`Combobox #${root.id} has no option with value "${value}".`);
-      if (commitOption(record, option) && record.open) closeCombobox(root);
+      selectAndClose(record, option);
       return root;
     },
     clear: (target) => {
       const root = resolveRoot(target);
-      clearSelection(records.get(root) ?? enhanceCombobox(root), true, true);
+      clearSelection(recordFor(root), true, true);
       return root;
     },
     open: (target) => openCombobox(resolveRoot(target)),
@@ -711,11 +997,11 @@ export function createComboboxes(
     toggle: (target) => toggleCombobox(resolveRoot(target)),
     value: (target) => {
       const root = resolveRoot(target);
-      return (records.get(root) ?? enhanceCombobox(root)).value;
+      return recordFor(root).value;
     },
     query: (target) => {
       const root = resolveRoot(target);
-      return (records.get(root) ?? enhanceCombobox(root)).control.value;
+      return recordFor(root).control.value;
     },
   };
   registerActions(api, registerAction);

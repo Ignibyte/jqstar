@@ -153,7 +153,7 @@ describe("directive and helper registry", () => {
       registry.preparePluginInstall([
         registration("acme.audit", [input as unknown as StarDirective]),
       ]),
-    ).toThrow(message as string);
+    ).toThrow(message);
     expect(registry.definitions()).toHaveLength(2);
   });
 

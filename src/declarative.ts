@@ -1,3 +1,4 @@
+import { cloneValue, isPlainRecord, isThenable } from "./value-checks";
 import { cancelElementRequests, cancelRequests } from "./fetch";
 import { attempt, throwCollectedErrors } from "./errors";
 import { isElementNode, isInputElement, isSelectElement } from "./dom";
@@ -8,6 +9,7 @@ import {
   type StarDirective,
   type StarDirectiveCleanup,
   type StarDirectiveContext,
+  type StarDirectiveTask,
   type StarParsedDirectiveAttribute,
 } from "./directive";
 import type { ApplicationCapabilities, ApplicationLifecycle } from "./kernel";
@@ -16,24 +18,76 @@ import type {
   StarOperationSubscriptionOptions,
   StarOperationUnsubscribe,
 } from "./observation";
-import { effect, reactive, stop, type ReactiveEffect } from "./reactivity";
+import { effect, notifyPropertyChange, reactive, stop, type ReactiveEffect } from "./reactivity";
 import type { ComputedRecord, StarAction, StarContext, StarInstance, StateRecord } from "./types";
 
+// An unchecked radio does not replace the selected model value.
+export const SKIP_MODEL_WRITE = Symbol();
+
+export function writeModelValue(
+  $: JQueryStatic,
+  element: Element,
+  value: unknown,
+): true | undefined {
+  if (isInputElement(element)) {
+    if (element.type === "checkbox") {
+      element.checked = Array.isArray(value)
+        ? value.map(String).includes(element.value)
+        : Boolean(value);
+      return;
+    }
+    if (element.type === "radio") {
+      element.checked = String(value ?? "") === element.value;
+      return;
+    }
+  }
+  if (isSelectElement(element) && element.multiple) {
+    const selected = new Set(Array.isArray(value) ? value.map(String) : []);
+    for (const option of Array.from(element.options)) option.selected = selected.has(option.value);
+    return;
+  }
+  const next = String(value ?? "");
+  const $element = $(element);
+  if ($element.val() !== next) {
+    $element.val(next);
+    return true;
+  }
+  return;
+}
+
+export function readModelValue($: JQueryStatic, element: Element, current: unknown): unknown {
+  if (isInputElement(element)) {
+    if (element.type === "checkbox") {
+      if (Array.isArray(current)) {
+        const values = current.map(String);
+        return element.checked
+          ? Array.from(new Set([...values, element.value]))
+          : values.filter((value) => value !== element.value);
+      }
+      return element.checked;
+    }
+    if (element.type === "radio") return element.checked ? element.value : SKIP_MODEL_WRITE;
+  }
+  if (isSelectElement(element) && element.multiple) {
+    return Array.from(element.selectedOptions, (option) => option.value);
+  }
+  return $(element).val();
+}
+
 const EMPTY_COMPUTED = Object.freeze({}) as Readonly<ComputedRecord>;
-const SKIP_MODEL_WRITE = Symbol("skip-model-write");
 const DIRECTIVE_PREFIX = "data-";
 
 interface ParsedEvent {
   event: string;
-  prevent: boolean;
-  stop: boolean;
-  once: boolean;
-  self: boolean;
-  outside: boolean;
-  window: boolean;
-  document: boolean;
-  capture: boolean;
-  passive: boolean;
+  prevent?: boolean;
+  stop?: boolean;
+  once?: boolean;
+  self?: boolean;
+  outside?: boolean;
+  window?: boolean;
+  document?: boolean;
+  capture?: boolean;
+  passive?: boolean;
   key?: string;
   debounce?: number;
   throttle?: number;
@@ -46,37 +100,10 @@ interface MountedDirective {
   readonly definition: StarDirective<unknown>;
 }
 
-function cloneValue<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(cloneValue) as T;
-  if (value && typeof value === "object") {
-    const prototype = Object.getPrototypeOf(value) as object | null;
-    if (prototype === Object.prototype || prototype === null) {
-      return Object.fromEntries(
-        Object.entries(value).map(([key, child]) => [key, cloneValue(child)]),
-      ) as T;
-    }
-  }
-  return value;
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value) as object | null;
-  return prototype === Object.prototype || prototype === null;
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
-}
-
 function mergeState(target: StateRecord, source: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(source)) {
     const existing = target[key];
-    if (isPlainObject(existing) && isPlainObject(value)) mergeState(existing, value);
+    if (isPlainRecord(existing) && isPlainRecord(value)) mergeState(existing, value);
     else target[key] = cloneValue(value);
   }
 }
@@ -99,7 +126,7 @@ function writePath(target: object, path: string, value: unknown): void {
 
   let parent = target as Record<string, unknown>;
   for (const key of keys) {
-    if (!isPlainObject(parent[key])) parent[key] = {};
+    if (!isPlainRecord(parent[key])) parent[key] = {};
     parent = parent[key] as Record<string, unknown>;
   }
   parent[finalKey] = value;
@@ -116,19 +143,12 @@ function parseEvent(attribute: string): ParsedEvent {
   const [event = "", ...modifiers] = attribute.slice("data-on:".length).split("__");
   const parsed: ParsedEvent = {
     event,
-    prevent: false,
-    stop: false,
-    once: false,
-    self: false,
-    outside: false,
-    window: false,
-    document: false,
-    capture: false,
-    passive: false,
   };
 
   for (const modifier of modifiers) {
-    const [name, argument] = modifier.split(".", 2);
+    const separator = modifier.indexOf(".");
+    const name = separator < 0 ? modifier : modifier.slice(0, separator);
+    const argument = separator < 0 ? undefined : modifier.slice(separator + 1);
     if (name === "prevent") parsed.prevent = true;
     else if (name === "stop") parsed.stop = true;
     else if (name === "once") parsed.once = true;
@@ -140,10 +160,8 @@ function parseEvent(attribute: string): ParsedEvent {
     else if (name === "passive") parsed.passive = true;
     else if (name === "debounce") parsed.debounce = milliseconds(argument ?? "250ms") ?? 250;
     else if (name === "throttle") parsed.throttle = milliseconds(argument ?? "250ms") ?? 250;
-    else if (
-      ["enter", "escape", "space", "tab", "up", "down", "left", "right"].includes(name ?? "")
-    ) {
-      parsed.key = name!;
+    else if (["enter", "escape", "space", "tab", "up", "down", "left", "right"].includes(name)) {
+      parsed.key = name;
     }
   }
   return parsed;
@@ -163,7 +181,7 @@ function expectedKey(key: string): string {
 }
 
 export class DeclarativeApplication<State extends StateRecord = StateRecord>
-  implements StarInstance<State, ComputedRecord>, ApplicationLifecycle
+  implements StarInstance<State>, ApplicationLifecycle
 {
   readonly mode = "attributes" as const;
   readonly root: Element;
@@ -172,11 +190,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
   readonly computed = EMPTY_COMPUTED;
 
   private readonly $: JQueryStatic;
-  private readonly capabilities: ApplicationCapabilities;
+  private readonly runtimeCapabilities: ApplicationCapabilities;
   private readonly owner: string;
-  private readonly effects = new Set<ReactiveEffect>();
+  private readonly ownedEffects = new Set<ReactiveEffect>();
+  private readonly computedGetters = new Map<object, string>();
   private readonly cleanups = new Map<Element, Map<string, () => void>>();
   private readonly directives = new Map<Element, Map<string, MountedDirective>>();
+  private readonly ownedElements = new WeakSet<Element>();
   private releaseExpressionRuntime: (() => void) | undefined;
   private releaseObserver: (() => void) | undefined;
   private isDestroyed = false;
@@ -188,7 +208,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     initialState: State = {} as State,
   ) {
     this.$ = $;
-    this.capabilities = capabilities;
+    this.runtimeCapabilities = capabilities;
     this.owner = `application:attributes:${capabilities.nextApplicationId()}`;
     this.root = root;
     this.$root = $(root);
@@ -197,10 +217,11 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     try {
       capabilities.applicationCreated(this);
       this.releaseExpressionRuntime = bindStarExpressionRuntime(this, {
-        resolveAction: (name) => this.capabilities.resolveAction(name),
-        resolveHelper: (name) => this.capabilities.resolveHelper(name),
+        ownsGetter: (key, getter) => key === this.computedGetters.get(getter),
+        resolveAction: (name) => this.runtimeCapabilities.resolveAction(name),
+        resolveHelper: (name) => this.runtimeCapabilities.resolveHelper(name),
         startAction: (label, action, context) =>
-          this.capabilities.startAction(this, label, action, context),
+          this.runtimeCapabilities.startAction(this, label, action, context),
       });
       const ownedObserver = capabilities.observe(
         `${this.owner}:mutation`,
@@ -230,19 +251,20 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
   }
 
   async run(
-    action: string | StarAction<State, ComputedRecord>,
-    overrides: Partial<StarContext<State, ComputedRecord>> = {},
+    action: string | StarAction<State>,
+    overrides: Partial<StarContext<State>> = {},
   ): Promise<unknown> {
     if (this.isDestroyed) throw new Error("This jQuery Star application has been destroyed.");
-    const resolved = typeof action === "string" ? this.capabilities.resolveAction(action) : action;
+    const resolved =
+      typeof action === "string" ? this.runtimeCapabilities.resolveAction(action) : action;
     if (!resolved) throw new Error(`Unknown jQuery Star action: ${String(action)}`);
     const context = { ...this.context(), ...overrides };
     const label = typeof action === "string" ? action : resolved.name || "anonymous";
-    return this.capabilities.runAction(
+    return this.runtimeCapabilities.runAction(
       this,
       label,
       resolved as unknown as StarAction,
-      context as unknown as StarContext,
+      context,
     );
   }
 
@@ -251,13 +273,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     options?: StarOperationSubscriptionOptions,
   ): StarOperationUnsubscribe {
     if (this.isDestroyed) throw new Error("This jQuery Star application has been destroyed.");
-    return this.capabilities.observeOperations(this, observer, options);
+    return this.runtimeCapabilities.observeOperations(this, observer, options);
   }
 
   refresh(): void {
     if (this.isDestroyed) return;
     const errors: unknown[] = [];
-    for (const runner of this.effects) attempt(errors, runner);
+    for (const runner of this.ownedEffects) attempt(errors, runner);
     throwCollectedErrors(errors, "jQuery Star declarative refresh failed.");
   }
 
@@ -273,12 +295,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     this.cleanupTree(tree, preservedRoots);
   }
 
-  private context(element = this.root, event?: JQuery.Event): StarContext<State, ComputedRecord> {
+  private context(element = this.root, event?: JQuery.Event): StarContext<State> {
     return {
       $: this.$,
       state: this.state,
       computed: this.computed,
-      helpers: this.capabilities.helpers,
+      helpers: this.runtimeCapabilities.helpers,
+      stores: this.runtimeCapabilities.stores,
       root: this.root,
       $root: this.$root,
       element,
@@ -288,12 +311,21 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     };
   }
 
+  private belongsHere(element: Element): boolean {
+    if (this.root.getAttribute("data-jqs") !== "") return true;
+    const island = element.closest('[data-jqs=""]');
+    return !island || island === this.root || !this.root.contains(island);
+  }
+
   private allWithin(tree: Element, preservedRoots: readonly Element[] = []): Element[] {
-    return [tree, ...Array.from(tree.querySelectorAll("*"))].filter(
+    const selected = [tree, ...Array.from(tree.querySelectorAll("*"))].filter(
       (element) =>
+        this.belongsHere(element) &&
         !element.closest("[data-ignore]") &&
         !preservedRoots.some((preserved) => preserved === element || preserved.contains(element)),
     );
+    for (const element of selected) this.ownedElements.add(element);
+    return selected;
   }
 
   private loadSignals(tree: Element, preservedRoots: readonly Element[] = []): void {
@@ -301,10 +333,10 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       const source = element.getAttribute("data-signals");
       if (source === null) continue;
       try {
-        const result = this.capabilities.expressions.compileValue(source, {
+        const result = this.runtimeCapabilities.expressions.compileValue(source, {
           attribute: "data-signals",
-        })(this.context(element) as StarContext);
-        if (!isPlainObject(result)) throw new TypeError("data-signals must evaluate to an object.");
+        })(this.context(element));
+        if (!isPlainRecord(result)) throw new TypeError("data-signals must evaluate to an object.");
         mergeState(this.state, result);
       } catch (error) {
         this.report(error, element, "data-signals", source);
@@ -329,18 +361,24 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     if (!key) return;
 
     try {
-      const evaluate = this.capabilities.expressions.compileValue(source, {
+      const evaluate = this.runtimeCapabilities.expressions.compileValue(source, {
         attribute: attributeName,
       });
       const previous = Object.getOwnPropertyDescriptor(this.state, key);
+      const get = () => evaluate(this.context(element));
       Object.defineProperty(this.state, key, {
         enumerable: true,
         configurable: true,
-        get: () => evaluate(this.context(element) as StarContext),
+        get,
       });
+      this.computedGetters.set(get, key);
+      notifyPropertyChange(this.state, key);
       this.setCleanup(element, attributeName, () => {
-        if (previous) Object.defineProperty(this.state, key, previous);
-        else delete this.state[key];
+        this.computedGetters.delete(get);
+        if (previous) {
+          Object.defineProperty(this.state, key, previous);
+          notifyPropertyChange(this.state, key);
+        } else delete this.state[key];
       });
     } catch (error) {
       this.report(error, element, attributeName, source);
@@ -353,7 +391,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         .map((attribute, index) => ({
           attribute,
           index,
-          priority: this.capabilities.directives.resolve(attribute.name)?.priority ?? 0,
+          priority: this.runtimeCapabilities.directives.resolve(attribute.name)?.priority ?? 0,
         }))
         .filter(
           ({ attribute }) =>
@@ -361,6 +399,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         )
         .sort((left, right) => right.priority - left.priority || left.index - right.index);
       for (const { attribute } of attributes) {
+        if (this.isDestroyed) return;
         this.initializeDirective(element, attribute.name);
       }
     }
@@ -368,16 +407,11 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
 
   private initializeDirective(element: Element, attributeName: string): void {
     if (!attributeName.startsWith(DIRECTIVE_PREFIX)) return;
-    const definition = this.capabilities.directives.resolve(attributeName);
+    const definition = this.runtimeCapabilities.directives.resolve(attributeName);
     const source = element.getAttribute(attributeName);
     if (definition) {
       try {
-        this.reconcileRegisteredDirective(
-          element,
-          attributeName,
-          source,
-          definition as unknown as StarDirective<unknown>,
-        );
+        this.reconcileRegisteredDirective(element, attributeName, source, definition);
       } catch (error) {
         this.report(error, element, attributeName, source ?? "");
       }
@@ -399,7 +433,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       } else if (attributeName === "data-class") {
         let previous = new Set<string>();
         this.bindValue(element, attributeName, source, (value) => {
-          if (!isPlainObject(value)) return;
+          if (!isPlainRecord(value)) return;
           const current = new Set(Object.keys(value));
           for (const name of previous) {
             if (!current.has(name)) this.$(element).removeClass(name);
@@ -435,22 +469,17 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
           this.$(element).css(name, value == null ? "" : String(value)),
         );
       } else if (attributeName === "data-effect") {
-        const execute = this.capabilities.expressions.compileStatement(source, {
+        const execute = this.runtimeCapabilities.expressions.compileStatement(source, {
           attribute: attributeName,
         });
         this.bindEffect(element, attributeName, () =>
-          this.handleResult(
-            execute(this.context(element) as StarContext),
-            element,
-            attributeName,
-            source,
-          ),
+          this.handleResult(execute(this.context(element)), element, attributeName, source),
         );
       } else if (attributeName === "data-init") {
         this.handleResult(
-          this.capabilities.expressions.compileStatement(source, {
+          this.runtimeCapabilities.expressions.compileStatement(source, {
             attribute: attributeName,
-          })(this.context(element) as StarContext),
+          })(this.context(element)),
           element,
           attributeName,
           source,
@@ -526,17 +555,17 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       active: true,
       attribute,
       cleanups: [],
-      definition: definition as StarDirective<unknown>,
+      definition: definition,
     };
     attributes.set(attribute.name, record);
 
     try {
+      this.setCleanup(element, attribute.name, () => this.releaseDirectiveRecord(element, record));
       const result = definition.mount(this.directiveContext(record, element, attribute));
       this.registerDirectiveResult(record, result);
-      this.setCleanup(element, attribute.name, () => this.releaseDirectiveRecord(element, record));
     } catch (error) {
       const errors = [error];
-      attempt(errors, () => this.releaseDirectiveRecord(element, record));
+      attempt(errors, () => this.cleanupDirective(element, attribute.name));
       throwCollectedErrors(errors, `Directive ${definition.id} setup rollback failed.`);
     }
   }
@@ -552,10 +581,10 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     const context: StarDirectiveContext<unknown> = {
       application: this,
       attribute,
-      context: this.context(element) as StarContext,
+      context: this.context(element),
       element,
-      expressions: this.capabilities.expressions,
-      helpers: this.capabilities.helpers,
+      expressions: this.runtimeCapabilities.expressions,
+      helpers: this.runtimeCapabilities.helpers,
       ...(previous ? { previous } : {}),
       $element: this.$(element),
       cleanup: (cleanup) => this.ownDirectiveCleanup(record, cleanup),
@@ -565,37 +594,72 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
           throw new Error(`Directive ${record.definition.id} effect must be a function.`);
         }
         const runner = effect(run, { owner: this.owner, onError: report });
-        this.effects.add(runner);
-        return this.ownDirectiveCleanup(record, () => {
-          this.effects.delete(runner);
+        try {
+          this.assertDirectiveActive(record);
+          this.ownedEffects.add(runner);
+          return this.ownDirectiveCleanup(record, () => {
+            this.ownedEffects.delete(runner);
+            stop(runner);
+          });
+        } catch (error) {
+          this.ownedEffects.delete(runner);
           stop(runner);
-        });
+          throw error;
+        }
       },
       report,
-      task: (task) => {
-        this.assertDirectiveActive(record);
-        if (typeof task !== "function") {
-          throw new Error(`Directive ${record.definition.id} task must be a function.`);
-        }
-        const controller = new AbortController();
-        const result = task(controller.signal);
-        if (!isThenable(result)) {
-          throw new Error(`Directive ${record.definition.id} task must return a thenable.`);
-        }
-        const releaseTask = this.capabilities.task(this.owner, result, report);
-        return this.ownDirectiveCleanup(record, () => {
-          controller.abort();
-          releaseTask();
-        });
-      },
+      task: (task) => this.ownDirectiveTask(record, task, report),
     };
     return Object.freeze(context);
   }
 
   private assertDirectiveActive(record: MountedDirective): void {
-    if (!record.active) {
+    if (this.isDestroyed || !record.active) {
       throw new Error(`Directive ${record.definition.id} has already been released.`);
     }
+  }
+
+  private ownDirectiveTask(
+    record: MountedDirective,
+    task: StarDirectiveTask,
+    report: (error: unknown) => void,
+  ): StarDirectiveCleanup {
+    this.assertDirectiveActive(record);
+    if (typeof task !== "function") {
+      throw new Error(`Directive ${record.definition.id} task must be a function.`);
+    }
+    const controller = new AbortController();
+    const registration: { closed: boolean; release: StarDirectiveCleanup | undefined } = {
+      closed: false,
+      release: undefined,
+    };
+    const cleanup = this.ownDirectiveCleanup(record, () => {
+      registration.closed = true;
+      const release = registration.release;
+      registration.release = undefined;
+      const errors: unknown[] = [];
+      attempt(errors, () => controller.abort());
+      if (release) attempt(errors, release);
+      throwCollectedErrors(errors, `Directive ${record.definition.id} task cleanup failed.`);
+    });
+    try {
+      const result = task(controller.signal);
+      if (!isThenable(result)) {
+        throw new Error(`Directive ${record.definition.id} task must return a thenable.`);
+      }
+      const pending = Promise.resolve(result);
+      void pending.catch(() => undefined);
+      this.assertDirectiveActive(record);
+      const release = this.runtimeCapabilities.task(this.owner, pending, report);
+      if (registration.closed) release();
+      else registration.release = release;
+      this.assertDirectiveActive(record);
+    } catch (error) {
+      const errors = [error];
+      attempt(errors, cleanup);
+      throwCollectedErrors(errors, `Directive ${record.definition.id} task registration failed.`);
+    }
+    return cleanup;
   }
 
   private ownDirectiveCleanup(
@@ -626,7 +690,9 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     if (typeof result !== "function") {
       throw new Error(`Directive ${record.definition.id} must return cleanup or undefined.`);
     }
-    this.ownDirectiveCleanup(record, result as StarDirectiveCleanup);
+    const cleanup = result as StarDirectiveCleanup;
+    if (this.isDestroyed || !record.active) cleanup();
+    else this.ownDirectiveCleanup(record, cleanup);
   }
 
   private releaseDirectiveRecord(element: Element, record: MountedDirective): void {
@@ -650,12 +716,12 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     source: string,
     apply: (value: unknown) => void,
   ): void {
-    const evaluate = this.capabilities.expressions.compileValue(source, {
+    const evaluate = this.runtimeCapabilities.expressions.compileValue(source, {
       attribute: attributeName,
     });
     this.bindEffect(element, attributeName, () => {
       try {
-        apply(evaluate(this.context(element) as StarContext));
+        apply(evaluate(this.context(element)));
       } catch (error) {
         this.report(error, element, attributeName, source);
       }
@@ -668,9 +734,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       onError: (error) =>
         this.report(error, element, attributeName, element.getAttribute(attributeName) ?? ""),
     });
-    this.effects.add(runner);
+    if (this.isDestroyed) {
+      stop(runner);
+      return;
+    }
+    this.ownedEffects.add(runner);
     this.setCleanup(element, attributeName, () => {
-      this.effects.delete(runner);
+      this.ownedEffects.delete(runner);
       stop(runner);
     });
   }
@@ -679,18 +749,29 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     const path = attributeName.slice("data-bind:".length);
     if (!path) throw new Error("data-bind requires a signal name, such as data-bind:count.");
 
-    const runner = effect(() => this.writeModel(element, readPath(this.state, path)), {
-      owner: this.owner,
-      onError: (error) => this.report(error, element, attributeName, path),
-    });
-    this.effects.add(runner);
+    const runner = effect(
+      () => {
+        if (writeModelValue(this.$, element, readPath(this.state, path))) {
+          element.dispatchEvent(new CustomEvent("jquery-star:model-write"));
+        }
+      },
+      {
+        owner: this.owner,
+        onError: (error) => this.report(error, element, attributeName, path),
+      },
+    );
+    if (this.isDestroyed) {
+      stop(runner);
+      return;
+    }
+    this.ownedEffects.add(runner);
     const namespace = `.jqueryStarBind${Math.random().toString(36).slice(2)}`;
     const handler = (): void => {
-      const value = this.readModel(element, readPath(this.state, path));
+      const value = readModelValue(this.$, element, readPath(this.state, path));
       if (value !== SKIP_MODEL_WRITE) writePath(this.state, path, value);
     };
     this.setCleanup(element, attributeName, () => {
-      this.effects.delete(runner);
+      this.ownedEffects.delete(runner);
       stop(runner);
       this.$(element).off(namespace);
     });
@@ -709,7 +790,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     if (options.prevent && options.passive)
       throw new Error("The prevent and passive modifiers cannot be combined.");
 
-    const execute = this.capabilities.expressions.compileStatement(source, {
+    const execute = this.runtimeCapabilities.expressions.compileStatement(source, {
       attribute: attributeName,
     });
     let invoked = false;
@@ -730,7 +811,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         invoked = true;
         lastInvocation = Date.now();
         this.handleResult(
-          execute(this.context(element, nativeEvent as JQuery.Event) as unknown as StarContext),
+          execute(this.context(element, nativeEvent as JQuery.Event)),
           element,
           attributeName,
           source,
@@ -757,17 +838,17 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     const cleanup = (): void => {
       if (debounceTimer) clearTimeout(debounceTimer);
       if (native)
-        target.removeEventListener(options.event, invoke as EventListener, {
-          capture: options.capture,
+        target.removeEventListener(options.event, invoke, {
+          capture: Boolean(options.capture),
         });
       else this.$(element).off(options.event, jqueryInvoke);
     };
     this.setCleanup(element, attributeName, cleanup);
     try {
       if (native) {
-        target.addEventListener(options.event, invoke as EventListener, {
-          capture: options.capture,
-          passive: options.passive,
+        target.addEventListener(options.event, invoke, {
+          capture: Boolean(options.capture),
+          passive: Boolean(options.passive),
         });
       } else {
         this.$(element).on(options.event, jqueryInvoke);
@@ -777,51 +858,6 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       attempt(errors, () => this.cleanupDirective(element, attributeName));
       throwCollectedErrors(errors, "jQuery Star event setup rollback failed.");
     }
-  }
-
-  private writeModel(element: Element, value: unknown): void {
-    if (isInputElement(element)) {
-      if (element.type === "checkbox") {
-        element.checked = Array.isArray(value)
-          ? value.map(String).includes(element.value)
-          : Boolean(value);
-        return;
-      }
-      if (element.type === "radio") {
-        element.checked = String(value ?? "") === element.value;
-        return;
-      }
-    }
-    if (isSelectElement(element) && element.multiple) {
-      const selected = new Set(Array.isArray(value) ? value.map(String) : []);
-      for (const option of Array.from(element.options))
-        option.selected = selected.has(option.value);
-      return;
-    }
-    const next = String(value ?? "");
-    if (this.$(element).val() !== next) {
-      this.$(element).val(next);
-      element.dispatchEvent(new CustomEvent("jquery-star:model-write"));
-    }
-  }
-
-  private readModel(element: Element, current: unknown): unknown {
-    if (isInputElement(element)) {
-      if (element.type === "checkbox") {
-        if (Array.isArray(current)) {
-          const values = current.map(String);
-          return element.checked
-            ? Array.from(new Set([...values, element.value]))
-            : values.filter((value) => value !== element.value);
-        }
-        return element.checked;
-      }
-      if (element.type === "radio") return element.checked ? element.value : SKIP_MODEL_WRITE;
-    }
-    if (isSelectElement(element) && element.multiple) {
-      return Array.from(element.selectedOptions, (option) => option.value);
-    }
-    return this.$(element).val();
   }
 
   private setCleanup(element: Element, attribute: string, cleanup: () => void): void {
@@ -861,16 +897,19 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
 
   private cleanupTree(tree: Element, preservedRoots: readonly Element[] = []): void {
     const errors: unknown[] = [];
+    const released: Element[] = [];
     for (const element of [tree, ...Array.from(tree.querySelectorAll("*"))]) {
       if (
+        !this.ownedElements.has(element) ||
         preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
       ) {
         continue;
       }
       attempt(errors, () => cancelElementRequests(element));
+      released.push(element);
     }
     for (const [element, attributes] of Array.from(this.cleanups)) {
-      if (element !== tree && !tree.contains(element)) continue;
+      if (tree !== this.root && !tree.contains(element)) continue;
       if (
         preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
       ) {
@@ -879,6 +918,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       this.cleanups.delete(element);
       for (const cleanup of attributes.values()) attempt(errors, cleanup);
     }
+    for (const element of released) this.ownedElements.delete(element);
     throwCollectedErrors(errors, "jQuery Star declarative subtree cleanup failed.");
   }
 
@@ -889,6 +929,8 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
         const element = mutation.target as Element;
         const attribute = mutation.attributeName;
         if (!attribute) continue;
+        if (element !== this.root && !this.root.contains(element)) continue;
+        if (!this.belongsHere(element)) continue;
         if (attribute === "data-ignore") {
           if (element.hasAttribute("data-ignore")) {
             attempt(errors, () => this.cleanupTree(element));
@@ -900,7 +942,7 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
           continue;
         }
         if (element.closest("[data-ignore]")) continue;
-        if (this.capabilities.directives.resolve(attribute)) {
+        if (this.runtimeCapabilities.directives.resolve(attribute)) {
           attempt(errors, () => this.initializeDirective(element, attribute));
           continue;
         }
@@ -918,13 +960,13 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
       for (const node of Array.from(mutation.removedNodes)) {
         if (isElementNode(node)) {
           attempt(errors, () =>
-            this.cleanupTree(node, this.capabilities.preservedRootsWithin(node)),
+            this.cleanupTree(node, this.runtimeCapabilities.preservedRootsWithin(node)),
           );
         }
       }
       for (const node of Array.from(mutation.addedNodes)) {
         if (!isElementNode(node)) continue;
-        const preservedRoots = this.capabilities.preservedRootsWithin(node);
+        const preservedRoots = this.runtimeCapabilities.preservedRootsWithin(node);
         attempt(errors, () => this.loadSignals(node, preservedRoots));
         attempt(errors, () => this.loadComputed(node, preservedRoots));
         attempt(errors, () => this.scanTree(node, preservedRoots));
@@ -945,12 +987,12 @@ export class DeclarativeApplication<State extends StateRecord = StateRecord>
     if (releaseObserver) attempt(errors, releaseObserver);
 
     attempt(errors, () => this.cleanupTree(this.root));
-    for (const runner of Array.from(this.effects)) {
-      this.effects.delete(runner);
+    for (const runner of Array.from(this.ownedEffects)) {
+      this.ownedEffects.delete(runner);
       attempt(errors, () => stop(runner));
     }
     attempt(errors, () => this.$.removeData(this.root, "jqueryStar.instance"));
-    attempt(errors, () => this.capabilities.applicationDestroyed(this));
+    attempt(errors, () => this.runtimeCapabilities.applicationDestroyed(this));
   }
 
   private reportLifecycle(error: unknown): void {

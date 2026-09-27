@@ -1,4 +1,5 @@
-import type { ComputedRecord, StarContext, StateRecord } from "./types";
+import { isThenable } from "./value-checks";
+import type { StarContext } from "./types";
 import type {
   StarExpressionEngine,
   StarExpressionError,
@@ -15,7 +16,7 @@ export type {
   StarValueEvaluator,
 } from "./expression-types";
 
-type ExpressionContext = StarContext<StateRecord, ComputedRecord>;
+type ExpressionContext = StarContext;
 
 const ACTION_EXPRESSION = /^@([A-Za-z_$][\w$.-]*)(?:\(([\s\S]*)\))?$/;
 
@@ -72,6 +73,7 @@ function scopeFor(context: ExpressionContext): object {
       $root: context.$root,
       $el: context.$element,
       args: context.args ?? [],
+      stores: context.stores,
       action: (name: string, ...args: unknown[]) =>
         context.instance.run(name, { ...context, args }),
     },
@@ -101,14 +103,6 @@ function scopeFor(context: ExpressionContext): object {
       return Reflect.set(target, key, value, receiver);
     },
   });
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    ((typeof value === "object" && value !== null) || typeof value === "function") &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
 }
 
 function expressionError(

@@ -167,7 +167,7 @@
         "unsupportedDocuments"
       ],
       "properties": {
-        "jquery": { "const": ">=4.0.0 <5" },
+        "jquery": { "const": ">=3.7.1 <5" },
         "node": { "const": ">=24" },
         "browsers": { "$ref": "#/$defs/names" },
         "moduleFormats": { "$ref": "#/$defs/names" },

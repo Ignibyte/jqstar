@@ -77,6 +77,21 @@ describe("jQuery Star Countdown", () => {
     expect($.star.ui.countdown.remaining(root())).toBe(4);
   });
 
+  it("rejects a wrong-kind element action target without pausing the nearby timer", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Countdown application did not start.");
+    const foreign = root().querySelector<HTMLElement>('[data-part="value"]');
+    if (!foreign) throw new Error("Missing Countdown value part.");
+    await expect(
+      app.run("ui.countdown.pause", { element: foreign, args: [foreign] }),
+    ).rejects.toThrow('Countdown target did not match data-jqs="countdown"');
+    expect($.star.ui.countdown.state(root()).paused).toBe(false);
+    await app.run("ui.countdown.pause", { args: [root()] });
+    expect($.star.ui.countdown.state(root()).paused).toBe(true);
+    await app.run("ui.countdown.resume", { element: foreign });
+    expect($.star.ui.countdown.state(root()).paused).toBe(false);
+  });
+
   it("accepts an absolute backend deadline and can reset to authored duration", () => {
     const start = vi.fn();
     const reset = vi.fn();

@@ -75,8 +75,19 @@ describe("jQuery Star Range Calendar and Date Range Picker", () => {
     expect(rangeDay("2026-08-20").dataset.state).toBe("range-start");
     expect(rangeDay("2026-08-21").dataset.state).toBe("in-range");
     expect(rangeDay("2026-08-22").dataset.state).toBe("range-end");
+    expect(rangeDay("2026-08-19").dataset.state).toBe("unselected");
+    expect(rangeDay("2026-08-23").dataset.state).toBe("unselected");
     expect(rangeDay("2026-08-21").closest('[role="gridcell"]')?.getAttribute("aria-selected")).toBe(
       "true",
+    );
+    expect(rangeDay("2026-08-22").closest('[role="gridcell"]')?.getAttribute("aria-selected")).toBe(
+      "true",
+    );
+    expect(rangeDay("2026-08-19").closest('[role="gridcell"]')?.getAttribute("aria-selected")).toBe(
+      "false",
+    );
+    expect(rangeDay("2026-08-23").closest('[role="gridcell"]')?.getAttribute("aria-selected")).toBe(
+      "false",
     );
     expect(rangeDay("2026-08-20").getAttribute("aria-label")).toContain("start of selected range");
     expect(rangeCalendar().querySelector('[data-part="status"]')?.textContent).toContain(
@@ -93,6 +104,10 @@ describe("jQuery Star Range Calendar and Date Range Picker", () => {
     rangeDay("2026-08-28").click();
     expect($.star.ui.rangeCalendar.value(rangeCalendar())).toEqual({ start: "2026-08-28" });
     expect(rangeDay("2026-08-28").getAttribute("aria-label")).toContain("choose an end date");
+    expect(rangeDay("2026-08-29").dataset.state).toBe("unselected");
+    expect(rangeDay("2026-08-29").closest('[role="gridcell"]')?.getAttribute("aria-selected")).toBe(
+      "false",
+    );
 
     rangeDay("2026-08-31").click();
     expect(invalid).toHaveBeenCalledOnce();

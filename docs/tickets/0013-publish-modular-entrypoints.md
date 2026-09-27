@@ -3,7 +3,7 @@ id: 0013
 title: Publish modular core, UI, and Datastar entry points
 status: done
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-06
 ---
 
 # 0013: Publish modular core, UI, and Datastar entry points
@@ -140,11 +140,11 @@ current required `StarStatic.ui` and global jQuery declarations.
       settles the barrier once, and leaves no application/resource leak. Preserved roots retain DOM
       identity, state, effects, focus, values, handlers, and plugin/UI records without duplicate
       enhancement.
-- [x] [AC-13] Public metadata and documentation label `core`, `ui`, and `datastar` as 0.4 previews,
-      explain root compatibility versus explicit installation, list formats/side effects, and make
-      no jQuery UI successor or stable-1.0 claim. Full focused and installed-package matrices,
-      coverage/property/static/browser/package/release gates, `npm run check`, and
-      `git diff --check` pass without mutation testing.
+- [x] [AC-13] Public metadata and documentation use the stable designation approved by ticket 0017
+      for `core`, `ui`, and `datastar`, explain root compatibility versus explicit installation,
+      list formats/side effects, and make no jQuery UI successor claim. Full focused and
+      installed-package matrices, coverage/property/static/browser/package/release gates,
+      `npm run check`, and `git diff --check` pass without mutation testing.
 - [x] [AC-14] Core and root expose the same idempotent public disposal operation. It attempts every
       application, plugin, request, task, observer, listener, subscription, effect, hook, and
       service cleanup; releases installation ownership; and returns a frozen, JSON-safe report of
@@ -340,6 +340,59 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 - `docs/tickets/0013-publish-modular-entrypoints.md`: Phase state, ledger, commands, findings, and
   criterion evidence.
 
+### Reopening decision: supported-toolchain core budget, 2026-09-06
+
+The final program audit found that AC-09 exceeds the existing core gzip budget on official Node
+24.20.0. Hosted run `34012438886` measured 63,113 bytes against 63,000. An isolated installed
+consumer produces exactly the same 195,103 JavaScript bytes on the local diagnostic; compressing
+those bytes with Homebrew zlib gives 62,995, while official Node 24 gives the hosted 63,113. The
+reports are `.git/jqstar/program-audit/core-gzip-homebrew.json` and
+`core-gzip-official-node24.json`. Reopen this owner to Plan; the prior completion is historical.
+
+Restore the existing budget by sharing equivalent internal value checks and bounded-text handling
+currently duplicated across core modules. Review exact semantics before extraction: object prototype
+checks, thenable access, control-character replacement, Unicode truncation, and error fallback
+wording must remain unchanged. Do not combine helpers whose getter behavior differs. Keep public
+types, entry exports, optional-module exclusions, compiler settings, consumer workload, and gzip
+settings unchanged. New helpers remain internal and import no optional code.
+
+Planned correction files: a small internal value helper, its core call sites, focused boundary
+fixtures, necessary derived measurement records, modular architecture/testing documentation, and
+this ticket. Verify public behavior and hostile-value boundaries, compiled entry graphs, official
+Node 24 and Homebrew gzip sizes, fast and complete delivery gates, and current phase validators. Any
+optimization that fails a contract or still exceeds the existing budget is not accepted.
+
+### Additional disposal correction, 2026-09-06
+
+Direct AC-14 review reproduced an incomplete cleanup sweep when a callback throws
+`Object.create(null)`. Formatting the thrown value raises a second TypeError, skips a later cleanup,
+and retains its resource. The failing fixture and JSON report are retained under
+`.git/jqstar/program-audit/disposal-value*`. Delivery run `2026-09-06T06-04-04-409Z-6542` passed all
+13 gates before this correction, but its existing tests do not cover this defect. AC-14 is unchecked
+and this already reopened ticket returns to Code.
+
+Share guarded error-field extraction between disposal and operation diagnostics. Read each Error
+field once, contain prototype and conversion failures, and retain the original thrown values in the
+aggregate. Preserve each caller's ordinary name/message fallbacks, empty-message policy, truncation,
+and control-character handling. Disposal must finish the sweep, release the document, and return the
+same terminal aggregate on repeated calls for unprintable values, revoked proxies, and changing
+accessors. Add kernel and diagnostic regressions before implementation. Planned files are
+`src/{disposal,value-checks}.ts`, `test/{kernel,value-checks}.test.ts`, ownership and architecture
+documentation, derived size measurements, and this ticket. Verify focused failures and passes,
+existing operation diagnostics, unchanged core budgets, coverage, and a fresh complete delivery.
+
+### Current documentation decision, 2026-09-06
+
+Completed ticket 0017 AC-01 explicitly superseded the original 0.4-preview designation. Refresh
+AC-13 to that approved stable contract while retaining this ticket's historical preview scope and
+all quality requirements.
+
+Correct the API page's outdated claim that disposal releases an expression-engine identity. The
+document claim is reusable; a disposed engine stays terminal, as the kernel contract already tests.
+Planned documentation files are `example/docs/api/index.html`, its generated agent mirrors,
+`CHANGELOG.md`, and this ticket. Record the table and cleanup corrections in the unreleased 1.1
+notes without changing the package version or publishing.
+
 ## Code
 
 ### Changed-file ledger
@@ -393,18 +446,68 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 | `vitest.coverage.config.ts`, `quality/production-census.json`                          | Exercise source self-imports through one runtime under coverage and classify the separate UMD build.     |
 | `schema/package-report.schema.json`                                                    | Validate the active modular exports, consumers, and core bundle sentinel in package evidence.            |
 
+### Current correction ledger
+
+- `src/value-checks.ts`, `src/declarative.ts`, `src/directive.ts`, `src/expression.ts`,
+  `src/observation.ts`, `src/protocol.ts`, `src/request-middleware.ts`: share exactly equivalent
+  value checks and diagnostic text normalization. The protocol-specific thenable getter remains
+  separate because its membership behavior differs.
+- `src/request-headers.ts`: one unchanged browser-owned header predicate shared by protocol and
+  middleware policy.
+- `test/value-checks.test.ts`: plain/null prototypes, hostile proxy/accessor behavior, function
+  thenables, whitespace, control characters, Unicode, and truncation boundaries.
+- `quality/jquery-mobile-migration.json`: refresh the measured UMD bytes after the compiled
+  implementation changes; the migration outcome and supported behavior are unchanged.
+- `test/protocol.test.ts`, `test/request-middleware.test.ts`: mixed-case browser-owned headers,
+  permitted application headers, and retained authored-header policy.
+- `docs/ARCHITECTURE.md` and this ticket: internal helper ownership and supported-toolchain proof.
+- `src/disposal.ts`, `src/value-checks.ts`: contain prototype/conversion failures and read Error
+  fields once while preserving caller-specific formatting and original aggregate values.
+- `test/kernel.test.ts`, `test/value-checks.test.ts`: reproduce five hostile-value failures, then
+  verify complete cleanup, reusable document ownership, stable repeated errors, and safe
+  diagnostics.
+- `README.md`, `docs/RUNTIME_OWNERSHIP.md`: document bounded disposal formatting and cleanup after
+  unprintable failures.
+- `example/docs/api/index.html`, generated agent index/full-text files, `CHANGELOG.md`: correct
+  document versus engine ownership and record the user-visible fixes.
+
 ### Design changes
 
 - A kernel now starts with `core.generic` only. The official Datastar plugin registers
   `core.datastar` and root composition selects it as the default; an explicit core installation
   therefore cannot retain an accidental Datastar import.
-- Kernel disposal releases its document and expression-engine claims, as required by the public
-  terminal disposal contract. Existing tests that expected a disposed document to remain claimed
-  must move to the new reinstall-after-disposal contract.
+- Kernel disposal releases its document installation claim while retaining the terminal expression
+  engine identity. A fresh engine can reinstall that document; a disposed engine cannot be reused.
 - Completion audit found that the CLI did not expose the package version required by AC-10. Add a
   manifest-derived `--version` path and prove both the source CLI and the installed tarball output.
 
 ## Test
+
+Delivery `2026-09-06T06-34-06-391Z-92532` passes all 13 gates: 1,244 unit tests, 484 browser cases,
+coverage, properties, static checks, installed-package checks, reproducibility, and detector
+controls. Every changed production line/function is covered. Test validation accepted that exact
+receipt before verified commit `c3b957e` and this documentation phase.
+
+The budget correction passed delivery `2026-09-06T06-04-04-409Z-6542` under official Node 24.20.0:
+all 13 gates, 1,239 unit tests, 484 browser cases, 13 installed-package groups, and seven release
+checks passed. This is evidence for that exact earlier source; the additional disposal correction
+requires fresh fast, coverage, and delivery evidence before phase closure.
+
+Five added hostile-value regressions failed against the previous source. After guarded extraction,
+all 89 kernel, value-boundary, observation, and middleware tests pass. Exact before/after JSON is
+retained as `.git/jqstar/program-audit/disposal-boundaries-{before,after}.json`. The revised core
+consumer is 193,511 raw / 62,994 gzip bytes on official Node 24, below the unchanged 63,000 gzip
+ceiling. `core-gzip-disposal-node24.json` records the diagnostic toolchain and bytes; the installed
+package gate must confirm the final artifact.
+
+Fast run `2026-09-06T06-30-16-748Z-67113` passed unit and static checks but failed formatting of the
+refreshed UMD measurement JSON. Format that record without changing its value or any rule, then
+repeat the fast gate. This failed run cannot close Code.
+
+Corrected fast run `2026-09-06T06-32-11-544Z-79781` passes all six gates and 1,244 unit tests on
+official Node 24. Code validation accepted this exact current-tree report before the transition to
+testing. The subsequent delivery recorded above supplies coverage and complete verification for the
+additional disposal fix.
 
 | Command                                                                                                                                                                                                     | Result                     | Evidence                                                                                                                                                                                                                             |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -442,6 +545,18 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 | Version-complete `npm run quality:delivery`                                                                                                                                                                 | Pass                       | Run `2026-09-01T18-56-04-795Z-14492` passed all 12 gates on an unchanged 495-file fingerprint: 734 unit tests, 1,930 effective property cases, 263 browser cases, and the package and release matrices.                              |
 | Test-phase validation against run `2026-09-01T18-56-04-795Z-14492`                                                                                                                                          | Pass                       | The validator accepted the current testing tree, immutable delivery report and receipt, command/evidence table, and independent inspection ledger.                                                                                   |
 
+Current correction verification: 137 focused value, protocol, middleware, directive, observation,
+Mobile-contract, and preparation tests passed; the subsequent header-policy extension passed 76
+focused tests. Typecheck and ESLint passed. The first sharing diagnostic remained above budget
+(63,017 bytes); shared diagnostic formatting measured 63,022. Sharing the equivalent header policy
+then produced 193,624 raw and 62,988 gzip bytes under official Node 24.20.0, with a 463,391-byte
+UMD. Current official Node 24 fast run `2026-09-06T06-00-38-593Z-87431` passes all six gates and
+1,239 unit tests. Coverage passes with every changed executable line/function covered: 94.48% lines,
+93.45% functions, and 84.88% branches. The clean-checkout unit and three-engine table checks also
+pass. The measured bundle sizes are compiled-consumer diagnostics, not final installed-package or
+delivery proof. Retained reports and build logs are under `.git/jqstar/program-audit/`. Complete
+current verification remains required before closure.
+
 ### Inspection ledger
 
 | Finding                                                                                                                  | Resolution                                                                                                                                       | Evidence                                                                                                           |
@@ -477,24 +592,24 @@ callbacks, DOM nodes, application instances, or a live kernel/resource inspectio
 
 ### Acceptance evidence
 
-| ID    | Evidence                                                                                                                                                                                                                                                                                                     | Result |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| AC-01 | `src/core.ts` and `test/modular-entrypoints.test.ts` prove import purity and explicit generic-core installation; the installed `core-only-esm` consumer executes the same contract from the packed artifact.                                                                                                 | Pass   |
-| AC-02 | `dist/core.d.ts` and `dist/core.d.cts` contain no ambient global augmentation, while the root declarations retain it; NodeNext and Bundler consumers prove unrelated jQuery values do not gain `star` from a core type import.                                                                               | Pass   |
-| AC-03 | `src/ui.ts`, `src/ui/index.ts`, plugin tests, and modular tests prove one frozen official UI plugin, all 165 actions, transactional installation and rollback, two-document isolation, auto-enhancement, and exactly-once disposal.                                                                          | Pass   |
-| AC-04 | Source inspection, modular tests, and the packed modular browser consumer prove `$.ui` and `$.widget` remain absent; `README.md` documents `data-jqs`, `data-part`, native HTML, state attributes, and `@ui.*` as the shipped contract.                                                                      | Pass   |
-| AC-05 | `src/datastar.ts`, protocol tests, and the installed modular consumer prove the frozen Datastar plugin installs `core.datastar` without UI or document work, while core alone retains `core.generic`.                                                                                                        | Pass   |
-| AC-06 | `src/index.ts` and `src/compatibility.ts` compose core, Datastar, and UI; root ESM, CommonJS, QUnit, module-browser, and UMD consumers plus the public-baseline suite prove compatibility behavior and the `jQueryStar`/`$.star.ui` identities.                                                              | Pass   |
-| AC-07 | The `package.json` export map and run `2026-09-01T18-56-04-795Z-14492` package report prove five public exports, matched ESM/CommonJS declarations and maps, ten installed consumers, strict `publint`, Are the Types Wrong, and private-import refusal.                                                     | Pass   |
-| AC-08 | `package.json` limits `sideEffects` to root artifacts and UI CSS; the installed bundle matrix proves explicit plugin retention and reports a 194,837-byte raw, 62,395-byte gzip, six-module core-only bundle with every optional sentinel absent.                                                            | Pass   |
-| AC-09 | The installed core-only consumer executes applications, helpers, directives, observations, middleware, generic requests, patches, render, and disposal; its graph and sentinel checks exclude every optional subsystem named by the criterion.                                                               | Pass   |
-| AC-10 | `src/version.ts`, `bin/jqstar.mjs`, `test/cli.test.ts`, and the final package report prove manifest-derived version `0.1.0` across entries, declarations, maps, metadata, runtime facades, source and packed CLI output; the plugin API version remains independently explicit.                              | Pass   |
-| AC-11 | `src/render-adapter.ts`, `src/kernel.ts`, focused render tests, and 100 generated render state-machine sequences prove operation IDs, exact preservation, contained removal boundaries, deepest-first deduplication, terminal ordering, explicit incoming boot, and the complete enhancement barrier.        | Pass   |
-| AC-12 | Render unit and three-engine browser tests prove original-error preservation, complete failure cleanup, zero ownership leaks, and retained root identity, state, effects, focus, values, handlers, and UI/plugin records without duplicate enhancement.                                                      | Pass   |
-| AC-13 | Public metadata and documentation mark all subpaths as `0.4-preview` and distinguish them from root compatibility; delivery run `2026-09-01T18-56-04-795Z-14492` passed all 12 gates, including 734 unit tests, coverage, 1,930 property cases, 263 browser cases, package, and reproducible release checks. | Pass   |
-| AC-14 | `src/disposal.ts`, `src/kernel.ts`, runtime and modular tests prove the shared public disposal operation, exhaustive cleanup, ownership release, frozen JSON-safe reports, stable repeated/recursive results, reinstall after disposal, and typed aggregate failure after the complete cleanup sweep.        | Pass   |
+| ID    | Evidence                                                                                                                                                                                                                                                                                                                                                | Result |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| AC-01 | `src/core.ts` and `test/modular-entrypoints.test.ts` prove import purity and explicit generic-core installation; the installed `core-only-esm` consumer executes the same contract from the packed artifact.                                                                                                                                            | Pass   |
+| AC-02 | `dist/core.d.ts` and `dist/core.d.cts` contain no ambient global augmentation, while the root declarations retain it; NodeNext and Bundler consumers prove unrelated jQuery values do not gain `star` from a core type import.                                                                                                                          | Pass   |
+| AC-03 | `src/ui.ts`, `src/ui/index.ts`, plugin tests, and modular tests prove one frozen official UI plugin, all 165 actions, transactional installation and rollback, two-document isolation, auto-enhancement, and exactly-once disposal.                                                                                                                     | Pass   |
+| AC-04 | Source inspection, modular tests, and the packed modular browser consumer prove `$.ui` and `$.widget` remain absent; `README.md` documents `data-jqs`, `data-part`, native HTML, state attributes, and `@ui.*` as the shipped contract.                                                                                                                 | Pass   |
+| AC-05 | `src/datastar.ts`, protocol tests, and the installed modular consumer prove the frozen Datastar plugin installs `core.datastar` without UI or document work, while core alone retains `core.generic`.                                                                                                                                                   | Pass   |
+| AC-06 | `src/index.ts` and `src/compatibility.ts` compose core, Datastar, and UI; root ESM, CommonJS, QUnit, module-browser, and UMD consumers plus the public-baseline suite prove compatibility behavior and the `jQueryStar`/`$.star.ui` identities.                                                                                                         | Pass   |
+| AC-07 | The current package report validates every declared export, ESM/CommonJS declarations and maps, installed NodeNext/Bundler consumers, strict publint, Are the Types Wrong, and private-import refusal.                                                                                                                                                  | Pass   |
+| AC-08 | Package side-effect metadata and installed graphs preserve explicit plugin installation. The core graph has five modules and excludes optional entries; the source-owned registry pattern does not cause core imports to perform work.                                                                                                                  | Pass   |
+| AC-09 | Delivery 2026-09-06T06-34-06-391Z-92532 executes the installed core workload and module/sentinel checks: 193,511 raw bytes and 62,994 gzip bytes on official Node 24.20.0, below unchanged ceilings of 197,632 and 63,000. Every forbidden optional module is absent.                                                                                   | Pass   |
+| AC-10 | `src/version.ts`, CLI tests, installed consumers and package export checks derive current version 1.1.0 from the manifest. The plugin API remains separately versioned at 0.1.0.                                                                                                                                                                        | Pass   |
+| AC-11 | `src/render-adapter.ts`, `src/kernel.ts`, focused render tests, and 100 generated render state-machine sequences prove operation IDs, exact preservation, contained removal boundaries, deepest-first deduplication, terminal ordering, explicit incoming boot, and the complete enhancement barrier.                                                   | Pass   |
+| AC-12 | Render unit and three-engine browser tests prove original-error preservation, complete failure cleanup, zero ownership leaks, and retained root identity, state, effects, focus, values, handlers, and UI/plugin records without duplicate enhancement.                                                                                                 | Pass   |
+| AC-13 | Completed ticket 0017 AC-01 superseded the historical preview designation. Current package metadata and compatibility docs identify stable 1.x entries. Delivery 2026-09-06T06-34-06-391Z-92532 passes all 13 gates without mutation execution.                                                                                                         | Pass   |
+| AC-14 | Kernel, modular, runtime, and render tests prove complete cleanup, terminal reports, original aggregate values, stable repeated/recursive results and document reuse. Added regressions cover null-prototype values, revoked proxies, throwing conversion and changing accessors; all 1,244 unit tests pass in delivery 2026-09-06T06-34-06-391Z-92532. | Pass   |
 
-### Completion audit
+### Previous completion audit (superseded 2026-09-06)
 
 The audit traced all 14 criteria from the public entry points through declarations, runtime
 ownership, installed consumers, browser execution, package metadata, public documentation, and the
@@ -508,5 +623,18 @@ bytes, and reproduces across two clean installations with SHA-256
 `b48bd73612724463bd84fffdda1377aec99accd010b106623698667eb67b0da6`. The final delivery evidence
 contains 12 passing gates and excludes mutation testing. Package and release cleanup handlers leave
 zero matching temporary workspaces after success and failure paths.
+
+Historical status: Complete
+
+### Completion audit
+
+The core-budget and hostile-value disposal corrections pass complete delivery
+`2026-09-06T06-34-06-391Z-92532` and its Test-phase validator. That verified implementation artifact
+has 257 files, 3,163,667 packed bytes and 11,076,409 unpacked bytes; two independent builds
+reproduce SHA-256 `cb9a2c52039fdb5c6e0f564b0fe6299f69c3c2739f53b5c2e0eb4c8548ca2a6c`. All 14 current
+criteria have direct evidence. Public API text now distinguishes reusable document ownership from a
+terminal engine identity, and the changelog records the cleanup correction. Document validation
+passed. The next commit still requires its own current delivery receipt after these documentation
+updates.
 
 Status: Complete

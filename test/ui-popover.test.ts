@@ -38,6 +38,21 @@ describe("jQuery Star Popover", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element action target without opening the nearby popover", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Popover application did not start.");
+    await expect(
+      app.run("ui.popover.open", { element: trigger(), args: [trigger()] }),
+    ).rejects.toThrow('Popover target did not match a data-jqs="popover" element');
+    expect(content().hidden).toBe(true);
+    await app.run("ui.popover.open", { args: [popover()] });
+    expect(content().hidden).toBe(false);
+    await app.run("ui.popover.close", { args: ["#popover"] });
+    expect(content().hidden).toBe(true);
+    await app.run("ui.popover.open", { element: trigger() });
+    expect(content().hidden).toBe(false);
+  });
+
   it("wires the trigger, dialog relationship, title, and closed state", () => {
     expect(trigger().getAttribute("aria-controls")).toBe(content().id);
     expect(trigger().getAttribute("aria-haspopup")).toBe("dialog");

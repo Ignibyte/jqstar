@@ -48,6 +48,13 @@ interface InstalledFetch {
   readonly target: object;
 }
 
+function restoreFetch({ descriptor, target }: InstalledFetch): void {
+  if (descriptor) Object.defineProperty(target, "fetch", descriptor);
+  else if (!Reflect.deleteProperty(target, "fetch")) {
+    throw new StarResponseError("Could not restore absent fetch property.");
+  }
+}
+
 export interface StarResponseController {
   enqueue(expectation: StarResponseExpectation): StarResponseController;
   json(
@@ -202,7 +209,10 @@ export function createResponseController(
     }
     if (fixture.kind === "abort") {
       return await new Promise<Response>((_resolve, reject) => {
-        const fail = (): void => reject(abortError());
+        const fail = (): void => {
+          request.signal.removeEventListener("abort", fail);
+          reject(abortError());
+        };
         request.signal.addEventListener("abort", fail, { once: true });
         pending.get(id)!.cancel = fail;
       });
@@ -210,13 +220,21 @@ export function createResponseController(
 
     validateDelay(fixture.delayMs);
     return await new Promise<Response>((resolve, reject) => {
+      let canceled = false;
       const timer = (options.window ?? globalThis).setTimeout(() => {
+        if (canceled) return;
         request.signal.removeEventListener("abort", cancel);
         void settleFixture(fixture.response, request, id).then(resolve, reject);
       }, fixture.delayMs);
       const cancel = (): void => {
-        (options.window ?? globalThis).clearTimeout(timer);
-        reject(abortError());
+        if (canceled) return;
+        canceled = true;
+        request.signal.removeEventListener("abort", cancel);
+        try {
+          (options.window ?? globalThis).clearTimeout(timer);
+        } finally {
+          reject(abortError());
+        }
       };
       request.signal.addEventListener("abort", cancel, { once: true });
       pending.get(id)!.cancel = cancel;
@@ -226,9 +244,7 @@ export function createResponseController(
   const fetchStub = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     assertActive();
     const source =
-      typeof input === "object" && input !== null && "url" in input
-        ? (input as Request)
-        : undefined;
+      typeof input === "object" && input !== null && "url" in input ? input : undefined;
     const method = (init?.method ?? source?.method ?? "GET").toUpperCase();
     const headers = new Headers(source?.headers);
     if (init?.headers) {
@@ -354,8 +370,7 @@ export function createResponseController(
         active = false;
         const index = installations.indexOf(record);
         if (index >= 0) installations.splice(index, 1);
-        if (descriptor) Object.defineProperty(target, "fetch", descriptor);
-        else Reflect.deleteProperty(target, "fetch");
+        restoreFetch(record);
       };
     },
     requests: () => Object.freeze([...captured]),
@@ -390,9 +405,7 @@ export function createResponseController(
       }
       for (const installation of [...installations].reverse()) {
         try {
-          if (installation.descriptor) {
-            Object.defineProperty(installation.target, "fetch", installation.descriptor);
-          } else Reflect.deleteProperty(installation.target, "fetch");
+          restoreFetch(installation);
         } catch (error) {
           errors.push(error);
         }

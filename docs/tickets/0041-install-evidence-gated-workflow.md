@@ -1,9 +1,9 @@
 ---
 id: 0041
 title: Install the evidence-gated delivery workflow
-status: blocked
+status: done
 created: 2026-08-30
-updated: 2026-08-31
+updated: 2026-09-03
 ---
 
 # 0041: Install the evidence-gated delivery workflow
@@ -81,7 +81,7 @@ None.
 - [x] [AC-08] Editing any gated file or gate configuration invalidates the receipt.
 - [x] [AC-09] The commit guard refuses gated changes without a matching receipt and ignores
       documented non-product operations that cannot create a commit.
-- [ ] [AC-10] CI runs the same repository commands from a clean checkout and retains reports for
+- [x] [AC-10] CI runs the same repository commands from a clean checkout and retains reports for
       failures.
 - [x] [AC-11] Sabotage fixtures prove every gate-runner refusal and receipt check fails red before
       returning to green.
@@ -111,6 +111,9 @@ never counted as a pass.
 - Store reports and receipts under the active Git directory so evidence cannot change its own
   fingerprint.
 - Require an explicit phase-validation command and matching report when closing Code or Test.
+- Resolve every JavaScript-bearing public package export to its source entry point in Vitest. Unit
+  tests must exercise public import names from a clean checkout without depending on stale `dist/`
+  output.
 
 ### Risks
 
@@ -130,6 +133,7 @@ never counted as a pass.
   fingerprints.
 - Prove public standalone and Rustal-orchestrated runs record the same command results.
 - Run CI configuration validation, `npm run check`, `npm run test:package`, and `git diff --check`.
+- Remove generated `dist/` output and prove unit tests resolve every public source entry point.
 
 ### Planned files
 
@@ -150,29 +154,30 @@ never counted as a pass.
 
 ### Changed-file ledger
 
-| File                                                   | Purpose                                                         |
-| ------------------------------------------------------ | --------------------------------------------------------------- |
-| `quality/gates.mjs`                                    | Fixed gate definitions and conditional selection.               |
-| `schema/quality-report.schema.json`                    | Machine-readable `jqstar-quality-report/1` contract.            |
-| `schema/quality-receipt.schema.json`                   | Complete receipt structure and identity contract.               |
-| `scripts/quality/lib/git-state.mjs`                    | Complete roster, immutable diff scope, and content fingerprint. |
-| `scripts/quality/lib/files.mjs`                        | Atomic JSON writes.                                             |
-| `scripts/quality/lib/process.mjs`                      | Safe child execution, timeouts, logs, and evidence checks.      |
-| `scripts/quality/lib/ticket.mjs`                       | Machine-checkable phase rules.                                  |
-| `scripts/quality/run.mjs`                              | Fast, delivery, and full-audit orchestrator.                    |
-| `scripts/quality/validate-ticket.mjs`                  | Changed-ticket phase validator.                                 |
-| `scripts/quality/verify-receipt.mjs`                   | Current worktree and report receipt verifier.                   |
-| `scripts/quality/commit-guard.mjs`                     | Explicit, reversible hook installation.                         |
-| `test/quality-runner.test.mjs`                         | Gate and receipt sabotage suite.                                |
-| `test/ticket-workflow.test.mjs`                        | Phase-transition sabotage suite.                                |
-| `.githooks/pre-commit`                                 | Public commit guard entry point.                                |
-| `.github/workflows/quality.yml`                        | Clean-checkout delivery and scheduled audit CI.                 |
-| `package.json`                                         | Stable quality, phase, guard, and compatibility commands.       |
-| `docs/tickets/TEMPLATE.md`                             | Planned-file and inspection evidence fields.                    |
-| `docs/tickets/README.md`                               | Enforced phase transitions and receipt behavior.                |
-| `docs/DEVELOPMENT.md`                                  | Local commands, evidence paths, CI parity, and recovery.        |
-| `docs/QUALITY_PROGRAM.md`                              | Canonical modes and fail-closed evidence policy.                |
-| `docs/tickets/0041-install-evidence-gated-workflow.md` | Current implementation ledger.                                  |
+| File                                                   | Purpose                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------- |
+| `quality/gates.mjs`                                    | Fixed gate definitions and conditional selection.                     |
+| `schema/quality-report.schema.json`                    | Machine-readable `jqstar-quality-report/1` contract.                  |
+| `schema/quality-receipt.schema.json`                   | Complete receipt structure and identity contract.                     |
+| `scripts/quality/lib/git-state.mjs`                    | Complete roster, immutable diff scope, and content fingerprint.       |
+| `scripts/quality/lib/files.mjs`                        | Atomic JSON writes.                                                   |
+| `scripts/quality/lib/process.mjs`                      | Safe child execution, timeouts, logs, and evidence checks.            |
+| `scripts/quality/lib/ticket.mjs`                       | Machine-checkable phase rules.                                        |
+| `scripts/quality/run.mjs`                              | Fast, delivery, and full-audit orchestrator.                          |
+| `scripts/quality/validate-ticket.mjs`                  | Changed-ticket phase validator.                                       |
+| `scripts/quality/verify-receipt.mjs`                   | Current worktree and report receipt verifier.                         |
+| `scripts/quality/commit-guard.mjs`                     | Explicit, reversible hook installation.                               |
+| `test/quality-runner.test.mjs`                         | Gate and receipt sabotage suite.                                      |
+| `test/ticket-workflow.test.mjs`                        | Phase-transition sabotage suite.                                      |
+| `.githooks/pre-commit`                                 | Public commit guard entry point.                                      |
+| `.github/workflows/quality.yml`                        | Clean-checkout delivery and scheduled audit CI.                       |
+| `vitest.config.ts`                                     | Resolve all JavaScript public exports to source for clean unit tests. |
+| `package.json`                                         | Stable quality, phase, guard, and compatibility commands.             |
+| `docs/tickets/TEMPLATE.md`                             | Planned-file and inspection evidence fields.                          |
+| `docs/tickets/README.md`                               | Enforced phase transitions and receipt behavior.                      |
+| `docs/DEVELOPMENT.md`                                  | Local commands, evidence paths, CI parity, and recovery.              |
+| `docs/QUALITY_PROGRAM.md`                              | Canonical modes and fail-closed evidence policy.                      |
+| `docs/tickets/0041-install-evidence-gated-workflow.md` | Current implementation ledger.                                        |
 
 ### Design changes
 
@@ -188,29 +193,42 @@ terminates the active group, records later configured stages that did not start 
 writes a red report. Final reports and receipts must validate against their complete schemas before
 they are written or trusted.
 
+The documented `.git/jqstar/latest-report.json` path is an authorized alias for Test-phase
+validation only when its bytes match the current receipt's report SHA-256. The immutable run report
+remains authoritative, and arbitrary copies remain rejected even when their JSON fields match.
+
 ## Test
 
-| Command                                                                  | Result     | Evidence                                                                                                                                                                               |
-| ------------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass       | 33 runner, discovery, scope, schema, receipt, interruption, evidence-vacuity, and phase tests pass.                                                                                    |
-| `node scripts/quality/validate-json.mjs`                                 | Pass       | All 40 JSON documents parsed and three report/config instances validated against 14 schemas.                                                                                           |
-| `npm exec -- actionlint .github/workflows/quality.yml`                   | Pass       | The clean-checkout workflow and its base-SHA selection are valid.                                                                                                                      |
-| `git diff --check`                                                       | Pass       | The current workflow implementation has no whitespace errors.                                                                                                                          |
-| `npm run quality:fast`                                                   | Pass       | Run `2026-08-30T19-45-06-407Z-45616` passed five enforced gates on one 419-file fingerprint.                                                                                           |
-| `npm run quality:delivery`                                               | Pass       | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 enforced gates and wrote a receipt for one unchanged 419-file fingerprint.                                                          |
-| `npm run quality:full-audit`                                             | Useful red | Run `2026-08-31T04-58-57-044Z-87453` retained every gate result and refused a receipt when repeated-browser quality failed.                                                            |
-| Read-only GitHub workflow inventory                                      | Pending    | `origin/main` matches local `HEAD` and GitHub CLI authentication is valid. GitHub exposes only the Pages workflow; the four local quality workflows have not been committed or pushed. |
-| Final local `npm run quality:delivery`                                   | Pass       | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced gates and wrote a receipt for the unchanged current tree.                                                                  |
+| Command                                                                  | Result           | Evidence                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass             | 33 runner, discovery, scope, schema, receipt, interruption, evidence-vacuity, and phase tests pass.                                                                                                                 |
+| `node scripts/quality/validate-json.mjs`                                 | Pass             | All 40 JSON documents parsed and three report/config instances validated against 14 schemas.                                                                                                                        |
+| `npm exec -- actionlint .github/workflows/quality.yml`                   | Pass             | The clean-checkout workflow and its base-SHA selection are valid.                                                                                                                                                   |
+| `git diff --check`                                                       | Pass             | The current workflow implementation has no whitespace errors.                                                                                                                                                       |
+| `npm run quality:fast`                                                   | Pass             | Run `2026-08-30T19-45-06-407Z-45616` passed five enforced gates on one 419-file fingerprint.                                                                                                                        |
+| `npm run quality:delivery`                                               | Pass             | Run `2026-08-31T04-45-57-403Z-62775` passed all 13 enforced gates and wrote a receipt for one unchanged 419-file fingerprint.                                                                                       |
+| `npm run quality:full-audit`                                             | Useful red       | Run `2026-08-31T04-58-57-044Z-87453` retained every gate result and refused a receipt when repeated-browser quality failed.                                                                                         |
+| Read-only GitHub workflow inventory                                      | Pass             | PR 1 exposes Quality, Static Quality, CodeQL, and Dependency Review workflows. Hosted delivery run `33810252990` retained artifact `quality-delivery-1`.                                                            |
+| Final local `npm run quality:delivery`                                   | Pass             | Run `2026-08-31T15-21-08-168Z-69566` passed all 13 enforced gates and wrote a receipt for the unchanged current tree.                                                                                               |
+| Documented Test-phase command with `.git/jqstar/latest-report.json`      | Fail, corrected  | The validator rejected the byte-identical documented alias because it compared pathnames rather than receipt identity.                                                                                              |
+| `node --test test/quality-runner.test.mjs test/ticket-workflow.test.mjs` | Pass             | All 34 tests pass, including canonical report, exact latest alias, modified alias, and arbitrary-copy receipt authorization cases.                                                                                  |
+| Latest-alias fix `npm run quality:fast`                                  | Pass             | Run `2026-09-03T19-00-00-808Z-10130` passed ticket workflow, runner self-tests, formatting, unit tests, and every selected static-fast gate.                                                                        |
+| PR 1 hosted delivery run `33800660841`                                   | Fail, actionable | Static, package, release, and browser lanes passed. Unit failed on a public Datastar entry point without a source alias and a bounded API Extractor child timeout; coverage correctly consumed the red unit report. |
+| Clean-output external render contract                                    | Pass, 16 tests   | `test/external-render-contract.test.ts` passed with `dist/` temporarily absent, proving every imported public entry point resolves through source aliases.                                                          |
+| Final exact-tree `npm run check`                                         | Pass, 12 gates   | Run `2026-09-03T21-41-23-468Z-10883` passed on the unchanged tree later committed as `8fc3106` and wrote a delivery receipt.                                                                                        |
+| PR 1 hosted delivery run `33810252990`                                   | Pass, 12 gates   | Clean Ubuntu run `2026-09-03T21-55-48-950Z-17497` passed every enforced gate on one unchanged 602-file fingerprint and retained `quality-delivery-1` with its report, logs, and eligible receipt.                   |
 
 ### Inspection ledger
 
-| Finding                                                                                                            | Resolution                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A receipt could remain valid after the approved commit changed `HEAD`.                                             | Receipt verification now checks both the complete worktree fingerprint and the recorded `HEAD`.                                                                        |
-| A delivery with every test gate skipped could appear green.                                                        | Delivery and full-audit modes now require at least one enforced test gate to execute and pass.                                                                         |
-| Clean CI compared only its worktree to `HEAD`, making changed-line coverage, mutation, and ticket selection empty. | CI now supplies a validated ancestor base; scope sabotage proves committed, local, and untracked changes are combined and invalid bases fail.                          |
-| SIGTERM killed the active gate but allowed later stages to launch.                                                 | A real CLI sabotage proves the active gate is killed, later stages are recorded as interruption errors without starting, the report is red, and no receipt is written. |
-| Receipt verification trusted a few identity fields without validating the complete documents.                      | The runner validates reports and receipts before writing, and verification validates both schemas again before trusting their contents or hashes.                      |
+| Finding                                                                                                            | Resolution                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A receipt could remain valid after the approved commit changed `HEAD`.                                             | Receipt verification now checks both the complete worktree fingerprint and the recorded `HEAD`.                                                                          |
+| A delivery with every test gate skipped could appear green.                                                        | Delivery and full-audit modes now require at least one enforced test gate to execute and pass.                                                                           |
+| Clean CI compared only its worktree to `HEAD`, making changed-line coverage, mutation, and ticket selection empty. | CI now supplies a validated ancestor base; scope sabotage proves committed, local, and untracked changes are combined and invalid bases fail.                            |
+| SIGTERM killed the active gate but allowed later stages to launch.                                                 | A real CLI sabotage proves the active gate is killed, later stages are recorded as interruption errors without starting, the report is red, and no receipt is written.   |
+| Receipt verification trusted a few identity fields without validating the complete documents.                      | The runner validates reports and receipts before writing, and verification validates both schemas again before trusting their contents or hashes.                        |
+| The documented latest-report Test command was rejected despite matching the receipt report byte for byte.          | Test validation now permits only the canonical report and standard latest alias, and requires the receipt's exact run ID and SHA-256; arbitrary or modified copies fail. |
+| Clean unit execution resolved some public package names through stale `dist/` output.                              | Vitest now maps every JavaScript-bearing public export to source; all 16 external-render contract tests pass with `dist/` absent.                                        |
 
 ## Document
 
@@ -227,32 +245,28 @@ they are written or trusted.
 
 ### Acceptance evidence
 
-| Criterion | Evidence                                                                                                                                                                                                                                             | Result  |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| AC-01     | `inspectTicket` and phase sabotage reject missing requirements, current evidence, scope, exclusions, decisions, risks, verification, and planned files.                                                                                              | Pass    |
-| AC-02     | Phase validation rejects a missing changed-file ledger, design record, or current passing `quality:fast` report.                                                                                                                                     | Pass    |
-| AC-03     | Phase validation rejects a missing inspection ledger, non-delivery report, delivery without an executed test, schema-invalid reports, stale trees, and unauthorized receipts.                                                                        | Pass    |
-| AC-04     | Phase validation binds one stable criterion ID to exactly one checked Pass or unchecked Approved-Disposition row and requires a positive completion marker.                                                                                          | Pass    |
-| AC-05     | The canonical-mode test asserts the complete ordered gate IDs, stages, commands, and collision-free stage membership for fast, delivery, and full audit.                                                                                             | Pass    |
-| AC-06     | Sabotage covers missing tools, timeout, killed processes, failed non-empty native suites, unreadable/empty evidence, schema mismatch, identity mismatch, and write failure.                                                                          | Pass    |
-| AC-07     | Runner tests prove only green delivery/full-audit results with executed tests and matching start/end fingerprints may write a receipt.                                                                                                               | Pass    |
-| AC-08     | Tests mutate a gated file, `HEAD`, report content, report semantics, and receipt structure; every stale or malformed receipt is rejected.                                                                                                            | Pass    |
-| AC-09     | A temporary repository invokes the real hook: missing and stale receipts fail, the matching receipt passes, and setup remains explicit and reversible.                                                                                               | Pass    |
-| AC-10     | `quality.yml` uses full history and a validated PR base or push-before SHA, runs repository commands, and uploads evidence on success or failure. Actionlint passes locally. The hosted run and artifact retrieval still require an authorized push. | Pending |
-| AC-11     | The 33-test sabotage corpus proves command, discovery, scope, interruption, phase-report, transition ordering, document mapping, schema, suite vacuity, fingerprint, receipt, guard, and phase refusals.                                             | Pass    |
-| AC-12     | `package.json` retains `npm run check` as the documented `quality:delivery` compatibility alias.                                                                                                                                                     | Pass    |
+| Criterion | Evidence                                                                                                                                                                                                                          | Result |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| AC-01     | `inspectTicket` and phase sabotage reject missing requirements, current evidence, scope, exclusions, decisions, risks, verification, and planned files.                                                                           | Pass   |
+| AC-02     | Phase validation rejects a missing changed-file ledger, design record, or current passing `quality:fast` report.                                                                                                                  | Pass   |
+| AC-03     | Phase validation rejects a missing inspection ledger, non-delivery report, delivery without an executed test, schema-invalid reports, stale trees, and unauthorized receipts.                                                     | Pass   |
+| AC-04     | Phase validation binds one stable criterion ID to exactly one checked Pass or unchecked Approved-Disposition row and requires a positive completion marker.                                                                       | Pass   |
+| AC-05     | The canonical-mode test asserts the complete ordered gate IDs, stages, commands, and collision-free stage membership for fast, delivery, and full audit.                                                                          | Pass   |
+| AC-06     | Sabotage covers missing tools, timeout, killed processes, failed non-empty native suites, unreadable/empty evidence, schema mismatch, identity mismatch, and write failure.                                                       | Pass   |
+| AC-07     | Runner tests prove only green delivery/full-audit results with executed tests and matching start/end fingerprints may write a receipt.                                                                                            | Pass   |
+| AC-08     | Tests mutate a gated file, `HEAD`, report content, report semantics, and receipt structure; every stale or malformed receipt is rejected.                                                                                         | Pass   |
+| AC-09     | A temporary repository invokes the real hook: missing and stale receipts fail, the matching receipt passes, and setup remains explicit and reversible.                                                                            | Pass   |
+| AC-10     | `quality.yml` uses full history and a validated PR base or push-before SHA. Hosted run `33810252990` passed all 12 gates from a clean checkout and artifact `quality-delivery-1` retained its report, logs, and eligible receipt. | Pass   |
+| AC-11     | The 33-test sabotage corpus proves command, discovery, scope, interruption, phase-report, transition ordering, document mapping, schema, suite vacuity, fingerprint, receipt, guard, and phase refusals.                          | Pass   |
+| AC-12     | `package.json` retains `npm run check` as the documented `quality:delivery` compatibility alias.                                                                                                                                  | Pass   |
 
 ### Completion audit
 
-The implementation and its refusal paths have been inspected against every criterion. The final
-local delivery run passed all 13 gates and wrote a receipt for the unchanged current tree. AC-10
-still needs a hosted clean-checkout run and retained-artifact verification after the user authorizes
-committing and pushing the current quality implementation. GitHub authentication is valid; the
-remaining blocker is that the remote contains only the Pages workflow.
+The implementation and its refusal paths have been inspected against every criterion. Local run
+`2026-09-03T21-41-23-468Z-10883` passed the exact tree later committed as `8fc3106`. Hosted run
+`33810252990` then passed all 12 enforced delivery gates from a clean Ubuntu checkout and retained
+artifact `quality-delivery-1` with the schema-valid report, isolated logs, and eligible receipt. The
+start and end fingerprints match across all 602 files. Every acceptance criterion now has direct
+evidence.
 
-The named external state change is an authorized commit and push of the current workflow files,
-followed by a hosted GitHub Actions run whose retained report can be inspected. Local workflow
-validation cannot substitute for that evidence, and this ticket does not authorize either Git
-operation.
-
-Status: Blocked
+Status: Complete

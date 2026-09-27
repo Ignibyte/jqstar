@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createPluginHost,
+  defineOfficialPlugin,
   satisfiesPluginVersionRange,
   type StarPlugin,
   type StarPluginDocumentHost,
@@ -89,9 +90,13 @@ function protocolProfile(id: string): StarProtocolProfileDefinition {
 describe("stable plugin version ranges", () => {
   it.each([
     ["1.2.3", "*", true],
+    ["12.3.4", "*", true],
+    ["1.23.4", "*", true],
+    ["1.2.34", "*", true],
     ["1.2.3", "1.2.3", true],
     ["1.2.4", "1.2.3", false],
     ["1.9.9", "^1.2.3", true],
+    ["1.2.4", "  ^1.2.3  ", true],
     ["2.0.0", "^1.2.3", false],
     ["0.1.9", "^0.1.2", true],
     ["0.2.0", "^0.1.2", false],
@@ -113,13 +118,44 @@ describe("stable plugin version ranges", () => {
     },
   );
 
+  it.each(["1.2.3 || 2.0.0", "^1.2.3 <2.0.0"])(
+    "reports unsupported composite range %s before parsing a boundary",
+    (range) => {
+      expect(() => satisfiesPluginVersionRange("1.2.3", range)).toThrow(
+        `Unsupported plugin version range: ${range}.`,
+      );
+    },
+  );
+
   it("rejects unstable and incomplete plugin versions", () => {
-    expect(() => satisfiesPluginVersionRange("1.2", "*")).toThrow("major.minor.patch");
+    expect(() => satisfiesPluginVersionRange("1.2", "*")).toThrow(
+      "Plugin version must be a stable major.minor.patch version",
+    );
     expect(() => satisfiesPluginVersionRange("1.2.3-beta.1", "*")).toThrow("major.minor.patch");
+    expect(() => satisfiesPluginVersionRange("1a.2.3", "*")).toThrow("major.minor.patch");
+    expect(() => satisfiesPluginVersionRange("1.2a.3", "*")).toThrow("major.minor.patch");
+    expect(() => satisfiesPluginVersionRange("1.2.3a", "*")).toThrow("major.minor.patch");
   });
 });
 
 describe("transactional plugin installation", () => {
+  it("rejects leading and trailing punctuation in ordinary and official names", () => {
+    const host = createPluginHost(createActionRegistry());
+    for (const name of ["!acme.tools", "acme.tools!"]) {
+      expect(() => host.use(plugin(name, () => ({})))).toThrow("dot-qualified");
+    }
+    for (const name of ["!official", "official!"]) {
+      expect(() => host.use(defineOfficialPlugin(plugin(name, () => ({}))))).toThrow(
+        "dot-qualified",
+      );
+    }
+    expect(host.names()).toEqual([]);
+    expect(host.use(defineOfficialPlugin(plugin("standalone", () => ({ ready: true }))))).toEqual({
+      ready: true,
+    });
+    expect(host.names()).toEqual(["standalone"]);
+  });
+
   it("rejects document access when a host has no Document capability", () => {
     const host = createPluginHost(createActionRegistry());
 
@@ -640,6 +676,21 @@ describe("transactional plugin installation", () => {
     expect(() =>
       host.use(plugin("acme.early", () => ({}), { before: ["acme.installed"] })),
     ).toThrow("cannot be ordered before installed");
+  });
+
+  it("rejects a target named in both plugin ordering directions before installation", () => {
+    const host = createPluginHost(createActionRegistry());
+    const install = vi.fn(() => ({}));
+    expect(() =>
+      host.use(
+        plugin("acme.conflicted", install, {
+          before: ["acme.target"],
+          after: ["acme.target"],
+        }),
+      ),
+    ).toThrow("cannot be both before and after acme.target");
+    expect(install).not.toHaveBeenCalled();
+    expect(host.names()).toEqual([]);
   });
 
   it("rejects malformed JavaScript manifest fields before installation", () => {

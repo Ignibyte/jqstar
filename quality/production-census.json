@@ -24,7 +24,6 @@
       "eslint.config.js",
       "playwright.config.ts",
       "vite.config.ts",
-      "vite.csp.config.ts",
       "vite.umd.config.ts",
       "vite.demo.config.ts",
       "vite.server.config.ts",
@@ -47,14 +46,34 @@
     ],
     "rootSuffixes": [".config.js", ".config.mjs", ".config.ts"]
   },
-  "coverageExcludeGlobs": ["**/*.d.ts", "src/types.ts", "server/index.ts"],
+  "coverageExcludeGlobs": [
+    "**/*.d.ts",
+    "src/csp/ast.ts",
+    "src/expression-types.ts",
+    "src/inspect/types.ts",
+    "src/metadata-types.ts",
+    "src/persist/types.ts",
+    "src/stores/types.ts",
+    "src/testing/types.ts",
+    "src/types.ts",
+    "server/index.ts"
+  ],
   "rules": [
     {
       "id": "runtime-coverage",
       "kind": "coverage",
       "prefixes": ["src/"],
       "suffixes": [".ts"],
-      "excludePaths": ["src/types.ts"],
+      "excludePaths": [
+        "src/csp/ast.ts",
+        "src/expression-types.ts",
+        "src/inspect/types.ts",
+        "src/metadata-types.ts",
+        "src/persist/types.ts",
+        "src/stores/types.ts",
+        "src/testing/types.ts",
+        "src/types.ts"
+      ],
       "excludeSuffixes": [".d.ts"],
       "coverageGlobs": ["src/**/*.ts"]
     },
@@ -82,7 +101,16 @@
     {
       "id": "type-only-source",
       "kind": "semantic-exclusion",
-      "paths": ["src/types.ts"],
+      "paths": [
+        "src/csp/ast.ts",
+        "src/expression-types.ts",
+        "src/inspect/types.ts",
+        "src/metadata-types.ts",
+        "src/persist/types.ts",
+        "src/stores/types.ts",
+        "src/testing/types.ts",
+        "src/types.ts"
+      ],
       "evidence": ["npm run typecheck"]
     },
     {
@@ -119,6 +147,12 @@
       "prefixes": ["bin/"],
       "suffixes": [".mjs"],
       "evidence": ["npm run test:unit", "npm run test:package"]
+    },
+    {
+      "id": "shipped-doctor-rules",
+      "kind": "schema-contract-evidence",
+      "paths": ["bin/doctor/compatibility.json"],
+      "evidence": ["npm run quality:static", "npm run test:unit", "npm run test:package"]
     },
     {
       "id": "deployment-assets",
@@ -178,7 +212,6 @@
         "eslint.config.js",
         "playwright.config.ts",
         "vite.config.ts",
-        "vite.csp.config.ts",
         "vite.umd.config.ts",
         "vite.demo.config.ts",
         "vite.server.config.ts",

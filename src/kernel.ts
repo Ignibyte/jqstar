@@ -1,3 +1,5 @@
+import { isElementNode } from "./dom";
+import type { StarKernelMetadataAccess } from "./metadata-types";
 import type { StarExpressionEngine } from "./expression-types";
 import { attempt, throwCollectedErrors } from "./errors";
 import {
@@ -28,7 +30,8 @@ import { ProtocolProfileRegistry } from "./protocol";
 import { RequestMiddlewareRegistry } from "./request-middleware";
 import type { StarAction, StarContext, StarInstance } from "./types";
 
-export type KernelResourceKind = "listener" | "observer" | "service" | "subscription" | "task";
+export type KernelResourceKind =
+  "effect" | "listener" | "observer" | "service" | "subscription" | "task";
 
 export interface KernelResourceSummary {
   readonly kind: KernelResourceKind;
@@ -41,6 +44,7 @@ export interface ApplicationCapabilities {
   readonly directives: DirectiveRegistry;
   readonly expressions: StarExpressionEngine;
   readonly helpers: StarExpressionHelperScope;
+  readonly stores: StarContext["stores"];
   applicationCreated(application: StarInstance): void;
   applicationDestroyed(application: StarInstance): void;
   nextApplicationId(): number;
@@ -96,7 +100,22 @@ export interface RenderTransactionOptions {
 }
 
 interface ResourceRecord extends KernelResourceSummary {
+  readonly root: Element | undefined;
   readonly release: () => void;
+}
+
+interface DocumentListenerRecord {
+  readonly type: string;
+  readonly listener: EventListener;
+  readonly capture: boolean;
+  readonly callback: EventListener;
+  active: boolean;
+  pending: boolean;
+  completedOrder: number;
+  owners: number;
+  current(): boolean;
+  retire(): void;
+  remove(): void;
 }
 
 interface ApplicationRecord {
@@ -105,6 +124,8 @@ interface ApplicationRecord {
   readonly owner: string;
   readonly pluginCleanup: () => void;
 }
+
+const cancelledListener = new Error("Listener acquisition was cancelled.");
 
 const claimedDocuments = new WeakMap<Document, Kernel>();
 const claimedExpressionEngines = new WeakMap<StarExpressionEngine, Kernel>();
@@ -117,6 +138,11 @@ export function compareElementDepth(left: Element, right: Element): number {
 
 function deepestFirst(left: ApplicationRecord, right: ApplicationRecord): number {
   return compareElementDepth(left.application.root, right.application.root);
+}
+
+function containsAny(roots: Iterable<Node>, node: Node): boolean {
+  for (const root of roots) if (root.contains(node)) return true;
+  return false;
 }
 
 export class Kernel {
@@ -136,7 +162,13 @@ export class Kernel {
   private readonly activePreservedRoots = new Map<Element, number>();
   private readonly enhancementErrors: unknown[] = [];
   private readonly resources = new Set<ResourceRecord>();
+  private readonly documentListeners = new WeakMap<EventTarget, Set<DocumentListenerRecord>>();
+  private readonly removalScopes = new Map<ReadonlySet<Element>, readonly Element[]>();
+  private readonly removedNodes = new Set<Node>();
+  private resourceRemovalObserver: MutationObserver | undefined;
+  private metadataFinalizers: Set<(report: StarDisposalReport) => void> | undefined;
   private applicationId = 0;
+  private documentListenerId = 0;
   private trackedApplicationId = 0;
   private renderOperationId = 0;
   private isDisposed = false;
@@ -169,6 +201,8 @@ export class Kernel {
       this.requestMiddleware,
       this.protocols,
       this.documentHost,
+      (target, type, listener, options, current) =>
+        this.createOwnedListener(target, type, listener, options, current),
     );
     claimedExpressionEngines.set(expressions, this);
     claimedDocuments.set(documentHost, this);
@@ -194,6 +228,8 @@ export class Kernel {
       directives: this.extensions,
       expressions: this.expressions,
       helpers: this.extensions.helpers(),
+      stores: (this.plugins.facade("core.stores") as { stores?: StarContext["stores"] } | undefined)
+        ?.stores,
       applicationCreated: (application) => {
         this.observations.trackApplication(application);
         this.requestMiddleware.trackApplication(application);
@@ -212,9 +248,7 @@ export class Kernel {
         return ++this.applicationId;
       },
       preservedRootsWithin: (tree) =>
-        [...this.activePreservedRoots.keys()].filter(
-          (preserved) => tree === preserved || tree.contains(preserved),
-        ),
+        [...this.activePreservedRoots.keys()].filter((preserved) => tree.contains(preserved)),
       observeOperations: (application, observer, options) =>
         this.observations.observeApplication(application, observer, options),
       observe: (owner, target, callback, options) =>
@@ -250,16 +284,6 @@ export class Kernel {
       this.protocols.releaseApplication(application);
       throw error;
     }
-    if (application.destroyed) {
-      const errors: unknown[] = [
-        new Error("A jQStar plugin destroyed the application during setup."),
-      ];
-      attempt(errors, pluginCleanup);
-      attempt(errors, () => this.observations.releaseApplication(application));
-      attempt(errors, () => this.requestMiddleware.releaseApplication(application));
-      attempt(errors, () => this.protocols.releaseApplication(application));
-      throwCollectedErrors(errors, "jQStar plugin application setup rollback failed.");
-    }
     this.applications.set(application, {
       application,
       lifecycle,
@@ -288,8 +312,7 @@ export class Kernel {
 
   beginRender(root: Element, options: RenderTransactionOptions = {}): RenderTransaction {
     this.assertActive("render patches");
-    const ElementHost = (this.documentHost.window as Window & typeof globalThis).Element;
-    if (!(root instanceof ElementHost) || root.ownerDocument !== this.documentHost.document) {
+    if (!isElementNode(root) || root.ownerDocument !== this.documentHost.document) {
       throw new Error("A render root must belong to this jQuery Star kernel's Document.");
     }
     if (!root.isConnected)
@@ -297,10 +320,7 @@ export class Kernel {
 
     const suppliedPreservedRoots = Array.from(options.preserveRoots ?? []);
     for (const preserved of suppliedPreservedRoots) {
-      if (
-        !(preserved instanceof ElementHost) ||
-        preserved.ownerDocument !== this.documentHost.document
-      ) {
+      if (!isElementNode(preserved) || preserved.ownerDocument !== this.documentHost.document) {
         throw new Error("A preserved root must belong to this jQuery Star kernel's Document.");
       }
       if (!preserved.isConnected) {
@@ -318,12 +338,7 @@ export class Kernel {
     const preservedRoots = [...new Set([...markedPreservedRoots, ...suppliedPreservedRoots])];
     const activeElement = this.documentHost.document.activeElement;
     const preservedFocus =
-      activeElement &&
-      preservedRoots.some(
-        (preserved) => preserved === activeElement || preserved.contains(activeElement),
-      )
-        ? activeElement
-        : undefined;
+      activeElement && containsAny(preservedRoots, activeElement) ? activeElement : undefined;
     const preservedOwners = new Map(
       preservedRoots.map((preserved) => [
         preserved,
@@ -341,12 +356,14 @@ export class Kernel {
     const errors: unknown[] = [];
     const releasedApplications = new Set<StarInstance>();
     const removalBoundaries = new Set<Element>();
+    this.removalScopes.set(removalBoundaries, preservedRoots);
     let finished = false;
     let resolveBarrier!: () => void;
     const barrier = new Promise<void>((resolve) => {
       resolveBarrier = resolve;
     });
     this.pendingEnhancements.add(barrier);
+    let focusRetryAnchor: Element | null | undefined;
 
     const releasePreservation = (): void => {
       for (const preserved of preservedRoots) {
@@ -354,6 +371,7 @@ export class Kernel {
         if (count <= 1) this.activePreservedRoots.delete(preserved);
         else this.activePreservedRoots.set(preserved, count - 1);
       }
+      this.releaseRemovedResources();
     };
 
     const settle = (): void => {
@@ -363,6 +381,19 @@ export class Kernel {
           await nextUpdate();
           await new Promise<void>((resolve) => queueMicrotask(resolve));
           await nextUpdate();
+          if (
+            focusRetryAnchor !== undefined &&
+            !this.isDisposed &&
+            this.renderOperationId === operationId &&
+            preservedFocus?.isConnected &&
+            preservedFocus.ownerDocument === this.documentHost.document &&
+            this.documentHost.document.activeElement === focusRetryAnchor
+          ) {
+            focusRetryAnchor = undefined;
+            const focus = (preservedFocus as Element & { focus?: (options?: FocusOptions) => void })
+              .focus;
+            focus?.call(preservedFocus, { preventScroll: true });
+          }
         } catch (error) {
           this.enhancementErrors.push(error);
         } finally {
@@ -376,6 +407,7 @@ export class Kernel {
     const abandon = (): void => {
       if (finished) return;
       finished = true;
+      this.removalScopes.delete(removalBoundaries);
       releasePreservation();
       this.pendingEnhancements.delete(barrier);
       resolveBarrier();
@@ -384,15 +416,16 @@ export class Kernel {
     const finish = (): void => {
       if (finished) return;
       finished = true;
+      this.removalScopes.delete(removalBoundaries);
       releaseOperation();
       settle();
     };
 
     const validateBoundary = (node: Node, label: string): Element => {
-      if (!(node instanceof ElementHost) || node.ownerDocument !== this.documentHost.document) {
+      if (!isElementNode(node) || node.ownerDocument !== this.documentHost.document) {
         throw new Error(`${label} must belong to this jQuery Star kernel's Document.`);
       }
-      const element = node as Element;
+      const element = node;
       if (!root.contains(element)) {
         throw new Error(`${label} must be contained by the render root.`);
       }
@@ -401,9 +434,7 @@ export class Kernel {
 
     const preservedWithin = (node: Node): readonly Element[] => {
       const element = validateBoundary(node, "A preservation boundary");
-      return Object.freeze(
-        preservedRoots.filter((preserved) => element === preserved || element.contains(preserved)),
-      );
+      return Object.freeze(preservedRoots.filter((preserved) => element.contains(preserved)));
     };
 
     const releaseRecords = (records: readonly ApplicationRecord[]): void => {
@@ -415,26 +446,41 @@ export class Kernel {
       }
     };
 
+    const releaseAncestors = (
+      tree: Element,
+      records: Iterable<ApplicationRecord>,
+      protectedRoots: readonly Element[] = [],
+    ): void => {
+      for (const { application, lifecycle } of records) {
+        if (
+          !lifecycle ||
+          application.destroyed ||
+          releasedApplications.has(application) ||
+          containsAny(protectedRoots, application.root)
+        )
+          continue;
+        attempt(errors, () => lifecycle.releaseTree(tree, protectedRoots));
+      }
+    };
+
     const releaseMissingPreservedRoots = (): void => {
       const missing = preservedRoots.filter(
         (preserved) =>
           !preserved.isConnected || preserved.ownerDocument !== this.documentHost.document,
       );
       if (missing.length === 0) return;
+      this.removalScopes.set(
+        removalBoundaries,
+        preservedRoots.filter((root) => !missing.includes(root)),
+      );
+      for (const preserved of missing) removalBoundaries.add(preserved);
       const records = [...this.applications.values()]
-        .filter(({ application }) =>
-          missing.some(
-            (preserved) => preserved === application.root || preserved.contains(application.root),
-          ),
-        )
+        .filter(({ application }) => containsAny(missing, application.root))
         .sort(deepestFirst);
       releaseRecords(records);
       for (const preserved of missing) {
-        for (const { application, lifecycle } of preservedOwners.get(preserved) ?? []) {
-          if (!lifecycle || application.destroyed || releasedApplications.has(application))
-            continue;
-          attempt(errors, () => lifecycle.releaseTree(preserved));
-        }
+        this.releaseScopedResources((scope) => preserved.contains(scope), errors);
+        releaseAncestors(preserved, preservedOwners.get(preserved) ?? []);
       }
       errors.push(
         new Error(
@@ -453,10 +499,7 @@ export class Kernel {
       }
       const valid: Element[] = [];
       for (const candidate of incoming) {
-        if (
-          !(candidate instanceof ElementHost) ||
-          candidate.ownerDocument !== this.documentHost.document
-        ) {
+        if (!isElementNode(candidate) || candidate.ownerDocument !== this.documentHost.document) {
           errors.push(
             new Error(
               "An incoming application root must belong to this jQuery Star kernel's Document.",
@@ -478,6 +521,8 @@ export class Kernel {
 
     const restorePreservedFocus = (): void => {
       if (
+        this.isDisposed ||
+        this.renderOperationId !== operationId ||
         !preservedFocus ||
         !preservedFocus.isConnected ||
         preservedFocus.ownerDocument !== this.documentHost.document
@@ -486,50 +531,54 @@ export class Kernel {
       }
       const focus = (preservedFocus as Element & { focus?: (options?: FocusOptions) => void })
         .focus;
-      if (focus) attempt(errors, () => focus.call(preservedFocus, { preventScroll: true }));
+      if (focus)
+        attempt(errors, () => {
+          const before = this.documentHost.document.activeElement;
+          const observation = { receivedFocus: false };
+          const received = (): void => {
+            observation.receivedFocus = true;
+          };
+          try {
+            preservedFocus.addEventListener("focus", received, true);
+            if (this.isDisposed || this.renderOperationId !== operationId) return;
+            focus.call(preservedFocus, { preventScroll: true });
+            if (
+              !observation.receivedFocus &&
+              before !== preservedFocus &&
+              this.documentHost.document.activeElement === before
+            )
+              focusRetryAnchor = before;
+          } finally {
+            attempt(errors, () => preservedFocus.removeEventListener("focus", received, true));
+          }
+        });
     };
 
     return {
       operationId,
       preservedWithin,
       beforeRemove: (node) => {
-        if (!(node instanceof ElementHost)) return;
+        if (!isElementNode(node)) return;
         const element = validateBoundary(node, "A removal boundary");
-        if (
-          preservedRoots.some((preserved) => preserved === element || preserved.contains(element))
-        ) {
-          return;
-        }
-        if ([...removalBoundaries].some((boundary) => boundary.contains(element))) return;
+        if (containsAny(preservedRoots, element) || containsAny(removalBoundaries, element)) return;
         removalBoundaries.add(element);
         const records = [...this.applications.values()].sort(deepestFirst);
         const protectedRoots = preservedWithin(element);
+        this.releaseScopedResources(
+          (scope) => element.contains(scope) && !containsAny(protectedRoots, scope),
+          errors,
+          protectedRoots,
+        );
         const outgoing = records.filter(
           ({ application }) =>
-            element.contains(application.root) &&
-            !protectedRoots.some(
-              (preserved) => preserved === application.root || preserved.contains(application.root),
-            ),
+            element.contains(application.root) && !containsAny(protectedRoots, application.root),
         );
-        const outgoingApplications = new Set(outgoing.map(({ application }) => application));
-
         releaseRecords(outgoing);
-
-        for (const { application, lifecycle } of records) {
-          if (
-            !lifecycle ||
-            outgoingApplications.has(application) ||
-            releasedApplications.has(application) ||
-            application.destroyed ||
-            protectedRoots.some(
-              (preserved) => preserved === application.root || preserved.contains(application.root),
-            ) ||
-            !application.root.contains(element)
-          ) {
-            continue;
-          }
-          attempt(errors, () => lifecycle.releaseTree(element, protectedRoots));
-        }
+        releaseAncestors(
+          element,
+          records.filter(({ application }) => application.root.contains(element)),
+          protectedRoots,
+        );
       },
       commit: (incomingRoots) => {
         releaseMissingPreservedRoots();
@@ -566,20 +615,119 @@ export class Kernel {
     throwCollectedErrors(errors, "jQuery Star enhancement failed.");
   }
 
+  metadata(): StarKernelMetadataAccess {
+    return Object.freeze<StarKernelMetadataAccess>({
+      inventory: (application, resource) => {
+        this.assertActive("read metadata");
+        for (const record of this.applications.values())
+          application(this.observations.ownerFor(record.application));
+        for (const record of this.resources) resource(record.kind);
+        return Object.freeze([
+          this.applications.size,
+          this.pendingEnhancements.size,
+          this.pendingTasks.size,
+          this.protocols.snapshot().length,
+          this.protocols.activeBodyCount(),
+          this.requestMiddleware.snapshot().length,
+        ]);
+      },
+      plugins: (visit) => this.plugins.metadata(visit),
+      observe: (observer) => this.observeOperations(observer),
+      own: (kind, cleanup) => this.own(kind, "metadata", cleanup),
+      onDisposed: (observer) => {
+        this.assertActive("observe disposal");
+        (this.metadataFinalizers ??= new Set()).add(observer);
+        return () => {
+          this.metadataFinalizers?.delete(observer);
+        };
+      },
+    });
+  }
+
   resourceSummary(): readonly KernelResourceSummary[] {
     return [...this.resources].map(({ kind, owner }) => ({ kind, owner }));
   }
 
-  own(kind: KernelResourceKind, owner: string, cleanup: () => void): () => void {
+  private canOwn(root: Element, connected = false): boolean {
+    return (
+      !this.isDisposed &&
+      (!connected || root.isConnected) &&
+      root.ownerDocument === this.documentHost.document &&
+      [...this.removalScopes].every(
+        ([boundaries, preserved]) => !containsAny(boundaries, root) || containsAny(preserved, root),
+      )
+    );
+  }
+
+  private releaseScopedResources(
+    matches: (root: Element) => boolean,
+    errors: unknown[],
+    preserved: readonly Element[] = [],
+  ): void {
+    const records = [...this.resources].filter(
+      (record): record is ResourceRecord & { root: Element } =>
+        record.root !== undefined && matches(record.root),
+    );
+    const boundaries = new Set(records.map(({ root }) => root));
+    this.removalScopes.set(boundaries, preserved);
+    try {
+      for (const record of records.reverse()) attempt(errors, record.release);
+    } finally {
+      this.removalScopes.delete(boundaries);
+    }
+  }
+
+  private releaseRemovedResources(
+    records = this.resourceRemovalObserver?.takeRecords() ?? [],
+  ): void {
+    for (const record of records)
+      for (const node of record.removedNodes) this.removedNodes.add(node);
+    if (this.removedNodes.size === 0) return;
+    const preserved = [...this.activePreservedRoots.keys()];
+    this.releaseScopedResources(
+      (root) =>
+        (!root.isConnected || root.ownerDocument !== this.documentHost.document) &&
+        containsAny(this.removedNodes, root) &&
+        !containsAny(preserved, root),
+      this.enhancementErrors,
+      preserved,
+    );
+    const deferred = preserved.filter(
+      (root) =>
+        (!root.isConnected || root.ownerDocument !== this.documentHost.document) &&
+        containsAny(this.removedNodes, root),
+    );
+    this.removedNodes.clear();
+    for (const root of deferred) this.removedNodes.add(root);
+  }
+
+  own(kind: KernelResourceKind, owner: string, cleanup: () => void, root?: Element): () => void {
     this.assertActive("own resources");
-    let active = true;
+    if (root) {
+      const connected = root.isConnected;
+      if (!this.canOwn(root))
+        throw new Error("This root cannot acquire resources in this Document.");
+      if (this.resourceRemovalObserver) {
+        this.releaseRemovedResources();
+      } else {
+        const candidate = this.createOwnedObserver(
+          "document:resource-removal",
+          this.documentHost.document,
+          (records) => this.releaseRemovedResources(records),
+          { childList: true, subtree: true },
+        );
+        this.resourceRemovalObserver ??= candidate.observer;
+        if (this.resourceRemovalObserver !== candidate.observer) candidate.release();
+      }
+      if (!this.canOwn(root, connected))
+        throw new Error("This root cannot acquire resources in this Document.");
+    }
     const record: ResourceRecord = {
       kind,
       owner,
+      root,
       release: () => {
-        if (!active) return;
-        active = false;
-        this.resources.delete(record);
+        if (!this.resources.delete(record)) return;
         cleanup();
       },
     };
@@ -633,11 +781,13 @@ export class Kernel {
     }
     this.applications.clear();
 
-    run([resource("subscription", "kernel:operations")], () => this.observations.dispose());
-
     for (const record of [...this.resources].reverse()) {
       run([resource(record.kind, record.owner)], () => record.release());
     }
+    this.removedNodes.clear();
+    this.removalScopes.clear();
+
+    run([resource("subscription", "kernel:operations")], () => this.observations.dispose());
 
     const pluginResources = this.plugins.names().map((name) => resource("plugin", name));
     run(pluginResources, () => this.plugins.dispose());
@@ -651,6 +801,15 @@ export class Kernel {
       }
     });
     this.disposalInProgress = false;
+    const finalizers = this.metadataFinalizers;
+    this.metadataFinalizers = undefined;
+    finalizers?.forEach((notify) => {
+      try {
+        notify(controller.report);
+      } catch {
+        /* Observations cannot alter settled cleanup. */
+      }
+    });
     if (errors.length > 0) {
       this.disposalError = new StarDisposalError(errors, controller.report);
       throw this.disposalError;
@@ -665,13 +824,30 @@ export class Kernel {
     options: MutationObserverInit,
   ): OwnedObserver {
     this.assertActive("install application observers");
-    const Observer = (this.documentHost.window as Window & typeof globalThis).MutationObserver;
-    const observer = new Observer(callback);
-    const release = this.own("observer", owner, () => observer.disconnect());
+    const lifetime = { active: true };
+    let observer: MutationObserver | undefined;
+    const release = this.own("observer", owner, () => {
+      lifetime.active = false;
+      observer?.disconnect();
+    });
     try {
+      const Observer = (this.documentHost.window as Window & typeof globalThis).MutationObserver;
+      this.assertActive("install application observers");
+      observer = new Observer((records, observed) => {
+        if (lifetime.active && !this.isDisposed) callback.call(observed, records, observed);
+      });
+      this.assertActive("install application observers");
       observer.observe(target, options);
+      this.assertActive("install application observers");
     } catch (error) {
-      release();
+      try {
+        if (lifetime.active) release();
+        else observer?.disconnect();
+      } catch (cleanupError) {
+        throw new AggregateError([error, cleanupError], "Observer setup and cleanup failed.", {
+          cause: cleanupError,
+        });
+      }
       throw error;
     }
     return { observer, release };
@@ -716,27 +892,160 @@ export class Kernel {
     record.pluginCleanup();
   }
 
+  private listenerOptions(
+    check: () => void,
+    options?: boolean | AddEventListenerOptions,
+  ): AddEventListenerOptions {
+    const captured = Object.create(null) as AddEventListenerOptions;
+    if (typeof options === "boolean") {
+      captured.capture = options;
+      return captured;
+    }
+    const capture = Boolean(options?.capture);
+    check();
+    const once = Boolean(options?.once);
+    check();
+    const passive = options?.passive;
+    check();
+    const signal = options?.signal;
+    check();
+    captured.capture = capture;
+    captured.once = once;
+    if (passive !== undefined) captured.passive = passive;
+    if (signal !== undefined) captured.signal = signal;
+    return captured;
+  }
+
+  private documentListener(
+    target: EventTarget,
+    type: string,
+    listener: EventListener,
+    options: AddEventListenerOptions,
+    order: number,
+    current: () => boolean,
+  ): DocumentListenerRecord | undefined {
+    let records = this.documentListeners.get(target);
+    if (!records) {
+      records = new Set();
+      this.documentListeners.set(target, records);
+    }
+    const capture = Boolean(options.capture);
+    for (const record of records) {
+      if (record.type === type && record.listener === listener && record.capture === capture) {
+        if (!record.pending && record.current()) {
+          return record.completedOrder > order ? undefined : record;
+        }
+        record.retire();
+      }
+    }
+    const currentRecords = records;
+    const active = () => !this.isDisposed;
+    const record: DocumentListenerRecord = {
+      type,
+      listener,
+      capture,
+      active: true,
+      pending: true,
+      completedOrder: 0,
+      owners: 0,
+      current: () => record.active && current() && !options.signal?.aborted,
+      callback(event) {
+        if (!record.current() || !active()) return;
+        if (options.once) record.retire();
+        listener.call(this, event);
+      },
+      retire() {
+        record.active = false;
+        currentRecords.delete(record);
+      },
+      remove() {
+        record.retire();
+        target.removeEventListener(type, record.callback, capture);
+      },
+    };
+    records.add(record);
+    return record;
+  }
+
+  private createOwnedListener(
+    target: EventTarget,
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions,
+    current: () => boolean = () => true,
+  ): () => void {
+    this.assertActive("install document listeners");
+    const order = ++this.documentListenerId;
+    const lifetime = { active: true, acquired: false, pending: true };
+    let record: DocumentListenerRecord | undefined;
+    const cleanup = () => {
+      lifetime.active = false;
+      if (!record) return;
+      if (lifetime.acquired) {
+        lifetime.acquired = false;
+        record.owners--;
+      }
+      if (!record.active || !lifetime.pending || record.owners === 0 || this.isDisposed)
+        record.remove();
+    };
+    const release = this.own("listener", `document:${type}`, cleanup);
+    const check = () => {
+      this.assertActive("install document listeners");
+      if (!current()) throw cancelledListener;
+    };
+    try {
+      check();
+      const add = Reflect.get(target, "addEventListener");
+      check();
+      const captured = this.listenerOptions(check, options);
+      record = this.documentListener(target, type, listener, captured, order, current);
+      if (!record) {
+        release();
+        return release;
+      }
+      record.owners++;
+      lifetime.acquired = true;
+      check();
+      Reflect.apply(add, target, [type, record.callback, captured]);
+      check();
+      if (record.completedOrder > order) {
+        release();
+        return release;
+      }
+      record.completedOrder = order;
+      record.pending = false;
+      if (!record.active) record.remove();
+      lifetime.pending = false;
+    } catch (error) {
+      try {
+        if (lifetime.active) release();
+        else cleanup();
+      } catch (cleanupError) {
+        if (error === cancelledListener) throw cleanupError;
+        throw new AggregateError([error, cleanupError], "Listener setup and cleanup failed.", {
+          cause: cleanupError,
+        });
+      }
+      if (error === cancelledListener) return release;
+      throw error;
+    }
+    return release;
+  }
+
   private createDocumentHost(documentHost: Document, windowHost: Window): DocumentHost {
     return {
       document: documentHost,
       window: windowHost,
-      listen: (target, type, listener, options) => {
-        this.assertActive("install document listeners");
-        const eventListener = listener as EventListener;
-        target.addEventListener(type, eventListener, options);
-        return this.own("listener", `document:${type}`, () =>
-          target.removeEventListener(type, eventListener, options),
-        );
-      },
+      listen: (target, type, listener, options) =>
+        this.createOwnedListener(target, type, listener as EventListener, options),
       observe: (target, callback, options) => {
         this.assertActive("install document observers");
-        const Observer = (windowHost as Window & typeof globalThis).MutationObserver;
-        const observer = new Observer(callback);
-        observer.observe(target, options);
-        this.own("observer", "document:mutation", () => observer.disconnect());
-        return observer;
+        return this.createOwnedObserver("document:mutation", target, callback, options).observer;
       },
-      own: (kind, owner, cleanup) => this.own(kind, owner, cleanup),
+      own: (kind, owner, cleanup, root) => this.own(kind, owner, cleanup, root),
+      canOwn: (root) => this.canOwn(root),
+      operation: (observation) => this.observations.emit(observation),
+      task: (owner, task, onError) => this.createOwnedTask(owner, task, onError),
     };
   }
 }

@@ -1,0 +1,172 @@
+{
+  "type": "object",
+  "properties": {
+    "config": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "rootDir": {
+          "type": "string"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["version", "rootDir", "projects"]
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0
+        },
+        "expected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unexpected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "flaky": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["startTime", "duration", "expected", "unexpected", "flaky", "skipped"]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "minItems": 0
+    },
+    "suites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/suite"
+      },
+      "minItems": 0
+    }
+  },
+  "required": ["config", "stats", "errors", "suites"],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "suite": {
+      "type": "object",
+      "properties": {
+        "specs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "tests": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "projectName": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "expectedStatus": {
+                      "type": "string"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          },
+                          "startTime": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "duration": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "retry": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "errors": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            },
+                            "minItems": 0
+                          }
+                        },
+                        "required": ["status", "startTime", "duration", "retry", "errors"]
+                      },
+                      "minItems": 0
+                    },
+                    "annotations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["type"]
+                      },
+                      "minItems": 0
+                    }
+                  },
+                  "required": ["projectName", "status", "expectedStatus", "results"]
+                },
+                "minItems": 1
+              }
+            },
+            "required": ["file", "title", "ok", "tests"]
+          },
+          "minItems": 0
+        },
+        "suites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/suite"
+          },
+          "minItems": 0
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": ["specs", "title"]
+    }
+  },
+  "$comment": "Internal selection-only report, including deliberate empty selection; listing is not test execution."
+}

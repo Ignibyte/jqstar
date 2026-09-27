@@ -13,6 +13,6 @@
     "index.js"
   ],
   "peerDependencies": {
-    "jquery-star": "^0.1.0"
+    "jquery-star": "^1.0.0"
   }
 }

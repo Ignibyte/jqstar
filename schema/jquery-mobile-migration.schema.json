@@ -1,0 +1,362 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jqstar.com/schema/jquery-mobile-migration.schema.json",
+  "title": "jQStar jQuery Mobile migration authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "reviewedAt",
+    "policy",
+    "sources",
+    "owners",
+    "apiInventory",
+    "dataAttributes",
+    "transitions",
+    "extraBehaviors",
+    "groups",
+    "bridgeDecisions",
+    "applicationInventories",
+    "referenceApp",
+    "decision"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "policy": { "$ref": "#/$defs/policy" },
+    "sources": {
+      "type": "array",
+      "minItems": 8,
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "owners": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/owner" }
+    },
+    "apiInventory": {
+      "type": "array",
+      "minItems": 95,
+      "maxItems": 95,
+      "items": { "$ref": "#/$defs/apiEntry" }
+    },
+    "dataAttributes": {
+      "type": "array",
+      "minItems": 60,
+      "maxItems": 60,
+      "items": { "$ref": "#/$defs/dataAttribute" }
+    },
+    "transitions": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/transition" }
+    },
+    "extraBehaviors": {
+      "type": "array",
+      "minItems": 12,
+      "items": { "$ref": "#/$defs/assignment" }
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 24,
+      "items": { "$ref": "#/$defs/group" }
+    },
+    "bridgeDecisions": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/bridgeDecision" }
+    },
+    "applicationInventories": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/applicationInventory" }
+    },
+    "referenceApp": { "$ref": "#/$defs/referenceApp" },
+    "decision": { "$ref": "#/$defs/decision" }
+  },
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    },
+    "owner": {
+      "enum": [
+        "native-html",
+        "native-css",
+        "jqstar-component",
+        "application-code",
+        "datastar-sdk",
+        "turbo-bridge",
+        "htmx-bridge",
+        "full-document",
+        "unsupported"
+      ]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ecosystemSha256",
+        "runtime",
+        "fixtureRuntime",
+        "defaultNavigation",
+        "historicalPackage",
+        "modernPackages"
+      ],
+      "properties": {
+        "ecosystemSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "runtime": { "const": "absent" },
+        "fixtureRuntime": { "const": "forbidden" },
+        "defaultNavigation": { "const": "full-document" },
+        "historicalPackage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version", "integrity", "shasum", "usage"],
+          "properties": {
+            "name": { "const": "jquery-mobile" },
+            "version": { "const": "1.4.1" },
+            "integrity": { "$ref": "#/$defs/nonEmptyString" },
+            "shasum": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+            "usage": { "const": "identity-only" }
+          }
+        },
+        "modernPackages": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["jquery", "jqueryStar"],
+          "properties": {
+            "jquery": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["version", "integrity", "shasum"],
+              "properties": {
+                "version": { "const": "4.0.0" },
+                "integrity": { "$ref": "#/$defs/nonEmptyString" },
+                "shasum": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+              }
+            },
+            "jqueryStar": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["version", "proof"],
+              "properties": {
+                "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+                "proof": { "const": "exact-quality-tarball" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "url", "reviewedAt"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "kind": {
+          "enum": [
+            "status",
+            "maintenance",
+            "api",
+            "data-attributes",
+            "demos",
+            "upgrade",
+            "core-upgrade",
+            "migrate",
+            "package"
+          ]
+        },
+        "url": { "type": "string", "format": "uri" },
+        "reviewedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "apiEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "category", "url", "groupId"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^api\\.[A-Za-z0-9.-]+$" },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "category": {
+          "enum": [
+            "widgets",
+            "events",
+            "methods",
+            "path",
+            "css-framework",
+            "reference",
+            "jqmicons",
+            "properties"
+          ]
+        },
+        "url": { "type": "string", "pattern": "^https://api\\.jquerymobile\\.com/1\\.4/" },
+        "groupId": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+      }
+    },
+    "dataAttribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "contexts", "groupId"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^data-[a-z-]+$" },
+        "contexts": { "$ref": "#/$defs/stringList" },
+        "groupId": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "groupId"],
+      "properties": {
+        "name": {
+          "enum": [
+            "fade",
+            "pop",
+            "flip",
+            "turn",
+            "flow",
+            "slidefade",
+            "slide",
+            "slideup",
+            "slidedown",
+            "none"
+          ]
+        },
+        "groupId": { "const": "transitions" }
+      }
+    },
+    "assignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "groupId"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "groupId": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "legacyNeed",
+        "owner",
+        "modernTarget",
+        "markupApiChange",
+        "accessibilityFallback",
+        "securityOwnership",
+        "unsupported",
+        "example",
+        "testId"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "legacyNeed": { "$ref": "#/$defs/nonEmptyString" },
+        "owner": { "$ref": "#/$defs/owner" },
+        "modernTarget": { "$ref": "#/$defs/nonEmptyString" },
+        "markupApiChange": { "$ref": "#/$defs/nonEmptyString" },
+        "accessibilityFallback": { "$ref": "#/$defs/nonEmptyString" },
+        "securityOwnership": { "$ref": "#/$defs/nonEmptyString" },
+        "unsupported": { "$ref": "#/$defs/nonEmptyString" },
+        "example": { "$ref": "#/$defs/nonEmptyString" },
+        "testId": { "type": "string", "pattern": "^mobile-[a-z0-9-]+$" }
+      }
+    },
+    "bridgeDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "decision", "sourceTicket"],
+      "properties": {
+        "id": { "enum": ["full-document", "datastar", "turbo", "htmx", "native-navigation"] },
+        "status": { "enum": ["default", "available", "optional", "not-approved"] },
+        "decision": { "$ref": "#/$defs/nonEmptyString" },
+        "sourceTicket": { "type": ["string", "null"], "pattern": "^\\d{4}$" }
+      }
+    },
+    "applicationInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "routes",
+        "dataRoles",
+        "events",
+        "plugins",
+        "themes",
+        "transitions",
+        "migrationUnits",
+        "applicationSpecificRisks"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "routes": { "type": "integer", "minimum": 1 },
+        "dataRoles": { "type": "integer", "minimum": 0 },
+        "events": { "type": "integer", "minimum": 0 },
+        "plugins": { "type": "integer", "minimum": 0 },
+        "themes": { "type": "integer", "minimum": 0 },
+        "transitions": { "type": "integer", "minimum": 0 },
+        "migrationUnits": { "$ref": "#/$defs/stringList" },
+        "applicationSpecificRisks": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "referenceApp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseUrl", "routes", "capabilities", "measurements", "unsupported"],
+      "properties": {
+        "baseUrl": { "const": "/jquery-mobile-migration/" },
+        "routes": { "$ref": "#/$defs/stringList" },
+        "capabilities": { "$ref": "#/$defs/stringList" },
+        "measurements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "runtimeDependencies",
+            "historicalRuntimeDependencies",
+            "sourceLines",
+            "assetBytes",
+            "serverRoutes",
+            "browserCases"
+          ],
+          "properties": {
+            "runtimeDependencies": { "type": "integer", "minimum": 0 },
+            "historicalRuntimeDependencies": { "const": 0 },
+            "sourceLines": {
+              "type": "object",
+              "additionalProperties": { "type": "integer", "minimum": 0 }
+            },
+            "assetBytes": {
+              "type": "object",
+              "additionalProperties": { "type": "integer", "minimum": 0 }
+            },
+            "serverRoutes": { "type": "integer", "minimum": 1 },
+            "browserCases": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "unsupported": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "compatibilityLayer", "migrationUnit", "outcome", "recheckTriggers"],
+      "properties": {
+        "runtime": { "const": false },
+        "compatibilityLayer": { "const": false },
+        "migrationUnit": { "const": "route-or-semantic-region" },
+        "outcome": { "const": "no-runtime-route-by-route-migration" },
+        "recheckTriggers": { "$ref": "#/$defs/stringList" }
+      }
+    }
+  }
+}

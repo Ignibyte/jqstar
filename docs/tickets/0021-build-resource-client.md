@@ -1,9 +1,9 @@
 ---
 id: 0021
 title: Build the approved resource client
-status: planned
+status: declined
 created: 2026-08-30
-updated: 2026-09-01
+updated: 2026-09-05
 ---
 
 # 0021: Build the approved resource client
@@ -30,6 +30,20 @@ data must not become server authority merely because it is convenient to read.
 - Existing request actions/profiles own HTTP semantics and server patches. A loader may use them or
   `fetch`, but resources cannot bypass middleware/final policy, synthesize Datastar strings, or
   claim ownership of arbitrary requests it did not create.
+
+### Disposition
+
+Ticket [0020](0020-prove-resource-strategy.md) selected server patches with no official resource
+package. The [frozen comparison and decision](../decisions/RESOURCE_STRATEGY.md) and
+`quality/resource-strategy.json` record the measurements, hard gates and sensitivity calculation.
+The external adapter's one-point nominal lead is within the predeclared inconclusive range. Native
+failed the three additional approval findings. This ticket is declined under its activation rule.
+The conditional design below is preserved as history and is not an available API.
+
+Use a registry coordinator, a shared selected ID, native links/forms and canonical SDK patches.
+Server writes remain authoritative and trigger canonical refresh. The isolated prototypes remain
+outside production imports, root dependencies, exports and tarballs. Reopening requires new evidence
+and a new decision record.
 
 ### Activation gate
 
@@ -102,7 +116,7 @@ reference metrics, then Plan-validate again.
 
 ### Acceptance criteria
 
-- [ ] [AC-01] Activation evidence links ticket 0020's native decision, frozen workflow/metrics/key
+- [x] [AC-01] Activation evidence links ticket 0020's native decision, frozen workflow/metrics/key
       and lifecycle defaults, hard gates, size/maintenance target, and Plan revalidation. Without
       it, this ticket is `declined` and package/export/graph scans prove no native residue.
 - [ ] [AC-02] `jquery-star/resources` publishes side-effect-free ESM/CommonJS, matched types/maps,
@@ -319,30 +333,57 @@ JavaScript and writes continue through server actions with explicit invalidation
 
 ### Changed-file ledger
 
-| File       | Purpose                         |
-| ---------- | ------------------------------- |
-| _None yet_ | Implementation has not started. |
+| File                                                                                                 | Purpose                                                                         |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| This ticket                                                                                          | Record the terminal declined decision and preserve conditional design history.  |
+| `docs/tickets/ROADMAP.md`, `docs/decisions/RESOURCE_STRATEGY.md`                                     | Supported server composition and decision evidence.                             |
+| `test/resource-strategy-contract.test.mjs`, `scripts/quality-package.mjs`, `.dependency-cruiser.cjs` | Check absence of unselected exports, dependencies, source and packed artifacts. |
 
 ### Design changes
 
-None recorded.
+The named decision rejected activation. No implementation was added for this ticket.
 
 ## Test
 
-| Command   | Result      | Evidence                          |
-| --------- | ----------- | --------------------------------- |
-| _Not run_ | Conditional | Waiting for ticket 0020 decision. |
+| Command                                                   | Result | Evidence                                                                                                                  |
+| --------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `npx vitest run test/resource-strategy-contract.test.mjs` | Pass   | Exact private dependency, root/export/graph exclusions and reproducible comparison.                                       |
+| `npm run check` (`quality:delivery`)                      | Pass   | Shared delivery run `2026-09-05T20-32-56-549Z-4971` passed all 13 gates, including packed entries and research exclusion. |
 
 ## Document
 
 ### Documentation changed
 
-Pending activation.
+The decision, roadmap, public Datastar guidance, README and project brain document the supported
+server composition. They make no native resource or mutation availability claim.
 
 ### Acceptance evidence
 
-Pending activation.
+| Criterion | Result               | Evidence                                                                                                                                                     |
+| --------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-01     | Pass                 | Ticket 0020 selected server patches. Its dataset, contract tests and package guards prove the declined branch.                                               |
+| AC-02     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-03     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-04     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-05     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-06     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-07     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-08     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-09     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-10     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-11     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-12     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-13     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-14     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-15     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-16     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
+| AC-17     | Approved-Disposition | Conditional implementation rejected by ticket 0020 under this ticket's activation gate; supported server composition is documented in the resource decision. |
 
 ### Completion audit
 
-Pending activation.
+The activation gate rejects implementation. Every conditional criterion has an explicit disposition.
+Public resources, mutation APIs and query-core dependencies remain absent; research files are
+excluded by the root manifest and production import/package guards. Ticket 0020 owns the combined
+delivery verification. Reopening requires a new decision record.
+
+Status: Complete

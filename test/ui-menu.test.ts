@@ -49,6 +49,21 @@ describe("jQuery Star Dropdown Menu", () => {
     $("#app").star("destroy");
   });
 
+  it("rejects a wrong-kind element target without opening the nearby menu", async () => {
+    const app = $("#app").star("instance");
+    if (!app) throw new Error("The Menu application did not start.");
+    await expect(
+      app.run("ui.menu.open", { element: trigger(), args: [trigger()] }),
+    ).rejects.toThrow('Menu target did not match a data-jqs="menu" element');
+    expect(menu().dataset.state).toBe("closed");
+    await app.run("ui.menu.open", { args: [menu()] });
+    expect(menu().dataset.state).toBe("open");
+    await app.run("ui.menu.close", { args: ["#menu"] });
+    expect(menu().dataset.state).toBe("closed");
+    await app.run("ui.menu.open", { element: trigger() });
+    expect(menu().dataset.state).toBe("open");
+  });
+
   it("wires menu-button semantics, item roles, checked state, and separators", () => {
     expect(trigger().getAttribute("aria-haspopup")).toBe("menu");
     expect(trigger().getAttribute("aria-controls")).toBe(content().id);
@@ -112,6 +127,73 @@ describe("jQuery Star Dropdown Menu", () => {
     item("omega").dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
     expect(menu().dataset.state).toBe("closed");
     expect(document.activeElement).toBe(trigger());
+  });
+
+  it("lets authored disabled items be explored but skips native disabled items", () => {
+    const selected = vi.fn();
+    menu().addEventListener("jquery-star:menu:select", selected);
+    trigger().click();
+    item("persistent").focus();
+    item("persistent").dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }),
+    );
+    expect(document.activeElement).toBe(item("disabled"));
+    item("disabled").click();
+    expect(selected).not.toHaveBeenCalled();
+    expect(menu().dataset.state).toBe("open");
+
+    item("omega").setAttribute("disabled", "");
+    item("omega").dispatchEvent(new Event("pointermove", { bubbles: true }));
+    expect(document.activeElement).toBe(item("disabled"));
+    item("disabled").dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "End" }));
+    expect(document.activeElement).toBe(item("comfortable"));
+
+    item("omega").removeAttribute("disabled");
+    item("omega").setAttribute("aria-disabled", "true");
+    item("omega").dispatchEvent(new Event("pointermove", { bubbles: true }));
+    expect(document.activeElement).toBe(item("omega"));
+    item("omega").click();
+    expect(selected).not.toHaveBeenCalled();
+    expect(menu().dataset.state).toBe("open");
+  });
+
+  it("reflects external native popover toggles and still dismisses outside", () => {
+    const panel = content();
+    let nativeOpen = false;
+    const matches = panel.matches.bind(panel);
+    vi.spyOn(panel, "matches").mockImplementation((selector) =>
+      selector === ":popover-open" ? nativeOpen : matches(selector),
+    );
+    panel.showPopover = () => {
+      nativeOpen = true;
+    };
+    panel.hidePopover = () => {
+      nativeOpen = false;
+    };
+    panel.hidden = false;
+    const opened = vi.fn();
+    const closed = vi.fn();
+    menu().addEventListener("jquery-star:menu:open", opened);
+    menu().addEventListener("jquery-star:menu:close", closed);
+
+    $.star.ui.enhance(menu());
+    trigger().click();
+    expect(nativeOpen).toBe(true);
+    expect(menu().dataset.state).toBe("open");
+    nativeOpen = false;
+    panel.dispatchEvent(new Event("toggle"));
+    expect(menu().dataset.state).toBe("closed");
+    expect(trigger().getAttribute("aria-expanded")).toBe("false");
+
+    nativeOpen = true;
+    panel.dispatchEvent(new Event("toggle"));
+    expect(menu().dataset.state).toBe("open");
+    expect(trigger().getAttribute("aria-expanded")).toBe("true");
+    document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    expect(nativeOpen).toBe(false);
+    expect(menu().dataset.state).toBe("closed");
+    expect(opened).toHaveBeenCalledOnce();
+    expect(closed).toHaveBeenCalledOnce();
   });
 
   it("preserves focus inside an open menu during re-enhancement", () => {
