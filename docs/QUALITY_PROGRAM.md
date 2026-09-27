@@ -783,3 +783,24 @@ pass all gates, all 77 component cases, and all 1,804 matrix cases without failu
 skips. No configured deadline, worker count, project, retry, failure policy, pin, or budget changes.
 Final documented-tree receipts precede commit. Complete hosted verification and the separately
 requested security scope decision remain merge conditions.
+
+Ticket [0071](tickets/0071-await-native-disclosure-notifications.md) retains hosted delivery
+`36317737425`. All 11 non-matrix gates and 77 component cases pass. Firefox completes 592 cases with
+591 first-attempt passes and one rejected native accordion notification flake. Retry passes, but
+that does not authorize delivery. The remaining projects do not execute. Final results, logs, and
+the trace remain in the local evidence.
+
+The disclosure fixture previously observed native notification state after a fixed ten-millisecond
+timer. It now registers a one-time native details `toggle` listener before each affected summary
+click and awaits actual event delivery. The immediate enhancement call during a pending
+notification, native default actions, adoption, cancellation, links, exclusion, notification counts,
+and all assertions remain. The trace does not establish the exact browser task ordering behind the
+failed snapshot. The change removes the timer assumption without claiming a runtime defect.
+
+All 240 repeated native cases pass across the three desktop engines with three workers and retries
+disabled. Fast and complete local delivery pass all gates, 77 component cases, and 1,804 matrix
+cases without failures, flakes, or skips. Runtime, structural workload, all other helpers, coverage,
+configured deadlines, workers, projects, retries, failure policy, pins, and budgets are unchanged.
+The earlier separate structural mutation difference remains unresolved. Final documented-tree
+receipts precede commit; hosted proof and the pending security scope decision remain merge
+conditions.

@@ -3700,9 +3700,12 @@ export async function exerciseDisclosureDefaults(
     root.addEventListener(`jquery-star:${kind}:open`, () => {
       opens += 1;
     });
+    const firstToggle = new Promise<void>((resolve) => {
+      first.addEventListener("toggle", () => resolve(), { once: true });
+    });
     summary.click();
     active.ui.enhance(root);
-    await new Promise((resolve) => active.owner.setTimeout(resolve, 10));
+    await firstToggle;
     const pendingNotification =
       opens === 1 && first.open && summary.getAttribute("aria-expanded") === "true";
     let nativeExclusion = true;
@@ -3721,8 +3724,11 @@ export async function exerciseDisclosureDefaults(
       root.addEventListener("click", (event) => event.preventDefault(), { once: true });
       link.click();
       nativeLink = first.open && !second.open;
+      const secondToggle = new Promise<void>((resolve) => {
+        second.addEventListener("toggle", () => resolve(), { once: true });
+      });
       secondSummary.click();
-      await new Promise((resolve) => active.owner.setTimeout(resolve, 10));
+      await secondToggle;
       nativeExclusion =
         !first.open &&
         second.open &&

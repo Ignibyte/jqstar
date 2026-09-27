@@ -54,6 +54,8 @@ The package has two public layers:
   route cases and native htmx network failure isolated from other error categories.
 - [Private UI ownership host](tickets/0070-isolate-ui-ownership-host.md): isolated native documents
   without unrelated Lab startup, preserved full site proof, and retained incomplete hosted evidence.
+- [Native disclosure completion](tickets/0071-await-native-disclosure-notifications.md): actual
+  native toggle delivery before unchanged notification/default-action assertions.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,

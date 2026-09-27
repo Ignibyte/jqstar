@@ -302,6 +302,17 @@ failures, flakes, or skips. Coverage remains 77 component and 1,804 matrix cases
 execution and its unexplained mutation difference remain recorded. Final documented-tree receipts
 precede commit; complete hosted checks and the security scope decision remain merge conditions.
 
+## Native disclosure completion
+
+Ticket [0071](0071-await-native-disclosure-notifications.md) replaces two fixed fixture delays with
+actual native toggle completion. Native actions, immediate enhancement, notification counts,
+adoption, cancellation, links, exclusion, and all assertions remain. All 240 repeated native cases
+and complete local delivery pass without failures, flakes, or skips. Coverage remains 77 component
+and 1,804 matrix cases. The rejected hosted Firefox flake remains recorded, and the separate
+structural mutation difference remains unresolved. Runtime, other helpers, proof settings, pins, and
+budgets are unchanged. Final documented-tree receipts precede commit; hosted checks and the security
+scope decision remain merge conditions.
+
 ## Dependency graph
 
 ```text
