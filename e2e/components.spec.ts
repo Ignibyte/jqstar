@@ -1,5 +1,19 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page, type Response } from "@playwright/test";
+import { expect, test as base, type Page, type Response } from "@playwright/test";
+
+const test = base.extend<{ controlledClock: boolean }>({
+  controlledClock: [false, { option: true }],
+});
+
+async function waitForComponentEntry(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const entry = document.querySelector<HTMLScriptElement>(
+      'script[type="module"][src="/site.ts"]',
+    );
+    if (!entry) throw new Error("The Lab needs its declared site entry module.");
+    await import(entry.src);
+  });
+}
 
 function isProjectWindowResponse(response: Response, start: number): boolean {
   const url = new URL(response.url());
@@ -34,15 +48,15 @@ async function installClipboardFixture(page: Page): Promise<void> {
 }
 
 test.describe("jQStar components", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, controlledClock }) => {
+    if (controlledClock) {
+      await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
+    }
     await page.goto("/components/lab/");
-    await page.evaluate(async () => {
-      const entry = document.querySelector<HTMLScriptElement>(
-        'script[type="module"][src="/site.ts"]',
-      );
-      if (!entry) throw new Error("The Lab needs its declared site entry module.");
-      await import(entry.src);
-    });
+    await waitForComponentEntry(page);
+    if (controlledClock) {
+      await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"));
+    }
   });
 
   test("button variants render with usable states", async ({ page }) => {
@@ -1014,9 +1028,7 @@ test.describe("jQStar components", () => {
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
   });
 
-  test("project browser supports multi-sort, groups, durable editing, and persistent column layouts", async ({
-    page,
-  }) => {
+  test("project browser supports multi-sort, groups, and durable editing", async ({ page }) => {
     const root = page.locator('[data-block="project-browser"]');
     await root.locator('th[data-key="owner"] [data-part="sort"]').click();
     await root.locator('th[data-key="status"] [data-part="sort"]').click({
@@ -1075,7 +1087,10 @@ test.describe("jQStar components", () => {
     await expect(root.locator('[data-text="$projectBrowserMessage"]')).toContainText(
       "saved at version",
     );
+  });
 
+  test("project browser persists column layouts and recovers invalid storage", async ({ page }) => {
+    const root = page.locator('[data-block="project-browser"]');
     await root.getByText("Columns", { exact: true }).click();
     const statusItem = root.locator('[data-column-item="status"]');
     const ownerItem = root.locator('[data-column-item="owner"]');
@@ -1091,6 +1106,7 @@ test.describe("jQStar components", () => {
       .toEqual(["name", "status", "owner", "updated"]);
 
     await page.reload();
+    await waitForComponentEntry(page);
     const reloaded = page.locator('[data-block="project-browser"]');
     await expect(reloaded.locator('th[data-column="status"]')).toHaveAttribute(
       "data-pinned",
@@ -1108,6 +1124,7 @@ test.describe("jQStar components", () => {
       localStorage.setItem("jquery-star:project-browser:columns:v1", "{invalid"),
     );
     await page.reload();
+    await waitForComponentEntry(page);
     await expect
       .poll(() =>
         page
@@ -1298,41 +1315,49 @@ test.describe("jQStar components", () => {
     await expect(rows.first()).toContainText("No access events match these filters");
   });
 
-  test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({
-    page,
-    browserName,
-  }) => {
-    const show = page.getByRole("button", { name: "Show verified toast" });
-    const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
+  test.describe("toast timing", () => {
+    test.use({ controlledClock: true });
 
-    await show.click();
-    let toast = page.getByRole("group", { name: "Build verified" });
-    await expect(toast).toBeVisible();
-    await page.keyboard.press("F8");
-    await expect(viewport).toBeFocused();
-    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
-    await expect(toast.getByRole("button", { name: "Dismiss notification" })).toBeFocused();
-    await page.keyboard.press("Escape");
-    await expect(toast).toBeHidden();
-    await expect(viewport).toBeFocused();
+    test("toast supports F8 access, pause, Escape, and swipe dismissal", async ({
+      page,
+      browserName,
+    }) => {
+      const show = page.getByRole("button", { name: "Show verified toast" });
+      const viewport = page.getByRole("region", { name: "Proof notifications (F8)" });
 
-    await show.click();
-    toast = page.getByRole("group", { name: "Build verified" });
-    await toast.hover();
-    await page.waitForTimeout(1800);
-    await expect(toast).toBeVisible();
-    await page.locator("h1").hover();
-    await expect(toast).toBeHidden();
+      await show.click();
+      let toast = page.getByRole("group", { name: "Build verified" });
+      await expect(toast).toBeVisible();
+      await page.keyboard.press("F8");
+      await expect(viewport).toBeFocused();
+      await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+      await expect(toast.getByRole("button", { name: "Dismiss notification" })).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(toast).toBeHidden();
+      await expect(viewport).toBeFocused();
 
-    await show.click();
-    toast = page.getByRole("group", { name: "Build verified" });
-    const box = await toast.boundingBox();
-    expect(box).not.toBeNull();
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box!.x + box!.width / 2 + 80, box!.y + box!.height / 2);
-    await page.mouse.up();
-    await expect(toast).toBeHidden();
+      await show.click();
+      toast = page.getByRole("group", { name: "Build verified" });
+      await toast.hover();
+      await expect(toast).toHaveAttribute("data-duration", "1600");
+      await expect(toast).toHaveAttribute("data-paused", "true");
+      await page.clock.runFor(1800);
+      await expect(toast).toBeVisible();
+      await page.locator("h1").hover();
+      await expect(toast).toHaveAttribute("data-paused", "false");
+      await page.clock.runFor(1800);
+      await expect(toast).toBeHidden();
+
+      await show.click();
+      toast = page.getByRole("group", { name: "Build verified" });
+      const box = await toast.boundingBox();
+      expect(box).not.toBeNull();
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box!.x + box!.width / 2 + 80, box!.y + box!.height / 2);
+      await page.mouse.up();
+      await expect(toast).toBeHidden();
+    });
   });
 
   test("navigation components keep native landmarks and disclosure behavior", async ({ page }) => {

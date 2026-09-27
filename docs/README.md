@@ -46,6 +46,8 @@ The package has two public layers:
 - [Reserved hosted capacity](tickets/0066-reserve-hosted-browser-capacity.md): three browser
   workers, actual runner allocation, retained hosted failure, and complete delivery proof.
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
+- [Timed component proof](tickets/0067-make-timed-component-proof-deterministic.md): controlled
+  toast time, independent column persistence, initialized recovery, and retained hosted evidence.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,

@@ -683,3 +683,32 @@ all 1,726 matrix cases without failures, flakes, or skips. Runner type, fixtures
 and cases, deadlines, retries, repetitions, flaky-result rejection, pins, and package ceilings are
 unchanged. Final documented-tree receipt verification remains required before commit, and complete
 hosted evidence on the pushed commit remains a separate merge condition.
+
+Ticket [0067](tickets/0067-make-timed-component-proof-deterministic.md) records the subsequent
+three-worker hosted failure. All 11 non-matrix gates and all 566 Chromium cases pass, but WebKit
+records 52 passes, one failure, one flaky case, and 512 skipped cases. The remaining projects do not
+execute. The short-lived toast expires before automation establishes hover, and successful table
+actions accumulate past the 60-second scenario bound. Lower concurrency did not resolve these
+fixture failures; the rejected report and traces remain evidence.
+
+Column reorder, pinning, reload persistence, and invalid-storage recovery now have their own
+complete scenario. The original grouped-editing chain retains multi-sort, group collapse/expand,
+version conflict recovery, restored focus, and successful durable save. Every original action and
+assertion remains. Both column reloads await the declared entry module before checking state, so
+default HTML cannot satisfy initialized recovery proof. Coverage increases to 77 component cases and
+1,729 matrix cases; no case or assertion is removed.
+
+Only the toast scenario enables a controlled clock. Following the
+[Playwright clock contract](https://playwright.dev/docs/clock), installation precedes navigation and
+application timers; pausing follows completed entry evaluation. Real F8, focus, Escape, hover,
+pointer exit, and swipe actions remain. After hover, the test asserts paused state and advances
+1,800 milliseconds while the toast remains visible. After pointer exit, it asserts resumed state,
+advances another 1,800 milliseconds, and verifies natural expiry. The application still uses its
+1,600-millisecond duration; timer implementation and configured test bounds are unchanged.
+
+All 36 focused repetitions pass across the three desktop engines with three workers and retries
+disabled. Complete local delivery passes all 12 gates, all 77 component cases, and all 1,729 matrix
+cases with zero failures, flakes, or skips. Runtime and page sources, workers, deadlines, selected
+projects, repetitions, retries, failure policy, pins, and package ceilings are unchanged. Final
+documented-tree receipt verification precedes commit; complete hosted evidence and the separately
+requested security scope decision remain merge conditions.

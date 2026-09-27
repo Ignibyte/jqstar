@@ -260,6 +260,18 @@ hosted proof. All fixtures, deadlines, cases, retries, pins, and package budgets
 focused repetitions and complete local delivery pass with three workers; final documented-tree
 receipt verification precedes commit. The earlier hosted failure remains recorded.
 
+## Deterministic timed component proof
+
+Ticket [0067](0067-make-timed-component-proof-deterministic.md) corrects two fixture failures that
+remain in three-worker hosted delivery. The toast scenario controls time before navigation,
+establishes real hover, and explicitly proves pause, resume, and expiry at the unchanged duration.
+Column-layout persistence and invalid-storage recovery have an independent scenario, with declared
+entry evaluation after both reloads. Every original table assertion and the grouped-editing chain
+remain. All 36 focused repetitions and complete local delivery pass; coverage increases to 77
+component and 1,729 matrix cases. Workers, deadlines, retries, projects, pins, and budgets remain.
+Final documented-tree receipts precede commit; hosted verification and the security scope decision
+remain merge conditions.
+
 ## Dependency graph
 
 ```text
