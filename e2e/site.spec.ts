@@ -102,8 +102,10 @@ test("website reproduces the supplied jQStar home and remains self-hosted", asyn
   await expect(page.locator("html")).toHaveAttribute("data-theme", changedTheme ?? "light");
 });
 
-test("every documentation route loads directly with working shared controls", async ({ page }) => {
-  for (const [path, heading] of documentationRoutes) {
+for (const [path, heading] of documentationRoutes) {
+  test(`documentation route ${path} loads directly with working shared controls`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(path);
     await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
@@ -136,8 +138,8 @@ test("every documentation route loads directly with working shared controls", as
     await page.keyboard.press("Escape");
     await expect(menu).toBeHidden();
     await expect(menuTrigger).toBeFocused();
-  }
-});
+  });
+}
 
 test("release pages distinguish stable contracts from publication state", async ({ page }) => {
   await page.goto("/docs/compatibility/");
@@ -295,15 +297,16 @@ test("site copy controls expose authored source", async ({ page }) => {
   expect(clipboard).toBe("npm install jquery-star jquery");
 });
 
-test("the complete embedded Lab owns its actions and backend updates on each site route", async ({
-  page,
-}) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  const corpus = (await (await page.request.get("/jqstar-agent-index.json")).json()) as {
-    components: { name: string; roots: string[] }[];
-  };
-  for (const route of ["/", "/docs/components/", "/components/lab/"]) {
+for (const route of ["/", "/docs/components/", "/components/lab/"]) {
+  test(`the complete embedded Lab owns its actions and backend updates on ${route}`, async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const corpus = (await (await page.request.get("/jqstar-agent-index.json")).json()) as {
+      components: { name: string; roots: string[] }[];
+    };
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(route);
     const lab = page.locator(".component-lab");
     await expect(lab).toHaveCount(1);
@@ -356,9 +359,9 @@ test("the complete embedded Lab owns its actions and backend updates on each sit
       ).toBeLessThanOrEqual(1);
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
-  }
-  expect(errors).toEqual([]);
-});
+    expect(errors).toEqual([]);
+  });
+}
 
 test("all public code examples are framed, colored, and copy their exact inert source", async ({
   page,

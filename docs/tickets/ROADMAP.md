@@ -281,6 +281,17 @@ budgets are unchanged. All nine focused repetitions and complete local delivery 
 workers; the suite retains 77 component and 1,729 matrix cases. Final documented-tree receipts
 precede commit; hosted verification and the security scope decision remain merge conditions.
 
+## Individual route and network proof
+
+Ticket [0069](0069-isolate-route-and-network-proofs.md) gives each existing documentation and Lab
+route its own complete case, preserving every route, action, and assertion. Both pinned htmx
+versions prove native network failure in fresh cases, separate from other error categories. Rejected
+hosted delivery remains recorded. All 252 focused repetitions and complete local delivery pass;
+coverage increases to 592 desktop and 1,804 matrix cases while component cases remain 77. Runtime
+and fixture sources, workers, deadlines, retries, projects, pins, and budgets are unchanged. Final
+documented-tree receipts precede commit; hosted verification and the security scope decision remain
+merge conditions.
+
 ## Dependency graph
 
 ```text

@@ -50,6 +50,8 @@ The package has two public layers:
   toast time, independent column persistence, initialized recovery, and retained hosted evidence.
 - [Ownership fixture readiness](tickets/0068-await-ownership-fixture-entry.md): declared entry and
   public update completion before unchanged ownership measurements.
+- [Route and network proof](tickets/0069-isolate-route-and-network-proofs.md): individual complete
+  route cases and native htmx network failure isolated from other error categories.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
 - [STORES.md](STORES.md): optional shared-state installation, accepted data, expressions,

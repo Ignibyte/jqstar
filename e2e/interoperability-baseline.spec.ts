@@ -868,13 +868,6 @@ test("htmx OOB, no-swap, cancellation, and errors remain separately observable",
     expect(eventNames(responseErrorTrace)).not.toContain("htmx:beforeCleanupElement");
 
     await clearRecords(page);
-    await page.locator("#network-error").click();
-    await waitForEvent(page, "htmx:sendError");
-    const networkErrorTrace = await records(page);
-    expectOrdered(networkErrorTrace, ["htmx:beforeRequest", "htmx:afterRequest", "htmx:sendError"]);
-    expectRedacted(networkErrorTrace);
-
-    await clearRecords(page);
     await page.locator("#swap-error").click();
     await waitForEvent(page, "htmx:swapError");
     const swapErrorTrace = await records(page);
@@ -891,6 +884,24 @@ test("htmx OOB, no-swap, cancellation, and errors remain separately observable",
     expect(eventNames(targetErrorTrace)).not.toContain("htmx:beforeCleanupElement");
   }
 });
+
+for (const version of htmxVersions) {
+  test(`htmx ${version} native network failure remains separately observable`, async ({ page }) => {
+    await openHost(page, "htmx", version);
+    await clearRecords(page);
+    const failedRequestPromise = page.waitForEvent("requestfailed", {
+      predicate: (request) => new URL(request.url()).pathname.endsWith("/network-error"),
+      timeout: 10_000,
+    });
+    await page.locator("#network-error").click();
+    const failedRequest = await failedRequestPromise;
+    expect(failedRequest.failure()?.errorText).toBeTruthy();
+    await waitForEvent(page, "htmx:sendError");
+    const networkErrorTrace = await records(page);
+    expectOrdered(networkErrorTrace, ["htmx:beforeRequest", "htmx:afterRequest", "htmx:sendError"]);
+    expectRedacted(networkErrorTrace);
+  });
+}
 
 test("htmx forms, boosted navigation, and history stay host-owned", async ({ page }) => {
   for (const version of htmxVersions) {

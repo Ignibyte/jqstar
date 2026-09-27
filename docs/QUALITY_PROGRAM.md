@@ -731,3 +731,30 @@ Complete local delivery passes all 12 gates, all 77 component cases, and all 1,7
 without failures, flakes, or skips. Workers, deadlines, projects, retries, failure policy, pins, and
 package ceilings remain unchanged. Final documented-tree receipts precede commit; complete hosted
 verification and the separately requested security scope decision remain merge conditions.
+
+Ticket [0069](tickets/0069-isolate-route-and-network-proofs.md) retains the subsequent hosted WebKit
+failure. All 11 non-matrix gates, all 77 component cases, and all 567 Chromium cases pass. WebKit
+records 173 passes, two failures, one flaky case, and 391 skips; later projects do not execute. Its
+process exits with 1 within the unchanged project bound. Two site cases accumulate successful
+actions across 22 documentation routes or three Lab routes beyond their shared 60-second case
+deadline. Their traces retain successful earlier routes.
+
+Each of those routes now has its own complete case. Every documentation theme, search, menu, Escape,
+focus, and active-navigation assertion remains. Each Lab route retains all seven blocks, the full
+corpus, unique IDs, native dialog actions, JSON/SDK/account/dashboard/profile updates, all three
+widths, and page-error proof. Coverage increases to 592 desktop cases and 1,804 matrix cases; the
+component lane still contains 77 cases.
+
+The htmx flake waits for a swap-error event immediately after an intentional connection failure. The
+trace contains that real network failure and an incomplete next fragment request, without
+establishing an exact browser connection-reuse cause. Both pinned htmx versions now prove native
+network failure in fresh cases. Each requires an actual failed browser request, the original ordered
+host events, and redacted output. The original baseline retains all remaining OOB, no-swap,
+cancellation, response-error, swap-error, and target-error assertions.
+
+All 252 focused repetitions pass across the three desktop engines with three workers and retries
+disabled. Complete local delivery passes all 12 gates, all 77 component cases, and all 1,804 matrix
+cases without failures, flakes, or skips. Runtime and fixture sources, configured deadlines,
+workers, projects, retries, failure policy, pins, and budgets remain unchanged. Final
+documented-tree receipts precede commit; complete hosted verification and the separately requested
+security scope decision remain merge conditions.
