@@ -37,6 +37,8 @@ The package has two public layers:
   standalone scope, pinned private fixture preparation, and exact scroller setup proof.
 - [Hosted delivery and hover proof](tickets/0062-correct-hosted-delivery-and-lab-hover.md): pinned
   Node reference, exact gzip calibration, bounded parallelism, and active hover accessibility.
+- [Virtual window completion](tickets/0063-await-project-browser-window-completion.md): exact
+  response and loading completion before bounded-window and cancellation assertions.
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.

@@ -1,5 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Response } from "@playwright/test";
+
+function isProjectWindowResponse(response: Response, start: number): boolean {
+  const url = new URL(response.url());
+  if (url.pathname !== "/api/demo/projects") return false;
+  const signals = JSON.parse(url.searchParams.get("datastar") ?? "{}") as Record<string, unknown>;
+  return signals.projectBrowserMode === "virtual" && signals.projectBrowserWindowStart === start;
+}
 
 function completionSignal(): { promise: Promise<void>; resolve: () => void } {
   let resolve: () => void = () => undefined;
@@ -1104,10 +1111,17 @@ test.describe("jQStar components", () => {
     await expect(root.locator("[data-project-browser-expand]").first()).toBeDisabled();
 
     const firstId = await projectRows.first().getAttribute("data-row-id");
+    const windowResponse = page.waitForResponse((response) =>
+      isProjectWindowResponse(response, 990),
+    );
     await root.locator('[data-part="viewport"]').evaluate((viewport) => {
       viewport.scrollTop = 52_000;
       viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
     });
+    const response = await windowResponse;
+    expect(response.ok()).toBe(true);
+    expect(await response.finished()).toBeNull();
+    await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
     await expect
       .poll(async () => projectRows.first().getAttribute("data-row-id"))
       .not.toBe(firstId);
@@ -1157,7 +1171,14 @@ test.describe("jQStar components", () => {
       await scroll(52_000);
       await captured.promise;
       await expect(root.getByText("Updating results…", { exact: true })).toBeVisible();
+      const windowResponse = page.waitForResponse((response) =>
+        isProjectWindowResponse(response, 190),
+      );
       await scroll(10_400);
+      const response = await windowResponse;
+      expect(response.ok()).toBe(true);
+      expect(await response.finished()).toBeNull();
+      await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
       const message = root.locator('[data-text="$projectBrowserMessage"]');
       await expect(message).toContainText("Showing 191–230 of 2500");
       await expect.poll(() => failedUrls.includes(olderUrl)).toBe(true);

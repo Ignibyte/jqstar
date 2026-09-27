@@ -224,6 +224,14 @@ parallelism without reducing coverage or raising timeouts. It also corrects ligh
 and adds explicit hover proof in both active-validation themes. Security remediation remains
 separate.
 
+## Virtual project-window completion
+
+Ticket [0063](0063-await-project-browser-window-completion.md) makes the two virtual-window tests
+await their exact SDK response, body, and completed loading state before asserting the result. It
+preserves bounded rows, selection, and superseded-response proof without changing runtime code,
+configured timeouts, retries, or coverage. The hosted Linux WebKit failure remains in the evidence
+ledger; hosted verification is still required before merge.
+
 ## Dependency graph
 
 ```text

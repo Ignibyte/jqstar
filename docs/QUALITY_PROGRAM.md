@@ -622,3 +622,13 @@ The parallel proof also exposed actual light-theme hover contrast of 4.48:1. The
 established accessible light docs hover color. The existing full-page theme scan waits for backend
 submission to complete and explicitly hovers the enabled submit button before scanning active
 validation states; it does not disable contrast checks or hide the control.
+
+Ticket [0063](tickets/0063-await-project-browser-window-completion.md) corrects two virtual-window
+tests that started result assertions while the SDK operation was still loading in hosted Linux
+WebKit. The trace records the correct requests and rendered rows after the assertion deadline. Each
+test now registers a response wait before scrolling, matches the exact endpoint, virtual mode, and
+requested window start, checks successful body completion, and waits for the existing loading
+indicator to become hidden before asserting the result. The cancellation case keeps the older
+response held until the replacement window is complete. Exact ranges, bounded row counts, selection,
+cancellation, late-response checks, and request counts remain. No runtime code, configured deadline,
+retry policy, or project selection changes.
