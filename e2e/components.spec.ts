@@ -36,6 +36,13 @@ async function installClipboardFixture(page: Page): Promise<void> {
 test.describe("jQStar components", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/components/lab/");
+    await page.evaluate(async () => {
+      const entry = document.querySelector<HTMLScriptElement>(
+        'script[type="module"][src="/site.ts"]',
+      );
+      if (!entry) throw new Error("The Lab needs its declared site entry module.");
+      await import(entry.src);
+    });
   });
 
   test("button variants render with usable states", async ({ page }) => {
@@ -594,11 +601,24 @@ test.describe("jQStar components", () => {
     const content = popover.getByRole("dialog", { name: "Ready to deploy" });
     const close = content.getByRole("button", { name: "Got it" });
 
+    await page.evaluate(() => document.fonts.ready);
+    await trigger.evaluate((element) =>
+      element.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" }),
+    );
+    await expect
+      .poll(() =>
+        trigger.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.top >= innerHeight * 0.25 && rect.bottom <= innerHeight * 0.75;
+        }),
+      )
+      .toBe(true);
     await trigger.click();
     await expect(content).toBeVisible();
     await expect(popover).toHaveAttribute("data-state", "open");
     await expect(trigger).toHaveAttribute("aria-expanded", "true");
     await expect(close).toBeFocused();
+    await expect(content).toHaveAttribute("data-side", "bottom");
 
     const triggerBox = await trigger.boundingBox();
     const contentBox = await content.boundingBox();
@@ -1102,7 +1122,14 @@ test.describe("jQStar components", () => {
   }) => {
     const root = page.locator('[data-block="project-browser"]');
     await root.getByRole("checkbox", { name: "Select jQuery Star" }).check();
+    const initialWindowResponse = page.waitForResponse((response) =>
+      isProjectWindowResponse(response, 0),
+    );
     await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    const initialResponse = await initialWindowResponse;
+    expect(initialResponse.ok()).toBe(true);
+    expect(await initialResponse.finished()).toBeNull();
+    await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
     const projectRows = root.locator("#project-browser-rows tr[data-row-id]");
     await expect(projectRows).toHaveCount(40);
     await expect(root.locator('[data-part="selection-status"]')).toHaveText("1 selected");
@@ -1134,7 +1161,14 @@ test.describe("jQStar components", () => {
     page,
   }) => {
     const root = page.locator('[data-block="project-browser"]');
+    const initialWindowResponse = page.waitForResponse((response) =>
+      isProjectWindowResponse(response, 0),
+    );
     await root.getByRole("combobox", { name: "View" }).selectOption("virtual");
+    const initialResponse = await initialWindowResponse;
+    expect(initialResponse.ok()).toBe(true);
+    expect(await initialResponse.finished()).toBeNull();
+    await root.getByText("Updating results…", { exact: true }).waitFor({ state: "hidden" });
     await expect(root.locator("#project-browser-rows tr[data-row-id]")).toHaveCount(40);
     const captured = completionSignal();
     const release = completionSignal();

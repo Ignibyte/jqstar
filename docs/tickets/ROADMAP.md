@@ -232,6 +232,24 @@ preserves bounded rows, selection, and superseded-response proof without changin
 configured timeouts, retries, or coverage. The hosted Linux WebKit failure remains in the evidence
 ledger; hosted verification is still required before merge.
 
+## Hosted browser capacity
+
+Ticket [0064](0064-use-four-hosted-browser-workers.md) uses four workers on the documented four-CPU
+public Ubuntu runner and records actual CPU and memory allocation. It retains all deadlines,
+projects, cases, retries, pins, budgets, and flaky-result rejection. Local verification also
+corrects the popover fixture's assumed below-trigger placement by settling central geometry before
+opening, without changing runtime collision behavior or removing assertions. Complete hosted proof
+on the pushed commit remains required; the earlier timeout and rejected flaky run stay recorded.
+
+## Component fixture initialization
+
+Ticket [0065](0065-await-component-fixture-initialization.md) makes the component fixture await the
+Lab's declared entry-module evaluation before native controls are used. Both virtual-window tests
+await exact initial SDK completion before row assertions. The failed component run remains recorded;
+runtime behavior, hooks, deadlines, retries, coverage, and original assertions are unchanged.
+Complete local delivery and final documented-tree receipts precede commit, and hosted verification
+remains required for the pushed commit.
+
 ## Dependency graph
 
 ```text

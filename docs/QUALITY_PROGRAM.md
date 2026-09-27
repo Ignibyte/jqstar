@@ -605,10 +605,10 @@ appended message.
 
 The September 26 hosted delivery corrections are recorded in ticket
 [0062](tickets/0062-correct-hosted-delivery-and-lab-hover.md). Quality workflows pin official Node
-24.21.0 and use two browser workers for delivery and full audit. All eight required browser projects
-remain selected. Delivery retains its 900-second per-project and 45-minute browser-gate limits; full
-audit retains its existing repetition allowances. Failed, skipped, or flaky results still cannot
-authorize delivery.
+24.21.0. Ticket 0062 initially configured two browser workers; ticket 0064 supersedes that count
+with four for delivery and full audit. All eight required browser projects remain selected. Delivery
+retains its 900-second per-project and 45-minute browser-gate limits; full audit retains its
+existing repetition allowances. Failed, skipped, or flaky results still cannot authorize delivery.
 
 The stores consumer gzip reference is calibrated from 67,623 to 67,774 bytes. Identical 208,669-byte
 JavaScript with SHA-256 `b90f9aa010b131c2a5fc7d0b2a4394d27bf2cee887a49e2f1243133cf7ae3576` measures
@@ -632,3 +632,36 @@ indicator to become hidden before asserting the result. The cancellation case ke
 response held until the replacement window is complete. Exact ranges, bounded row counts, selection,
 cancellation, late-response checks, and request counts remain. No runtime code, configured deadline,
 retry policy, or project selection changes.
+
+Ticket [0064](tickets/0064-use-four-hosted-browser-workers.md) records the subsequent hosted
+timeout: Firefox completes 566 cases in 625,731 milliseconds, while WebKit completes 437 cases
+before its 900-second project limit prevents a final report. The corrected virtual-window cases both
+pass. Successful partial execution remains a failed delivery. This repository is public, and the
+[GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+documents four CPUs for its `ubuntu-latest` runner. Both browser jobs now use four workers and
+record actual available CPUs and total memory before the quality command. Review the count if
+visibility or runner type changes. Node pins, project and gate deadlines, job bounds, test
+selection, repetitions, retries, package limits, and flaky-result rejection remain unchanged.
+
+The first local four-worker run exposed a popover fixture assumption: its trigger was near the
+viewport bottom, so collision avoidance correctly placed content above it. The test expected
+placement below. Its setup now waits for fonts, scrolls the trigger instantly to the center, and
+polls central geometry before opening. Existing placement, viewport-edge, focus, and dismissal
+assertions remain, with an additional explicit bottom-side check. Runtime positioning is unchanged.
+All 36 focused repetitions pass with retries disabled, and local delivery passes all 12 gates and
+1,726 browser cases with four workers and zero failures, flakes, or skips. Final documented-tree
+receipt verification is required before commit; complete hosted evidence on the pushed commit
+remains a separate merge condition.
+
+Ticket [0065](tickets/0065-await-component-fixture-initialization.md) corrects a later component
+fixture race. The final check passes all 1,726 matrix cases but rejects a flaky cancellation case in
+the separate component gate: the native View select changed before the asynchronous Lab import
+finished, and no project request was sent. Navigation load did not guarantee completed module
+evaluation. Component setup now awaits the exact `/site.ts` entry already declared by the page.
+Importing that same URL reuses its existing evaluation, including the Lab import. Both virtual-mode
+cases also register an exact start-zero response wait before changing View and await successful body
+and loading completion before their existing row assertions. No runtime hooks, sleeps, timeouts,
+retries, or result assertions change. All 36 focused repetitions pass with retries disabled;
+complete local delivery passes all 12 gates, all 76 component cases, and all 1,726 matrix cases with
+zero failures, flakes, or skips. The rejected run remains evidence, and final documented-tree
+receipt verification and hosted checks remain required.

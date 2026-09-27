@@ -55,9 +55,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes shellcheck
       - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Record hosted runner capacity
+        run: >-
+          node --input-type=module -e 'import { availableParallelism, totalmem } from "node:os";
+          console.log(JSON.stringify({ cpus: availableParallelism(), memoryBytes: totalmem() }));'
       - run: npm run quality:delivery
         env:
-          JQS_E2E_WORKERS: 2
+          JQS_E2E_WORKERS: 4
           JQS_QUALITY_BASE_SHA:
             ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha ||
             github.event.before }}
@@ -113,9 +117,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes shellcheck
       - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Record hosted runner capacity
+        run: >-
+          node --input-type=module -e 'import { availableParallelism, totalmem } from "node:os";
+          console.log(JSON.stringify({ cpus: availableParallelism(), memoryBytes: totalmem() }));'
       - run: npm run quality:full-audit
         env:
-          JQS_E2E_WORKERS: 2
+          JQS_E2E_WORKERS: 4
       - name: Retain quality evidence
         if: always()
         uses: actions/upload-artifact@v4

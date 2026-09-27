@@ -39,6 +39,10 @@ The package has two public layers:
   Node reference, exact gzip calibration, bounded parallelism, and active hover accessibility.
 - [Virtual window completion](tickets/0063-await-project-browser-window-completion.md): exact
   response and loading completion before bounded-window and cancellation assertions.
+- [Hosted browser capacity](tickets/0064-use-four-hosted-browser-workers.md): four workers, recorded
+  runner allocation, complete delivery, and deterministic popover fixture placement.
+- [Component fixture initialization](tickets/0065-await-component-fixture-initialization.md):
+  declared entry-module completion and exact initial SDK windows before interactions and assertions.
 - [TESTING.md](TESTING.md): test layers and evidence expectations.
 - [CSP_EXPRESSIONS.md](CSP_EXPRESSIONS.md): shipped CSP installation, finite-expression grammar,
   capabilities, limits, diagnostics, migration, policy template, and version contract.
